@@ -87,6 +87,16 @@ export default function TestPage() {
           </Link>
         </CardContent>
       </Card>
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Player Persona Configuration</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link href="/persona-config">
+            <Button>Go to Player Persona Configuration</Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }
