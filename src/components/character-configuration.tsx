@@ -1,5 +1,5 @@
 import { useParleyStore, Character, PlayerPersona } from "@/lib/store"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -7,14 +7,30 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings } from "lucide-react"
-
-
+import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter
+} from "@/components/ui/dialog";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
+    const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
+    const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
+    const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -28,7 +44,7 @@ export default function CharacterConfiguration() {
             if (characters.some(c => c.id === editedCharacter.id)) {
                 updateCharacter(editedCharacter)
             } else {
-                addCharacter(editedCharacter)
+                addCharacter({ ...editedCharacter, id: editedCharacter.id || (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString() })
             }
             setEditedCharacter(null)
         }
@@ -102,6 +118,64 @@ export default function CharacterConfiguration() {
             addPlayerPersona(newPersona);
             alert(`Converted ${newPersona.name} to a new persona: ${newPersona.alias}`);
         }
+    };
+
+    const generateCharacter = async (prompt: string) => {
+        setIsGeneratingCharacter(true);
+        try {
+            const response = await fetch('/api/generate/character', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ characterDescription: prompt }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                const newCharacter: Character = {
+                    id: (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString(),
+                    ...data.character,
+                    personality: {
+                        openness: data.character.personality.openness || 0,
+                        conscientiousness: data.character.personality.conscientiousness || 0,
+                        extraversion: data.character.personality.extraversion || 0,
+                        agreeableness: data.character.personality.agreeableness || 0,
+                        neuroticism: data.character.personality.neuroticism || 0,
+                    },
+                    relationshipToPlayer: {
+                        affinity: data.character.relationshipToPlayer.affinity || 0,
+                        notes: data.character.relationshipToPlayer.notes || "",
+                    },
+                    preferences: {
+                        attractedToTraits: data.character.preferences?.attractedToTraits || [],
+                        dislikesTraits: data.character.preferences?.dislikesTraits || [],
+                        gossipTendency: data.character.preferences?.gossipTendency || "low",
+                    },
+                };
+                addCharacter(newCharacter);
+                setSelectedId(newCharacter.id);
+                setEditedCharacter(newCharacter);
+            } else {
+                console.error('Failed to generate character:', data.error);
+                alert('Error generating character: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error generating character:', error);
+            alert('An unexpected error occurred while generating the character.');
+        } finally {
+            setIsGeneratingCharacter(false);
+            setIsCharacterPromptDialogOpen(false);
+            setDialogCharacterPrompt('');
+        }
+    };
+
+    const handleGenerateCharacter = () => {
+        const defaultPrompt = displayCharacter?.basicInfo.name ? `Generate a character based on ${displayCharacter.basicInfo.name}` : "a new fantasy character";
+        generateCharacter(defaultPrompt);
+    };
+
+    const handleGenerateCharacterWithPrompt = () => {
+        generateCharacter(dialogCharacterPrompt);
     };
 
     return (
@@ -182,6 +256,69 @@ export default function CharacterConfiguration() {
                                             <Button variant="outline" onClick={handleConvertToPersona}>
                                                 Convert to Persona
                                             </Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            onClick={handleGenerateCharacter}
+                                                            disabled={isGeneratingCharacter}
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                        >
+                                                            <Sparkles className="h-4 w-4" />
+                                                            <span className="sr-only">Generate Character</span>
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Generate Character (no prompt)</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <Dialog open={isCharacterPromptDialogOpen} onOpenChange={setIsCharacterPromptDialogOpen}>
+                                                        <TooltipTrigger asChild>
+                                                            <DialogTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                >
+                                                                    <Type className="h-4 w-4" />
+                                                                    <span className="sr-only">Generate with Prompt</span>
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Character with Custom Prompt</p>
+                                                        </TooltipContent>
+                                                        <DialogContent className="sm:max-w-[425px]">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Generate Character with Custom Prompt</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Enter your desired prompt for character creation here.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <div className="grid gap-4 py-4">
+                                                                <Textarea
+                                                                    id="customCharacterPrompt"
+                                                                    value={dialogCharacterPrompt}
+                                                                    onChange={(e) => setDialogCharacterPrompt(e.target.value)}
+                                                                    className="min-h-[150px]"
+                                                                    rows={6}
+                                                                    placeholder="e.g., 'A wise old wizard with a long beard and a penchant for riddles.'"
+                                                                />
+                                                            </div>
+                                                            <DialogFooter>
+                                                                <Button onClick={handleGenerateCharacterWithPrompt} disabled={isGeneratingCharacter}>
+                                                                    {isGeneratingCharacter ? 'Generating...' : 'Generate'}
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </>
                                     )}
                                 </div>
