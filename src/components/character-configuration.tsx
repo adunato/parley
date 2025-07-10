@@ -1,3 +1,4 @@
+import { useParleyStore, Character } from "@/lib/store"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,73 +9,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Save, Plus, Book, Brain, Heart, Settings } from "lucide-react"
 
-// Interfaces based on data/character_schema.json
-interface BasicInfo {
-    name: string
-    role?: string
-    faction?: string
-    avatar?: string
-}
 
-interface Personality {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    neuroticism: number
-}
-
-interface RelationshipToPlayer {
-    affinity: number
-    notes?: string
-}
-
-interface Preferences {
-    attractedToTraits?: string[]
-    dislikesTraits?: string[]
-    gossipTendency?: "low" | "medium" | "high"
-}
-
-interface Character {
-    id: string // Added for master-detail list
-    basicInfo: BasicInfo
-    personality: Personality
-    relationshipToPlayer: RelationshipToPlayer
-    preferences?: Preferences
-}
-
-// Initial data (using sample_character.json as a base)
-const initialCharacters: Character[] = [
-    {
-        id: "1",
-        basicInfo: {
-            name: "Ariana Vex",
-            role: "Smuggler",
-            faction: "Independent Traders Guild",
-            avatar: "https://example.com/avatars/ariana.png",
-        },
-        personality: {
-            openness: 70,
-            conscientiousness: -20,
-            extraversion: 50,
-            agreeableness: -10,
-            neuroticism: 40,
-        },
-        relationshipToPlayer: {
-            affinity: -40,
-            notes: "Distrusts the player due to past betrayal, but is intrigued by their skills.",
-        },
-        preferences: {
-            attractedToTraits: ["confidence", "independence", "wit"],
-            dislikesTraits: ["authority", "cowardice", "arrogance"],
-            gossipTendency: "high",
-        },
-    },
-]
 
 export default function CharacterConfiguration() {
-    const [characters, setCharacters] = useState<Character[]>(initialCharacters)
-    const [selectedId, setSelectedId] = useState<string | null>(initialCharacters[0]?.id || null)
+    const { characters, addCharacter, updateCharacter } = useParleyStore()
+    const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
@@ -86,9 +25,7 @@ export default function CharacterConfiguration() {
 
     const handleSave = () => {
         if (editedCharacter) {
-            setCharacters((prev) =>
-                prev.map((c) => (c.id === editedCharacter.id ? editedCharacter : c))
-            )
+            updateCharacter(editedCharacter)
             setEditedCharacter(null)
         }
     }
@@ -122,7 +59,7 @@ export default function CharacterConfiguration() {
     }
 
     const handleAddCharacter = () => {
-        const newId = (parseInt(characters[characters.length - 1]?.id || "0") + 1).toString()
+        const newId = (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString()
         const newCharacter: Character = {
             id: newId,
             basicInfo: { name: "New Character" },
@@ -130,7 +67,7 @@ export default function CharacterConfiguration() {
             relationshipToPlayer: { affinity: 0 },
             preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
         }
-        setCharacters((prev) => [...prev, newCharacter])
+        addCharacter(newCharacter)
         setSelectedId(newId)
         setEditedCharacter(newCharacter)
     }
