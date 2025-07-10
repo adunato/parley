@@ -52,3 +52,28 @@ Input Character Description: ${characterDescription}
 
 JSON Output:
 `;
+
+export const PERSONA_JSON_STRUCTURE = `{
+  "playerProfile": {
+    "name": string,
+    "alias": string,
+    "reputation": string,
+    "background": string,
+    "firstImpression": string,
+    "role": string,
+    "faction": string,
+    "avatar": string,
+    "appearance": string
+  }
+}`;
+
+export const generatePersonaPrompt = (personaDescription: string) => `
+You are a player persona-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+${PERSONA_JSON_STRUCTURE}
+
+Generate a detailed player persona profile based on the following input. Ensure all fields are populated with relevant and creative information.
+
+Input Persona Description: ${personaDescription}
+
+JSON Output:
+`;

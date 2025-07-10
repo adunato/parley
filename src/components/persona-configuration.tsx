@@ -4,14 +4,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Save, Plus } from "lucide-react"
+import { User, Save, Plus, Sparkles, Type } from "lucide-react"
 import { useParleyStore, PlayerPersona } from "@/lib/store"
 import { Badge } from "@/components/ui/badge"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter
+} from "@/components/ui/dialog";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function PersonaConfiguration() {
     const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona } = useParleyStore()
     const [selectedAlias, setSelectedAlias] = useState<string | null>(playerPersonas[0]?.alias || null)
     const [editedPersona, setEditedPersona] = useState<PlayerPersona | null>(null)
+    const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
+    const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
+    const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
 
     const selectedPersona = playerPersonas.find((p) => p.alias === selectedAlias)
 
@@ -60,6 +78,7 @@ export default function PersonaConfiguration() {
             role: "",
             faction: "",
             avatar: "",
+            appearance: "",
         }
         addPlayerPersona(newPersona)
         setSelectedAlias(newPersona.alias)
@@ -75,6 +94,55 @@ export default function PersonaConfiguration() {
     }
 
     const displayPersona = editedPersona || selectedPersona
+
+    const generatePersona = async (prompt: string) => {
+        setIsGeneratingPersona(true);
+        try {
+            const response = await fetch('/api/generate/persona', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ personaDescription: prompt }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                const newPersona: PlayerPersona = {
+                    name: data.persona.name || "",
+                    alias: data.persona.alias || `Persona-${playerPersonas.length + 1}`,
+                    reputation: data.persona.reputation || "",
+                    background: data.persona.background || "",
+                    firstImpression: data.persona.firstImpression || "",
+                    role: data.persona.role || "",
+                    faction: data.persona.faction || "",
+                    avatar: data.persona.avatar || "",
+                    appearance: data.persona.appearance || "",
+                };
+                addPlayerPersona(newPersona);
+                setSelectedAlias(newPersona.alias);
+                setEditedPersona(newPersona);
+            } else {
+                console.error('Failed to generate persona:', data.error);
+                alert('Error generating persona: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error generating persona:', error);
+            alert('An unexpected error occurred while generating the persona.');
+        } finally {
+            setIsGeneratingPersona(false);
+            setIsPersonaPromptDialogOpen(false);
+            setDialogPersonaPrompt('');
+        }
+    };
+
+    const handleGeneratePersona = () => {
+        const defaultPrompt = displayPersona?.name ? `Generate a persona based on ${displayPersona.name}` : "a new player persona";
+        generatePersona(defaultPrompt);
+    };
+
+    const handleGeneratePersonaWithPrompt = () => {
+        generatePersona(dialogPersonaPrompt);
+    };
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -149,7 +217,72 @@ export default function PersonaConfiguration() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button onClick={() => setEditedPersona({ ...displayPersona })}>Edit</Button>
+                                        <>
+                                            <Button onClick={() => setEditedPersona({ ...displayPersona })}>Edit</Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            onClick={handleGeneratePersona}
+                                                            disabled={isGeneratingPersona}
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                        >
+                                                            <Sparkles className="h-4 w-4" />
+                                                            <span className="sr-only">Generate Persona</span>
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Generate Persona (no prompt)</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <Dialog open={isPersonaPromptDialogOpen} onOpenChange={setIsPersonaPromptDialogOpen}>
+                                                        <TooltipTrigger asChild>
+                                                            <DialogTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                >
+                                                                    <Type className="h-4 w-4" />
+                                                                    <span className="sr-only">Generate with Prompt</span>
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Persona with Custom Prompt</p>
+                                                        </TooltipContent>
+                                                        <DialogContent className="sm:max-w-[425px]">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Generate Persona with Custom Prompt</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Enter your desired prompt for persona creation here.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <div className="grid gap-4 py-4">
+                                                                <Textarea
+                                                                    id="customPersonaPrompt"
+                                                                    value={dialogPersonaPrompt}
+                                                                    onChange={(e) => setDialogPersonaPrompt(e.target.value)}
+                                                                    className="min-h-[150px]"
+                                                                    rows={6}
+                                                                    placeholder="e.g., 'A stealthy rogue with a mysterious past and a knack for getting into trouble.'"
+                                                                />
+                                                            </div>
+                                                            <DialogFooter>
+                                                                <Button onClick={handleGeneratePersonaWithPrompt} disabled={isGeneratingPersona}>
+                                                                    {isGeneratingPersona ? 'Generating...' : 'Generate'}
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -212,6 +345,16 @@ export default function PersonaConfiguration() {
                                                 disabled={!editedPersona}
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="appearance">Appearance</Label>
+                                            <Textarea
+                                                id="appearance"
+                                                value={displayPersona.appearance || ""}
+                                                onChange={(e) => handleInputChange("appearance", e.target.value)}
+                                                disabled={!editedPersona}
+                                                rows={3}
+                                            />
+                                        </div>
                                     </CardContent>
                                 </Card>
 
@@ -250,16 +393,6 @@ export default function PersonaConfiguration() {
                                                 id="firstImpression"
                                                 value={displayPersona.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("firstImpression", e.target.value)}
-                                                disabled={!editedPersona}
-                                                rows={3}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="appearance">Appearance</Label>
-                                            <Textarea
-                                                id="appearance"
-                                                value={displayPersona.appearance || ""}
-                                                onChange={(e) => handleInputChange("appearance", e.target.value)}
                                                 disabled={!editedPersona}
                                                 rows={3}
                                             />
