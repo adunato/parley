@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:openrouter": "tsc -p tsconfig.test.json && node dist-test/tests/testOpenRouter.js",
+    "test:comfyui": "tsc -p tsconfig.test.json && node dist-test/tests/testComfyUI.js"
   },
   "dependencies": {
     "@langchain/core": "^0.3.62",
