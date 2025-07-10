@@ -235,6 +235,36 @@ export default function CharacterConfiguration() {
                                                 disabled={!editedCharacter}
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="reputation">Reputation</Label>
+                                            <Textarea
+                                                id="reputation"
+                                                value={displayCharacter.basicInfo.reputation || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "reputation", e.target.value)}
+                                                disabled={!editedCharacter}
+                                                rows={3}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="background">Background</Label>
+                                            <Textarea
+                                                id="background"
+                                                value={displayCharacter.basicInfo.background || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "background", e.target.value)}
+                                                disabled={!editedCharacter}
+                                                rows={3}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="firstImpression">First Impression</Label>
+                                            <Textarea
+                                                id="firstImpression"
+                                                value={displayCharacter.basicInfo.firstImpression || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
+                                                disabled={!editedCharacter}
+                                                rows={3}
+                                            />
+                                        </div>
                                     </CardContent>
                                 </Card>
 
