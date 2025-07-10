@@ -1,0 +1,24 @@
+{
+  "basicInfo": {
+    "name": "Anya",
+    "role": "Mysterious Wanderer",
+    "faction": "None",
+    "avatar": "anya.png"
+  },
+  "personality": {
+    "openness": 70,
+    "conscientiousness": 40,
+    "extraversion": 30,
+    "agreeableness": 60,
+    "neuroticism": 50
+  },
+  "relationshipToPlayer": {
+    "affinity": 10,
+    "notes": "Initially cautious, but open to new connections."
+  },
+  "preferences": {
+    "attractedToTraits": ["bravery", "kindness"],
+    "dislikesTraits": ["deceit", "cruelty"],
+    "gossipTendency": "low"
+  }
+}
