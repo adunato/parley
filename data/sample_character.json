@@ -1,0 +1,24 @@
+{
+  "basicInfo": {
+    "name": "Ariana Vex",
+    "role": "Smuggler",
+    "faction": "Independent Traders Guild",
+    "avatar": "https://example.com/avatars/ariana.png"
+  },
+  "personality": {
+    "openness": 70,
+    "conscientiousness": -20,
+    "extraversion": 50,
+    "agreeableness": -10,
+    "neuroticism": 40
+  },
+  "relationshipToPlayer": {
+    "affinity": -40,
+    "notes": "Distrusts the player due to past betrayal, but is intrigued by their skills."
+  },
+  "preferences": {
+    "attractedToTraits": ["confidence", "independence", "wit"],
+    "dislikesTraits": ["authority", "cowardice", "arrogance"],
+    "gossipTendency": "high"
+  }
+}
