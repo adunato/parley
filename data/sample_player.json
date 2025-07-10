@@ -4,6 +4,9 @@
     "alias": "Ashwalker",
     "reputation": "Said to have survived the Blightlands alone — or caused it.",
     "background": "A solitary figure recently spotted near the ruined city of Virell.",
-    "firstImpression": "Carries themselves with quiet confidence, but never lets anyone behind their eyes."
+    "firstImpression": "Carries themselves with quiet confidence, but never lets anyone behind their eyes.",
+    "role": "Rogue",
+    "faction": "Shadow Syndicate",
+    "avatar": "https://example.com/avatars/ash.png"
   }
 }

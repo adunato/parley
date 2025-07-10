@@ -25,6 +25,19 @@
         "firstImpression": {
           "type": "string",
           "description": "What NPCs perceive immediately about the player."
+        },
+        "role": {
+          "type": "string",
+          "description": "The player's role or profession."
+        },
+        "faction": {
+          "type": "string",
+          "description": "The player's faction or allegiance."
+        },
+        "avatar": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the player's avatar image."
         }
       },
       "required": ["name", "alias"],
