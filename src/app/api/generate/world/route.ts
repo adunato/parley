@@ -15,7 +15,14 @@ export async function POST(req: NextRequest) {
     const result = await llm.generate([[new HumanMessage(prompt)]]);
 
     // Assuming the LLM returns a JSON string in the format { "world": "..." }
-    const parsedResult = JSON.parse(result.generations[0][0].text);
+    const responseContent = result.generations[0][0].text;
+    const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
+
+    if (!jsonMatch || !jsonMatch[1]) {
+      throw new Error("Could not parse JSON from LLM response.");
+    }
+
+    const parsedResult = JSON.parse(jsonMatch[1]);
     const generatedWorld = parsedResult.world;
 
     return NextResponse.json({ world: generatedWorld });
