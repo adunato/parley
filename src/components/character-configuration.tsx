@@ -97,6 +97,7 @@ export default function CharacterConfiguration() {
                 role: displayCharacter.basicInfo.role || '',
                 faction: displayCharacter.basicInfo.faction || '',
                 avatar: displayCharacter.basicInfo.avatar || '',
+                appearance: displayCharacter.basicInfo.appearance || '',
             };
             addPlayerPersona(newPersona);
             alert(`Converted ${newPersona.name} to a new persona: ${newPersona.alias}`);
@@ -261,6 +262,16 @@ export default function CharacterConfiguration() {
                                                 id="firstImpression"
                                                 value={displayCharacter.basicInfo.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
+                                                disabled={!editedCharacter}
+                                                rows={3}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="appearance">Appearance</Label>
+                                            <Textarea
+                                                id="appearance"
+                                                value={displayCharacter.basicInfo.appearance || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "appearance", e.target.value)}
                                                 disabled={!editedCharacter}
                                                 rows={3}
                                             />

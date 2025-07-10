@@ -38,6 +38,10 @@
           "type": "string",
           "format": "uri",
           "description": "URL to the player's avatar image."
+        },
+        "appearance": {
+          "type": "string",
+          "description": "Detailed physical description of the player."
         }
       },
       "required": ["name", "alias"],

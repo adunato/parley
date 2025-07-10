@@ -9,6 +9,7 @@ interface BasicInfo {
     reputation?: string
     background?: string
     firstImpression?: string
+    appearance?: string
 }
 
 interface Personality {
@@ -44,6 +45,7 @@ export interface PlayerPersona {
   reputation?: string;
   background?: string;
   firstImpression?: string;
+  appearance?: string;
   role?: string;
   faction?: string;
   avatar?: string;

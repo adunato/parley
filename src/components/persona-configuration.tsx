@@ -254,6 +254,16 @@ export default function PersonaConfiguration() {
                                                 rows={3}
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="appearance">Appearance</Label>
+                                            <Textarea
+                                                id="appearance"
+                                                value={displayPersona.appearance || ""}
+                                                onChange={(e) => handleInputChange("appearance", e.target.value)}
+                                                disabled={!editedPersona}
+                                                rows={3}
+                                            />
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>

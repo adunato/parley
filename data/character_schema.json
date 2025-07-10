@@ -12,7 +12,8 @@
         "avatar": { "type": "string", "format": "uri" },
         "reputation": { "type": "string", "description": "Summary of public rumors or known reputation." },
         "background": { "type": "string", "description": "Brief context about where the character is from or where they've been seen." },
-        "firstImpression": { "type": "string", "description": "What players perceive immediately about the character." }
+        "firstImpression": { "type": "string", "description": "What players perceive immediately about the character." },
+        "appearance": { "type": "string", "description": "Detailed physical description of the character." }
       },
       "required": ["name"]
     },
