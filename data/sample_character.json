@@ -3,7 +3,10 @@
     "name": "Ariana Vex",
     "role": "Smuggler",
     "faction": "Independent Traders Guild",
-    "avatar": "https://example.com/avatars/ariana.png"
+    "avatar": "https://example.com/avatars/ariana.png",
+    "reputation": "Known for her daring escapes and questionable cargo.",
+    "background": "A veteran of the outer rim trade routes, she's seen it all.",
+    "firstImpression": "Sharp eyes and a quick wit, not easily fooled."
   },
   "personality": {
     "openness": 70,
