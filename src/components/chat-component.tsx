@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Send, Bot, User } from "lucide-react"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface ChatComponentProps {
   className?: string
@@ -78,7 +80,9 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                       : "bg-gray-100 text-gray-900 border"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                  <div className="text-sm whitespace-pre-wrap">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                </div>
                 </div>
 
                 {m.role === "user" && (
