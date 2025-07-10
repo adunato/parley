@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import ChatComponent from '@/components/chat-component';
 
 export default function TestPage() {
   return (
@@ -65,6 +66,14 @@ export default function TestPage() {
         </CardHeader>
         <CardContent>
           <Badge>Badge</Badge>
+        </CardContent>
+      </Card>
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Chat Component</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChatComponent />
         </CardContent>
       </Card>
     </div>
