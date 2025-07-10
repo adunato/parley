@@ -1,13 +1,13 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import { useChat } from "@ai-sdk/react"
+import { useChat, type Message } from "@ai-sdk/react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Send, Bot, User } from "lucide-react"
 
 // --- 1️⃣  Stable sample history ---------------------------------------------
-const defaultHistory = [
+const defaultHistory: Message[] = [
   {
     id: "1",
     role: "assistant",
@@ -26,7 +26,7 @@ const defaultHistory = [
     content: "Of course! Just type in the box below and press Send (or Enter).",
     createdAt: new Date(),
   },
-] as const
+]
 // ---------------------------------------------------------------------------
 
 interface ChatComponentProps {
