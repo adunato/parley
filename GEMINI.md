@@ -6,19 +6,26 @@ This project is a web-based text adventure game built with Next.js and TypeScrip
 
 After each change, you should check `game_design.md` and update it as needed.
 
-## Git commit rules
-
-Do not commit unless user asks for it.
-Due to an unusual shell behavior, multi-word commit messages with `git commit -m "message"` are not currently supported. Please use hyphens instead of spaces for multi-word messages (e.g., `git commit -m "feat-add-new-feature"`).
-
 ## Project Structure
 
 The project follows the standard Next.js App Router structure.
 
 -   The frontend is located in `src/app/page.tsx`.
--   The backend logic is in an API route at `src/app/api/game/route.ts`.
+-   The backend logic for the chat component is in an API route at `src/app/api/chat/route.ts`.
 -   Static assets and global styles are in `src/app/`.
--   TypeScript types are defined in `src/app/types.ts`.
+-   TypeScript types are defined within the relevant components or imported from external libraries.
+
+## Key Operations
+
+-   **Build Project**: To compile the project and prepare it for deployment, run:
+    ```bash
+    npm run build
+    ```
+
+## Git commit rules
+
+Do not commit unless user asks for it.
+Due to an unusual shell behavior, multi-word commit messages with `git commit -m "message"` are not currently supported. Please use hyphens instead of spaces for multi-word messages (e.g., `git commit -m "feat-add-new-feature"`).
 
 ---
 
