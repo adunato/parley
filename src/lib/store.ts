@@ -62,6 +62,8 @@ interface ParleyStore {
   addPlayerPersona: (persona: PlayerPersona) => void;
   updatePlayerPersona: (persona: PlayerPersona) => void;
   deletePlayerPersona: (id: string) => void;
+  worldDescription: string;
+  setWorldDescription: (description: string) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -93,6 +95,8 @@ export const useParleyStore = create<ParleyStore>()(
         set((state) => ({
           playerPersonas: state.playerPersonas.filter((p) => p.alias !== id),
         })),
+      worldDescription: '',
+      setWorldDescription: (description) => set({ worldDescription: description }),
     }),
     {
       name: 'parley-storage',
