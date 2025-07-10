@@ -15,9 +15,14 @@ The project follows the standard Next.js App Router structure.
 -   Static assets and global styles are in `src/app/`.
 -   TypeScript types are defined within the relevant components or imported from external libraries.
 
-## Key Operations
+## Code Editing Steps
 
--   **Build Project**: To compile the project and prepare it for deployment, run:
+1. Ask questions is you don't understand the user prompt. 
+2. Assess the changes and plan the implementation steps before editing the code.
+3. After the changes have been completed, build the project
+
+## Build Project
+To compile the project and prepare it for deployment, run:
     ```bash
     npm run build
     ```
