@@ -6,29 +6,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Send, Bot, User } from "lucide-react"
 
-// --- 1️⃣  Stable sample history ---------------------------------------------
-const defaultHistory: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content: "Hello! I'm your AI assistant. How can I help you today?",
-    createdAt: new Date(),
-  },
-  {
-    id: "2",
-    role: "user",
-    content: "Can you help me understand how to use this chat interface?",
-    createdAt: new Date(),
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content: "Of course! Just type in the box below and press Send (or Enter).",
-    createdAt: new Date(),
-  },
-]
-// ---------------------------------------------------------------------------
-
 interface ChatComponentProps {
   className?: string
   title?: string
@@ -36,22 +13,8 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant" }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [debugMode, setDebugMode] = useState(true)
-
-  const { messages, input, handleInputChange, handleSubmit, status, append } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     id: "main-chat",
-    initialMessages: defaultHistory,
-    onFinish: async (message) => {
-      // Add debug message after each assistant response
-      if (debugMode && message.role === "assistant") {
-        setTimeout(() => {
-          append({
-            role: "assistant",
-            content: `[DEBUG] Message processed at ${new Date().toLocaleTimeString()}. Total messages: ${messages.length + 1}`,
-          })
-        }, 500)
-      }
-    },
   })
 
   const isLoading = status === "submitted" || status === "streaming"
@@ -76,16 +39,6 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     e.preventDefault()
     if (input.trim()) {
       handleSubmit(e)
-
-      // Add debug message after user message
-      if (debugMode) {
-        setTimeout(() => {
-          append({
-            role: "assistant",
-            content: `[DEBUG] User message received: "${input.trim()}" at ${new Date().toLocaleTimeString()}`,
-          })
-        }, 100)
-      }
     }
   }
 
@@ -104,14 +57,6 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
             <Bot className="h-5 w-5" />
             {title}
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDebugMode(!debugMode)}
-            className={debugMode ? "bg-green-100 text-green-700" : ""}
-          >
-            Debug: {debugMode ? "ON" : "OFF"}
-          </Button>
         </div>
       </CardHeader>
 
@@ -130,9 +75,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
                     m.role === "user"
                       ? "bg-blue-600 text-white"
-                      : m.content.startsWith("[DEBUG]")
-                        ? "bg-yellow-50 text-yellow-800 border border-yellow-200 font-mono text-xs"
-                        : "bg-gray-100 text-gray-900 border"
+                      : "bg-gray-100 text-gray-900 border"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{m.content}</p>

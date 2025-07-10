@@ -9,7 +9,7 @@ import path from 'path';
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const characterJsonPath = path.join(process.cwd(), 'sample_character.json');
+  const characterJsonPath = path.join(process.cwd(), 'data', 'sample_character.json');
   const characterJson = await fs.readFile(characterJsonPath, 'utf8');
 
   const finalSystemPrompt = SYSTEM_PROMPT.replace('{{character_json}}', characterJson);
