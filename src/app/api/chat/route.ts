@@ -1,20 +1,25 @@
-import { streamText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { LangChainAdapter } from 'ai';
+import { llm } from '@/lib/llm';
 import { SYSTEM_PROMPT, CHAT_PROMPT } from '@/lib/chatPrompts';
+import { Message } from '@ai-sdk/react';
+import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const result = await streamText({
-    model: openai('gpt-4o'),
-    messages: [
-      { role: 'system', content: `${SYSTEM_PROMPT}\n${CHAT_PROMPT}` },
-      ...messages,
-    ],
+  const langchainMessages = messages.map((message: Message) => {
+    if (message.role === 'user') {
+      return new HumanMessage(message.content);
+    } else if (message.role === 'assistant') {
+      return new AIMessage(message.content);
+    } else {
+      return new SystemMessage(message.content);
+    }
   });
 
-  return new Response(result.toDataStream(), {
-    headers: {
-      'Content-Type': 'text/plain',
-    },
-  });
+  const systemMessage = new SystemMessage(`${SYSTEM_PROMPT}\n${CHAT_PROMPT}`);
+  const allMessages = [systemMessage, ...langchainMessages];
+
+  const stream = await llm.stream(allMessages);
+
+  return LangChainAdapter.toDataStreamResponse(stream);
 }
