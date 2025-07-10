@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import ChatComponent from '@/components/chat-component';
 
 export default function TestPage() {
@@ -74,6 +75,16 @@ export default function TestPage() {
         </CardHeader>
         <CardContent>
           <ChatComponent />
+        </CardContent>
+      </Card>
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Character Configuration</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link href="/character-config">
+            <Button>Go to Character Configuration</Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

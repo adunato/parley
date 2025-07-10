@@ -1,0 +1,388 @@
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { User, Save, Plus, Book, Brain, Heart, Settings } from "lucide-react"
+
+// Interfaces based on data/character_schema.json
+interface BasicInfo {
+    name: string
+    role?: string
+    faction?: string
+    avatar?: string
+}
+
+interface Personality {
+    openness: number
+    conscientiousness: number
+    extraversion: number
+    agreeableness: number
+    neuroticism: number
+}
+
+interface RelationshipToPlayer {
+    affinity: number
+    notes?: string
+}
+
+interface Preferences {
+    attractedToTraits?: string[]
+    dislikesTraits?: string[]
+    gossipTendency?: "low" | "medium" | "high"
+}
+
+interface Character {
+    id: string // Added for master-detail list
+    basicInfo: BasicInfo
+    personality: Personality
+    relationshipToPlayer: RelationshipToPlayer
+    preferences?: Preferences
+}
+
+// Initial data (using sample_character.json as a base)
+const initialCharacters: Character[] = [
+    {
+        id: "1",
+        basicInfo: {
+            name: "Ariana Vex",
+            role: "Smuggler",
+            faction: "Independent Traders Guild",
+            avatar: "https://example.com/avatars/ariana.png",
+        },
+        personality: {
+            openness: 70,
+            conscientiousness: -20,
+            extraversion: 50,
+            agreeableness: -10,
+            neuroticism: 40,
+        },
+        relationshipToPlayer: {
+            affinity: -40,
+            notes: "Distrusts the player due to past betrayal, but is intrigued by their skills.",
+        },
+        preferences: {
+            attractedToTraits: ["confidence", "independence", "wit"],
+            dislikesTraits: ["authority", "cowardice", "arrogance"],
+            gossipTendency: "high",
+        },
+    },
+]
+
+export default function CharacterConfiguration() {
+    const [characters, setCharacters] = useState<Character[]>(initialCharacters)
+    const [selectedId, setSelectedId] = useState<string | null>(initialCharacters[0]?.id || null)
+    const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
+
+    const selectedCharacter = characters.find((c) => c.id === selectedId)
+
+    const handleSelect = (character: Character) => {
+        setSelectedId(character.id)
+        setEditedCharacter({ ...character })
+    }
+
+    const handleSave = () => {
+        if (editedCharacter) {
+            setCharacters((prev) =>
+                prev.map((c) => (c.id === editedCharacter.id ? editedCharacter : c))
+            )
+            setEditedCharacter(null)
+        }
+    }
+
+    const handleCancel = () => {
+        setEditedCharacter(null)
+    }
+
+    const handleInputChange = (
+        section: keyof Character | "basicInfo" | "personality" | "relationshipToPlayer" | "preferences",
+        field: string,
+        value: string | number | string[] | undefined
+    ) => {
+        if (editedCharacter) {
+            setEditedCharacter((prev) => {
+                if (!prev) return null
+
+                const newCharacter = { ...prev }
+
+                if (section === "basicInfo" || section === "personality" || section === "relationshipToPlayer" || section === "preferences") {
+                    newCharacter[section] = {
+                        ...newCharacter[section],
+                        [field]: value,
+                    } as any // Type assertion for nested objects
+                } else {
+                    (newCharacter as any)[field] = value // For top-level fields if any
+                }
+                return newCharacter
+            })
+        }
+    }
+
+    const handleAddCharacter = () => {
+        const newId = (parseInt(characters[characters.length - 1]?.id || "0") + 1).toString()
+        const newCharacter: Character = {
+            id: newId,
+            basicInfo: { name: "New Character" },
+            personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
+            relationshipToPlayer: { affinity: 0 },
+            preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
+        }
+        setCharacters((prev) => [...prev, newCharacter])
+        setSelectedId(newId)
+        setEditedCharacter(newCharacter)
+    }
+
+    const displayCharacter = editedCharacter || selectedCharacter
+
+    return (
+        <div className="flex h-screen bg-gray-50">
+            {/* Left Sidebar - Master List */}
+            <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+                <div className="p-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-gray-900">Characters</h2>
+                        <Button size="sm" variant="outline" onClick={handleAddCharacter}>
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add
+                        </Button>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">{characters.length} characters</p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                    {characters.map((character) => (
+                        <div
+                            key={character.id}
+                            onClick={() => handleSelect(character)}
+                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                                selectedId === character.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                            }`}
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                        <h3 className="font-medium text-gray-900 truncate">{character.basicInfo.name}</h3>
+                                    </div>
+                                    <p className="text-sm text-gray-600 truncate">{character.basicInfo.role}</p>
+                                    <p className="text-xs text-gray-500 truncate">{character.basicInfo.faction}</p>
+                                </div>
+                                <Badge className="text-xs bg-gray-100 text-gray-800">ID: {character.id}</Badge>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Right Content - Detail View */}
+            <div className="flex-1 flex flex-col">
+                {displayCharacter ? (
+                    <>
+                        {/* Header */}
+                        <div className="bg-white border-b border-gray-200 p-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <User className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
+                                        <p className="text-gray-600">
+                                            {displayCharacter.basicInfo.role} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    {editedCharacter ? (
+                                        <>
+                                            <Button variant="outline" onClick={handleCancel}>
+                                                Cancel
+                                            </Button>
+                                            <Button onClick={handleSave}>
+                                                <Save className="w-4 h-4 mr-2" />
+                                                Save Changes
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button onClick={() => setEditedCharacter({ ...displayCharacter })}>Edit</Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <div className="max-w-2xl space-y-6">
+                                {/* Basic Information */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <User className="w-5 h-5" />
+                                            Basic Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name">Name</Label>
+                                            <Input
+                                                id="name"
+                                                value={displayCharacter.basicInfo.name}
+                                                onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="role">Role</Label>
+                                            <Input
+                                                id="role"
+                                                value={displayCharacter.basicInfo.role || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="faction">Faction</Label>
+                                            <Input
+                                                id="faction"
+                                                value={displayCharacter.basicInfo.faction || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="avatar">Avatar URL</Label>
+                                            <Input
+                                                id="avatar"
+                                                value={displayCharacter.basicInfo.avatar || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Personality (OCEAN) */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Brain className="w-5 h-5" />
+                                            Personality (OCEAN Traits)
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {Object.entries(displayCharacter.personality).map(([trait, value]) => (
+                                            <div key={trait} className="space-y-2">
+                                                <Label htmlFor={trait}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <Input
+                                                    id={trait}
+                                                    type="number"
+                                                    value={value}
+                                                    onChange={(e) => handleInputChange("personality", trait, parseInt(e.target.value))}
+                                                    disabled={!editedCharacter}
+                                                    min={-100}
+                                                    max={100}
+                                                />
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Relationship to Player */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Heart className="w-5 h-5" />
+                                            Relationship to Player
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="affinity">Affinity (-100 to 100)</Label>
+                                            <Input
+                                                id="affinity"
+                                                type="number"
+                                                value={displayCharacter.relationshipToPlayer.affinity}
+                                                onChange={(e) => handleInputChange("relationshipToPlayer", "affinity", parseInt(e.target.value))}
+                                                disabled={!editedCharacter}
+                                                min={-100}
+                                                max={100}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="notes">Notes</Label>
+                                            <Textarea
+                                                id="notes"
+                                                value={displayCharacter.relationshipToPlayer.notes || ""}
+                                                onChange={(e) => handleInputChange("relationshipToPlayer", "notes", e.target.value)}
+                                                disabled={!editedCharacter}
+                                                rows={3}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Preferences */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Settings className="w-5 h-5" />
+                                            Preferences
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="attractedToTraits">Attracted To Traits (comma-separated)</Label>
+                                            <Input
+                                                id="attractedToTraits"
+                                                value={displayCharacter.preferences?.attractedToTraits?.join(", ") || ""}
+                                                onChange={(e) => handleInputChange("preferences", "attractedToTraits", e.target.value.split(",").map(s => s.trim()))}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="dislikesTraits">Dislikes Traits (comma-separated)</Label>
+                                            <Input
+                                                id="dislikesTraits"
+                                                value={displayCharacter.preferences?.dislikesTraits?.join(", ") || ""}
+                                                onChange={(e) => handleInputChange("preferences", "dislikesTraits", e.target.value.split(",").map(s => s.trim()))}
+                                                disabled={!editedCharacter}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="gossipTendency">Gossip Tendency</Label>
+                                            <Select
+                                                value={displayCharacter.preferences?.gossipTendency || "low"}
+                                                onValueChange={(value) => handleInputChange("preferences", "gossipTendency", value)}
+                                                disabled={!editedCharacter}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="low">Low</SelectItem>
+                                                    <SelectItem value="medium">Medium</SelectItem>
+                                                    <SelectItem value="high">High</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No Character Selected</h3>
+                            <p className="text-gray-500">Select a character from the list or add a new one</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
