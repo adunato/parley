@@ -12,7 +12,7 @@ import { User, Save, Plus, Book, Brain, Heart, Settings } from "lucide-react"
 
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
 
@@ -25,7 +25,11 @@ export default function CharacterConfiguration() {
 
     const handleSave = () => {
         if (editedCharacter) {
-            updateCharacter(editedCharacter)
+            if (characters.some(c => c.id === editedCharacter.id)) {
+                updateCharacter(editedCharacter)
+            } else {
+                addCharacter(editedCharacter)
+            }
             setEditedCharacter(null)
         }
     }
@@ -70,6 +74,14 @@ export default function CharacterConfiguration() {
         addCharacter(newCharacter)
         setSelectedId(newId)
         setEditedCharacter(newCharacter)
+    }
+
+    const handleDeleteCharacter = () => {
+        if (editedCharacter && editedCharacter.id) {
+            deleteCharacter(editedCharacter.id)
+            setEditedCharacter(null)
+            setSelectedId(characters[0]?.id || null)
+        }
     }
 
     const displayCharacter = editedCharacter || selectedCharacter
@@ -141,6 +153,9 @@ export default function CharacterConfiguration() {
                                             <Button onClick={handleSave}>
                                                 <Save className="w-4 h-4 mr-2" />
                                                 Save Changes
+                                            </Button>
+                                            <Button variant="destructive" onClick={handleDeleteCharacter}>
+                                                Delete
                                             </Button>
                                         </>
                                     ) : (

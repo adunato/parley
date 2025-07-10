@@ -53,8 +53,10 @@ interface ParleyStore {
   addCharacter: (character: Character) => void;
   updateCharacter: (character: Character) => void;
   deleteCharacter: (id: string) => void;
-  playerPersona: PlayerPersona | null;
-  setPlayerPersona: (persona: PlayerPersona) => void;
+  playerPersonas: PlayerPersona[];
+  addPlayerPersona: (persona: PlayerPersona) => void;
+  updatePlayerPersona: (persona: PlayerPersona) => void;
+  deletePlayerPersona: (id: string) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -74,8 +76,18 @@ export const useParleyStore = create<ParleyStore>()(
         set((state) => ({
           characters: state.characters.filter((char) => char.id !== id),
         })),
-      playerPersona: null,
-      setPlayerPersona: (persona) => set({ playerPersona: persona }),
+      playerPersonas: [],
+      addPlayerPersona: (persona) => set((state) => ({ playerPersonas: [...state.playerPersonas, persona] })),
+      updatePlayerPersona: (updatedPersona) =>
+        set((state) => ({
+          playerPersonas: state.playerPersonas.map((p) =>
+            p.alias === updatedPersona.alias ? updatedPersona : p
+          ),
+        })),
+      deletePlayerPersona: (id) =>
+        set((state) => ({
+          playerPersonas: state.playerPersonas.filter((p) => p.alias !== id),
+        })),
     }),
     {
       name: 'parley-storage',
