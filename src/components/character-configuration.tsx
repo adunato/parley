@@ -1,4 +1,4 @@
-import { useParleyStore, Character } from "@/lib/store"
+import { useParleyStore, Character, PlayerPersona } from "@/lib/store"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import { User, Save, Plus, Book, Brain, Heart, Settings } from "lucide-react"
 
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
 
@@ -85,6 +85,23 @@ export default function CharacterConfiguration() {
     }
 
     const displayCharacter = editedCharacter || selectedCharacter
+
+    const handleConvertToPersona = () => {
+        if (displayCharacter) {
+            const newPersona: PlayerPersona = {
+                name: displayCharacter.basicInfo.name,
+                alias: displayCharacter.basicInfo.name.replace(/\s/g, '') + '-persona',
+                reputation: displayCharacter.basicInfo.reputation || '',
+                background: displayCharacter.basicInfo.background || '',
+                firstImpression: displayCharacter.basicInfo.firstImpression || '',
+                role: displayCharacter.basicInfo.role || '',
+                faction: displayCharacter.basicInfo.faction || '',
+                avatar: displayCharacter.basicInfo.avatar || '',
+            };
+            addPlayerPersona(newPersona);
+            alert(`Converted ${newPersona.name} to a new persona: ${newPersona.alias}`);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -159,7 +176,12 @@ export default function CharacterConfiguration() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button onClick={() => setEditedCharacter({ ...displayCharacter })}>Edit</Button>
+                                        <>
+                                            <Button onClick={() => setEditedCharacter({ ...displayCharacter })}>Edit</Button>
+                                            <Button variant="outline" onClick={handleConvertToPersona}>
+                                                Convert to Persona
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
                             </div>

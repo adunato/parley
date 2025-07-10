@@ -6,6 +6,9 @@ interface BasicInfo {
     role?: string
     faction?: string
     avatar?: string
+    reputation?: string
+    background?: string
+    firstImpression?: string
 }
 
 interface Personality {
