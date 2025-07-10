@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useParleyStore } from '@/lib/store';
 import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Type } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,13 +15,19 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function WorldInfoPage() {
   const { worldDescription, setWorldDescription } = useParleyStore();
   const [description, setDescription] = useState(worldDescription);
-  const [worldCreationPrompt, setWorldCreationPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
+  const [dialogPrompt, setDialogPrompt] = useState(''); // New state for the dialog's prompt
 
   useEffect(() => {
     setWorldDescription(description);
@@ -50,6 +56,7 @@ export default function WorldInfoPage() {
     } finally {
       setIsLoading(false);
       setIsPromptDialogOpen(false); // Close dialog after generation
+      setDialogPrompt(''); // Clear dialog prompt after generation
     }
   };
 
@@ -59,7 +66,7 @@ export default function WorldInfoPage() {
   };
 
   const handleGenerateWithPrompt = async () => {
-    generateWorld(worldCreationPrompt);
+    generateWorld(dialogPrompt);
   };
 
   return (
@@ -70,34 +77,74 @@ export default function WorldInfoPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4 mb-4">
-              <label htmlFor="worldCreationPrompt" className="md:text-right font-medium">
-                Creation Prompt
-              </label>
-              <Textarea
-                id="worldCreationPrompt"
-                value={worldCreationPrompt}
-                onChange={(e) => setWorldCreationPrompt(e.target.value)}
-                className="col-span-3 min-h-[100px]"
-                rows={4}
-                placeholder="Enter a prompt for world creation (e.g., 'A steampunk world with flying islands and ancient automatons')"
-              />
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
               <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
                 <label htmlFor="worldDescription" className="font-medium">
                   World Description
                 </label>
-                <Button
-                  onClick={handleGenerateWorld}
-                  disabled={isLoading}
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  <span className="sr-only">Generate World</span>
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleGenerateWorld}
+                        disabled={isLoading}
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        <span className="sr-only">Generate World</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Generate World (no prompt)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <Dialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
+                      <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <Type className="h-4 w-4" />
+                            <span className="sr-only">Generate with Prompt</span>
+                          </Button>
+                        </DialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Generate World with Custom Prompt</p>
+                      </TooltipContent>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Generate World with Custom Prompt</DialogTitle>
+                          <DialogDescription>
+                            Enter your desired prompt for world creation here.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <Textarea
+                            id="customPrompt"
+                            value={dialogPrompt}
+                            onChange={(e) => setDialogPrompt(e.target.value)}
+                            className="min-h-[150px]"
+                            rows={6}
+                            placeholder="e.g., 'A post-apocalyptic world where nature has reclaimed cities.'"
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button onClick={handleGenerateWithPrompt} disabled={isLoading}>
+                            {isLoading ? 'Generating...' : 'Generate'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <Textarea
                 id="worldDescription"
@@ -110,34 +157,6 @@ export default function WorldInfoPage() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Dialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">Generate with Prompt</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Generate World with Custom Prompt</DialogTitle>
-                <DialogDescription>
-                  Enter your desired prompt for world creation here.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <Textarea
-                  id="customPrompt"
-                  value={worldCreationPrompt}
-                  onChange={(e) => setWorldCreationPrompt(e.target.value)}
-                  className="min-h-[150px]"
-                  rows={6}
-                  placeholder="e.g., 'A post-apocalyptic world where nature has reclaimed cities.'"
-                />
-              </div>
-              <DialogFooter>
-                <Button onClick={handleGenerateWithPrompt} disabled={isLoading}>
-                  {isLoading ? 'Generating...' : 'Generate'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardFooter>
       </Card>
     </div>
