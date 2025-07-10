@@ -1,6 +1,6 @@
 import { LangChainAdapter } from 'ai';
 import { llm } from '@/lib/llm';
-import { SYSTEM_PROMPT, CHAT_PROMPT } from '@/lib/chatPrompts';
+import { SYSTEM_PROMPT} from '@/lib/chatPrompts';
 import { Message } from '@ai-sdk/react';
 import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
 export async function POST(req: Request) {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
   });
 
-  const systemMessage = new SystemMessage(`${SYSTEM_PROMPT}\n${CHAT_PROMPT}`);
+  const systemMessage = new SystemMessage(`${SYSTEM_PROMPT}\n{{character_json}}`);
   const allMessages = [systemMessage, ...langchainMessages];
 
   const stream = await llm.stream(allMessages);
