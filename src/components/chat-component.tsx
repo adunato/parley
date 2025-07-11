@@ -12,14 +12,15 @@ import remarkGfm from 'remark-gfm'
 interface ChatComponentProps {
   className?: string
   title?: string
+  chatSessionId: number;
 }
 
-export default function ChatComponent({ className = "", title = "Chat Assistant" }: ChatComponentProps) {
+export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput } = useParleyStore();
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
-    id: "main-chat",
+    id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,

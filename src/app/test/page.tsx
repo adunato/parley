@@ -69,14 +69,7 @@ export default function TestPage() {
           <Badge>Badge</Badge>
         </CardContent>
       </Card>
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Chat Component</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChatComponent />
-        </CardContent>
-      </Card>
+      
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Character Configuration</CardTitle>

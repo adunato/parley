@@ -10,18 +10,19 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Sparkles, PlusCircle } from "lucide-react";
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages } = useParleyStore();
 
-    const [localSelectedCharacterId, setLocalSelectedCharacterId] = useState<string | undefined>(selectedChatCharacter?.id);
-    const [localSelectedPersonaAlias, setLocalSelectedPersonaAlias] = useState<string | undefined>(selectedChatPersona?.alias);
+    const [localSelectedCharacterId, setLocalSelectedCharacterId] = useState<string>(selectedChatCharacter?.id || "");
+    const [localSelectedPersonaAlias, setLocalSelectedPersonaAlias] = useState<string>(selectedChatPersona?.alias || "");
+    const [isChatActive, setIsChatActive] = useState(false);
 
     useEffect(() => {
         if (selectedChatCharacter && selectedChatPersona) {
-            // Chat is considered started if both character and persona are selected in the store
+            setIsChatActive(true);
         } else {
-            // Reset local selections if store values are cleared (e.g., by New Chat button)
-            setLocalSelectedCharacterId(undefined);
-            setLocalSelectedPersonaAlias(undefined);
+            setIsChatActive(false);
+            setLocalSelectedCharacterId("");
+            setLocalSelectedPersonaAlias("");
         }
     }, [selectedChatCharacter, selectedChatPersona]);
 
@@ -43,7 +44,13 @@ export default function ChatPage() {
 
     const handleStartChat = () => {
         if (localSelectedCharacterId && localSelectedPersonaAlias) {
-            // The useEffect will handle setting chatStarted based on store values
+            const character = characters.find(c => c.id === localSelectedCharacterId);
+            const persona = playerPersonas.find(p => p.alias === localSelectedPersonaAlias);
+            if (character && persona) {
+                setSelectedChatCharacter(character);
+                setSelectedChatPersona(persona);
+                setIsChatActive(true);
+            }
         } else {
             alert("Please select both a character and a persona to start the chat.");
         }
@@ -51,9 +58,8 @@ export default function ChatPage() {
 
     const handleNewChat = () => {
         clearChat();
+        setIsChatActive(false);
     };
-
-    const chatStarted = selectedChatCharacter && selectedChatPersona;
 
     if (!_hasHydrated) {
         return (
@@ -66,7 +72,7 @@ export default function ChatPage() {
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
-            {!chatStarted ? (
+            {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
                     <Card className="w-full max-w-md">
                         <CardHeader>
@@ -126,7 +132,7 @@ export default function ChatPage() {
                             New Chat
                         </Button>
                     </div>
-                    <ChatComponent className="w-full max-w-2xl" />
+                    <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" />
                 </div>
             )}
         </div>

@@ -76,6 +76,7 @@ interface ParleyStore {
   clearChat: () => void;
   _hasHydrated: boolean;
   _setHasHydrated: (hydrated: boolean) => void;
+  chatSessionId: number;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -117,14 +118,22 @@ export const useParleyStore = create<ParleyStore>()(
       setChatMessages: (messages) => set({ chatMessages: messages }),
       chatInput: '',
       setChatInput: (input) => set({ chatInput: input }),
-      clearChat: () => set({
-        selectedChatCharacter: undefined,
-        selectedChatPersona: undefined,
-        chatMessages: [],
-        chatInput: '',
+      clearChat: () => set((state) => {
+        const prevChatSessionId = state.chatSessionId;
+        localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`); // Clear previous @ai-sdk/react useChat persistence
+        useParleyStore.persist.clearStorage(); // Correctly clear Zustand store persistence
+        const newChatSessionId = state.chatSessionId + 1;
+        return {
+          selectedChatCharacter: undefined,
+          selectedChatPersona: undefined,
+          chatMessages: [],
+          chatInput: '',
+          chatSessionId: newChatSessionId,
+        };
       }),
-      _hasHydrated: false,
       _setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
+      chatSessionId: 0,
+      _hasHydrated: false,
     }),
     {
       name: 'parley-storage',
@@ -133,8 +142,12 @@ export const useParleyStore = create<ParleyStore>()(
           const item = localStorage.getItem(name);
           return item ? JSON.parse(item) : null;
         },
-        setItem: (name, value) => localStorage.setItem(name, JSON.stringify(value)),
-        removeItem: (name) => localStorage.removeItem(name),
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
       },
       onRehydrateStorage: () => (state) => {
         state?._setHasHydrated(true);
