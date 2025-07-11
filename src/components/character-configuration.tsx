@@ -132,8 +132,7 @@ export default function CharacterConfiguration() {
             });
             const data = await response.json();
             if (response.ok) {
-                const newCharacter: Character = {
-                    id: (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString(),
+                const generatedCharacterData = {
                     ...data.character,
                     personality: {
                         openness: data.character.personality.openness || 0,
@@ -152,9 +151,21 @@ export default function CharacterConfiguration() {
                         gossipTendency: data.character.preferences?.gossipTendency || "low",
                     },
                 };
-                addCharacter(newCharacter);
-                setSelectedId(newCharacter.id);
-                setEditedCharacter(newCharacter);
+
+                if (selectedId && selectedCharacter) {
+                    // Overwrite the currently selected character
+                    const updatedCharacter = { ...selectedCharacter, ...generatedCharacterData, id: selectedId };
+                    updateCharacter(updatedCharacter);
+                    setSelectedId(updatedCharacter.id);
+                    setEditedCharacter(updatedCharacter);
+                } else {
+                    // Add as a new character
+                    const newId = (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString();
+                    const newCharacter = { id: newId, ...generatedCharacterData };
+                    addCharacter(newCharacter);
+                    setSelectedId(newCharacter.id);
+                    setEditedCharacter(newCharacter);
+                }
             } else {
                 console.error('Failed to generate character:', data.error);
                 alert('Error generating character: ' + data.error);

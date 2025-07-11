@@ -107,7 +107,7 @@ export default function PersonaConfiguration() {
             });
             const data = await response.json();
             if (response.ok) {
-                const newPersona: PlayerPersona = {
+                const generatedPersona: PlayerPersona = {
                     name: data.persona.name || "",
                     alias: data.persona.alias || `Persona-${playerPersonas.length + 1}`,
                     reputation: data.persona.reputation || "",
@@ -118,9 +118,18 @@ export default function PersonaConfiguration() {
                     avatar: data.persona.avatar || "",
                     appearance: data.persona.appearance || "",
                 };
-                addPlayerPersona(newPersona);
-                setSelectedAlias(newPersona.alias);
-                setEditedPersona(newPersona);
+
+                if (selectedAlias && selectedPersona) {
+                    // Overwrite the currently selected persona
+                    updatePlayerPersona({ ...selectedPersona, ...generatedPersona, alias: selectedPersona.alias });
+                    setSelectedAlias(selectedPersona.alias);
+                    setEditedPersona({ ...selectedPersona, ...generatedPersona, alias: selectedPersona.alias });
+                } else {
+                    // Add as a new persona
+                    addPlayerPersona(generatedPersona);
+                    setSelectedAlias(generatedPersona.alias);
+                    setEditedPersona(generatedPersona);
+                }
             } else {
                 console.error('Failed to generate persona:', data.error);
                 alert('Error generating persona: ' + data.error);
