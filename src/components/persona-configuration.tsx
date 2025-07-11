@@ -25,6 +25,7 @@ import {
 
 export default function PersonaConfiguration() {
     const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona } = useParleyStore()
+    const worldDescription = useParleyStore((state) => state.worldDescription);
     const [selectedAlias, setSelectedAlias] = useState<string | null>(playerPersonas[0]?.alias || null)
     const [editedPersona, setEditedPersona] = useState<PlayerPersona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
@@ -96,6 +97,12 @@ export default function PersonaConfiguration() {
     const displayPersona = editedPersona || selectedPersona
 
     const generatePersona = async (prompt: string) => {
+        if (!worldDescription) {
+            console.warn("World description is not yet available. Please ensure world information is loaded.");
+            alert("World description is not yet available. Please ensure world information is loaded before generating a persona.");
+            setIsGeneratingPersona(false);
+            return;
+        }
         setIsGeneratingPersona(true);
         try {
             const response = await fetch('/api/generate/persona', {
@@ -103,7 +110,7 @@ export default function PersonaConfiguration() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ personaDescription: prompt }),
+                body: JSON.stringify({ personaDescription: prompt, worldDescription }),
             });
             const data = await response.json();
             if (response.ok) {
@@ -145,8 +152,7 @@ export default function PersonaConfiguration() {
     };
 
     const handleGeneratePersona = () => {
-        const defaultPrompt = displayPersona?.name ? `Generate a persona based on ${displayPersona.name}` : "a new player persona";
-        generatePersona(defaultPrompt);
+        generatePersona("");
     };
 
     const handleGeneratePersonaWithPrompt = () => {
