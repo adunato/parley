@@ -34,9 +34,22 @@ export default function CharacterConfiguration() {
     const [worldDescription, setWorldDescription] = useState("");
 
     useEffect(() => {
+        const unsubscribe = useParleyStore.subscribe(
+            (state) => {
+                if (state._hasHydrated) {
+                    setWorldDescription(state.worldDescription);
+                }
+            }
+        );
+
+        // Initial check in case the store is already hydrated
         if (useParleyStore.getState()._hasHydrated) {
             setWorldDescription(useParleyStore.getState().worldDescription);
         }
+
+        return () => {
+            unsubscribe();
+        };
     }, []);
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
@@ -188,8 +201,7 @@ export default function CharacterConfiguration() {
     };
 
     const handleGenerateCharacter = () => {
-        setDialogCharacterPrompt("");
-        setIsCharacterPromptDialogOpen(true);
+        generateCharacter("");
     };
 
     const handleGenerateCharacterWithPrompt = () => {
