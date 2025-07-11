@@ -103,7 +103,9 @@ export default function ChatPage() {
                     </Card>
                 </div>
             ) : (
-                <ChatComponent />
+                <div className="flex-1 flex items-center justify-center p-4">
+                    <ChatComponent className="w-full max-w-2xl" />
+                </div>
             )}
         </div>
     );
