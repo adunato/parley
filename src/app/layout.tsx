@@ -16,8 +16,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <nav className="bg-gray-800 p-4">
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
+        <nav className="bg-gray-800 p-4 fixed w-full z-10 top-0">
           <ul className="flex space-x-4">
             <li>
               <Link href="/" className="text-white hover:text-gray-300">
@@ -46,7 +46,7 @@ export default function RootLayout({
             </li>
           </ul>
         </nav>
-        <main>{children}</main>
+        <main className="flex-grow pt-16">{children}</main>
       </body>
     </html>
   )
