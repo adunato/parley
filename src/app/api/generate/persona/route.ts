@@ -4,13 +4,11 @@ import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {
   try {
-    const { personaDescription } = await req.json();
+    const { personaDescription, worldDescription } = await req.json();
 
-    if (!personaDescription) {
-      return NextResponse.json({ error: 'Persona description is required' }, { status: 400 });
-    }
+    
 
-    const prompt = generatePersonaPrompt(personaDescription);
+    const prompt = generatePersonaPrompt(personaDescription, worldDescription);
     const parsedResult = await generateJSON(prompt);
 
     return NextResponse.json({ persona: parsedResult.playerProfile });

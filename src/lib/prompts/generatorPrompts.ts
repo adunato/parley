@@ -76,13 +76,22 @@ export const PERSONA_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generatePersonaPrompt = (personaDescription: string) => `
+export const generatePersonaPrompt = (personaDescription: string, worldDescription: string) => {
+  let prompt = `
 You are a player persona-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${PERSONA_JSON_STRUCTURE}
 
-Generate a detailed player persona profile based on the following input. Ensure all fields are populated with relevant and creative information.
+Generate a detailed player persona profile.`;
 
-Input Persona Description: ${personaDescription}
+  if (personaDescription) {
+    prompt += `\n\nInput Persona Description: ${personaDescription}`;
+  }
 
-JSON Output:
-`;
+  if (worldDescription) {
+    prompt += `\n\nWorld Description: ${worldDescription}`;
+  }
+
+  prompt += `\n\nJSON Output:\n`;
+
+  return prompt;
+};
