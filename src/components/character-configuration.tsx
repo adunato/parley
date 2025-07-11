@@ -25,12 +25,19 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
+    const [worldDescription, setWorldDescription] = useState("");
+
+    useEffect(() => {
+        if (useParleyStore.getState()._hasHydrated) {
+            setWorldDescription(useParleyStore.getState().worldDescription);
+        }
+    }, []);
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -181,8 +188,8 @@ export default function CharacterConfiguration() {
     };
 
     const handleGenerateCharacter = () => {
-        const defaultPrompt = displayCharacter?.basicInfo.name ? `Generate a character based on ${displayCharacter.basicInfo.name}` : "a new fantasy character";
-        generateCharacter(defaultPrompt);
+        setDialogCharacterPrompt("");
+        setIsCharacterPromptDialogOpen(true);
     };
 
     const handleGenerateCharacterWithPrompt = () => {
