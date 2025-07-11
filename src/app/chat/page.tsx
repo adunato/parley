@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import { useParleyStore, Character, PlayerPersona } from "@/lib/store";
+import { useState } from "react";
+import { useParleyStore } from "@/lib/store";
 import { Loader2 } from "lucide-react"; // Import Loader2 icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
