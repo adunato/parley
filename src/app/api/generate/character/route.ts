@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateCharacterPrompt } from '@/lib/generatorPrompts';
+import { generateCharacterPrompt } from '@/lib/prompts/generatorPrompts';
 import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {

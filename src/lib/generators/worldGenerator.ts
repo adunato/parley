@@ -1,5 +1,5 @@
 import { generateJSON } from '@/lib/llm';
-import { generateWorldPrompt } from '@/lib/generatorPrompts';
+import { generateWorldPrompt } from '@/lib/prompts/generatorPrompts';
 
 export async function generateWorldData(worldDescription: string): Promise<string> {
   const prompt = generateWorldPrompt(worldDescription);

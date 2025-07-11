@@ -1,6 +1,6 @@
 import { LangChainAdapter } from 'ai';
 import { llm } from '@/lib/llm';
-import { generateSystemPrompt, CHAT_PROMPT } from '@/lib/chatPrompts';
+import { generateSystemPrompt, CHAT_PROMPT } from '@/lib/prompts/chatPrompts';
 import { Message } from '@ai-sdk/react';
 import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
 import { useParleyStore } from '@/lib/store';

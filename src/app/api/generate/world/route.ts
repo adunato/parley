@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateWorldPrompt } from '@/lib/generatorPrompts';
+import { generateWorldPrompt } from '@/lib/prompts/generatorPrompts';
 import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {

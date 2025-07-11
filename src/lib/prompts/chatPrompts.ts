@@ -1,4 +1,4 @@
-import { Character, PlayerPersona } from "./store";
+import { Character, PlayerPersona } from "../store";
 
 export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona) => {
     const characterJson = JSON.stringify(character, null, 2);

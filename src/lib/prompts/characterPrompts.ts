@@ -1,4 +1,4 @@
-import { Character } from "./entityStore";
+import { Character } from "../entityStore";
 
 const CHARACTER_JSON_STRUCTURE = `{
   "id": string;
