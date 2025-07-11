@@ -31,26 +31,7 @@ export default function CharacterConfiguration() {
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
-    const [worldDescription, setWorldDescription] = useState("");
-
-    useEffect(() => {
-        const unsubscribe = useParleyStore.subscribe(
-            (state) => {
-                if (state._hasHydrated) {
-                    setWorldDescription(state.worldDescription);
-                }
-            }
-        );
-
-        // Initial check in case the store is already hydrated
-        if (useParleyStore.getState()._hasHydrated) {
-            setWorldDescription(useParleyStore.getState().worldDescription);
-        }
-
-        return () => {
-            unsubscribe();
-        };
-    }, []);
+    const worldDescription = useParleyStore((state) => state.worldDescription);
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -141,6 +122,12 @@ export default function CharacterConfiguration() {
     };
 
     const generateCharacter = async (prompt: string) => {
+        if (!worldDescription) {
+            console.warn("World description is not yet available. Please ensure world information is loaded.");
+            alert("World description is not yet available. Please ensure world information is loaded before generating a character.");
+            setIsGeneratingCharacter(false);
+            return;
+        }
         setIsGeneratingCharacter(true);
         try {
             const response = await fetch('/api/generate/character', {
@@ -150,6 +137,7 @@ export default function CharacterConfiguration() {
                 },
                 body: JSON.stringify({ characterDescription: prompt, worldDescription }),
             });
+            console.log("Frontend worldDescription before sending:", worldDescription);
             const data = await response.json();
             if (response.ok) {
                 const generatedCharacterData = {
