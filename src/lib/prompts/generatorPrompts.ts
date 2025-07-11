@@ -42,18 +42,25 @@ export const CHARACTER_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generateCharacterPrompt = (characterDescription: string, worldDescription: string) => `
+export const generateCharacterPrompt = (characterDescription: string, worldDescription: string) => {
+  let prompt = `
 You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${CHARACTER_JSON_STRUCTURE}
 
-Generate a detailed character profile based on the following input.
+Generate a detailed character profile.`;
 
-Input Character Description: ${characterDescription}
+  if (characterDescription) {
+    prompt += `\n\nInput Character Description: ${characterDescription}`;
+  }
 
-World Description: ${worldDescription}
+  if (worldDescription) {
+    prompt += `\n\nWorld Description: ${worldDescription}`;
+  }
 
-JSON Output:
-`;
+  prompt += `\n\nJSON Output:\n`;
+
+  return prompt;
+};
 
 export const PERSONA_JSON_STRUCTURE = `{
   "playerProfile": {
