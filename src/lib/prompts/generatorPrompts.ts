@@ -42,15 +42,15 @@ export const CHARACTER_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generateCharacterPrompt = (characterDescription: string) => `
+export const generateCharacterPrompt = (characterDescription: string, worldDescription: string) => `
 You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${CHARACTER_JSON_STRUCTURE}
 
-Generate a detailed character profile based on the following input.
+Generate a detailed character profile based on the following input. Ensure all fields are populated with relevant and creative information. The personality traits (openness, conscientiousness, extraversion, agreeableness, neuroticism) should be integers between -100 and 100. The relationship affinity should also be an integer between -100 and 100. The gossipTendency must be one of "low", "medium", or "high".
 
 Input Character Description: ${characterDescription}
 
-The Character needs to fit within the following world description: ${worldDescription} 
+World Description: ${worldDescription}
 
 JSON Output:
 `;

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -128,7 +128,7 @@ export default function CharacterConfiguration() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ characterDescription: prompt }),
+                body: JSON.stringify({ characterDescription: prompt, worldDescription }),
             });
             const data = await response.json();
             if (response.ok) {
