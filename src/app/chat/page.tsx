@@ -12,25 +12,12 @@ import { Sparkles, PlusCircle } from "lucide-react";
 export default function ChatPage() {
     const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages } = useParleyStore();
 
-    const [localSelectedCharacterId, setLocalSelectedCharacterId] = useState<string>(selectedChatCharacter?.id || "");
-    const [localSelectedPersonaAlias, setLocalSelectedPersonaAlias] = useState<string>(selectedChatPersona?.alias || "");
     const [isChatActive, setIsChatActive] = useState(false);
-
-    useEffect(() => {
-        if (selectedChatCharacter && selectedChatPersona) {
-            setIsChatActive(true);
-        } else {
-            setIsChatActive(false);
-            setLocalSelectedCharacterId("");
-            setLocalSelectedPersonaAlias("");
-        }
-    }, [selectedChatCharacter, selectedChatPersona]);
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
         if (character) {
             setSelectedChatCharacter(character);
-            setLocalSelectedCharacterId(character.id);
         }
     };
 
@@ -38,19 +25,12 @@ export default function ChatPage() {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
         if (persona) {
             setSelectedChatPersona(persona);
-            setLocalSelectedPersonaAlias(persona.alias);
         }
     };
 
     const handleStartChat = () => {
-        if (localSelectedCharacterId && localSelectedPersonaAlias) {
-            const character = characters.find(c => c.id === localSelectedCharacterId);
-            const persona = playerPersonas.find(p => p.alias === localSelectedPersonaAlias);
-            if (character && persona) {
-                setSelectedChatCharacter(character);
-                setSelectedChatPersona(persona);
-                setIsChatActive(true);
-            }
+        if (selectedChatCharacter && selectedChatPersona) {
+            setIsChatActive(true);
         } else {
             alert("Please select both a character and a persona to start the chat.");
         }
@@ -83,7 +63,7 @@ export default function ChatPage() {
                                 <label htmlFor="character-select" className="block text-sm font-medium text-gray-700 mb-2">
                                     Select Character
                                 </label>
-                                <Select onValueChange={handleCharacterSelect} value={localSelectedCharacterId}>
+                                <Select onValueChange={handleCharacterSelect} value={selectedChatCharacter?.id || ""}>
                                     <SelectTrigger id="character-select">
                                         <SelectValue placeholder="Choose a character" />
                                     </SelectTrigger>
@@ -100,7 +80,7 @@ export default function ChatPage() {
                                 <label htmlFor="persona-select" className="block text-sm font-medium text-gray-700 mb-2">
                                     Select Persona
                                 </label>
-                                <Select onValueChange={handlePersonaSelect} value={localSelectedPersonaAlias}>
+                                <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.alias || ""}>
                                     <SelectTrigger id="persona-select">
                                         <SelectValue placeholder="Choose a persona" />
                                     </SelectTrigger>
@@ -116,7 +96,7 @@ export default function ChatPage() {
                             <Button
                                 onClick={handleStartChat}
                                 className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                disabled={!localSelectedCharacterId || !localSelectedPersonaAlias}
+                                disabled={!selectedChatCharacter || !selectedChatPersona}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />
                                 Start Chat
