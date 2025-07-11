@@ -6,21 +6,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, PlusCircle } from "lucide-react";
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat } = useParleyStore();
 
     const [localSelectedCharacterId, setLocalSelectedCharacterId] = useState<string | undefined>(selectedChatCharacter?.id);
     const [localSelectedPersonaAlias, setLocalSelectedPersonaAlias] = useState<string | undefined>(selectedChatPersona?.alias);
-    const [chatStarted, setChatStarted] = useState(false);
 
     useEffect(() => {
-        if (selectedChatCharacter) {
-            setLocalSelectedCharacterId(selectedChatCharacter.id);
-        }
-        if (selectedChatPersona) {
-            setLocalSelectedPersonaAlias(selectedChatPersona.alias);
+        if (selectedChatCharacter && selectedChatPersona) {
+            // Chat is considered started if both character and persona are selected in the store
+        } else {
+            // Reset local selections if store values are cleared (e.g., by New Chat button)
+            setLocalSelectedCharacterId(undefined);
+            setLocalSelectedPersonaAlias(undefined);
         }
     }, [selectedChatCharacter, selectedChatPersona]);
 
@@ -41,12 +41,18 @@ export default function ChatPage() {
     };
 
     const handleStartChat = () => {
-        if (selectedChatCharacter && selectedChatPersona) {
-            setChatStarted(true);
+        if (localSelectedCharacterId && localSelectedPersonaAlias) {
+            // The useEffect will handle setting chatStarted based on store values
         } else {
             alert("Please select both a character and a persona to start the chat.");
         }
     };
+
+    const handleNewChat = () => {
+        clearChat();
+    };
+
+    const chatStarted = selectedChatCharacter && selectedChatPersona;
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -103,7 +109,13 @@ export default function ChatPage() {
                     </Card>
                 </div>
             ) : (
-                <div className="flex-1 flex items-center justify-center p-4">
+                <div className="flex-1 flex flex-col items-center justify-center p-4">
+                    <div className="w-full max-w-2xl mb-4 flex justify-end">
+                        <Button onClick={handleNewChat} variant="outline">
+                            <PlusCircle className="w-4 h-4 mr-2" />
+                            New Chat
+                        </Button>
+                    </div>
                     <ChatComponent className="w-full max-w-2xl" />
                 </div>
             )}

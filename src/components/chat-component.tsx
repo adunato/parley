@@ -16,15 +16,25 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant" }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { selectedChatCharacter, selectedChatPersona } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput } = useParleyStore();
 
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: "main-chat",
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,
     },
+    initialMessages: chatMessages,
+    initialInput: chatInput,
   });
+
+  useEffect(() => {
+    setChatMessages(messages);
+  }, [messages, setChatMessages]);
+
+  useEffect(() => {
+    setChatInput(input);
+  }, [input, setChatInput]);
 
   const isLoading = status === "submitted" || status === "streaming"
 

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { Message } from '@ai-sdk/react';
 
 interface BasicInfo {
     name: string
@@ -68,6 +69,11 @@ interface ParleyStore {
   setSelectedChatCharacter: (character: Character | undefined) => void;
   selectedChatPersona?: PlayerPersona;
   setSelectedChatPersona: (persona: PlayerPersona | undefined) => void;
+  chatMessages: Message[];
+  setChatMessages: (messages: Message[]) => void;
+  chatInput: string;
+  setChatInput: (input: string) => void;
+  clearChat: () => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -105,6 +111,16 @@ export const useParleyStore = create<ParleyStore>()(
       setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
       selectedChatPersona: undefined,
       setSelectedChatPersona: (persona) => set({ selectedChatPersona: persona }),
+      chatMessages: [],
+      setChatMessages: (messages) => set({ chatMessages: messages }),
+      chatInput: '',
+      setChatInput: (input) => set({ chatInput: input }),
+      clearChat: () => set({
+        selectedChatCharacter: undefined,
+        selectedChatPersona: undefined,
+        chatMessages: [],
+        chatInput: '',
+      }),
     }),
     {
       name: 'parley-storage',
