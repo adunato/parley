@@ -74,6 +74,8 @@ interface ParleyStore {
   chatInput: string;
   setChatInput: (input: string) => void;
   clearChat: () => void;
+  _hasHydrated: boolean;
+  _setHasHydrated: (hydrated: boolean) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -121,6 +123,8 @@ export const useParleyStore = create<ParleyStore>()(
         chatMessages: [],
         chatInput: '',
       }),
+      _hasHydrated: false,
+      _setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
     }),
     {
       name: 'parley-storage',
@@ -131,6 +135,9 @@ export const useParleyStore = create<ParleyStore>()(
         },
         setItem: (name, value) => localStorage.setItem(name, JSON.stringify(value)),
         removeItem: (name) => localStorage.removeItem(name),
+      },
+      onRehydrateStorage: () => (state) => {
+        state?._setHasHydrated(true);
       },
     }
   )

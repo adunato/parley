@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParleyStore, Character, PlayerPersona } from "@/lib/store";
+import { Loader2 } from "lucide-react"; // Import Loader2 icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import ChatComponent from "@/components/chat-component";
@@ -9,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Sparkles, PlusCircle } from "lucide-react";
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated } = useParleyStore();
 
     const [localSelectedCharacterId, setLocalSelectedCharacterId] = useState<string | undefined>(selectedChatCharacter?.id);
     const [localSelectedPersonaAlias, setLocalSelectedPersonaAlias] = useState<string | undefined>(selectedChatPersona?.alias);
@@ -53,6 +54,15 @@ export default function ChatPage() {
     };
 
     const chatStarted = selectedChatCharacter && selectedChatPersona;
+
+    if (!_hasHydrated) {
+        return (
+            <div className="flex flex-col h-screen bg-gray-50 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                <p className="mt-2 text-gray-600">Loading chat...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
