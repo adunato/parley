@@ -1,18 +1,24 @@
 import { LangChainAdapter } from 'ai';
 import { llm } from '@/lib/llm';
-import { SYSTEM_PROMPT, CHAT_PROMPT } from '@/lib/chatPrompts';
+import { generateSystemPrompt, CHAT_PROMPT } from '@/lib/chatPrompts';
 import { Message } from '@ai-sdk/react';
 import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { useParleyStore } from '@/lib/store';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const characterJsonPath = path.join(process.cwd(), 'data', 'sample_character.json');
-  const characterJson = await fs.readFile(characterJsonPath, 'utf8');
+  // This is a server component, so we can't directly use useParleyStore here.
+  // The selected character and persona should be passed from the client.
+  // For now, we'll assume the client sends the character and persona data.
+  // In a real application, you might fetch this from a database based on user session.
+  const { character, persona } = await req.json();
 
-  const finalSystemPrompt = SYSTEM_PROMPT.replace('{{character_json}}', characterJson);
+  if (!character || !persona) {
+    return new Response(JSON.stringify({ error: "Character and persona data are required." }), { status: 400 });
+  }
+
+  const finalSystemPrompt = generateSystemPrompt(character, persona);
 
   const langchainMessages = messages.map((message: Message) => {
     if (message.role === 'user') {

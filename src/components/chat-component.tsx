@@ -1,6 +1,7 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useChat, type Message } from "@ai-sdk/react"
+import { useParleyStore } from "@/lib/store";
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,9 +16,15 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant" }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { selectedChatCharacter, selectedChatPersona } = useParleyStore();
+
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
     id: "main-chat",
-  })
+    body: {
+      character: selectedChatCharacter,
+      persona: selectedChatPersona,
+    },
+  });
 
   const isLoading = status === "submitted" || status === "streaming"
 

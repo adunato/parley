@@ -64,6 +64,10 @@ interface ParleyStore {
   deletePlayerPersona: (id: string) => void;
   worldDescription: string;
   setWorldDescription: (description: string) => void;
+  selectedChatCharacter?: Character;
+  setSelectedChatCharacter: (character: Character | undefined) => void;
+  selectedChatPersona?: PlayerPersona;
+  setSelectedChatPersona: (persona: PlayerPersona | undefined) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -97,6 +101,10 @@ export const useParleyStore = create<ParleyStore>()(
         })),
       worldDescription: '',
       setWorldDescription: (description) => set({ worldDescription: description }),
+      selectedChatCharacter: undefined,
+      setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
+      selectedChatPersona: undefined,
+      setSelectedChatPersona: (persona) => set({ selectedChatPersona: persona }),
     }),
     {
       name: 'parley-storage',
