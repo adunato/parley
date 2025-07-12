@@ -31,12 +31,14 @@ export default function CharacterConfiguration() {
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
     const handleSelect = (character: Character) => {
         setSelectedId(character.id)
         setEditedCharacter({ ...character })
+        setIsEditing(false);
     }
 
     const handleSave = () => {
@@ -47,11 +49,13 @@ export default function CharacterConfiguration() {
                 addCharacter({ ...editedCharacter, id: editedCharacter.id || (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString() })
             }
             setEditedCharacter(null)
+            setIsEditing(false);
         }
     }
 
     const handleCancel = () => {
         setEditedCharacter(null)
+        setIsEditing(false);
     }
 
     const handleInputChange = (
@@ -90,6 +94,7 @@ export default function CharacterConfiguration() {
         addCharacter(newCharacter)
         setSelectedId(newId)
         setEditedCharacter(newCharacter)
+        setIsEditing(true);
     }
 
     const handleDeleteCharacter = () => {
@@ -97,6 +102,7 @@ export default function CharacterConfiguration() {
             deleteCharacter(editedCharacter.id)
             setEditedCharacter(null)
             setSelectedId(characters[0]?.id || null)
+            setIsEditing(false);
         }
     }
 
@@ -257,7 +263,7 @@ export default function CharacterConfiguration() {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    {editedCharacter ? (
+                                    {isEditing ? (
                                         <>
                                             <Button variant="outline" onClick={handleCancel}>
                                                 Cancel
@@ -272,7 +278,7 @@ export default function CharacterConfiguration() {
                                         </>
                                     ) : (
                                         <>
-                                            <Button onClick={() => setEditedCharacter({ ...displayCharacter })}>Edit</Button>
+                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
                                             <Button variant="outline" onClick={handleConvertToPersona}>
                                                 Convert to Persona
                                             </Button>
@@ -363,7 +369,7 @@ export default function CharacterConfiguration() {
                                                 id="name"
                                                 value={displayCharacter.basicInfo.name}
                                                 onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -372,7 +378,7 @@ export default function CharacterConfiguration() {
                                                 id="role"
                                                 value={displayCharacter.basicInfo.role || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -381,7 +387,7 @@ export default function CharacterConfiguration() {
                                                 id="faction"
                                                 value={displayCharacter.basicInfo.faction || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -390,7 +396,7 @@ export default function CharacterConfiguration() {
                                                 id="avatar"
                                                 value={displayCharacter.basicInfo.avatar || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -399,7 +405,7 @@ export default function CharacterConfiguration() {
                                                 id="reputation"
                                                 value={displayCharacter.basicInfo.reputation || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "reputation", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -409,7 +415,7 @@ export default function CharacterConfiguration() {
                                                 id="background"
                                                 value={displayCharacter.basicInfo.background || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "background", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -419,7 +425,7 @@ export default function CharacterConfiguration() {
                                                 id="firstImpression"
                                                 value={displayCharacter.basicInfo.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -429,7 +435,7 @@ export default function CharacterConfiguration() {
                                                 id="appearance"
                                                 value={displayCharacter.basicInfo.appearance || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "appearance", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -453,7 +459,7 @@ export default function CharacterConfiguration() {
                                                     type="number"
                                                     value={value}
                                                     onChange={(e) => handleInputChange("personality", trait, parseInt(e.target.value))}
-                                                    disabled={!editedCharacter}
+                                                    disabled={!isEditing}
                                                     min={-100}
                                                     max={100}
                                                 />
@@ -478,7 +484,7 @@ export default function CharacterConfiguration() {
                                                 type="number"
                                                 value={displayCharacter.relationshipToPlayer.affinity}
                                                 onChange={(e) => handleInputChange("relationshipToPlayer", "affinity", parseInt(e.target.value))}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 min={-100}
                                                 max={100}
                                             />
@@ -489,7 +495,7 @@ export default function CharacterConfiguration() {
                                                 id="notes"
                                                 value={displayCharacter.relationshipToPlayer.notes || ""}
                                                 onChange={(e) => handleInputChange("relationshipToPlayer", "notes", e.target.value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -511,7 +517,7 @@ export default function CharacterConfiguration() {
                                                 id="attractedToTraits"
                                                 value={displayCharacter.preferences?.attractedToTraits?.join(", ") || ""}
                                                 onChange={(e) => handleInputChange("preferences", "attractedToTraits", e.target.value.split(",").map(s => s.trim()))}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -520,7 +526,7 @@ export default function CharacterConfiguration() {
                                                 id="dislikesTraits"
                                                 value={displayCharacter.preferences?.dislikesTraits?.join(", ") || ""}
                                                 onChange={(e) => handleInputChange("preferences", "dislikesTraits", e.target.value.split(",").map(s => s.trim()))}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -528,7 +534,7 @@ export default function CharacterConfiguration() {
                                             <Select
                                                 value={displayCharacter.preferences?.gossipTendency || "low"}
                                                 onValueChange={(value) => handleInputChange("preferences", "gossipTendency", value)}
-                                                disabled={!editedCharacter}
+                                                disabled={!isEditing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />

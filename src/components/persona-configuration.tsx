@@ -30,6 +30,7 @@ export default function PersonaConfiguration() {
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
 
     const selectedPersona = playerPersonas.find((p) => p.alias === selectedAlias)
 
@@ -42,11 +43,13 @@ export default function PersonaConfiguration() {
         } else {
             setEditedPersona(null)
         }
+        setIsEditing(false);
     }, [selectedPersona, playerPersonas])
 
     const handleSelect = (persona: PlayerPersona) => {
         setSelectedAlias(persona.alias)
         setEditedPersona({ ...persona })
+        setIsEditing(false);
     }
 
     const handleSave = () => {
@@ -57,11 +60,13 @@ export default function PersonaConfiguration() {
                 addPlayerPersona(editedPersona)
             }
             setEditedPersona(null)
+            setIsEditing(false);
         }
     }
 
     const handleCancel = () => {
         setEditedPersona(null)
+        setIsEditing(false);
     }
 
     const handleInputChange = (field: keyof PlayerPersona, value: string) => {
@@ -83,6 +88,7 @@ export default function PersonaConfiguration() {
         addPlayerPersona(newPersona)
         setSelectedAlias(newPersona.alias)
         setEditedPersona(newPersona)
+        setIsEditing(true);
     }
 
     const handleDeletePersona = () => {
@@ -90,6 +96,7 @@ export default function PersonaConfiguration() {
             deletePlayerPersona(editedPersona.alias)
             setEditedPersona(null)
             setSelectedAlias(playerPersonas[0]?.alias || null)
+            setIsEditing(false);
         }
     }
 
@@ -221,7 +228,7 @@ export default function PersonaConfiguration() {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    {editedPersona ? (
+                                    {isEditing ? (
                                         <>
                                             <Button variant="outline" onClick={handleCancel}>
                                                 Cancel
@@ -236,7 +243,7 @@ export default function PersonaConfiguration() {
                                         </>
                                     ) : (
                                         <>
-                                            <Button onClick={() => setEditedPersona({ ...displayPersona })}>Edit</Button>
+                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -324,7 +331,7 @@ export default function PersonaConfiguration() {
                                                 id="name"
                                                 value={displayPersona.name}
                                                 onChange={(e) => handleInputChange("name", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -333,7 +340,7 @@ export default function PersonaConfiguration() {
                                                 id="alias"
                                                 value={displayPersona.alias}
                                                 onChange={(e) => handleInputChange("alias", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -342,7 +349,7 @@ export default function PersonaConfiguration() {
                                                 id="role"
                                                 value={displayPersona.role || ""}
                                                 onChange={(e) => handleInputChange("role", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -351,7 +358,7 @@ export default function PersonaConfiguration() {
                                                 id="faction"
                                                 value={displayPersona.faction || ""}
                                                 onChange={(e) => handleInputChange("faction", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -360,7 +367,7 @@ export default function PersonaConfiguration() {
                                                 id="avatar"
                                                 value={displayPersona.avatar || ""}
                                                 onChange={(e) => handleInputChange("avatar", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -369,7 +376,7 @@ export default function PersonaConfiguration() {
                                                 id="appearance"
                                                 value={displayPersona.appearance || ""}
                                                 onChange={(e) => handleInputChange("appearance", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -391,7 +398,7 @@ export default function PersonaConfiguration() {
                                                 id="reputation"
                                                 value={displayPersona.reputation || ""}
                                                 onChange={(e) => handleInputChange("reputation", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -401,7 +408,7 @@ export default function PersonaConfiguration() {
                                                 id="background"
                                                 value={displayPersona.background || ""}
                                                 onChange={(e) => handleInputChange("background", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -411,7 +418,7 @@ export default function PersonaConfiguration() {
                                                 id="firstImpression"
                                                 value={displayPersona.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("firstImpression", e.target.value)}
-                                                disabled={!editedPersona}
+                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
