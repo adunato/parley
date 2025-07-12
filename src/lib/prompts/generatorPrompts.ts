@@ -111,13 +111,20 @@ JSON Output:
 
 export const generateAIStylePrompt = (aiStyleDescription: string) => {
   let prompt = `
-You are an AI assistant that generates writing styles for a text adventure game. Your response should be a concise description of a writing style.`;
+You are an AI assistant that generates writing styles for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+${AI_STYLE_JSON_STRUCTURE}
+
+Generate a detailed AI style. The output should be a JSON object with a single key, "aiStyle", containing a string value of the generated AI style.`;
 
   if (aiStyleDescription) {
-    prompt += `\n\nGenerate a writing style based on the following input:\n\nInput AI Style Description: ${aiStyleDescription}`;
+    prompt += `\n\nInput AI Style Description: ${aiStyleDescription}`;
   }
 
-  prompt += `\n\nGenerated AI Style:\n`;
+  prompt += `\n\nJSON Output:\n`;
 
   return prompt;
 };
+
+export const AI_STYLE_JSON_STRUCTURE = `{
+  "aiStyle": string; // A detailed description of the AI's writing style.
+}`;
