@@ -31,8 +31,3 @@ export async function generateJSON(prompt: string): Promise<any> {
   }
   return parsedResult;
 }
-
-export async function generateAIStyle(prompt: string): Promise<string> {
-  const result = await llm.generate([[new HumanMessage(prompt)]]);
-  return result.generations[0][0].text;
-}

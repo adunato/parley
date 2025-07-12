@@ -84,14 +84,31 @@ ${PERSONA_JSON_STRUCTURE}
 Generate a detailed player persona profile.`;
 
   if (personaDescription) {
-    prompt += `\n\nInput Persona Description: ${personaDescription}`;
+    prompt += `
+
+Input Persona Description: ${personaDescription}`;
   }
 
   if (worldDescription) {
-    prompt += `\n\nWorld Description: ${worldDescription}`;
+    prompt += `
+
+World Description: ${worldDescription}`;
   }
 
-  prompt += `\n\nJSON Output:\n`;
+  prompt += `
+
+JSON Output:
+`;
 
   return prompt;
 };
+
+export const generateAIStylePrompt = (aiStyleDescription: string) => `
+You are an AI assistant that generates writing styles for a text adventure game. Your response should be a concise description of a writing style.
+
+Generate a writing style based on the following input:
+
+Input AI Style Description: ${aiStyleDescription}
+
+Generated AI Style:
+`;

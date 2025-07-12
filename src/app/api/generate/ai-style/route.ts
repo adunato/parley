@@ -1,9 +1,12 @@
-import { generateAIStyle } from '@/lib/llm';
+import { generateAIStylePrompt } from '@/lib/prompts/generatorPrompts';
+import { llm } from '@/lib/llm';
 
 export async function POST(request: Request) {
   try {
     const { aiStyle } = await request.json();
-    const generatedStyle = await generateAIStyle(aiStyle);
+    const prompt = generateAIStylePrompt(aiStyle);
+    const result = await llm.invoke(prompt);
+    const generatedStyle = result.content;
     return new Response(JSON.stringify({ aiStyle: generatedStyle }), { status: 200 });
   } catch (error) {
     console.error('Error generating AI style:', error);
