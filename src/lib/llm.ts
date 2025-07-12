@@ -19,15 +19,32 @@ export const llm = new ChatOpenAI({
 export async function generateJSON(prompt: string): Promise<any> {
   const result = await llm.generate([[new HumanMessage(prompt)]]);
   const responseContent = result.generations[0][0].text;
-  let parsedResult;
-  try {
-    parsedResult = JSON.parse(responseContent);
-  } catch (e) {
-    const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      throw new Error("Could not parse JSON from LLM response.");
+
+  // Attempt to find a JSON block marked with ```json
+  const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
+  let jsonText = responseContent;
+
+  if (jsonMatch && jsonMatch[1]) {
+    jsonText = jsonMatch[1];
+  } else {
+    // If no markdown block is found, find the content between the first { and the last }
+    const firstBrace = responseContent.indexOf('{');
+    const lastBrace = responseContent.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonText = responseContent.substring(firstBrace, lastBrace + 1);
     }
-    parsedResult = JSON.parse(jsonMatch[1]);
   }
-  return parsedResult;
+
+  try {
+    // Clean the extracted JSON text
+    const cleanedJson = jsonText
+      .replace(/\/\/[^\n]*/g, '') // Remove comments
+      .replace(/\n/g, "\\n");     // Escape newlines
+
+    return JSON.parse(cleanedJson);
+  } catch (e) {
+    console.error("Failed to parse JSON:", e);
+    console.error("Original response from LLM:", responseContent);
+    throw new Error("Could not parse JSON from LLM response.");
+  }
 }

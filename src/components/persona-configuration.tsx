@@ -344,6 +344,16 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
+                                            <Label htmlFor="age">Age</Label>
+                                            <Input
+                                                id="age"
+                                                type="number"
+                                                value={displayPersona.age || ""}
+                                                onChange={(e) => handleInputChange("age", e.target.value)}
+                                                disabled={!isEditing}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
                                             <Label htmlFor="role">Role</Label>
                                             <Input
                                                 id="role"

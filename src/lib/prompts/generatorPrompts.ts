@@ -29,6 +29,7 @@ JSON Output:
 export const CHARACTER_JSON_STRUCTURE = `{
   "basicInfo": {
     "name": string,
+    "age": number, // The character's age in years.
     "role": string,
     "faction": string,
     "avatar": string,
@@ -84,6 +85,7 @@ export const PERSONA_JSON_STRUCTURE = `{
   "playerProfile": {
     "name": string,
     "alias": string,
+    "age": number, // The player's age in years.
     "reputation": string,
     "background": string,
     "firstImpression": string,

@@ -4,6 +4,7 @@ import { Message } from '@ai-sdk/react';
 
 interface BasicInfo {
     name: string
+    age?: number
     role?: string
     faction?: string
     avatar?: string
@@ -43,6 +44,7 @@ export interface Character {
 export interface PlayerPersona {
   name: string;
   alias: string;
+  age?: number;
   reputation?: string;
   background?: string;
   firstImpression?: string;
