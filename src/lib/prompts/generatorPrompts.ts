@@ -3,19 +3,19 @@ export const WORLD_JSON_STRUCTURE = `{
 }`;
 
 export const generateWorldPrompt = (worldDescription: string) => {
-  let prompt = `
+    let prompt = `
 You are a world-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${WORLD_JSON_STRUCTURE}
 
 Generate a detailed world description. The output should be a JSON object with a single key, "world", containing a string value of the generated world description.`;
 
-  if (worldDescription) {
-    prompt += `\n\nInput World Description: ${worldDescription}`;
-  }
+    if (worldDescription) {
+        prompt += `\n\nInput World Description: ${worldDescription}`;
+    }
 
-  prompt += `\n\nJSON Output:\n`;
+    prompt += `\n\nJSON Output:\n`;
 
-  return prompt;
+    return prompt;
 };
 
 
@@ -48,24 +48,40 @@ export const CHARACTER_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generateCharacterPrompt = (characterDescription: string, worldDescription: string) => {
-  let prompt = `
+import {useParleyStore} from '@/lib/store';
+
+export const generateCharacterPrompt = (characterDescription: string) => {
+    const {worldDescription, aiStyle} = useParleyStore.getState();
+    let prompt = `
 You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${CHARACTER_JSON_STRUCTURE}
 
 Generate a detailed character profile.`;
 
-  if (characterDescription) {
-    prompt += `\n\nInput Character Description: ${characterDescription}`;
-  }
+    if (characterDescription) {
+        prompt += `
 
-  if (worldDescription) {
-    prompt += `\n\nWorld Description: ${worldDescription}`;
-  }
+Input Character Description: ${characterDescription}`;
+    }
 
-  prompt += `\n\nJSON Output:\n`;
+    if (worldDescription) {
+        prompt += `
 
-  return prompt;
+World Description: ${worldDescription}`;
+    }
+
+    if (aiStyle) {
+        prompt += `
+
+AI Style: ${aiStyle}`;
+    }
+
+    prompt += `
+
+JSON Output:
+`;
+
+    return prompt;
 };
 
 export const PERSONA_JSON_STRUCTURE = `{
@@ -83,46 +99,46 @@ export const PERSONA_JSON_STRUCTURE = `{
 }`;
 
 export const generatePersonaPrompt = (personaDescription: string, worldDescription: string) => {
-  let prompt = `
+    let prompt = `
 You are a player persona-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${PERSONA_JSON_STRUCTURE}
 
 Generate a detailed player persona profile.`;
 
-  if (personaDescription) {
-    prompt += `
+    if (personaDescription) {
+        prompt += `
 
 Input Persona Description: ${personaDescription}`;
-  }
+    }
 
-  if (worldDescription) {
-    prompt += `
+    if (worldDescription) {
+        prompt += `
 
 World Description: ${worldDescription}`;
-  }
+    }
 
-  prompt += `
+    prompt += `
 
 JSON Output:
 `;
 
-  return prompt;
+    return prompt;
 };
 
 export const generateAIStylePrompt = (aiStyleDescription: string) => {
-  let prompt = `
+    let prompt = `
 You are an AI assistant that generates writing styles for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${AI_STYLE_JSON_STRUCTURE}
 
 Generate a detailed AI style. The output should be a JSON object with a single key, "aiStyle", containing a string value of the generated AI style.`;
 
-  if (aiStyleDescription) {
-    prompt += `\n\nInput AI Style Description: ${aiStyleDescription}`;
-  }
+    if (aiStyleDescription) {
+        prompt += `\n\nInput AI Style Description: ${aiStyleDescription}`;
+    }
 
-  prompt += `\n\nJSON Output:\n`;
+    prompt += `\n\nJSON Output:\n`;
 
-  return prompt;
+    return prompt;
 };
 
 export const AI_STYLE_JSON_STRUCTURE = `{
