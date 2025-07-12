@@ -4,8 +4,8 @@ import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {
   try {
-    const { worldDescription } = await req.json();
-    const prompt = generateWorldPrompt(worldDescription);
+    const { worldDescription, aiStyle } = await req.json();
+    const prompt = generateWorldPrompt(worldDescription, aiStyle);
     const parsedResult = await generateJSON(prompt);
     const generatedWorld = parsedResult.world;
 

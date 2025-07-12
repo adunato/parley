@@ -33,10 +33,11 @@ export default function WorldInfoPage() {
   const generateWorld = async (prompt?: string) => {
     setIsLoading(true);
     try {
-      const body: { worldDescription?: string } = {};
+      const body: { worldDescription?: string; aiStyle?: string } = {};
       if (prompt !== undefined && prompt !== '') {
         body.worldDescription = prompt;
       }
+      body.aiStyle = aiStyle;
       const response = await fetch('/api/generate/world', {
         method: 'POST',
         headers: {
