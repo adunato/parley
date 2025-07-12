@@ -84,11 +84,15 @@ interface ParleyStore {
   _setHasHydrated: (hydrated: boolean) => void;
   chatSessionId: number;
   relationships: Map<string, Map<string, Relationship>>; // New relationships state
+  addRelationship: (characterId: string, personaAlias: string, relationship: Relationship) => void;
+  updateRelationship: (characterId: string, personaAlias: string, relationship: Relationship) => void;
+  getRelationship: (characterId: string, personaAlias: string) => Relationship | undefined;
+  deleteRelationship: (characterId: string, personaAlias: string) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       gameInitialized: false,
       initializeGame: () => set({ gameInitialized: true }),
       characters: [],
@@ -161,10 +165,8 @@ export const useParleyStore = create<ParleyStore>()(
           }
           return { relationships: newRelationships };
         }),
-      getRelationship: (characterId, personaAlias) => {
-        const state = useParleyStore.getState();
-        return state.relationships.get(characterId)?.get(personaAlias);
-      },
+      getRelationship: (characterId, personaAlias) =>
+        get().relationships.get(characterId)?.get(personaAlias),
       deleteRelationship: (characterId, personaAlias) =>
         set((state) => {
           const newRelationships = new Map(state.relationships);
