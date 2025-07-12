@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, addRelationship, updateRelationship, selectedChatPersona } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, playerPersonas } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -481,85 +481,29 @@ export default function CharacterConfiguration() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Heart className="w-5 h-5" />
-                                            Relationship to Player Persona
+                                            Relationships
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {selectedChatPersona ? (
-                                            <>
-                                                {displayCharacter && relationships.get(displayCharacter.id)?.get(selectedChatPersona.alias) ? (
-                                                    <>
-                                                        {Object.entries(relationships.get(displayCharacter.id)?.get(selectedChatPersona.alias) || {}).map(([trait, value]) => (
-                                                            <div key={trait} className="space-y-2">
-                                                                <Label htmlFor={trait}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
-                                                                <Input
-                                                                    id={trait}
-                                                                    type="number"
-                                                                    value={value as number}
-                                                                    disabled
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                        <Button
-                                                            onClick={async () => {
-                                                                if (displayCharacter && selectedChatPersona) {
-                                                                    const response = await fetch('/api/generate/relationship', {
-                                                                        method: 'POST',
-                                                                        headers: {
-                                                                            'Content-Type': 'application/json',
-                                                                        },
-                                                                        body: JSON.stringify({
-                                                                            characterId: displayCharacter.id,
-                                                                            personaAlias: selectedChatPersona.alias,
-                                                                            worldDescription: worldDescription,
-                                                                            aiStyle: aiStyle,
-                                                                        }),
-                                                                    });
-                                                                    const data = await response.json();
-                                                                    if (response.ok) {
-                                                                        updateRelationship(displayCharacter.id, selectedChatPersona.alias, data.relationship);
-                                                                    } else {
-                                                                        console.error('Failed to generate relationship:', data.error);
-                                                                        alert('Error generating relationship: ' + data.error);
-                                                                    }
-                                                                }
-                                                            }}
-                                                        >
-                                                            Regenerate Relationship
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <Button
-                                                        onClick={async () => {
-                                                            if (displayCharacter && selectedChatPersona) {
-                                                                const response = await fetch('/api/generate/relationship', {
-                                                                    method: 'POST',
-                                                                    headers: {
-                                                                        'Content-Type': 'application/json',
-                                                                    },
-                                                                    body: JSON.stringify({
-                                                                        characterId: displayCharacter.id,
-                                                                        personaAlias: selectedChatPersona.alias,
-                                                                        worldDescription: worldDescription,
-                                                                        aiStyle: aiStyle,
-                                                                    }),
-                                                                });
-                                                                const data = await response.json();
-                                                                if (response.ok) {
-                                                                    addRelationship(displayCharacter.id, selectedChatPersona.alias, data.relationship);
-                                                                } else {
-                                                                    console.error('Failed to generate relationship:', data.error);
-                                                                    alert('Error generating relationship: ' + data.error);
-                                                                }
-                                                            }
-                                                        }}
-                                                    >
-                                                        Generate Relationship
-                                                    </Button>
-                                                )}
-                                            </>
+                                        {displayCharacter && relationships.has(displayCharacter.id) && relationships.get(displayCharacter.id)?.size > 0 ? (
+                                            Array.from(relationships.get(displayCharacter.id)?.entries() || []).map(([personaAlias, relationship]) => (
+                                                <div key={personaAlias} className="border p-3 rounded-md">
+                                                    <h4 className="font-semibold mb-2">Relationship with {playerPersonas.find(p => p.alias === personaAlias)?.name || personaAlias}</h4>
+                                                    {Object.entries(relationship).map(([trait, value]) => (
+                                                        <div key={trait} className="space-y-2">
+                                                            <Label htmlFor={`${personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                            <Input
+                                                                id={`${personaAlias}-${trait}`}
+                                                                type="number"
+                                                                value={value as number}
+                                                                disabled
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))
                                         ) : (
-                                            <p className="text-gray-500">Select a chat persona to generate a relationship.</p>
+                                            <p className="text-gray-500">Relationships are generated when you chat with a character using a persona.</p>
                                         )}
                                     </CardContent>
                                 </Card>
