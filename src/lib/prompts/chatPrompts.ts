@@ -1,8 +1,10 @@
-import { Character, PlayerPersona } from "../store";
+import { Character, PlayerPersona, Relationship } from "../store";
+import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
 
-export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
+export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona, relationship: Relationship, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
+    const relationshipJson = JSON.stringify(relationship, null, 2);
 
     let prompt = `You are simulating an NPC in a narrative-driven RPG world. Your task is to fully roleplay the character based on the structured data provided below.
 
@@ -12,6 +14,10 @@ ${characterJson}
 
 --- PLAYER PERSONA DATA ---
 ${playerPersonaJson}
+---------------------------
+
+--- RELATIONSHIP DATA [how CHARACTER feels about PLAYER PERSONA] ---
+${relationshipJson}
 ---------------------------
 `;
 
