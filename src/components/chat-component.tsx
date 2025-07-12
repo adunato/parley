@@ -18,7 +18,7 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { selectedChatCharacter, selectedChatPersona, chatMessages, chatInput, worldDescription, aiStyle } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
@@ -33,13 +33,13 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     initialInput: chatInput,
   });
 
-  // useEffect(() => {
-  //   setChatMessages(messages);
-  // }, [messages, setChatMessages]);
+  useEffect(() => {
+    setChatMessages(messages);
+  }, [messages, setChatMessages]);
 
-  // useEffect(() => {
-  //   setChatInput(input);
-  // }, [input, setChatInput]);
+  useEffect(() => {
+    setChatInput(input);
+  }, [input, setChatInput]);
 
   const isLoading = status === "submitted" || status === "streaming"
 
