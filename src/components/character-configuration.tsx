@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, playerPersonas } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, playerPersonas, deleteRelationship } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -104,6 +104,10 @@ export default function CharacterConfiguration() {
             setIsEditing(false);
         }
     }
+
+    const handleDeleteRelationship = (characterId: string, personaAlias: string) => {
+        deleteRelationship(characterId, personaAlias);
+    };
 
     const displayCharacter = editedCharacter || selectedCharacter
 
@@ -488,7 +492,17 @@ export default function CharacterConfiguration() {
                                         {displayCharacter && relationships.has(displayCharacter.id) && relationships.get(displayCharacter.id)?.size > 0 ? (
                                             Array.from(relationships.get(displayCharacter.id)?.entries() || []).map(([personaAlias, relationship]) => (
                                                 <div key={personaAlias} className="border p-3 rounded-md">
-                                                    <h4 className="font-semibold mb-2">Relationship with {playerPersonas.find(p => p.alias === personaAlias)?.name || personaAlias}</h4>
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <h4 className="font-semibold">Relationship with {playerPersonas.find(p => p.alias === personaAlias)?.name || personaAlias}</h4>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteRelationship(displayCharacter.id, personaAlias)}
+                                                            disabled={!isEditing}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </div>
                                                     {Object.entries(relationship).map(([trait, value]) => (
                                                         <div key={trait} className="space-y-2">
                                                             <Label htmlFor={`${personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
