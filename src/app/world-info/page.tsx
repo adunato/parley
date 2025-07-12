@@ -44,7 +44,7 @@ export default function WorldInfoPage() {
     setIsLoading(true);
     try {
       const body: { worldDescription?: string } = {};
-      if (prompt !== undefined) {
+      if (prompt !== undefined && prompt !== '') {
         body.worldDescription = prompt;
       }
       const response = await fetch('/api/generate/world', {
@@ -83,7 +83,7 @@ export default function WorldInfoPage() {
     setIsLoading(true);
     try {
       const body: { aiStyle?: string } = {};
-      if (prompt !== undefined) {
+      if (prompt !== undefined && prompt !== '') {
         body.aiStyle = prompt;
       }
       const response = await fetch('/api/generate/ai-style', {

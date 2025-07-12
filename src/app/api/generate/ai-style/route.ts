@@ -4,7 +4,7 @@ import { llm } from '@/lib/llm';
 export async function POST(request: Request) {
   try {
     const { aiStyle } = await request.json();
-    const prompt = generateAIStylePrompt(aiStyle || '');
+    const prompt = generateAIStylePrompt(aiStyle);
     const result = await llm.invoke(prompt);
     const generatedStyle = result.content;
     return new Response(JSON.stringify({ aiStyle: generatedStyle }), { status: 200 });
