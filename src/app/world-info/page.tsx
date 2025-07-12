@@ -40,15 +40,19 @@ export default function WorldInfoPage() {
     setAiStyle(style);
   }, [style, setAiStyle]);
 
-  const generateWorld = async (prompt: string) => {
+  const generateWorld = async (prompt?: string) => {
     setIsLoading(true);
     try {
+      const body: { worldDescription?: string } = {};
+      if (prompt !== undefined) {
+        body.worldDescription = prompt;
+      }
       const response = await fetch('/api/generate/world', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ worldDescription: prompt }),
+        body: JSON.stringify(body),
       });
       const data = await response.json();
       if (response.ok) {
@@ -68,23 +72,26 @@ export default function WorldInfoPage() {
   };
 
   const handleGenerateWorld = async () => {
-    const descriptionToSend = description || "a fantasy world with magic and mythical creatures"; // Provide a default if empty
-    generateWorld(descriptionToSend);
+    generateWorld('');
   };
 
   const handleGenerateWorldWithPrompt = async () => {
     generateWorld(worldDialogPrompt);
   };
 
-  const generateAIStyle = async (prompt: string) => {
+  const generateAIStyle = async (prompt?: string) => {
     setIsLoading(true);
     try {
+      const body: { aiStyle?: string } = {};
+      if (prompt !== undefined) {
+        body.aiStyle = prompt;
+      }
       const response = await fetch('/api/generate/ai-style', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ aiStyle: prompt }),
+        body: JSON.stringify(body),
       });
       const data = await response.json();
       if (response.ok) {
@@ -104,8 +111,7 @@ export default function WorldInfoPage() {
   };
 
   const handleGenerateAIStyle = async () => {
-    const styleToSend = style || "a whimsical and adventurous tone"; // Provide a default if empty
-    generateAIStyle(styleToSend);
+    generateAIStyle('');
   };
 
   const handleGenerateAIStyleWithPrompt = async () => {

@@ -2,16 +2,22 @@ export const WORLD_JSON_STRUCTURE = `{
   "world": string; // A detailed description of the world.
 }`;
 
-export const generateWorldPrompt = (worldDescription: string) => `
+export const generateWorldPrompt = (worldDescription: string) => {
+  let prompt = `
 You are a world-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${WORLD_JSON_STRUCTURE}
 
-Generate a detailed world description based on the following input. The output should be a JSON object with a single key, "world", containing a string value of the generated world description.
+Generate a detailed world description. The output should be a JSON object with a single key, "world", containing a string value of the generated world description.`;
 
-Input World Description: ${worldDescription}
+  if (worldDescription) {
+    prompt += `\n\nInput World Description: ${worldDescription}`;
+  }
 
-JSON Output:
-`;
+  prompt += `\n\nJSON Output:\n`;
+
+  return prompt;
+};
+
 
 export const CHARACTER_JSON_STRUCTURE = `{
   "basicInfo": {
@@ -103,12 +109,15 @@ JSON Output:
   return prompt;
 };
 
-export const generateAIStylePrompt = (aiStyleDescription: string) => `
-You are an AI assistant that generates writing styles for a text adventure game. Your response should be a concise description of a writing style.
+export const generateAIStylePrompt = (aiStyleDescription: string) => {
+  let prompt = `
+You are an AI assistant that generates writing styles for a text adventure game. Your response should be a concise description of a writing style.`;
 
-Generate a writing style based on the following input:
+  if (aiStyleDescription) {
+    prompt += `\n\nGenerate a writing style based on the following input:\n\nInput AI Style Description: ${aiStyleDescription}`;
+  }
 
-Input AI Style Description: ${aiStyleDescription}
+  prompt += `\n\nGenerated AI Style:\n`;
 
-Generated AI Style:
-`;
+  return prompt;
+};

@@ -6,9 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     const { worldDescription } = await req.json();
 
-    if (!worldDescription) {
-      return NextResponse.json({ error: 'World description is required' }, { status: 400 });
-    }
+    
 
     const prompt = generateWorldPrompt(worldDescription);
     const parsedResult = await generateJSON(prompt);
