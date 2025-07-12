@@ -24,8 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function PersonaConfiguration() {
-    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona } = useParleyStore()
-    const worldDescription = useParleyStore((state) => state.worldDescription);
+    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona, worldDescription, aiStyle } = useParleyStore()
     const [selectedAlias, setSelectedAlias] = useState<string | null>(playerPersonas[0]?.alias || null)
     const [editedPersona, setEditedPersona] = useState<PlayerPersona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
@@ -97,20 +96,24 @@ export default function PersonaConfiguration() {
     const displayPersona = editedPersona || selectedPersona
 
     const generatePersona = async (prompt: string) => {
-        if (!worldDescription) {
-            console.warn("World description is not yet available. Please ensure world information is loaded.");
-            alert("World description is not yet available. Please ensure world information is loaded before generating a persona.");
-            setIsGeneratingPersona(false);
-            return;
-        }
         setIsGeneratingPersona(true);
         try {
+            const body: { personaDescription?: string; worldDescription?: string; aiStyle?: string } = {};
+            if (prompt !== undefined && prompt !== '') {
+                body.personaDescription = prompt;
+            }
+            if (worldDescription) {
+                body.worldDescription = worldDescription;
+            }
+            if (aiStyle) {
+                body.aiStyle = aiStyle;
+            }
             const response = await fetch('/api/generate/persona', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ personaDescription: prompt, worldDescription }),
+                body: JSON.stringify(body),
             });
             const data = await response.json();
             if (response.ok) {

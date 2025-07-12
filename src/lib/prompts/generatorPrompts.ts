@@ -48,41 +48,30 @@ export const CHARACTER_JSON_STRUCTURE = `{
   }
 }`;
 
-import {useParleyStore} from '@/lib/store';
-
-export const generateCharacterPrompt = (characterDescription: string) => {
-    const {worldDescription, aiStyle} = useParleyStore.getState();
-    let prompt = `
-You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
+  let prompt = `
+You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${CHARACTER_JSON_STRUCTURE}
 
 Generate a detailed character profile.`;
 
-    if (characterDescription) {
-        prompt += `
+  if (characterDescription) {
+    prompt += `\n\nInput Character Description: ${characterDescription}`;
+  }
 
-Input Character Description: ${characterDescription}`;
-    }
+  if (worldDescription) {
+    prompt += `\n\nWorld Description: ${worldDescription}`;
+  }
 
-    if (worldDescription) {
-        prompt += `
+  if (aiStyle) {
+    prompt += `\n\nAI Style: ${aiStyle}`;
+  }
 
-World Description: ${worldDescription}`;
-    }
+  prompt += `\n\nJSON Output:\n`;
 
-    if (aiStyle) {
-        prompt += `
-
-AI Style: ${aiStyle}`;
-    }
-
-    prompt += `
-
-JSON Output:
-`;
-
-    return prompt;
+  return prompt;
 };
+
 
 export const PERSONA_JSON_STRUCTURE = `{
   "playerProfile": {
@@ -98,8 +87,7 @@ export const PERSONA_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generatePersonaPrompt = (personaDescription: string) => {
-  const { worldDescription, aiStyle } = useParleyStore.getState();
+export const generatePersonaPrompt = (personaDescription: string, worldDescription: string, aiStyle: string) => {
   let prompt = `
 You are a player persona-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${PERSONA_JSON_STRUCTURE}
@@ -107,30 +95,22 @@ ${PERSONA_JSON_STRUCTURE}
 Generate a detailed player persona profile.`;
 
   if (personaDescription) {
-    prompt += `
-
-Input Persona Description: ${personaDescription}`;
+    prompt += `\n\nInput Persona Description: ${personaDescription}`;
   }
 
   if (worldDescription) {
-    prompt += `
-
-World Description: ${worldDescription}`;
+    prompt += `\n\nWorld Description: ${worldDescription}`;
   }
 
   if (aiStyle) {
-    prompt += `
-
-AI Style: ${aiStyle}`;
+    prompt += `\n\nAI Style: ${aiStyle}`;
   }
 
-  prompt += `
-
-JSON Output:
-`;
+  prompt += `\n\nJSON Output:\n`;
 
   return prompt;
 };
+
 
 export const generateAIStylePrompt = (aiStyleDescription: string) => {
     let prompt = `

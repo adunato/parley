@@ -31,7 +31,7 @@ export default function CharacterConfiguration() {
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
-    const worldDescription = useParleyStore((state) => state.worldDescription);
+    const { worldDescription, aiStyle } = useParleyStore((state) => ({ worldDescription: state.worldDescription, aiStyle: state.aiStyle }));
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -122,22 +122,27 @@ export default function CharacterConfiguration() {
     };
 
     const generateCharacter = async (prompt: string) => {
-        if (!worldDescription) {
-            console.warn("World description is not yet available. Please ensure world information is loaded.");
-            alert("World description is not yet available. Please ensure world information is loaded before generating a character.");
-            setIsGeneratingCharacter(false);
-            return;
-        }
         setIsGeneratingCharacter(true);
         try {
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string } = {};
+            if (prompt !== undefined && prompt !== '') {
+                body.characterDescription = prompt;
+            }
+            if (worldDescription) {
+                body.worldDescription = worldDescription;
+            }
+            if (aiStyle) {
+                body.aiStyle = aiStyle;
+            }
             const response = await fetch('/api/generate/character', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ characterDescription: prompt, worldDescription }),
+                body: JSON.stringify(body),
             });
             console.log("Frontend worldDescription before sending:", worldDescription);
+            console.log("Frontend aiStyle before sending:", aiStyle);
             const data = await response.json();
             if (response.ok) {
                 const generatedCharacterData = {
