@@ -24,21 +24,11 @@ import {
 
 export default function WorldInfoPage() {
   const { worldDescription, setWorldDescription, aiStyle, setAiStyle } = useParleyStore();
-  const [description, setDescription] = useState(worldDescription);
-  const [style, setStyle] = useState(aiStyle);
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
   const [isAiStylePromptDialogOpen, setIsAiStylePromptDialogOpen] = useState(false);
   const [worldDialogPrompt, setWorldDialogPrompt] = useState(''); // New state for the world description dialog's prompt
   const [aiStyleDialogPrompt, setAiStyleDialogPrompt] = useState(''); // New state for the AI style dialog's prompt
-
-  useEffect(() => {
-    setWorldDescription(description);
-  }, [description, setWorldDescription]);
-
-  useEffect(() => {
-    setAiStyle(style);
-  }, [style, setAiStyle]);
 
   const generateWorld = async (prompt?: string) => {
     setIsLoading(true);
@@ -56,7 +46,7 @@ export default function WorldInfoPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        setDescription(data.world);
+        setWorldDescription(data.world);
       } else {
         console.error('Failed to generate world:', data.error);
         alert('Error generating world: ' + data.error);
@@ -95,7 +85,7 @@ export default function WorldInfoPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        setStyle(data.aiStyle);
+        setAiStyle(data.aiStyle);
       } else {
         console.error('Failed to generate AI style:', data.error);
         alert('Error generating AI style: ' + data.error);
@@ -197,8 +187,8 @@ export default function WorldInfoPage() {
               </div>
               <Textarea
                 id="worldDescription"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={worldDescription}
+                onChange={(e) => setWorldDescription(e.target.value)}
                 className="col-span-3 min-h-[200px]"
                 rows={10}
               />
@@ -274,8 +264,8 @@ export default function WorldInfoPage() {
               </div>
               <Textarea
                 id="aiStyle"
-                value={style}
-                onChange={(e) => setStyle(e.target.value)}
+                value={aiStyle}
+                onChange={(e) => setAiStyle(e.target.value)}
                 className="col-span-3 min-h-[200px]"
                 rows={10}
               />
