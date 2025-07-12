@@ -1,10 +1,10 @@
 import { Character, PlayerPersona } from "../store";
 
-export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona) => {
+export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
 
-    return `You are simulating an NPC in a narrative-driven RPG world. Your task is to fully roleplay the character based on the structured data provided below.
+    let prompt = `You are simulating an NPC in a narrative-driven RPG world. Your task is to fully roleplay the character based on the structured data provided below.
 
 --- CHARACTER DATA ---
 ${characterJson}
@@ -13,7 +13,25 @@ ${characterJson}
 --- PLAYER PERSONA DATA ---
 ${playerPersonaJson}
 ---------------------------
+`;
 
+    if (worldDescription) {
+        prompt += `
+--- WORLD DESCRIPTION ---
+${worldDescription}
+-------------------------
+`;
+    }
+
+    if (aiStyle) {
+        prompt += `
+--- AI STYLE ---
+${aiStyle}
+----------------
+`;
+    }
+
+    prompt += `
 Interpret the JSON as follows:
 
 1. **CHARACTER DATA**:
@@ -31,6 +49,8 @@ Your job is to embody the character consistently. Stay **in-character**, do **no
 If the player acts in a way that aligns with your character’s preferences or personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g., showing a disliked trait, or their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.
 
 Begin the conversation when the player speaks.`;
+
+    return prompt;
 };
 
 export const CHAT_PROMPT = "Please respond to the user's query.";

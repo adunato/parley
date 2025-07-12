@@ -17,13 +17,15 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,
+      worldDescription: worldDescription,
+      aiStyle: aiStyle,
     },
     initialMessages: chatMessages,
     initialInput: chatInput,

@@ -4,7 +4,7 @@ export const WORLD_JSON_STRUCTURE = `{
 
 export const generateWorldPrompt = (worldDescription: string, aiStyle?: string) => {
     let prompt = `
-You are a world-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+You are a world-building AI for a text adventure game. The resulting description must be in 3rd person. Your responses MUST be a JSON object conforming to the following structure:
 ${WORLD_JSON_STRUCTURE}
 
 Generate a detailed world description. The output should be a JSON object with a single key, "world", containing a string value of the generated world description.`;
@@ -54,7 +54,7 @@ export const CHARACTER_JSON_STRUCTURE = `{
 
 export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
-YouYou are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
+You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${CHARACTER_JSON_STRUCTURE}
 
 Generate a detailed character profile.`;
