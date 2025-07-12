@@ -65,6 +65,8 @@ interface ParleyStore {
   deletePlayerPersona: (id: string) => void;
   worldDescription: string;
   setWorldDescription: (description: string) => void;
+  aiStyle: string;
+  setAiStyle: (style: string) => void;
   selectedChatCharacter?: Character;
   setSelectedChatCharacter: (character: Character | undefined) => void;
   selectedChatPersona?: PlayerPersona;
@@ -110,6 +112,8 @@ export const useParleyStore = create<ParleyStore>()(
         })),
       worldDescription: '',
       setWorldDescription: (description) => set({ worldDescription: description }),
+      aiStyle: '',
+      setAiStyle: (style) => set({ aiStyle: style }),
       selectedChatCharacter: undefined,
       setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
       selectedChatPersona: undefined,
