@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Sparkles, PlusCircle } from "lucide-react";
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages, relationships, addRelationship, worldDescription, aiStyle } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
 
@@ -28,8 +28,38 @@ export default function ChatPage() {
         }
     };
 
-    const handleStartChat = () => {
+    const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
+            const existingRelationship = relationships.get(selectedChatCharacter.id)?.get(selectedChatPersona.alias);
+
+            if (!existingRelationship) {
+                try {
+                    const response = await fetch('/api/generate/relationship', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            characterId: selectedChatCharacter.id,
+                            personaAlias: selectedChatPersona.alias,
+                            worldDescription: worldDescription,
+                            aiStyle: aiStyle,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
+                    } else {
+                        console.error('Failed to generate relationship:', data.error);
+                        alert('Error generating relationship: ' + data.error);
+                        return; // Prevent chat from starting if relationship generation fails
+                    }
+                } catch (error) {
+                    console.error('Error generating relationship:', error);
+                    alert('An unexpected error occurred while generating the relationship.');
+                    return; // Prevent chat from starting if relationship generation fails
+                }
+            }
             setIsChatActive(true);
         } else {
             alert("Please select both a character and a persona to start the chat.");
