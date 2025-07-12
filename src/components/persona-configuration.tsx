@@ -127,6 +127,7 @@ export default function PersonaConfiguration() {
                 const generatedPersona: PlayerPersona = {
                     name: data.persona.name || "",
                     alias: data.persona.alias || `Persona-${playerPersonas.length + 1}`,
+                    age: data.persona.age || 0,
                     reputation: data.persona.reputation || "",
                     background: data.persona.background || "",
                     firstImpression: data.persona.firstImpression || "",
