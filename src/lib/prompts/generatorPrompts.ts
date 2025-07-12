@@ -71,10 +71,11 @@ Generate a detailed character profile.`;
 
 export const RELATIONSHIP_JSON_STRUCTURE = `{
   "closeness": number,       // An integer between -100 (emotionally distant or hostile) and 100 (deeply bonded and emotionally close)
-  "attraction": number,      // An integer between -100 (strong aversion or repulsion) and 100 (strong romantic or physical attraction)
+  "sexual_attraction": number,      // An integer between -100 (strong aversion or repulsion) and 100 (strong romantic or physical sexual_attraction)
   "respect": number,         // An integer between -100 (complete distrust or contempt) and 100 (deep respect, trust, and admiration)
   "engagement": number,      // An integer between -100 (disinterest or boredom) and 100 (high curiosity and emotional investment)
-  "stability": number        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
+  "stability": number,        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
+  "description": string,        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
 }`;
 
 import { Character, PlayerPersona } from "../store";
@@ -87,7 +88,7 @@ export const generateRelationshipPrompt = (character: Character, persona: Player
 You are a relationship-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${RELATIONSHIP_JSON_STRUCTURE}
 
-Generate a detailed relationship profile between the following character and player persona:
+Generate a detailed relationship profile between the following character and player persona. Use the data provided below, the resulting relationship should take into account the likely relationship between the character and player persona based on their characteristics, age and background.
 
 --- CHARACTER DATA ---
 ${characterJson}

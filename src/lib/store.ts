@@ -30,10 +30,11 @@ interface Preferences {
 
 export interface Relationship {
   closeness: number;
-  attraction: number;
+  sexual_attraction: number;
   respect: number;
   engagement: number;
   stability: number;
+  description: string;
 }
 
 export interface Character {
