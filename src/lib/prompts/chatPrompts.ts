@@ -52,11 +52,9 @@ Interpret the JSON as follows:
 
 Your job is to embody the character consistently. Stay **in-character**, do **not refer to the JSON**, and do not break immersion. Respond naturally and dynamically based on how the player interacts, always considering their persona.
 
-If ${playerPersona.name} acts in a way that aligns with your character’s preferences or personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g., showing a disliked trait, or their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.
-
-Continue the conversation impersonating ${character.basicInfo.name}`;
+If ${playerPersona.name} acts in a way that aligns with your character’s preferences or personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g., showing a disliked trait, or their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.`;
 
     return prompt;
 };
 
-export const CHAT_PROMPT = "Please respond to the user's query.";
+export const getChatPrompt = (character: Character) => `Continue the conversation impersonating ${character.basicInfo.name}`;
