@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function PersonaConfiguration() {
-    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona, worldDescription, aiStyle } = useParleyStore()
+    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona, worldDescription, aiStyle, _hasHydrated } = useParleyStore()
     const [selectedAlias, setSelectedAlias] = useState<string | null>(playerPersonas[0]?.alias || null)
     const [editedPersona, setEditedPersona] = useState<PlayerPersona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
@@ -102,10 +102,10 @@ export default function PersonaConfiguration() {
             if (prompt !== undefined && prompt !== '') {
                 body.personaDescription = prompt;
             }
-            if (worldDescription) {
+            if (_hasHydrated && worldDescription) {
                 body.worldDescription = worldDescription;
             }
-            if (aiStyle) {
+            if (_hasHydrated && aiStyle) {
                 body.aiStyle = aiStyle;
             }
             const response = await fetch('/api/generate/persona', {

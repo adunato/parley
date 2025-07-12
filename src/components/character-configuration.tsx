@@ -25,13 +25,12 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
-    const { worldDescription, aiStyle } = useParleyStore((state) => ({ worldDescription: state.worldDescription, aiStyle: state.aiStyle }));
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -128,10 +127,10 @@ export default function CharacterConfiguration() {
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
             }
-            if (worldDescription) {
+            if (_hasHydrated && worldDescription) {
                 body.worldDescription = worldDescription;
             }
-            if (aiStyle) {
+            if (_hasHydrated && aiStyle) {
                 body.aiStyle = aiStyle;
             }
             const response = await fetch('/api/generate/character', {
