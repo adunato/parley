@@ -98,31 +98,38 @@ export const PERSONA_JSON_STRUCTURE = `{
   }
 }`;
 
-export const generatePersonaPrompt = (personaDescription: string, worldDescription: string) => {
-    let prompt = `
+export const generatePersonaPrompt = (personaDescription: string) => {
+  const { worldDescription, aiStyle } = useParleyStore.getState();
+  let prompt = `
 You are a player persona-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${PERSONA_JSON_STRUCTURE}
 
 Generate a detailed player persona profile.`;
 
-    if (personaDescription) {
-        prompt += `
+  if (personaDescription) {
+    prompt += `
 
 Input Persona Description: ${personaDescription}`;
-    }
+  }
 
-    if (worldDescription) {
-        prompt += `
+  if (worldDescription) {
+    prompt += `
 
 World Description: ${worldDescription}`;
-    }
+  }
 
+  if (aiStyle) {
     prompt += `
+
+AI Style: ${aiStyle}`;
+  }
+
+  prompt += `
 
 JSON Output:
 `;
 
-    return prompt;
+  return prompt;
 };
 
 export const generateAIStylePrompt = (aiStyleDescription: string) => {
