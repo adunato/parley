@@ -45,10 +45,6 @@ export const CHARACTER_JSON_STRUCTURE = `{
     "agreeableness": number, // An integer between -100 and 100.
     "neuroticism": number // An integer between -100 and 100.
   },
-  "relationshipToPlayer": {
-    "affinity": number, // An integer between -100 and 100.
-    "notes": string
-  },
   "preferences": {
     "attractedToTraits": string[],
     "dislikesTraits": string[],
@@ -58,7 +54,7 @@ export const CHARACTER_JSON_STRUCTURE = `{
 
 export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
-You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
+YouYou are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${CHARACTER_JSON_STRUCTURE}
 
 Generate a detailed character profile.`;
@@ -66,6 +62,34 @@ Generate a detailed character profile.`;
     if (characterDescription) {
         prompt += `\n\nInput Character Description: ${characterDescription}`;
     }
+
+    if (worldDescription) {
+        prompt += `\n\nWorld Description: ${worldDescription}`;
+    }
+
+    if (aiStyle) {
+        prompt += `\n\nAI Style: ${aiStyle}`;
+    }
+
+    prompt += `\n\nJSON Output:\n`;
+
+    return prompt;
+};
+
+export const RELATIONSHIP_JSON_STRUCTURE = `{
+  "closeness": number,       // An integer between -100 (emotionally distant or hostile) and 100 (deeply bonded and emotionally close)
+  "attraction": number,      // An integer between -100 (strong aversion or repulsion) and 100 (strong romantic or physical attraction)
+  "respect": number,         // An integer between -100 (complete distrust or contempt) and 100 (deep respect, trust, and admiration)
+  "engagement": number,      // An integer between -100 (disinterest or boredom) and 100 (high curiosity and emotional investment)
+  "stability": number        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
+}`;
+
+export const generateRelationshipPrompt = (characterId: string, personaAlias: string, worldDescription?: string, aiStyle?: string) => {
+    let prompt = `
+You are a relationship-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
+${RELATIONSHIP_JSON_STRUCTURE}
+
+Generate a detailed relationship profile between character ID ${characterId} and player persona ${personaAlias}.`;
 
     if (worldDescription) {
         prompt += `\n\nWorld Description: ${worldDescription}`;

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, addRelationship, updateRelationship, selectedChatPersona } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -59,7 +59,7 @@ export default function CharacterConfiguration() {
     }
 
     const handleInputChange = (
-        section: keyof Character | "basicInfo" | "personality" | "relationshipToPlayer" | "preferences",
+        section: keyof Character | "basicInfo" | "personality" | "preferences",
         field: string,
         value: string | number | string[] | undefined
     ) => {
@@ -88,7 +88,6 @@ export default function CharacterConfiguration() {
             id: newId,
             basicInfo: { name: "New Character" },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
-            relationshipToPlayer: { affinity: 0 },
             preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
         }
         addCharacter(newCharacter)
@@ -157,10 +156,7 @@ export default function CharacterConfiguration() {
                         agreeableness: data.character.personality.agreeableness || 0,
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
-                    relationshipToPlayer: {
-                        affinity: data.character.relationshipToPlayer.affinity || 0,
-                        notes: data.character.relationshipToPlayer.notes || "",
-                    },
+                    
                     preferences: {
                         attractedToTraits: data.character.preferences?.attractedToTraits || [],
                         dislikesTraits: data.character.preferences?.dislikesTraits || [],
@@ -478,39 +474,7 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Relationship to Player */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Heart className="w-5 h-5" />
-                                            Relationship to Player
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="affinity">Affinity (-100 to 100)</Label>
-                                            <Input
-                                                id="affinity"
-                                                type="number"
-                                                value={displayCharacter.relationshipToPlayer.affinity}
-                                                onChange={(e) => handleInputChange("relationshipToPlayer", "affinity", parseInt(e.target.value))}
-                                                disabled={!isEditing}
-                                                min={-100}
-                                                max={100}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="notes">Notes</Label>
-                                            <Textarea
-                                                id="notes"
-                                                value={displayCharacter.relationshipToPlayer.notes || ""}
-                                                onChange={(e) => handleInputChange("relationshipToPlayer", "notes", e.target.value)}
-                                                disabled={!isEditing}
-                                                rows={3}
-                                            />
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                
 
                                 {/* Preferences */}
                                 <Card>

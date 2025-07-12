@@ -22,22 +22,24 @@ interface Personality {
     neuroticism: number
 }
 
-interface RelationshipToPlayer {
-    affinity: number
-    notes?: string
-}
-
 interface Preferences {
     attractedToTraits?: string[]
     dislikesTraits?: string[]
     gossipTendency?: "low" | "medium" | "high"
 }
 
+export interface Relationship {
+  closeness: number;
+  attraction: number;
+  respect: number;
+  engagement: number;
+  stability: number;
+}
+
 export interface Character {
     id: string
     basicInfo: BasicInfo
     personality: Personality
-    relationshipToPlayer: RelationshipToPlayer
     preferences?: Preferences
 }
 
@@ -81,6 +83,7 @@ interface ParleyStore {
   _hasHydrated: boolean;
   _setHasHydrated: (hydrated: boolean) => void;
   chatSessionId: number;
+  relationships: Map<string, Map<string, Relationship>>; // New relationships state
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -140,6 +143,39 @@ export const useParleyStore = create<ParleyStore>()(
       _setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
       chatSessionId: 0,
       _hasHydrated: false,
+      relationships: new Map(), // Initialize relationships map
+      addRelationship: (characterId, personaAlias, relationship) =>
+        set((state) => {
+          const newRelationships = new Map(state.relationships);
+          if (!newRelationships.has(characterId)) {
+            newRelationships.set(characterId, new Map());
+          }
+          newRelationships.get(characterId)?.set(personaAlias, relationship);
+          return { relationships: newRelationships };
+        }),
+      updateRelationship: (characterId, personaAlias, relationship) =>
+        set((state) => {
+          const newRelationships = new Map(state.relationships);
+          if (newRelationships.has(characterId)) {
+            newRelationships.get(characterId)?.set(personaAlias, relationship);
+          }
+          return { relationships: newRelationships };
+        }),
+      getRelationship: (characterId, personaAlias) => {
+        const state = useParleyStore.getState();
+        return state.relationships.get(characterId)?.get(personaAlias);
+      },
+      deleteRelationship: (characterId, personaAlias) =>
+        set((state) => {
+          const newRelationships = new Map(state.relationships);
+          if (newRelationships.has(characterId)) {
+            newRelationships.get(characterId)?.delete(personaAlias);
+            if (newRelationships.get(characterId)?.size === 0) {
+              newRelationships.delete(characterId);
+            }
+          }
+          return { relationships: newRelationships };
+        }),
     }),
     {
       name: 'parley-storage',

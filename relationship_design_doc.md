@@ -92,8 +92,8 @@ A new API endpoint will be created to dynamically generate the relationship betw
     *   Modify `src/app/api/generate/character/route.ts` to remove `relationshipToPlayer` from the generated JSON.
     *   Update `src/lib/prompts/generatorPrompts.ts` to reflect this change in `CHARACTER_JSON_STRUCTURE` and `generateCharacterPrompt`.
 3.  **Create New Relationship Generation API:**
-    *   Create `src/app/api/generate/relationship/route.ts` with the `POST` endpoint logic.
-    *   Define a new prompt in `src/lib/prompts/generatorPrompts.ts` for relationship generation.
+*   Create `src/app/api/generate/relationship/route.ts` with the `POST` endpoint logic.
+  *   Define a new prompt in `src/lib/prompts/generatorPrompts.ts` for relationship generation.
 4.  **Update `src/components/character-configuration.tsx`:**
     *   Remove old `relationshipToPlayer` UI.
     *   Implement new UI to display `Relationship` attributes, fetching data using `getRelationship`.
