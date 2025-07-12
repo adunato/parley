@@ -37,9 +37,7 @@ export async function generateJSON(prompt: string): Promise<any> {
 
   try {
     // Clean the extracted JSON text
-    const cleanedJson = jsonText
-      .replace(/\/\/[^\n]*/g, '') // Remove comments
-      .replace(/\n/g, "\\n");     // Escape newlines
+    const cleanedJson = jsonText      .replace(/\/\/[^\n]*/g, ''); // Remove comments
 
     return JSON.parse(cleanedJson);
   } catch (e) {
