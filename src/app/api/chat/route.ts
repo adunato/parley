@@ -6,13 +6,13 @@ import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages
 import { useParleyStore } from '@/lib/store';
 
 export async function POST(req: Request) {
-  const { messages, character, persona, worldDescription, aiStyle } = await req.json();
+  const { messages, character, persona, relationship, worldDescription, aiStyle } = await req.json();
 
   if (!character || !persona) {
     return new Response(JSON.stringify({ error: "Character and persona data are required." }), { status: 400 });
   }
 
-  const finalSystemPrompt = generateSystemPrompt(character, persona, worldDescription, aiStyle);
+  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, worldDescription, aiStyle);
 
   const langchainMessages = messages.map((message: Message) => {
     if (message.role === 'user') {

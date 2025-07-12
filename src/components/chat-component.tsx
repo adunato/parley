@@ -1,7 +1,7 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useChat, type Message } from "@ai-sdk/react"
-import { useParleyStore } from "@/lib/store";
+import { useParleyStore, Relationship } from "@/lib/store";
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,17 +13,19 @@ interface ChatComponentProps {
   className?: string
   title?: string
   chatSessionId: number;
+  relationship?: Relationship;
 }
 
-export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId }: ChatComponentProps) {
+export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona, chatMessages, chatInput, worldDescription, aiStyle } = useParleyStore();
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,
+      relationship: relationship,
       worldDescription: worldDescription,
       aiStyle: aiStyle,
     },
@@ -31,13 +33,13 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     initialInput: chatInput,
   });
 
-  useEffect(() => {
-    setChatMessages(messages);
-  }, [messages, setChatMessages]);
+  // useEffect(() => {
+  //   setChatMessages(messages);
+  // }, [messages, setChatMessages]);
 
-  useEffect(() => {
-    setChatInput(input);
-  }, [input, setChatInput]);
+  // useEffect(() => {
+  //   setChatInput(input);
+  // }, [input, setChatInput]);
 
   const isLoading = status === "submitted" || status === "streaming"
 

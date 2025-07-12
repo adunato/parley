@@ -76,9 +76,7 @@ interface ParleyStore {
   selectedChatPersona?: PlayerPersona;
   setSelectedChatPersona: (persona: PlayerPersona | undefined) => void;
   chatMessages: Message[];
-  setChatMessages: (messages: Message[]) => void;
   chatInput: string;
-  setChatInput: (input: string) => void;
   clearChat: () => void;
   _hasHydrated: boolean;
   _setHasHydrated: (hydrated: boolean) => void;
@@ -134,7 +132,6 @@ export const useParleyStore = create<ParleyStore>()(
       clearChat: () => set((state) => {
         const prevChatSessionId = state.chatSessionId;
         localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`); // Clear previous @ai-sdk/react useChat persistence
-        useParleyStore.persist.clearStorage(); // Correctly clear Zustand store persistence
         const newChatSessionId = state.chatSessionId + 1;
         return {
           selectedChatCharacter: undefined,

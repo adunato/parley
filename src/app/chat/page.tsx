@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { Relationship } from "@/lib/store";
 import { useParleyStore } from "@/lib/store";
 import { Loader2 } from "lucide-react"; // Import Loader2 icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +14,7 @@ export default function ChatPage() {
     const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages, relationships, addRelationship, worldDescription, aiStyle } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
+    const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
@@ -42,13 +44,12 @@ export default function ChatPage() {
                         body: JSON.stringify({
                             character: selectedChatCharacter,
                             persona: selectedChatPersona,
-                            worldDescription: worldDescription,
-                            aiStyle: aiStyle,
                         }),
                     });
                     const data = await response.json();
                     if (response.ok) {
                         addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
+                        setCurrentRelationship(data.relationship);
                     } else {
                         console.error('Failed to generate relationship:', data.error);
                         alert('Error generating relationship: ' + data.error);
@@ -59,6 +60,8 @@ export default function ChatPage() {
                     alert('An unexpected error occurred while generating the relationship.');
                     return; // Prevent chat from starting if relationship generation fails
                 }
+            } else {
+                setCurrentRelationship(existingRelationship);
             }
             setIsChatActive(true);
         } else {
@@ -142,7 +145,7 @@ export default function ChatPage() {
                             New Chat
                         </Button>
                     </div>
-                    <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" />
+                    <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" relationship={currentRelationship} />
                 </div>
             )}
         </div>
