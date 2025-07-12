@@ -194,6 +194,20 @@ export const useParleyStore = create<ParleyStore>()(
         },
       },
       onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Manually rehydrate the relationships Map
+          if (state.relationships && !(state.relationships instanceof Map)) {
+            const rehydratedRelationships = new Map<string, Map<string, Relationship>>();
+            for (const [characterId, personaMap] of Object.entries(state.relationships)) {
+              if (personaMap && !(personaMap instanceof Map)) {
+                rehydratedRelationships.set(characterId, new Map(Object.entries(personaMap)));
+              } else if (personaMap) {
+                rehydratedRelationships.set(characterId, personaMap as Map<string, Relationship>);
+              }
+            }
+            state.relationships = rehydratedRelationships;
+          }
+        }
         state?._setHasHydrated(true);
       },
     }
