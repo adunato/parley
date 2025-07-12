@@ -4,9 +4,9 @@ import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {
   try {
-    const { characterId, personaAlias, worldDescription, aiStyle } = await req.json();
+    const { character, persona, worldDescription, aiStyle } = await req.json();
 
-    const prompt = generateRelationshipPrompt(characterId, personaAlias, worldDescription, aiStyle);
+    const prompt = generateRelationshipPrompt(character, persona, worldDescription, aiStyle);
     const parsedResult = await generateJSON(prompt);
 
     return NextResponse.json({ relationship: parsedResult });

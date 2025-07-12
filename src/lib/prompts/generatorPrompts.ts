@@ -9,19 +9,12 @@ ${WORLD_JSON_STRUCTURE}
 
 Generate a detailed world description. The output should be a JSON object with a single key, "world", containing a string value of the generated world description.`;
     if (worldDescription) {
-        prompt += `
-
-Input World Description: ${worldDescription}`;
+        prompt += `\n\nInput World Description: ${worldDescription}`;
     }
     if (aiStyle) {
-        prompt += `
-
-AI Style: ${aiStyle}`;
+        prompt += `\n\nAI Style: ${aiStyle}`;
     }
-    prompt += `
-
-JSON Output:
-`;
+    prompt += `\n\nJSON Output:\n`;
     return prompt;
 };
 
@@ -84,22 +77,44 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
   "stability": number        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
 }`;
 
-export const generateRelationshipPrompt = (characterId: string, personaAlias: string, worldDescription?: string, aiStyle?: string) => {
+import { Character, PlayerPersona } from "../store";
+
+export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
+    const characterJson = JSON.stringify(character, null, 2);
+    const personaJson = JSON.stringify(persona, null, 2);
+
     let prompt = `
 You are a relationship-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${RELATIONSHIP_JSON_STRUCTURE}
 
-Generate a detailed relationship profile between character ID ${characterId} and player persona ${personaAlias}.`;
+Generate a detailed relationship profile between the following character and player persona:
+
+--- CHARACTER DATA ---
+${characterJson}
+----------------------
+
+--- PLAYER PERSONA DATA ---
+${personaJson}
+---------------------------
+
+Based on the provided character and player persona data, generate their relationship profile.`;
 
     if (worldDescription) {
-        prompt += `\n\nWorld Description: ${worldDescription}`;
+        prompt += `
+
+World Description: ${worldDescription}`;
     }
 
     if (aiStyle) {
-        prompt += `\n\nAI Style: ${aiStyle}`;
+        prompt += `
+
+AI Style: ${aiStyle}`;
     }
 
-    prompt += `\n\nJSON Output:\n`;
+    prompt += `
+
+JSON Output:
+`;
 
     return prompt;
 };

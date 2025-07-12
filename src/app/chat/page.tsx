@@ -40,8 +40,8 @@ export default function ChatPage() {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            characterId: selectedChatCharacter.id,
-                            personaAlias: selectedChatPersona.alias,
+                            character: selectedChatCharacter,
+                            persona: selectedChatPersona,
                             worldDescription: worldDescription,
                             aiStyle: aiStyle,
                         }),
