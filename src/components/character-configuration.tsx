@@ -140,8 +140,6 @@ export default function CharacterConfiguration() {
                 },
                 body: JSON.stringify(body),
             });
-            console.log("Frontend worldDescription before sending:", worldDescription);
-            console.log("Frontend aiStyle before sending:", aiStyle);
             const data = await response.json();
             if (response.ok) {
                 const generatedCharacterData = {
