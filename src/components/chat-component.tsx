@@ -80,7 +80,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
   }
 
   return (
-    <Card className={`flex flex-col h-[600px] ${className}`}>
+    <Card className={`flex flex-col h-[600px] w-full ${className}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

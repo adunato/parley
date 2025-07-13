@@ -11,7 +11,7 @@ interface CharacterTraitsDisplayProps {
 
 export function CharacterTraitsDisplay({ personality, likes, dislikes }: CharacterTraitsDisplayProps) {
   return (
-    <Card className="w-full">
+    <Card className="w-[500px]">
       <CardHeader>
         <CardTitle>Character Traits</CardTitle>
       </CardHeader>

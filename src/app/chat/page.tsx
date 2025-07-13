@@ -240,7 +240,7 @@ export default function ChatPage() {
                                 New Chat
                             </Button>
                         </div>
-                        <div className="flex flex-row items-start w-full justify-center gap-4 max-w-6xl">
+                        <div className="flex flex-row items-start w-full justify-center gap-4 max-w-screen-2xl">
                             {selectedChatCharacter && (
                                 <CharacterTraitsDisplay
                                     personality={selectedChatCharacter.personality}
@@ -250,7 +250,7 @@ export default function ChatPage() {
                             )}
                             <ChatComponent
                                 chatSessionId={chatSessionId}
-                                className="w-full"
+                                className="flex-grow"
                                 relationship={currentRelationship}
                                 onMessageFinish={async (message) => {
                                     if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
