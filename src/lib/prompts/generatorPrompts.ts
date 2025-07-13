@@ -78,7 +78,7 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
   "description": string,        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
 }`;
 
-import { Character, PlayerPersona } from "../store";
+import { Character, PlayerPersona, Relationship } from "../store";
 
 export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
@@ -166,7 +166,7 @@ export const generateAIStylePrompt = (aiStyleDescription: string) => {
 You are an AI assistant that generates writing styles for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
 ${AI_STYLE_JSON_STRUCTURE}
 
-Generate a detailed AI style. The output should be a JSON object with a single key, "aiStyle", containing a string value of the generated AI style.`;
+Generate a detailed AI style. The output should be a JSON object with a single key, "aiStyle", containing a string value of the generated AI style.`
 
     if (aiStyleDescription) {
         prompt += `\n\nInput AI Style Description: ${aiStyleDescription}`;
@@ -180,3 +180,50 @@ Generate a detailed AI style. The output should be a JSON object with a single k
 export const AI_STYLE_JSON_STRUCTURE = `{
   "aiStyle": string; // A detailed description of the AI's writing style.
 }`;
+
+import { Message } from "@ai-sdk/react";
+
+export const generateRelationshipDeltaPrompt = (
+    character: Character,
+    persona: PlayerPersona,
+    chatHistory: Message[],
+    latestExchange: { userMessage: string; characterResponse: string },
+    currentRelationship: Relationship
+) => {
+    const characterJson = JSON.stringify(character, null, 2);
+    const personaJson = JSON.stringify(persona, null, 2);
+    const chatHistoryJson = JSON.stringify(chatHistory, null, 2);
+    const latestExchangeJson = JSON.stringify(latestExchange, null, 2);
+    const currentRelationshipJson = JSON.stringify(currentRelationship, null, 2);
+
+    return `
+You are a relationship analysis AI for a text adventure game. Your task is to analyze the latest exchange between a character and a player persona and determine how it affects their relationship. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
+${RELATIONSHIP_JSON_STRUCTURE}
+
+The numerical values in the JSON should represent the *delta* (change) in the relationship metrics (e.g., +5 for an increase of 5, -3 for a decrease of 3). The 'description' field should explain *why* these changes occurred.
+
+--- CHARACTER DATA ---
+${characterJson}
+----------------------
+
+--- PLAYER PERSONA DATA ---
+${personaJson}
+---------------------------
+
+--- CURRENT RELATIONSHIP DATA ---
+${currentRelationshipJson}
+---------------------------------
+
+--- CHAT HISTORY (excluding latest exchange) ---
+${chatHistoryJson}
+------------------------------------------------
+
+--- LATEST CHAT EXCHANGE ---
+${latestExchangeJson}
+----------------------------
+
+Analyze the latest chat exchange in the context of the character, player persona, and their current relationship. Determine the delta (change) for each relationship metric (closeness, sexual_attraction, respect, engagement, stability) and provide a concise description of why these changes occurred. The description should focus on the impact of this specific exchange.
+
+JSON Output:
+`;
+};

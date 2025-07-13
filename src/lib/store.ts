@@ -89,12 +89,43 @@ interface ParleyStore {
   updateRelationship: (characterId: string, personaAlias: string, relationship: Relationship) => void;
   getRelationship: (characterId: string, personaAlias: string) => Relationship | undefined;
   deleteRelationship: (characterId: string, personaAlias: string) => void;
+  cumulativeRelationshipDeltas: Map<string, Map<string, Relationship>>; // Stores deltas per character-persona pair for the current session
+  updateCumulativeRelationshipDelta: (characterId: string, personaAlias: string, delta: Relationship) => void;
+  clearCumulativeRelationshipDeltas: () => void; // Called on new chat
 }
 
 export const useParleyStore = create<ParleyStore>()(
   persist(
     (set, get) => ({
       gameInitialized: false,
+      cumulativeRelationshipDeltas: new Map(), // Initialize cumulative deltas map
+      updateCumulativeRelationshipDelta: (characterId, personaAlias, delta) =>
+        set((state) => {
+          const newCumulativeDeltas = new Map(state.cumulativeRelationshipDeltas);
+          if (!newCumulativeDeltas.has(characterId)) {
+            newCumulativeDeltas.set(characterId, new Map());
+          }
+          const currentDelta = newCumulativeDeltas.get(characterId)?.get(personaAlias) || {
+            closeness: 0,
+            sexual_attraction: 0,
+            respect: 0,
+            engagement: 0,
+            stability: 0,
+            description: "",
+          };
+
+          const updatedDelta = {
+            closeness: currentDelta.closeness + delta.closeness,
+            sexual_attraction: currentDelta.sexual_attraction + delta.sexual_attraction,
+            respect: currentDelta.respect + delta.respect,
+            engagement: currentDelta.engagement + delta.engagement,
+            stability: currentDelta.stability + delta.stability,
+            description: currentDelta.description + (delta.description ? `\n${delta.description}` : ""),
+          };
+          newCumulativeDeltas.get(characterId)?.set(personaAlias, updatedDelta);
+          return { cumulativeRelationshipDeltas: newCumulativeDeltas };
+        }),
+      clearCumulativeRelationshipDeltas: () => set({ cumulativeRelationshipDeltas: new Map() }),
       initializeGame: () => set({ gameInitialized: true }),
       characters: [],
       addCharacter: (character) => set((state) => ({ characters: [...state.characters, character] })),

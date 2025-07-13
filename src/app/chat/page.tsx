@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Relationship } from "@/lib/store";
 import { useParleyStore } from "@/lib/store";
 import { Loader2 } from "lucide-react"; // Import Loader2 icon
@@ -9,18 +9,77 @@ import { Button } from "@/components/ui/button";
 import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
-import { Sparkles, PlusCircle } from "lucide-react";
+import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
+import { useChat } from "@ai-sdk/react";
+
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, chatMessages, relationships, addRelationship, worldDescription, aiStyle } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, relationships, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas, worldDescription, aiStyle } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
+    const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
+
+    const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
+        api: '/api/chat',
+        id: `main-chat-${chatSessionId}`,
+        initialMessages: [],
+        onFinish: async (message) => {
+            if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+                const chatHistory = messages.slice(0, -1); // All messages except the last one (current character response)
+                const latestExchange = {
+                    userMessage: messages[messages.length - 2]?.content || "", // User's last message
+                    characterResponse: message.content, // Character's current response
+                };
+
+                try {
+                    const response = await fetch('/api/generate/relationship-delta', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            character: selectedChatCharacter,
+                            persona: selectedChatPersona,
+                            chatHistory: chatHistory,
+                            latestExchange: latestExchange,
+                            currentRelationship: currentRelationship,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.relationshipDelta) {
+                        updateCumulativeRelationshipDelta(
+                            selectedChatCharacter.id,
+                            selectedChatPersona.alias,
+                            data.relationshipDelta
+                        );
+                        setLatestDeltaDescription(data.relationshipDelta.description);
+                    } else {
+                        console.error('Failed to generate relationship delta:', data.error);
+                    }
+                } catch (error) {
+                    console.error('Error generating relationship delta:', error);
+                }
+            }
+        },
+    });
+
+    useEffect(() => {
+        if (selectedChatCharacter && selectedChatPersona) {
+            const existingRelationship = getRelationship(selectedChatCharacter.id, selectedChatPersona.alias);
+            if (existingRelationship) {
+                setCurrentRelationship(existingRelationship);
+            }
+        }
+    }, [selectedChatCharacter, selectedChatPersona, getRelationship]);
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
         if (character) {
             setSelectedChatCharacter(character);
+            setMessages([]); // Clear messages on character change
+            setLatestDeltaDescription(undefined);
+            clearCumulativeRelationshipDeltas();
         }
     };
 
@@ -28,6 +87,9 @@ export default function ChatPage() {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
         if (persona) {
             setSelectedChatPersona(persona);
+            setMessages([]); // Clear messages on persona change
+            setLatestDeltaDescription(undefined);
+            clearCumulativeRelationshipDeltas();
         }
     };
 
@@ -51,6 +113,7 @@ export default function ChatPage() {
                     if (response.ok) {
                         addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
                         setCurrentRelationship(data.relationship);
+                        setMessages([]); // Initialize chat messages for new chat
                     } else {
                         console.error('Failed to generate relationship:', data.error);
                         alert('Error generating relationship: ' + data.error);
@@ -63,6 +126,7 @@ export default function ChatPage() {
                 }
             } else {
                 setCurrentRelationship(existingRelationship);
+                setMessages([]); // Clear messages for existing chat to start fresh
             }
             setIsChatActive(true);
         } else {
@@ -70,8 +134,32 @@ export default function ChatPage() {
         }
     };
 
+    const handleEndChat = () => {
+        if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+            const cumulativeDelta = cumulativeRelationshipDeltas.get(selectedChatCharacter.id)?.get(selectedChatPersona.alias);
+
+            if (cumulativeDelta) {
+                const updatedRelationship = {
+                    closeness: currentRelationship.closeness + cumulativeDelta.closeness,
+                    sexual_attraction: currentRelationship.sexual_attraction + cumulativeDelta.sexual_attraction,
+                    respect: currentRelationship.respect + cumulativeDelta.respect,
+                    engagement: currentRelationship.engagement + cumulativeDelta.engagement,
+                    stability: currentRelationship.stability + cumulativeDelta.stability,
+                    description: currentRelationship.description, // Description is not cumulative in this commit
+                };
+                updateRelationship(selectedChatCharacter.id, selectedChatPersona.alias, updatedRelationship);
+            }
+        }
+        clearChat();
+        clearCumulativeRelationshipDeltas();
+        setLatestDeltaDescription(undefined);
+        setIsChatActive(false);
+    };
+
     const handleNewChat = () => {
         clearChat();
+        clearCumulativeRelationshipDeltas();
+        setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
 
@@ -141,18 +229,66 @@ export default function ChatPage() {
             ) : (
                 <div className="flex-1 flex justify-center p-4">
                     <div className="flex flex-col items-center w-full max-w-2xl lg:max-w-4xl xl:max-w-6xl">
-                        <div className="w-full mb-4 flex justify-end">
+                        <div className="w-full mb-4 flex justify-end gap-2">
+                            <Button onClick={handleEndChat} variant="outline">
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                End Chat
+                            </Button>
                             <Button onClick={handleNewChat} variant="outline">
                                 <PlusCircle className="w-4 h-4 mr-2" />
                                 New Chat
                             </Button>
                         </div>
                         <div className="flex flex-row items-start w-full justify-center gap-4">
-                            <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" relationship={currentRelationship} />
+                            <ChatComponent
+                                chatSessionId={chatSessionId}
+                                className="w-full max-w-2xl"
+                                relationship={currentRelationship}
+                                onMessageFinish={async (message) => {
+                                    if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+                                        const chatHistory = messages.slice(0, -1); // All messages except the last one (current character response)
+                                        const latestExchange = {
+                                            userMessage: messages[messages.length - 2]?.content || "", // User's last message
+                                            characterResponse: message.content, // Character's current response
+                                        };
+
+                                        try {
+                                            const response = await fetch('/api/generate/relationship-delta', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({
+                                                    character: selectedChatCharacter,
+                                                    persona: selectedChatPersona,
+                                                    chatHistory: chatHistory,
+                                                    latestExchange: latestExchange,
+                                                    currentRelationship: currentRelationship,
+                                                }),
+                                            });
+                                            const data = await response.json();
+                                            if (response.ok && data.relationshipDelta) {
+                                                updateCumulativeRelationshipDelta(
+                                                    selectedChatCharacter.id,
+                                                    selectedChatPersona.alias,
+                                                    data.relationshipDelta
+                                                );
+                                                setLatestDeltaDescription(data.relationshipDelta.description);
+                                            } else {
+                                                console.error('Failed to generate relationship delta:', data.error);
+                                            }
+                                        } catch (error) {
+                                            console.error('Error generating relationship delta:', error);
+                                        }
+                                    }
+                                }}
+                            />
                             {currentRelationship && selectedChatCharacter && (
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
+                                    cumulativeDeltaRelationship={cumulativeRelationshipDeltas.get(selectedChatCharacter.id)?.get(selectedChatPersona?.alias || "")}
+                                    latestDeltaDescription={latestDeltaDescription}
                                 />
                             )}
                         </div>

@@ -14,9 +14,10 @@ interface ChatComponentProps {
   title?: string
   chatSessionId: number;
   relationship?: Relationship;
+  onMessageFinish?: (message: Message) => void; // New prop
 }
 
-export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
+export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
 
@@ -31,6 +32,11 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     },
     initialMessages: chatMessages,
     initialInput: chatInput,
+    onFinish: (message) => {
+      if (onMessageFinish) {
+        onMessageFinish(message);
+      }
+    },
   });
 
   useEffect(() => {
