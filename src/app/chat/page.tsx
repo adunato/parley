@@ -138,14 +138,29 @@ export default function ChatPage() {
                     </Card>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-4">
-                    <div className="w-full max-w-2xl mb-4 flex justify-end">
-                        <Button onClick={handleNewChat} variant="outline">
-                            <PlusCircle className="w-4 h-4 mr-2" />
-                            New Chat
-                        </Button>
+                <div className="flex-1 flex justify-center p-4">
+                    <div className="flex flex-col items-center w-full max-w-2xl lg:max-w-4xl xl:max-w-6xl">
+                        <div className="w-full mb-4 flex justify-end">
+                            <Button onClick={handleNewChat} variant="outline">
+                                <PlusCircle className="w-4 h-4 mr-2" />
+                                New Chat
+                            </Button>
+                        </div>
+                        <div className="flex flex-row items-start w-full justify-center gap-4">
+                            <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" relationship={currentRelationship} />
+                            {currentRelationship && (
+                                <Card className="w-80 h-fit max-h-[80vh] overflow-y-auto">
+                                    <CardHeader>
+                                        <CardTitle>Relationship with {selectedChatCharacter?.basicInfo.name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-700"><strong>Closeness:</strong> {currentRelationship.closeness}</p>
+                                        <p className="text-sm text-gray-700 mt-2"><strong>Description:</strong> {currentRelationship.description}</p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     </div>
-                    <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" relationship={currentRelationship} />
                 </div>
             )}
         </div>
