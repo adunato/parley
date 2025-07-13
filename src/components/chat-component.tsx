@@ -36,7 +36,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     initialInput: chatInput,
     onFinish: (message) => {
       if (onMessageFinish) {
-        const fullHistory = [...messagesRef.current, message]; // Manual append
+        const fullHistory = [...messagesRef.current]; // Manual append
         onMessageFinish(message, fullHistory);
       }
     },
