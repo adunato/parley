@@ -5,10 +5,11 @@ import { Personality } from "@/lib/store";
 
 interface CharacterTraitsDisplayProps {
   personality: Personality;
-  preferences: string[];
+  likes: string[];
+  dislikes: string[];
 }
 
-export function CharacterTraitsDisplay({ personality, preferences }: CharacterTraitsDisplayProps) {
+export function CharacterTraitsDisplay({ personality, likes, dislikes }: CharacterTraitsDisplayProps) {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -41,8 +42,13 @@ export function CharacterTraitsDisplay({ personality, preferences }: CharacterTr
         <div className="grid gap-2">
           <h3 className="text-lg font-semibold">Preferences</h3>
           <div className="flex flex-wrap gap-2">
-            {preferences.map((pref) => (
-              <Badge key={pref} variant="secondary">
+            {likes.map((pref) => (
+              <Badge key={pref} className="bg-green-500 text-white">
+                {pref}
+              </Badge>
+            ))}
+            {dislikes.map((pref) => (
+              <Badge key={pref} className="bg-red-500 text-white">
                 {pref}
               </Badge>
             ))}

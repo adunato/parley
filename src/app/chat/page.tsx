@@ -244,10 +244,8 @@ export default function ChatPage() {
                             {selectedChatCharacter && (
                                 <CharacterTraitsDisplay
                                     personality={selectedChatCharacter.personality}
-                                    preferences={[
-                                        ...(selectedChatCharacter.preferences?.attractedToTraits || []),
-                                        ...(selectedChatCharacter.preferences?.dislikesTraits || []),
-                                    ]}
+                                    likes={selectedChatCharacter.preferences?.attractedToTraits || []}
+                                    dislikes={selectedChatCharacter.preferences?.dislikesTraits || []}
                                 />
                             )}
                             <ChatComponent
