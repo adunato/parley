@@ -18,9 +18,14 @@ export async function POST(req: Request) {
 
         const relationshipDelta = await generateJSON(prompt);
 
+        console.log('Generated relationship delta:', relationshipDelta);
         return NextResponse.json({ relationshipDelta });
     } catch (error) {
-        console.error('Error generating relationship delta:', error);
-        return NextResponse.json({ error: 'Failed to generate relationship delta' }, { status: 500 });
+        console.error('Error in /api/generate/relationship-delta:', error);
+        if (error instanceof Error) {
+            return NextResponse.json({ error: `Failed to generate relationship delta: ${error.message}` }, { status: 500 });
+        } else {
+            return NextResponse.json({ error: 'Failed to generate relationship delta: An unknown error occurred.' }, { status: 500 });
+        }
     }
 }

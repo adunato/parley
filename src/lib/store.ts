@@ -239,6 +239,19 @@ export const useParleyStore = create<ParleyStore>()(
             }
             state.relationships = rehydratedRelationships;
           }
+
+          // Manually rehydrate the cumulativeRelationshipDeltas Map
+          if (state.cumulativeRelationshipDeltas && !(state.cumulativeRelationshipDeltas instanceof Map)) {
+            const rehydratedCumulativeDeltas = new Map<string, Map<string, Relationship>>();
+            for (const [characterId, personaMap] of Object.entries(state.cumulativeRelationshipDeltas)) {
+              if (personaMap && !(personaMap instanceof Map)) {
+                rehydratedCumulativeDeltas.set(characterId, new Map(Object.entries(personaMap)));
+              } else if (personaMap) {
+                rehydratedCumulativeDeltas.set(characterId, personaMap as Map<string, Relationship>);
+              }
+            }
+            state.cumulativeRelationshipDeltas = rehydratedCumulativeDeltas;
+          }
         }
         state?._setHasHydrated(true);
       },
