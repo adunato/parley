@@ -200,7 +200,9 @@ export const generateRelationshipDeltaPrompt = (
 You are a relationship analysis AI for a text adventure game. Your task is to analyze the latest exchange between a character and a player persona and determine how it affects their relationship. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${RELATIONSHIP_JSON_STRUCTURE}
 
-The numerical values in the JSON should represent the *delta* (change) in the relationship metrics (e.g., +5 for an increase of 5, -3 for a decrease of 3). The 'description' field should explain *why* these changes occurred.
+The numerical values in the JSON should represent the *delta* (change) in the relationship metrics (e.g., +5 for an increase of 5, -3 for a decrease of 3). 
+
+The 'description' field should explain *why* these changes occurred, use a *concise* and *very short* description capturing the main impact of the exchange.
 
 --- CHARACTER DATA ---
 ${characterJson}
@@ -223,6 +225,8 @@ ${latestExchangeJson}
 ----------------------------
 
 Analyze the latest chat exchange in the context of the character, player persona, and their current relationship. Determine the delta (change) for each relationship metric (closeness, sexual_attraction, respect, engagement, stability) and provide a concise description of why these changes occurred. The description should focus on the impact of this specific exchange.
+sexual_attraction should change based on the character data -   preferences - "attractedToTraits" and "dislikesTraits" which should drive the change in sexual_attraction depending on how the latest exchange relates to those traits.
+ 
 
 JSON Output:
 `;
