@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import RelationshipDisplay from "@/components/relationship-display";
 import { Sparkles, PlusCircle } from "lucide-react";
 
 export default function ChatPage() {
@@ -148,16 +149,11 @@ export default function ChatPage() {
                         </div>
                         <div className="flex flex-row items-start w-full justify-center gap-4">
                             <ChatComponent chatSessionId={chatSessionId} className="w-full max-w-2xl" relationship={currentRelationship} />
-                            {currentRelationship && (
-                                <Card className="w-80 h-fit max-h-[80vh] overflow-y-auto">
-                                    <CardHeader>
-                                        <CardTitle>Relationship with {selectedChatCharacter?.basicInfo.name}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-700"><strong>Closeness:</strong> {currentRelationship.closeness}</p>
-                                        <p className="text-sm text-gray-700 mt-2"><strong>Description:</strong> {currentRelationship.description}</p>
-                                    </CardContent>
-                                </Card>
+                            {currentRelationship && selectedChatCharacter && (
+                                <RelationshipDisplay
+                                    characterName={selectedChatCharacter.basicInfo.name}
+                                    relationship={currentRelationship}
+                                />
                             )}
                         </div>
                     </div>
