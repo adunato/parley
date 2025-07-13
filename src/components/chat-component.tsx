@@ -44,6 +44,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
   useEffect(() => {
     messagesRef.current = messages;
+    setChatMessages(messages);
   }, [messages]);
 
   useEffect(() => {

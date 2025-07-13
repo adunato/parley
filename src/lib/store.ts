@@ -166,8 +166,8 @@ export const useParleyStore = create<ParleyStore>()(
       setChatInput: (input) => set({ chatInput: input }),
       clearChat: () => set((state) => {
         const prevChatSessionId = state.chatSessionId;
-        localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`); // Clear previous @ai-sdk/react useChat persistence
-        useParleyStore.persist.clearStorage(); // Correctly clear Zustand store persistence
+        localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`);
+        useParleyStore.persist.clearStorage();
         const newChatSessionId = state.chatSessionId + 1;
         return {
           selectedChatCharacter: undefined,

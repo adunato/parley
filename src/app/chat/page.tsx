@@ -33,9 +33,6 @@ export default function ChatPage() {
         const character = characters.find(c => c.id === characterId);
         if (character) {
             setSelectedChatCharacter(character);
-            setChatMessages([]); // Clear messages on character change
-            setLatestDeltaDescription(undefined);
-            clearCumulativeRelationshipDeltas();
         }
     };
 
@@ -43,9 +40,6 @@ export default function ChatPage() {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
         if (persona) {
             setSelectedChatPersona(persona);
-            setChatMessages([]); // Clear messages on persona change
-            setLatestDeltaDescription(undefined);
-            clearCumulativeRelationshipDeltas();
         }
     };
 
@@ -69,7 +63,6 @@ export default function ChatPage() {
                     if (response.ok) {
                         addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
                         setCurrentRelationship(data.relationship);
-                        setChatMessages([]); // Initialize chat messages for new chat
                     } else {
                         console.error('Failed to generate relationship:', data.error);
                         alert('Error generating relationship: ' + data.error);
@@ -82,7 +75,6 @@ export default function ChatPage() {
                 }
             } else {
                 setCurrentRelationship(existingRelationship);
-                setChatMessages([]); // Clear messages for existing chat to start fresh
             }
             setIsChatActive(true);
         } else {
