@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, devtools } from 'zustand/middleware';
 import { Message } from '@ai-sdk/react';
 
 interface BasicInfo {
@@ -95,8 +95,9 @@ interface ParleyStore {
 }
 
 export const useParleyStore = create<ParleyStore>()(
-  persist(
-    (set, get) => ({
+  devtools(
+    persist(
+      (set, get) => ({
       gameInitialized: false,
       cumulativeRelationshipDeltas: new Map(), // Initialize cumulative deltas map
       updateCumulativeRelationshipDelta: (characterId, personaAlias, delta) =>
@@ -254,6 +255,17 @@ export const useParleyStore = create<ParleyStore>()(
           }
         }
         state?._setHasHydrated(true);
+      },
+    }),
+    {
+      serialize: {
+        options: true,
+        replacer: (_key, value) => {
+          if (value instanceof Map) {
+            return { dataType: 'Map', value: Array.from(value.entries()) };
+          }
+          return value;
+        },
       },
     }
   )
