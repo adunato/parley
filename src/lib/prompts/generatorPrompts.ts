@@ -200,7 +200,7 @@ export const generateRelationshipDeltaPrompt = (
 You are a relationship analysis AI for a text adventure game. Your task is to analyze the latest exchange between a character and a player persona and determine how it affects their relationship. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 ${RELATIONSHIP_JSON_STRUCTURE}
 
-The numerical values in the JSON should represent the *delta* (change) in the relationship metrics (e.g., +5 for an increase of 5, -3 for a decrease of 3). 
+The numerical values in the JSON should represent the *delta* (change) in the relationship metrics (e.g., 5 for an increase of 5, -3 for a decrease of 3). 
 
 The 'description' field should explain *why* these changes occurred, use a *concise* and *very short* description capturing the main impact of the exchange.
 
