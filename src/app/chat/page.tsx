@@ -207,27 +207,23 @@ export default function ChatPage() {
                                 chatSessionId={chatSessionId}
                                 className="flex-grow"
                                 relationship={currentRelationship}
-                                onMessageFinish={async (message) => {
+                                onMessageFinish={async (message, fullMessages) => {
                                     if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-                                        // const chatHistory = chatMessages.slice(0, -1); // All messages except the last one (current character response)
-                                        const chatHistory = chatMessages; // All messages except the last one (current character response)
                                         const latestExchange = {
-                                            userMessage: chatMessages[chatMessages.length - 2]?.content || "", // User's last message
-                                            characterResponse: message.content, // Character's current response
+                                            userMessage: fullMessages[fullMessages.length - 2]?.content || "",
+                                            characterResponse: message.content,
                                         };
 
                                         try {
                                             const response = await fetch('/api/generate/relationship-delta', {
                                                 method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
+                                                headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({
                                                     character: selectedChatCharacter,
                                                     persona: selectedChatPersona,
-                                                    chatHistory: chatHistory,
-                                                    latestExchange: latestExchange,
-                                                    currentRelationship: currentRelationship,
+                                                    chatHistory: fullMessages,
+                                                    latestExchange,
+                                                    currentRelationship,
                                                 }),
                                             });
                                             const data = await response.json();

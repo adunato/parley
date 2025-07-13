@@ -14,12 +14,14 @@ interface ChatComponentProps {
   title?: string
   chatSessionId: number;
   relationship?: Relationship;
-  onMessageFinish?: (message: Message) => void; // New prop
+  onMessageFinish?: (message: Message, fullMessages: Message[]) => void;
 }
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
+
+  const messagesRef = useRef<Message[]>([]);
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
@@ -34,12 +36,14 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     initialInput: chatInput,
     onFinish: (message) => {
       if (onMessageFinish) {
-        onMessageFinish(message);
+        const fullHistory = [...messagesRef.current, message]; // Manual append
+        onMessageFinish(message, fullHistory);
       }
     },
   });
 
   useEffect(() => {
+    messagesRef.current = messages;
     setChatMessages(messages);
   }, [messages, setChatMessages]);
 
