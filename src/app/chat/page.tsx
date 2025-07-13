@@ -14,7 +14,7 @@ import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, relationships, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas, worldDescription, aiStyle, chatMessages, setChatMessages } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -45,7 +45,8 @@ export default function ChatPage() {
 
     const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = relationships.get(selectedChatCharacter.id)?.get(selectedChatPersona.alias);
+            const existingRelationship = getRelationship(selectedChatCharacter.id,selectedChatPersona.alias);
+            console.log(existingRelationship);
 
             if (!existingRelationship) {
                 try {
