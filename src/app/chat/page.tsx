@@ -11,59 +11,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
-import { useChat } from "@ai-sdk/react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, relationships, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas, worldDescription, aiStyle } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, relationships, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas, worldDescription, aiStyle, chatMessages, setChatMessages } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
     const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
-
-    const { messages, input, handleInputChange, handleSubmit, setMessages } = useChat({
-        api: '/api/chat',
-        id: `main-chat-${chatSessionId}`,
-        initialMessages: [],
-        onFinish: async (message) => {
-            if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-                const chatHistory = messages.slice(0, -1); // All messages except the last one (current character response)
-                const latestExchange = {
-                    userMessage: messages[messages.length - 2]?.content || "", // User's last message
-                    characterResponse: message.content, // Character's current response
-                };
-
-                try {
-                    const response = await fetch('/api/generate/relationship-delta', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            character: selectedChatCharacter,
-                            persona: selectedChatPersona,
-                            chatHistory: chatHistory,
-                            latestExchange: latestExchange,
-                            currentRelationship: currentRelationship,
-                        }),
-                    });
-                    const data = await response.json();
-                    if (response.ok && data.relationshipDelta) {
-                        updateCumulativeRelationshipDelta(
-                            selectedChatCharacter.id,
-                            selectedChatPersona.alias,
-                            data.relationshipDelta
-                        );
-                        setLatestDeltaDescription(data.relationshipDelta.description);
-                    } else {
-                        console.error('Failed to generate relationship delta:', data.error);
-                    }
-                } catch (error) {
-                    console.error('Error generating relationship delta:', error);
-                }
-            }
-        },
-    });
 
     useEffect(() => {
         if (selectedChatCharacter && selectedChatPersona) {
@@ -78,7 +33,7 @@ export default function ChatPage() {
         const character = characters.find(c => c.id === characterId);
         if (character) {
             setSelectedChatCharacter(character);
-            setMessages([]); // Clear messages on character change
+            setChatMessages([]); // Clear messages on character change
             setLatestDeltaDescription(undefined);
             clearCumulativeRelationshipDeltas();
         }
@@ -88,7 +43,7 @@ export default function ChatPage() {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
         if (persona) {
             setSelectedChatPersona(persona);
-            setMessages([]); // Clear messages on persona change
+            setChatMessages([]); // Clear messages on persona change
             setLatestDeltaDescription(undefined);
             clearCumulativeRelationshipDeltas();
         }
@@ -114,7 +69,7 @@ export default function ChatPage() {
                     if (response.ok) {
                         addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
                         setCurrentRelationship(data.relationship);
-                        setMessages([]); // Initialize chat messages for new chat
+                        setChatMessages([]); // Initialize chat messages for new chat
                     } else {
                         console.error('Failed to generate relationship:', data.error);
                         alert('Error generating relationship: ' + data.error);
@@ -127,7 +82,7 @@ export default function ChatPage() {
                 }
             } else {
                 setCurrentRelationship(existingRelationship);
-                setMessages([]); // Clear messages for existing chat to start fresh
+                setChatMessages([]); // Clear messages for existing chat to start fresh
             }
             setIsChatActive(true);
         } else {
@@ -254,9 +209,10 @@ export default function ChatPage() {
                                 relationship={currentRelationship}
                                 onMessageFinish={async (message) => {
                                     if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-                                        const chatHistory = messages.slice(0, -1); // All messages except the last one (current character response)
+                                        // const chatHistory = chatMessages.slice(0, -1); // All messages except the last one (current character response)
+                                        const chatHistory = chatMessages; // All messages except the last one (current character response)
                                         const latestExchange = {
-                                            userMessage: messages[messages.length - 2]?.content || "", // User's last message
+                                            userMessage: chatMessages[chatMessages.length - 2]?.content || "", // User's last message
                                             characterResponse: message.content, // Character's current response
                                         };
 
