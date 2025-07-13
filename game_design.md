@@ -12,7 +12,7 @@ The core of Parley's design revolves around player agency. The game presents use
 To enhance the adventure and provide fresh experiences, Parley incorporates AI-powered content generation for characters and player personas. This allows for a rich and varied cast of non-player characters (NPCs) and customizable player identities.
 
 ### 3. Intuitive User Interface
-The game features a clean and responsive web interface, ensuring that players can easily navigate choices, manage their character/persona, and engage with the narrative without friction.
+The game features a clean and responsive web interface, ensuring that players can easily navigate choices, manage their character/persona, and engage with the narrative without friction. This includes dedicated displays for character traits and dynamic relationship metrics.
 
 ### 4. Persistent Data Management
 Player-created characters and personas are designed to be persistent. The system allows for the creation, editing, and **overwriting** of these records, ensuring that players can refine their game elements over time without losing progress or creating redundant entries.

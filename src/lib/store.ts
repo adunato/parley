@@ -14,7 +14,7 @@ interface BasicInfo {
     appearance?: string
 }
 
-interface Personality {
+export interface Personality {
     openness: number
     conscientiousness: number
     extraversion: number

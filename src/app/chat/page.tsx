@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
+import { CharacterTraitsDisplay } from "@/components/character-traits-display";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 
@@ -228,7 +229,7 @@ export default function ChatPage() {
                 </div>
             ) : (
                 <div className="flex-1 flex justify-center p-4">
-                    <div className="flex flex-col items-center w-full max-w-2xl lg:max-w-4xl xl:max-w-6xl">
+                    <div className="flex flex-col items-center w-full">
                         <div className="w-full mb-4 flex justify-end gap-2">
                             <Button onClick={handleEndChat} variant="outline">
                                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -239,10 +240,19 @@ export default function ChatPage() {
                                 New Chat
                             </Button>
                         </div>
-                        <div className="flex flex-row items-start w-full justify-center gap-4">
+                        <div className="flex flex-row items-start w-full justify-center gap-4 max-w-6xl">
+                            {selectedChatCharacter && (
+                                <CharacterTraitsDisplay
+                                    personality={selectedChatCharacter.personality}
+                                    preferences={[
+                                        ...(selectedChatCharacter.preferences?.attractedToTraits || []),
+                                        ...(selectedChatCharacter.preferences?.dislikesTraits || []),
+                                    ]}
+                                />
+                            )}
                             <ChatComponent
                                 chatSessionId={chatSessionId}
-                                className="w-full max-w-2xl"
+                                className="w-full"
                                 relationship={currentRelationship}
                                 onMessageFinish={async (message) => {
                                     if (selectedChatCharacter && selectedChatPersona && currentRelationship) {

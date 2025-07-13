@@ -55,7 +55,7 @@ function RelationshipBar({ label, value, delta = 0, max = 100 }: BarProps) {
 
 export default function RelationshipDisplay({ characterName, relationship, cumulativeDeltaRelationship, latestDeltaDescription }: RelationshipDisplayProps) {
     return (
-        <Card className="w-80 h-fit max-h-[80vh] overflow-y-auto">
+        <Card className="w-full h-fit max-h-[80vh] overflow-y-auto">
             <CardHeader>
                 <CardTitle>Relationship with {characterName}</CardTitle>
                 <CardDescription>Emotional and interpersonal dynamics overview</CardDescription>
