@@ -14,7 +14,7 @@ import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter, cumulativeRelationshipDelta, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDelta } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -87,17 +87,33 @@ export default function ChatPage() {
     };
 
     const handleEndChat = () => {
-        if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-            // No cumulative deltas to apply directly to the stored relationship
-            // The relationship in the character object is updated directly by the onMessageFinish callback
-            // TODO WE WILL NEED TO REFACTOR THIS AS WE LOST A FUNCTIONALITY HERE
+        if (selectedChatCharacter && selectedChatPersona && currentRelationship && cumulativeRelationshipDelta) {
+            const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
+                if (rel.personaAlias === selectedChatPersona.alias) {
+                    return {
+                        ...rel,
+                        closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
+                        sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
+                        respect: rel.respect + cumulativeRelationshipDelta.respect,
+                        engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
+                        stability: rel.stability + cumulativeRelationshipDelta.stability,
+                        description: `${rel.description}\n${cumulativeRelationshipDelta.description}`,
+                    };
+                }
+                return rel;
+            });
+
+            const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
+            updateCharacter(updatedCharacter);
         }
+        clearCumulativeRelationshipDelta();
         clearChat();
         setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
 
     const handleNewChat = () => {
+        clearCumulativeRelationshipDelta();
         clearChat();
         setLatestDeltaDescription(undefined);
         setIsChatActive(false);
@@ -212,7 +228,7 @@ export default function ChatPage() {
                                             });
                                             const data = await response.json();
                                             if (response.ok && data.relationshipDelta) {
-                                                
+                                                updateCumulativeRelationshipDelta(data.relationshipDelta);
                                                 setLatestDeltaDescription(data.relationshipDelta.description);
                                             } else {
                                                 console.error('Failed to generate relationship delta:', data.error);
@@ -227,6 +243,8 @@ export default function ChatPage() {
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
+                                    cumulativeDeltaRelationship={cumulativeRelationshipDelta}
+                                    latestDeltaDescription={latestDeltaDescription}
                                     
                                 />
                             )}

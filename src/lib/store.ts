@@ -89,6 +89,9 @@ interface ParleyStore {
   chatSessionId: number;
   clearCharacters: () => void;
   clearAllData: () => void;
+  cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
+  updateCumulativeRelationshipDelta: (delta: Relationship) => void;
+  clearCumulativeRelationshipDelta: () => void; // Called on new chat
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -162,9 +165,31 @@ export const useParleyStore = create<ParleyStore>()(
           chatMessages: [],
           chatInput: '',
           chatSessionId: 0,
+          cumulativeRelationshipDelta: undefined, // Clear cumulative delta on full data clear
         });
         useParleyStore.persist.clearStorage();
       },
+      cumulativeRelationshipDelta: undefined,
+      updateCumulativeRelationshipDelta: (delta: Relationship) =>
+        set((state) => {
+          const currentDelta = state.cumulativeRelationshipDelta;
+          if (currentDelta) {
+            return {
+              cumulativeRelationshipDelta: {
+                ...currentDelta,
+                closeness: currentDelta.closeness + delta.closeness,
+                sexual_attraction: currentDelta.sexual_attraction + delta.sexual_attraction,
+                respect: currentDelta.respect + delta.respect,
+                engagement: currentDelta.engagement + delta.engagement,
+                stability: currentDelta.stability + delta.stability,
+                description: `${currentDelta.description}\n${delta.description}`,
+              },
+            };
+          } else {
+            return { cumulativeRelationshipDelta: delta };
+          }
+        }),
+      clearCumulativeRelationshipDelta: () => set({ cumulativeRelationshipDelta: undefined }),
     }),
     {
       name: 'parley-storage',

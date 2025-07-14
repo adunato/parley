@@ -64,27 +64,27 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
                 <div className="space-y-4">
                     <RelationshipBar
                         label="closeness"
-                        value={relationship.closeness + (cumulativeDeltaRelationship?.closeness || 0)}
+                        value={relationship.closeness}
                         delta={cumulativeDeltaRelationship?.closeness}
                     />
                     <RelationshipBar
                         label="sexual_attraction"
-                        value={relationship.sexual_attraction + (cumulativeDeltaRelationship?.sexual_attraction || 0)}
+                        value={relationship.sexual_attraction}
                         delta={cumulativeDeltaRelationship?.sexual_attraction}
                     />
                     <RelationshipBar
                         label="respect"
-                        value={relationship.respect + (cumulativeDeltaRelationship?.respect || 0)}
+                        value={relationship.respect}
                         delta={cumulativeDeltaRelationship?.respect}
                     />
                     <RelationshipBar
                         label="engagement"
-                        value={relationship.engagement + (cumulativeDeltaRelationship?.engagement || 0)}
+                        value={relationship.engagement}
                         delta={cumulativeDeltaRelationship?.engagement}
                     />
                     <RelationshipBar
                         label="stability"
-                        value={relationship.stability + (cumulativeDeltaRelationship?.stability || 0)}
+                        value={relationship.stability}
                         delta={cumulativeDeltaRelationship?.stability}
                     />
                 </div>
