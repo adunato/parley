@@ -60,7 +60,7 @@ interface RelationshipDisplayProps {
 ```
 
 ### Display Logic
-The `RelationshipBar` sub-component will be modified to accept and display a `delta` value. The main `RelationshipDisplay` component will calculate the effective current value by adding the `relationship` and `cumulativeDeltaRelationship` values for each metric (e.g., `closeness + cumulativeDeltaRelationship.closeness`). The `delta` passed to `RelationshipBar` will be the individual delta for that metric from `cumulativeDeltaRelationship`.
+The `RelationshipBar` sub-component will be modified to accept and display a `delta` value. The main `RelationshipDisplay` component will display the `relationship` values directly in the bars, without immediately applying the `cumulativeDeltaRelationship`. The `delta` passed to `RelationshipBar` will be the individual delta for that metric from `cumulativeDeltaRelationship`, which can be used for visual indicators of change (e.g., a small arrow or number next to the bar), but not to alter the bar's primary value until committed.
 
 The `description` in `RelationshipDisplay` will show the base relationship's description, and potentially a concatenated list of descriptions from the cumulative deltas, or just the latest delta's description, depending on user feedback during implementation. For now, it will show the base description and the cumulative delta description.
 
@@ -71,25 +71,25 @@ We will also add a new field above the 'description' section to display the delt
 ## 4. State Management (Zustand Store)
 
 ### New State
-A new state variable, `cumulativeRelationshipDelta`, will be added to the `useParleyStore`. This will be a `Map<string, Map<string, Relationship>>` similar to `relationships`, but storing the *cumulative deltas* for the current chat session. It will be reset when a new chat session begins.
+A new state variable, `cumulativeRelationshipDelta`, will be added to the `useParleyStore`. This will be a single `Relationship` object, representing the cumulative deltas for the *current* chat session between the selected character and persona. It will be reset when a new chat session begins.
 
 ```typescript
 interface ParleyStore {
   // ... existing states
-  cumulativeRelationshipDeltas: Map<string, Map<string, Relationship>>; // Stores deltas per character-persona pair for the current session
-  updateCumulativeRelationshipDelta: (characterId: string, personaAlias: string, delta: Relationship) => void;
-  clearCumulativeRelationshipDeltas: () => void; // Called on new chat
+  cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
+  updateCumulativeRelationshipDelta: (delta: Relationship) => void;
+  clearCumulativeRelationshipDelta: () => void; // Called on new chat
 }
 ```
 
 ### Update Logic
 After the `/api/generate/relationship-delta` API call returns, the `updateCumulativeRelationshipDelta` action will be dispatched. This action will:
-1. Retrieve the existing `cumulativeRelationshipDelta` for the specific character-persona pair.
+1. Retrieve the existing `cumulativeRelationshipDelta`. If it doesn't exist, initialize it with the new delta.
 2. Add the new `delta` values to the existing cumulative deltas (e.g., `closeness += newDelta.closeness`).
-3. Update the `cumulativeRelationshipDeltas` map in the store.
+3. Update the `cumulativeRelationshipDelta` object in the store.
 
 ### Persistence
-The `cumulativeRelationshipDeltas` will *not* be persisted across browser sessions. It is intended to track changes only for the duration of the active chat session.
+The `cumulativeRelationshipDelta` will *not* be persisted across browser sessions. It is intended to track changes only for the duration of the active chat session and will be explicitly cleared when `clearChat` is invoked.
 
 ## 5. "End Chat" Button
 
@@ -112,3 +112,57 @@ Upon clicking the "End Chat" button:
 6.  **Add "End Chat" Button:** Implement the button and its handler in `chat/page.tsx` to commit changes and reset the session.
 7.  **Testing:** Thoroughly test the new workflow, including delta accumulation and commitment.
 
+## 7. Assessment of current implementation
+1. New API Endpoint: /api/generate/relationship-delta
+
+    * Implemented: Yes.
+        * The file src/app/api/generate/relationship-delta/route.ts exists.
+        * It's a POST endpoint.
+        * It correctly receives character, persona, chatHistory, and latestExchange from the request body.
+        * It finds the currentRelationship.
+        * It uses generateRelationshipDeltaPrompt and generateJSON (which implies an LLM call) to get the relationshipDelta.
+        * It returns the relationshipDelta in the expected JSON format.
+        * The asynchronous invocation is handled by the client-side calling this API in the background.
+
+2. RelationshipDisplay Component Enhancements
+
+* Partially Implemented:
+    * The RelationshipDisplay component in src/components/relationship-display.tsx already accepts relationship and
+      cumulativeDeltaRelationship as props.
+    * The RelationshipBar sub-component also has logic to display a delta value.
+    * The templates/relationship-display.tsx also contains similar logic for displaying deltas.
+    * Outstanding: The description in RelationshipDisplay needs to be updated to show the base relationship's description
+      and the cumulative delta description, as specified in the design. Currently, it only displays
+      relationship.description.
+
+3. State Management (Zustand Store)
+
+* Outstanding:
+    * The cumulativeRelationshipDeltas state (as a Map<string, Map<string, Relationship>>) is not implemented in
+      src/lib/store.ts.
+    * The associated actions updateCumulativeRelationshipDelta and clearCumulativeRelationshipDeltas are also not
+      implemented.
+    * The persistence aspect (not persisting cumulativeRelationshipDeltas) is implicitly handled because the state itself
+      doesn't exist yet.
+
+4. "End Chat" Button
+
+* Partially Implemented:
+    * An "End Chat" button exists in src/app/chat/page.tsx.
+    * Its onClick handler (handleEndChat) calls clearChat().
+    * Outstanding: The core functionality of retrieving the cumulativeRelationshipDelta and applying it to the main
+      relationships state in the useParleyStore before calling clearChat is not implemented, as the
+      cumulativeRelationshipDeltas state itself is missing.
+
+Summary of Outstanding Items:
+
+1. `RelationshipDisplay` Component: Update the description display logic to include the cumulative delta description.
+2. Zustand Store (`src/lib/store.ts`):
+    * Add cumulativeRelationshipDeltas state.
+    * Implement updateCumulativeRelationshipDelta action.
+    * Implement clearCumulativeRelationshipDeltas action.
+3. "End Chat" Button (`src/app/chat/page.tsx`):
+    * Implement the logic to retrieve and apply cumulativeRelationshipDelta to the character's relationships before
+      clearing the chat.
+    * Integrate the updateCumulativeRelationshipDelta call after the relationship-delta API call in
+      src/app/chat/page.tsx.
