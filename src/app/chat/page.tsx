@@ -97,7 +97,7 @@ export default function ChatPage() {
                         respect: rel.respect + cumulativeRelationshipDelta.respect,
                         engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
                         stability: rel.stability + cumulativeRelationshipDelta.stability,
-                        description: `${rel.description}\n${cumulativeRelationshipDelta.description}`,
+                        description: rel.description,
                     };
                 }
                 return rel;
