@@ -103,7 +103,7 @@ export const useParleyStore = create<ParleyStore>()(
       updateCharacter: (updatedCharacter) =>
         set((state) => ({
           characters: state.characters.map((char) =>
-            char.id === updatedCharacter.id ? { ...updatedCharacter, relationships: char.relationships } : char
+            char.id === updatedCharacter.id ? updatedCharacter : char
           ),
         })),
       deleteCharacter: (id) =>
@@ -137,7 +137,6 @@ export const useParleyStore = create<ParleyStore>()(
       clearChat: () => set((state) => {
         const prevChatSessionId = state.chatSessionId;
         localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`);
-        useParleyStore.persist.clearStorage();
         const newChatSessionId = state.chatSessionId + 1;
         return {
           selectedChatCharacter: undefined,

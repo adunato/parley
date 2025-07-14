@@ -48,7 +48,6 @@ export default function ChatPage() {
     const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
             const existingRelationship = selectedChatCharacter?.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
-            console.log(existingRelationship);
 
             if (!existingRelationship) {
                 try {
