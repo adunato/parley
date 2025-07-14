@@ -22,8 +22,7 @@ export default function ChatPage() {
 
     useEffect(() => {
         if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
-            const relationships = selectedChatCharacter.relationships || [];
-            const existingRelationship = relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
+            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
             if (existingRelationship) {
                 setCurrentRelationship(existingRelationship);
             } else {
