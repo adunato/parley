@@ -14,20 +14,22 @@ import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, addRelationship, updateRelationship, getRelationship, cumulativeRelationshipDeltas, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDeltas } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
     const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        if (selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = getRelationship(selectedChatCharacter.id, selectedChatPersona.alias);
+        if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
+            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
             if (existingRelationship) {
                 setCurrentRelationship(existingRelationship);
+            } else {
+                setCurrentRelationship(undefined);
             }
         }
-    }, [selectedChatCharacter, selectedChatPersona, getRelationship]);
+    }, [_hasHydrated, selectedChatCharacter, selectedChatPersona]);
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
@@ -45,7 +47,7 @@ export default function ChatPage() {
 
     const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = getRelationship(selectedChatCharacter.id,selectedChatPersona.alias);
+            const existingRelationship = selectedChatCharacter?.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
             console.log(existingRelationship);
 
             if (!existingRelationship) {
@@ -62,8 +64,10 @@ export default function ChatPage() {
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        addRelationship(selectedChatCharacter.id, selectedChatPersona.alias, data.relationship);
-                        setCurrentRelationship(data.relationship);
+                        const newRelationship = { ...data.relationship, characterId: selectedChatCharacter.id, personaAlias: selectedChatPersona.alias };
+                        const updatedCharacter = { ...selectedChatCharacter, relationships: [...selectedChatCharacter.relationships, newRelationship] };
+                        updateCharacter(updatedCharacter);
+                        setCurrentRelationship(newRelationship);
                     } else {
                         console.error('Failed to generate relationship:', data.error);
                         alert('Error generating relationship: ' + data.error);
@@ -85,29 +89,17 @@ export default function ChatPage() {
 
     const handleEndChat = () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-            const cumulativeDelta = cumulativeRelationshipDeltas.get(selectedChatCharacter.id)?.get(selectedChatPersona.alias);
-
-            if (cumulativeDelta) {
-                const updatedRelationship = {
-                    closeness: currentRelationship.closeness + cumulativeDelta.closeness,
-                    sexual_attraction: currentRelationship.sexual_attraction + cumulativeDelta.sexual_attraction,
-                    respect: currentRelationship.respect + cumulativeDelta.respect,
-                    engagement: currentRelationship.engagement + cumulativeDelta.engagement,
-                    stability: currentRelationship.stability + cumulativeDelta.stability,
-                    description: currentRelationship.description, // Description is not cumulative in this commit
-                };
-                updateRelationship(selectedChatCharacter.id, selectedChatPersona.alias, updatedRelationship);
-            }
+            // No cumulative deltas to apply directly to the stored relationship
+            // The relationship in the character object is updated directly by the onMessageFinish callback
+            // TODO WE WILL NEED TO REFACTOR THIS AS WE LOST A FUNCTIONALITY HERE
         }
         clearChat();
-        clearCumulativeRelationshipDeltas();
         setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
 
     const handleNewChat = () => {
         clearChat();
-        clearCumulativeRelationshipDeltas();
         setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
@@ -221,11 +213,7 @@ export default function ChatPage() {
                                             });
                                             const data = await response.json();
                                             if (response.ok && data.relationshipDelta) {
-                                                updateCumulativeRelationshipDelta(
-                                                    selectedChatCharacter.id,
-                                                    selectedChatPersona.alias,
-                                                    data.relationshipDelta
-                                                );
+                                                
                                                 setLatestDeltaDescription(data.relationshipDelta.description);
                                             } else {
                                                 console.error('Failed to generate relationship delta:', data.error);
@@ -240,8 +228,7 @@ export default function ChatPage() {
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
-                                    cumulativeDeltaRelationship={cumulativeRelationshipDeltas.get(selectedChatCharacter.id)?.get(selectedChatPersona?.alias || "")}
-                                    latestDeltaDescription={latestDeltaDescription}
+                                    
                                 />
                             )}
                         </div>

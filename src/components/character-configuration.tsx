@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, relationships, playerPersonas, deleteRelationship } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, playerPersonas } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -89,6 +89,7 @@ export default function CharacterConfiguration() {
             basicInfo: { name: "New Character" },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
             preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
+            relationships: [],
         }
         addCharacter(newCharacter)
         setSelectedId(newId)
@@ -106,7 +107,12 @@ export default function CharacterConfiguration() {
     }
 
     const handleDeleteRelationship = (characterId: string, personaAlias: string) => {
-        deleteRelationship(characterId, personaAlias);
+        if (editedCharacter) {
+            const updatedRelationships = editedCharacter.relationships.filter(
+                (rel) => !(rel.characterId === characterId && rel.personaAlias === personaAlias)
+            );
+            setEditedCharacter({ ...editedCharacter, relationships: updatedRelationships });
+        }
     };
 
     const displayCharacter = editedCharacter || selectedCharacter
@@ -489,15 +495,15 @@ export default function CharacterConfiguration() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {displayCharacter && relationships.has(displayCharacter.id) && relationships.get(displayCharacter.id)?.size > 0 ? (
-                                            Array.from(relationships.get(displayCharacter.id)?.entries() || []).map(([personaAlias, relationship]) => (
-                                                <div key={personaAlias} className="border p-3 rounded-md">
+                                        {displayCharacter && displayCharacter.relationships.length > 0 ? (
+                                            displayCharacter.relationships.map((relationship) => (
+                                                <div key={relationship.personaAlias} className="border p-3 rounded-md">
                                                     <div className="flex justify-between items-center mb-2">
-                                                        <h4 className="font-semibold">Relationship with {playerPersonas.find(p => p.alias === personaAlias)?.name || personaAlias}</h4>
+                                                        <h4 className="font-semibold">Relationship with {playerPersonas.find(p => p.alias === relationship.personaAlias)?.name || relationship.personaAlias}</h4>
                                                         <Button
                                                             variant="destructive"
                                                             size="sm"
-                                                            onClick={() => handleDeleteRelationship(displayCharacter.id, personaAlias)}
+                                                            onClick={() => handleDeleteRelationship(displayCharacter.id, relationship.personaAlias)}
                                                             disabled={!isEditing}
                                                         >
                                                             Delete
@@ -505,9 +511,9 @@ export default function CharacterConfiguration() {
                                                     </div>
                                                     {Object.entries(relationship).map(([trait, value]) => (
                                                         <div key={trait} className="space-y-2">
-                                                            <Label htmlFor={`${personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                            <Label htmlFor={`${relationship.personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                             <Input
-                                                                id={`${personaAlias}-${trait}`}
+                                                                id={`${relationship.personaAlias}-${trait}`}
                                                                 type="number"
                                                                 value={value as number}
                                                                 disabled

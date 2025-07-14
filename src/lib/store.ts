@@ -29,6 +29,8 @@ interface Preferences {
 }
 
 export interface Relationship {
+  characterId: string;
+  personaAlias: string;
   closeness: number;
   sexual_attraction: number;
   respect: number;
@@ -42,6 +44,7 @@ export interface Character {
     basicInfo: BasicInfo
     personality: Personality
     preferences?: Preferences
+    relationships: Relationship[];
 }
 
 export interface PlayerPersona {
@@ -84,14 +87,7 @@ interface ParleyStore {
   _hasHydrated: boolean;
   _setHasHydrated: (hydrated: boolean) => void;
   chatSessionId: number;
-  relationships: Map<string, Map<string, Relationship>>; // New relationships state
-  addRelationship: (characterId: string, personaAlias: string, relationship: Relationship) => void;
-  updateRelationship: (characterId: string, personaAlias: string, relationship: Relationship) => void;
-  getRelationship: (characterId: string, personaAlias: string) => Relationship | undefined;
-  deleteRelationship: (characterId: string, personaAlias: string) => void;
-  cumulativeRelationshipDeltas: Map<string, Map<string, Relationship>>; // Stores deltas per character-persona pair for the current session
-  updateCumulativeRelationshipDelta: (characterId: string, personaAlias: string, delta: Relationship) => void;
-  clearCumulativeRelationshipDeltas: () => void; // Called on new chat
+  clearCharacters: () => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -99,41 +95,14 @@ export const useParleyStore = create<ParleyStore>()(
     persist(
       (set, get) => ({
       gameInitialized: false,
-      cumulativeRelationshipDeltas: new Map(), // Initialize cumulative deltas map
-      updateCumulativeRelationshipDelta: (characterId, personaAlias, delta) =>
-        set((state) => {
-          const newCumulativeDeltas = new Map(state.cumulativeRelationshipDeltas);
-          if (!newCumulativeDeltas.has(characterId)) {
-            newCumulativeDeltas.set(characterId, new Map());
-          }
-          const currentDelta = newCumulativeDeltas.get(characterId)?.get(personaAlias) || {
-            closeness: 0,
-            sexual_attraction: 0,
-            respect: 0,
-            engagement: 0,
-            stability: 0,
-            description: "",
-          };
-
-          const updatedDelta = {
-            closeness: currentDelta.closeness + delta.closeness,
-            sexual_attraction: currentDelta.sexual_attraction + delta.sexual_attraction,
-            respect: currentDelta.respect + delta.respect,
-            engagement: currentDelta.engagement + delta.engagement,
-            stability: currentDelta.stability + delta.stability,
-            description: currentDelta.description + (delta.description ? `\n${delta.description}` : ""),
-          };
-          newCumulativeDeltas.get(characterId)?.set(personaAlias, updatedDelta);
-          return { cumulativeRelationshipDeltas: newCumulativeDeltas };
-        }),
-      clearCumulativeRelationshipDeltas: () => set({ cumulativeRelationshipDeltas: new Map() }),
+      
       initializeGame: () => set({ gameInitialized: true }),
       characters: [],
-      addCharacter: (character) => set((state) => ({ characters: [...state.characters, character] })),
+      addCharacter: (character) => set((state) => ({ characters: [...state.characters, { ...character, relationships: [] }] })),
       updateCharacter: (updatedCharacter) =>
         set((state) => ({
           characters: state.characters.map((char) =>
-            char.id === updatedCharacter.id ? updatedCharacter : char
+            char.id === updatedCharacter.id ? { ...updatedCharacter, relationships: char.relationships } : char
           ),
         })),
       deleteCharacter: (id) =>
@@ -180,37 +149,7 @@ export const useParleyStore = create<ParleyStore>()(
       _setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
       chatSessionId: 0,
       _hasHydrated: false,
-      relationships: new Map(), // Initialize relationships map
-      addRelationship: (characterId, personaAlias, relationship) =>
-        set((state) => {
-          const newRelationships = new Map(state.relationships);
-          if (!newRelationships.has(characterId)) {
-            newRelationships.set(characterId, new Map());
-          }
-          newRelationships.get(characterId)?.set(personaAlias, relationship);
-          return { relationships: newRelationships };
-        }),
-      updateRelationship: (characterId, personaAlias, relationship) =>
-        set((state) => {
-          const newRelationships = new Map(state.relationships);
-          if (newRelationships.has(characterId)) {
-            newRelationships.get(characterId)?.set(personaAlias, relationship);
-          }
-          return { relationships: newRelationships };
-        }),
-      getRelationship: (characterId, personaAlias) =>
-        get().relationships.get(characterId)?.get(personaAlias),
-      deleteRelationship: (characterId, personaAlias) =>
-        set((state) => {
-          const newRelationships = new Map(state.relationships);
-          if (newRelationships.has(characterId)) {
-            newRelationships.get(characterId)?.delete(personaAlias);
-            if (newRelationships.get(characterId)?.size === 0) {
-              newRelationships.delete(characterId);
-            }
-          }
-          return { relationships: newRelationships };
-        }),
+      clearCharacters: () => set({ characters: [] }),
     }),
     {
       name: 'parley-storage',
@@ -228,30 +167,12 @@ export const useParleyStore = create<ParleyStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Manually rehydrate the relationships Map
-          if (state.relationships && !(state.relationships instanceof Map)) {
-            const rehydratedRelationships = new Map<string, Map<string, Relationship>>();
-            for (const [characterId, personaMap] of Object.entries(state.relationships)) {
-              if (personaMap && !(personaMap instanceof Map)) {
-                rehydratedRelationships.set(characterId, new Map(Object.entries(personaMap)));
-              } else if (personaMap) {
-                rehydratedRelationships.set(characterId, personaMap as Map<string, Relationship>);
-              }
-            }
-            state.relationships = rehydratedRelationships;
-          }
-
-          // Manually rehydrate the cumulativeRelationshipDeltas Map
-          if (state.cumulativeRelationshipDeltas && !(state.cumulativeRelationshipDeltas instanceof Map)) {
-            const rehydratedCumulativeDeltas = new Map<string, Map<string, Relationship>>();
-            for (const [characterId, personaMap] of Object.entries(state.cumulativeRelationshipDeltas)) {
-              if (personaMap && !(personaMap instanceof Map)) {
-                rehydratedCumulativeDeltas.set(characterId, new Map(Object.entries(personaMap)));
-              } else if (personaMap) {
-                rehydratedCumulativeDeltas.set(characterId, personaMap as Map<string, Relationship>);
-              }
-            }
-            state.cumulativeRelationshipDeltas = rehydratedCumulativeDeltas;
+          // Ensure all characters have a relationships array
+          if (state.characters) {
+            state.characters = state.characters.map(character => ({
+              ...character,
+              relationships: character.relationships || []
+            }));
           }
         }
         state?._setHasHydrated(true);
