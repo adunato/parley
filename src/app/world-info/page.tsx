@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useParleyStore } from '@/lib/store';
 import { useEffect, useState } from 'react';
-import { Sparkles, Type } from 'lucide-react';
+import { Sparkles, Type, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,12 +23,13 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function WorldInfoPage() {
-  const { worldDescription, setWorldDescription, aiStyle, setAiStyle } = useParleyStore();
+  const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData } = useParleyStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
   const [isAiStylePromptDialogOpen, setIsAiStylePromptDialogOpen] = useState(false);
   const [worldDialogPrompt, setWorldDialogPrompt] = useState(''); // New state for the world description dialog's prompt
   const [aiStyleDialogPrompt, setAiStyleDialogPrompt] = useState(''); // New state for the AI style dialog's prompt
+  const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
 
   const generateWorld = async (prompt?: string) => {
     setIsLoading(true);
@@ -107,6 +108,11 @@ export default function WorldInfoPage() {
 
   const handleGenerateAIStyleWithPrompt = async () => {
     generateAIStyle(aiStyleDialogPrompt);
+  };
+
+  const handleClearAllData = () => {
+    clearAllData();
+    setIsClearDataDialogOpen(false);
   };
 
   return (
@@ -274,6 +280,28 @@ export default function WorldInfoPage() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
+          <Dialog open={isClearDataDialogOpen} onOpenChange={setIsClearDataDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear All Data
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete all your data from the application.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsClearDataDialogOpen(false)}>Cancel</Button>
+                <Button variant="destructive" onClick={handleClearAllData}>
+                  Yes, delete everything
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardFooter>
       </Card>
     </div>

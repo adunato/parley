@@ -88,6 +88,7 @@ interface ParleyStore {
   _setHasHydrated: (hydrated: boolean) => void;
   chatSessionId: number;
   clearCharacters: () => void;
+  clearAllData: () => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -150,6 +151,21 @@ export const useParleyStore = create<ParleyStore>()(
       chatSessionId: 0,
       _hasHydrated: false,
       clearCharacters: () => set({ characters: [] }),
+      clearAllData: () => {
+        set({
+          gameInitialized: false,
+          characters: [],
+          playerPersonas: [],
+          worldDescription: '',
+          aiStyle: '',
+          selectedChatCharacter: undefined,
+          selectedChatPersona: undefined,
+          chatMessages: [],
+          chatInput: '',
+          chatSessionId: 0,
+        });
+        useParleyStore.persist.clearStorage();
+      },
     }),
     {
       name: 'parley-storage',
