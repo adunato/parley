@@ -40,3 +40,4 @@ Thumbs.db
 
 # Test build output
 dist-test/
+.aider*
