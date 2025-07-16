@@ -14,7 +14,7 @@ import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter, cumulativeRelationshipDelta, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDelta } = useParleyStore();
+    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter, cumulativeRelationshipDelta, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDelta, chatMessages } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -86,25 +86,59 @@ export default function ChatPage() {
         }
     };
 
-    const handleEndChat = () => {
-        if (selectedChatCharacter && selectedChatPersona && currentRelationship && cumulativeRelationshipDelta) {
-            const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                if (rel.personaAlias === selectedChatPersona.alias) {
-                    return {
-                        ...rel,
-                        closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
-                        sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
-                        respect: rel.respect + cumulativeRelationshipDelta.respect,
-                        engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
-                        stability: rel.stability + cumulativeRelationshipDelta.stability,
-                        description: rel.description,
-                    };
+    const handleEndChat = async () => {
+        if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+            // Summarize the chat
+            try {
+                const response = await fetch('/api/summarise', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chatHistory: chatMessages }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    const newSummary = { summary: data.summary, timestamp: new Date() };
+                    const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
+                        if (rel.personaAlias === selectedChatPersona.alias) {
+                            const updatedSummaries = rel.chat_summaries ? [...rel.chat_summaries, newSummary] : [newSummary];
+                            return {
+                                ...rel,
+                                chat_summaries: updatedSummaries,
+                            };
+                        }
+                        return rel;
+                    });
+                    const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
+                    updateCharacter(updatedCharacter);
+                    console.log('Updated character with new summary:', updatedCharacter);
+                } else {
+                    console.error('Failed to generate summary:', data.error);
                 }
-                return rel;
-            });
+            } catch (error) {
+                console.error('Error generating summary:', error);
+            }
 
-            const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
-            updateCharacter(updatedCharacter);
+            if (cumulativeRelationshipDelta) {
+                const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
+                    if (rel.personaAlias === selectedChatPersona.alias) {
+                        return {
+                            ...rel,
+                            closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
+                            sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
+                            respect: rel.respect + cumulativeRelationshipDelta.respect,
+                            engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
+                            stability: rel.stability + cumulativeRelationshipDelta.stability,
+                            description: rel.description,
+                        };
+                    }
+                    return rel;
+                });
+
+                const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
+                updateCharacter(updatedCharacter);
+            }
         }
         clearCumulativeRelationshipDelta();
         clearChat();

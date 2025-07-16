@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Relationship } from "@/lib/store"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface RelationshipDisplayProps {
     characterName: string
@@ -100,6 +101,24 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
                     <h4 className="text-sm font-medium mb-2">Base Description</h4>
                     <p className="text-sm text-muted-foreground leading-relaxed">{relationship.description}</p>
                 </div>
+
+                {relationship.chat_summaries && relationship.chat_summaries.length > 0 && (
+                    <div className="pt-4 border-t">
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="item-1">
+                                <AccordionTrigger>Chat Summaries</AccordionTrigger>
+                                <AccordionContent>
+                                    {relationship.chat_summaries.map((summary, index) => (
+                                        <div key={index} className="border-t pt-2 mt-2">
+                                            <p className="text-sm font-semibold">{new Date(summary.timestamp).toLocaleString()}</p>
+                                            <p className="text-sm">{summary.summary}</p>
+                                        </div>
+                                    ))}
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )

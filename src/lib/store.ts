@@ -37,6 +37,12 @@ export interface Relationship {
   engagement: number;
   stability: number;
   description: string;
+  chat_summaries: ChatSummary[];
+}
+
+export interface ChatSummary {
+  summary: string;
+  timestamp: Date;
 }
 
 export interface Character {

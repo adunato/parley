@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type } from "lucide-react"
+import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown } from "lucide-react"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
     Dialog,
     DialogContent,
@@ -514,12 +520,27 @@ export default function CharacterConfiguration() {
                                                             <Label htmlFor={`${relationship.personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                             <Input
                                                                 id={`${relationship.personaAlias}-${trait}`}
-                                                                type="number"
-                                                                value={value as number}
+                                                                type={typeof value === 'number' ? 'number' : 'text'}
+                                                                value={value as any}
                                                                 disabled
                                                             />
                                                         </div>
                                                     ))}
+                                                    {relationship.chat_summaries && relationship.chat_summaries.length > 0 && (
+                                                        <Accordion type="single" collapsible className="w-full">
+                                                            <AccordionItem value="item-1">
+                                                                <AccordionTrigger>Chat Summaries</AccordionTrigger>
+                                                                <AccordionContent>
+                                                                    {relationship.chat_summaries.map((summary, index) => (
+                                                                        <div key={index} className="border-t pt-2 mt-2">
+                                                                            <p className="text-sm font-semibold">{new Date(summary.timestamp).toLocaleString()}</p>
+                                                                            <p className="text-sm">{summary.summary}</p>
+                                                                        </div>
+                                                                    ))}
+                                                                </AccordionContent>
+                                                            </AccordionItem>
+                                                        </Accordion>
+                                                    )}
                                                 </div>
                                             ))
                                         ) : (
