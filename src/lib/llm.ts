@@ -13,7 +13,8 @@ export const llm = new ChatOpenAI({
             "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         },
     },
-    model: "mistralai/mistral-large",
+    // model: "mistralai/mistral-large",
+    model: "deepseek/deepseek-chat",
 });
 
 export async function generateJSON(prompt: string): Promise<any> {
