@@ -37,7 +37,7 @@ export interface Relationship {
   engagement: number;
   stability: number;
   description: string;
-  chat_summaries: ChatSummary[];
+  chat_summaries?: ChatSummary[]; // Made optional with ?
 }
 
 export interface ChatSummary {
@@ -109,12 +109,13 @@ export const useParleyStore = create<ParleyStore>()(
       initializeGame: () => set({ gameInitialized: true }),
       characters: [],
       addCharacter: (character) => set((state) => ({ characters: [...state.characters, { ...character, relationships: [] }] })),
-      updateCharacter: (updatedCharacter) =>
-        set((state) => ({
+      updateCharacter: (updatedCharacter) => {
+        return set((state) => ({
           characters: state.characters.map((char) =>
             char.id === updatedCharacter.id ? updatedCharacter : char
           ),
-        })),
+        }));
+      },
       deleteCharacter: (id) =>
         set((state) => ({
           characters: state.characters.filter((char) => char.id !== id),

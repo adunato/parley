@@ -100,44 +100,46 @@ export default function ChatPage() {
                 const data = await response.json();
                 if (response.ok) {
                     const newSummary = { summary: data.summary, timestamp: new Date() };
+                    
                     const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
                         if (rel.personaAlias === selectedChatPersona.alias) {
-                            const updatedSummaries = rel.chat_summaries ? [...rel.chat_summaries, newSummary] : [newSummary];
+                            const existingSummaries = rel.chat_summaries || [];
                             return {
                                 ...rel,
-                                chat_summaries: updatedSummaries,
+                                chat_summaries: [...existingSummaries, newSummary],
                             };
                         }
                         return rel;
                     });
-                    const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
+                    
+                    // Apply both summary and relationship delta in a single update
+                    const updatedRelationshipsWithDelta = updatedRelationships.map(rel => {
+                        if (rel.personaAlias === selectedChatPersona.alias && cumulativeRelationshipDelta) {
+                            return {
+                                ...rel,
+                                closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
+                                sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
+                                respect: rel.respect + cumulativeRelationshipDelta.respect,
+                                engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
+                                stability: rel.stability + cumulativeRelationshipDelta.stability,
+                                description: rel.description,
+                                // Preserve the chat_summaries we just added
+                                chat_summaries: rel.chat_summaries 
+                            };
+                        }
+                        return rel;
+                    });
+
+                    const updatedCharacter = { 
+                        ...selectedChatCharacter, 
+                        relationships: updatedRelationshipsWithDelta 
+                    };
                     updateCharacter(updatedCharacter);
-                    console.log('Updated character with new summary:', updatedCharacter);
                 } else {
                     console.error('Failed to generate summary:', data.error);
                 }
             } catch (error) {
                 console.error('Error generating summary:', error);
-            }
-
-            if (cumulativeRelationshipDelta) {
-                const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                    if (rel.personaAlias === selectedChatPersona.alias) {
-                        return {
-                            ...rel,
-                            closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
-                            sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
-                            respect: rel.respect + cumulativeRelationshipDelta.respect,
-                            engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
-                            stability: rel.stability + cumulativeRelationshipDelta.stability,
-                            description: rel.description,
-                        };
-                    }
-                    return rel;
-                });
-
-                const updatedCharacter = { ...selectedChatCharacter, relationships: updatedRelationships };
-                updateCharacter(updatedCharacter);
             }
         }
         clearCumulativeRelationshipDelta();

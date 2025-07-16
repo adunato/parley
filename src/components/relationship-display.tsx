@@ -102,7 +102,7 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
                     <p className="text-sm text-muted-foreground leading-relaxed">{relationship.description}</p>
                 </div>
 
-                {relationship.chat_summaries && relationship.chat_summaries.length > 0 && (
+                {relationship.chat_summaries?.length > 0 && (
                     <div className="pt-4 border-t">
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="item-1">
