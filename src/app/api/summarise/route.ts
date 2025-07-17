@@ -6,12 +6,6 @@ export async function POST(req: NextRequest) {
   try {
     const { chatHistory, worldInfo, aiStyle, characterName, playerPersonaName } = await req.json();
 
-    console.log('Received summarise request with:', {
-        characterName,
-        playerPersonaName,
-        chatHistoryLength: chatHistory?.length
-    });
-
     if (!chatHistory) {
       return NextResponse.json({ error: 'Chat history is required' }, { status: 400 });
     }

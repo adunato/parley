@@ -112,14 +112,6 @@ export default function ChatPage() {
     };
 
     const handleEndChat = async () => {
-        console.log('Ending chat with:', {
-            selectedChatCharacter,
-            selectedChatPersona,
-            currentRelationship,
-            characterName: selectedChatCharacter?.basicInfo?.name,
-            playerPersonaName: selectedChatPersona?.name
-        });
-
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
             // Summarize the chat
             try {

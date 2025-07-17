@@ -235,8 +235,6 @@ export const CHAT_SUMMARY_JSON_STRUCTURE = `{
 }`;
 
 export const generateChatSummaryPrompt = (chatHistory: Message[], characterName: string, playerPersonaName: string, worldDescription?: string, aiStyle?: string) => {
-    console.log('characterName in prompt:', characterName);
-    console.log('playerPersonaName in prompt:', playerPersonaName);
     const history = chatHistory.map((m: Message) => {
         if (m.role === 'user') {
             return `${playerPersonaName}: ${m.content}`;
