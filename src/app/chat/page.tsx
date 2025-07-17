@@ -50,15 +50,21 @@ export default function ChatPage() {
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
+        console.log('Selected character:', character);
         if (character) {
             setSelectedChatCharacter(character);
+        } else {
+            console.error('No character found with ID:', characterId);
         }
     };
 
     const handlePersonaSelect = (personaAlias: string) => {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
+        console.log('Selected persona:', persona);
         if (persona) {
             setSelectedChatPersona(persona);
+        } else {
+            console.error('No persona found with alias:', personaAlias);
         }
     };
 
@@ -106,6 +112,14 @@ export default function ChatPage() {
     };
 
     const handleEndChat = async () => {
+        console.log('Ending chat with:', {
+            selectedChatCharacter,
+            selectedChatPersona,
+            currentRelationship,
+            characterName: selectedChatCharacter?.basicInfo?.name,
+            playerPersonaName: selectedChatPersona?.name
+        });
+
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
             // Summarize the chat
             try {
@@ -114,7 +128,13 @@ export default function ChatPage() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ chatHistory: chatMessages, worldInfo: worldDescription, aiStyle: aiStyle }),
+                    body: JSON.stringify({
+                        chatHistory: chatMessages,
+                        worldInfo: worldDescription,
+                        aiStyle: aiStyle,
+                        characterName: selectedChatCharacter?.basicInfo?.name || "Unknown Character",
+                        playerPersonaName: selectedChatPersona?.name || "Unknown Persona",
+                    }),
                 });
                 const data = await response.json();
                 if (response.ok) {
@@ -162,9 +182,9 @@ export default function ChatPage() {
             }
         }
         clearCumulativeRelationshipDelta();
-        clearChat();
         setLatestDeltaDescription(undefined);
         setIsChatActive(false);
+        clearChat();
     };
 
     const handleNewChat = () => {

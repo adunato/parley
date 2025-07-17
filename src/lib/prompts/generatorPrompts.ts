@@ -234,8 +234,17 @@ export const CHAT_SUMMARY_JSON_STRUCTURE = `{
   "summary": string; // A concise summary of the chat history.
 }`;
 
-export const generateChatSummaryPrompt = (chatHistory: Message[], worldDescription?: string, aiStyle?: string) => {
-    const history = chatHistory.map((m: Message) => `${m.role}: ${m.content}`).join('\n');
+export const generateChatSummaryPrompt = (chatHistory: Message[], characterName: string, playerPersonaName: string, worldDescription?: string, aiStyle?: string) => {
+    console.log('characterName in prompt:', characterName);
+    console.log('playerPersonaName in prompt:', playerPersonaName);
+    const history = chatHistory.map((m: Message) => {
+        if (m.role === 'user') {
+            return `${playerPersonaName}: ${m.content}`;
+        } else if (m.role === 'assistant') {
+            return `${characterName}: ${m.content}`;
+        }
+        return `${m.role}: ${m.content}`;
+    }).join('\n');
     return `
 You are a chat summarization AI. Your responses MUST be a JSON object conforming to the following structure:
 ${CHAT_SUMMARY_JSON_STRUCTURE}
