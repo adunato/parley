@@ -1,5 +1,6 @@
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
+import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
 import { useParleyStore, Relationship } from "@/lib/store";
 import { Button } from "@/components/ui/button"
@@ -18,10 +19,26 @@ interface ChatComponentProps {
 }
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
-
   const messagesRef = useRef<Message[]>([]);
+
+  const debounceMessages = useDebouncedCallback(
+    (messages: Message[]) => setChatMessages(messages),
+    300
+  );
+  const debounceInput = useDebouncedCallback(
+    (input: string) => setChatInput(input),
+    300
+  );
+
+  // Clean up debounce callbacks on unmount
+  useEffect(() => {
+    return () => {
+      debounceMessages.cancel();
+      debounceInput.cancel();
+    };
+  }, [debounceMessages, debounceInput]);
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
@@ -44,12 +61,12 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
   useEffect(() => {
     messagesRef.current = messages;
-    setChatMessages(messages);
-  }, [messages]);
+    debounceMessages(messages);
+  }, [messages, debounceMessages]);
 
   useEffect(() => {
-    setChatInput(input);
-  }, [input, setChatInput]);
+    debounceInput(input);
+  }, [input, debounceInput]);
 
   const isLoading = status === "submitted" || status === "streaming"
 
