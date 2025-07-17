@@ -6,7 +6,7 @@ import { generateJSON } from '@/lib/llm';
 
 export async function POST(req: Request) {
     try {
-        const { character, persona, chatHistory, latestExchange } = await req.json();
+        const { character, persona, chatHistory, latestExchange, worldDescription, aiStyle } = await req.json();
         const currentRelationship = character.relationships.find((rel: any) => rel.personaAlias === persona.alias);
 
         const prompt = generateRelationshipDeltaPrompt(
@@ -14,7 +14,9 @@ export async function POST(req: Request) {
             persona as PlayerPersona,
             chatHistory as Message[],
             latestExchange as { userMessage: string; characterResponse: string },
-            currentRelationship as Relationship
+            currentRelationship as Relationship,
+            worldDescription as string,
+            aiStyle as string
         );
 
         const relationshipDelta = await generateJSON(prompt);

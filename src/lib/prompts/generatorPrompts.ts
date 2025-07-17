@@ -188,7 +188,9 @@ export const generateRelationshipDeltaPrompt = (
     persona: PlayerPersona,
     chatHistory: Message[],
     latestExchange: { userMessage: string; characterResponse: string },
-    currentRelationship: Relationship
+    currentRelationship: Relationship,
+    worldDescription?: string,
+    aiStyle?: string
 ) => {
     const characterJson = JSON.stringify(character, null, 2);
     const personaJson = JSON.stringify(persona, null, 2);
@@ -225,8 +227,11 @@ ${latestExchangeJson}
 ----------------------------
 
 Analyze the latest chat exchange in the context of the character, player persona, and their current relationship. Determine the delta (change) for each relationship metric (closeness, sexual_attraction, respect, engagement, stability) and provide a concise description of why these changes occurred. The description should focus on the impact of this specific exchange.
-sexual_attraction should change based on the character data -   preferences - "attractedToTraits" and "dislikesTraits" which should drive the change in sexual_attraction depending on how the latest exchange relates to those traits.
- 
+sexual_attraction should change based on the character data - preferences - "attractedToTraits" and "dislikesTraits" which should drive the change in sexual_attraction depending on how the latest exchange relates to those traits.
+
+${worldDescription ? `\n\nWorld Description: ${worldDescription}` : ''}
+
+${aiStyle ? `\n\nAI Style: ${aiStyle}` : ''}
 
 JSON Output:
 `;

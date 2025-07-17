@@ -14,7 +14,24 @@ import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 
 
 export default function ChatPage() {
-    const { characters, playerPersonas, setSelectedChatCharacter, setSelectedChatPersona, selectedChatCharacter, selectedChatPersona, clearChat, _hasHydrated, chatSessionId, updateCharacter, cumulativeRelationshipDelta, updateCumulativeRelationshipDelta, clearCumulativeRelationshipDelta, chatMessages } = useParleyStore();
+    const { 
+        characters, 
+        playerPersonas, 
+        setSelectedChatCharacter, 
+        setSelectedChatPersona, 
+        selectedChatCharacter, 
+        selectedChatPersona, 
+        clearChat, 
+        _hasHydrated, 
+        chatSessionId, 
+        updateCharacter, 
+        cumulativeRelationshipDelta, 
+        updateCumulativeRelationshipDelta, 
+        clearCumulativeRelationshipDelta, 
+        chatMessages,
+        worldDescription,
+        aiStyle
+    } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -59,6 +76,8 @@ export default function ChatPage() {
                         body: JSON.stringify({
                             character: selectedChatCharacter,
                             persona: selectedChatPersona,
+                            worldDescription,
+                            aiStyle
                         }),
                     });
                     const data = await response.json();
@@ -260,6 +279,8 @@ export default function ChatPage() {
                                                     chatHistory: fullMessages,
                                                     latestExchange,
                                                     currentRelationship,
+                                                    worldDescription,
+                                                    aiStyle
                                                 }),
                                             });
                                             const data = await response.json();
