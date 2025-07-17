@@ -242,7 +242,7 @@ export const generateChatSummaryPrompt = (chatHistory: Message[], characterName:
             return `${characterName}: ${m.content}`;
         }
         return `${m.role}: ${m.content}`;
-    }).join('\n');
+    }).join('\n************************\n');
     return `
 You are a chat summarization AI. Your responses MUST be a JSON object conforming to the following structure:
 ${CHAT_SUMMARY_JSON_STRUCTURE}
