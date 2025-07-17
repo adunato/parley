@@ -13,7 +13,9 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: "Character and persona data are required." }), { status: 400 });
   }
 
-  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, worldDescription, aiStyle);
+  const chatSummaries = relationship?.chat_summaries;
+
+  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, worldDescription, aiStyle, chatSummaries);
 
   const langchainMessages = messages.map((message: Message) => {
     if (message.role === 'user') {

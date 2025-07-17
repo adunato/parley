@@ -1,7 +1,14 @@
-import { Character, PlayerPersona, Relationship } from "../store";
+import { Character, ChatSummary, PlayerPersona, Relationship } from "../store";
 import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
 
-export const generateSystemPrompt = (character: Character, playerPersona: PlayerPersona, relationship: Relationship, worldDescription?: string, aiStyle?: string) => {
+export const generateSystemPrompt = (
+    character: Character,
+    playerPersona: PlayerPersona,
+    relationship: Relationship,
+    worldDescription?: string,
+    aiStyle?: string,
+    chatSummaries?: ChatSummary[]
+) => {
     const characterJson = JSON.stringify(character, null, 2);
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
     const relationshipJson = JSON.stringify(relationship, null, 2);
@@ -34,6 +41,16 @@ ${worldDescription}
 --- AI STYLE ---
 ${aiStyle}
 ----------------
+`;
+    }
+
+    if (chatSummaries && chatSummaries.length > 0) {
+        const summariesText = chatSummaries.map((summary, index) => `- ${summary.summary}`).join('\n');
+        prompt += `
+--- PREVIOUS CONVERSATION SUMMARIES ---
+This is a summary of your past conversations with ${playerPersona.name}. Use it to recall past events and maintain conversational continuity.
+${summariesText}
+-----------------------------------------
 `;
     }
 
