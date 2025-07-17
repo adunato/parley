@@ -4,12 +4,12 @@ import { generateChatSummaryPrompt } from '@/lib/prompts/generatorPrompts';
 
 export async function POST(req: NextRequest) {
   try {
-    const { chatHistory } = await req.json();
+    const { chatHistory, worldInfo, aiStyle } = await req.json();
 
     if (!chatHistory) {
       return NextResponse.json({ error: 'Chat history is required' }, { status: 400 });
     }
-    const prompt = generateChatSummaryPrompt(chatHistory);
+    const prompt = generateChatSummaryPrompt(chatHistory, worldInfo, aiStyle);
     const response = await generateJSON(prompt);
 
     return NextResponse.json({ summary: response.summary });

@@ -114,7 +114,7 @@ export default function ChatPage() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ chatHistory: chatMessages }),
+                    body: JSON.stringify({ chatHistory: chatMessages, worldInfo: worldDescription, aiStyle: aiStyle }),
                 });
                 const data = await response.json();
                 if (response.ok) {

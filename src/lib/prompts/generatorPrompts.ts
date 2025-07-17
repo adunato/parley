@@ -234,10 +234,10 @@ export const CHAT_SUMMARY_JSON_STRUCTURE = `{
   "summary": string; // A concise summary of the chat history.
 }`;
 
-export const generateChatSummaryPrompt = (chatHistory: Message[]) => {
+export const generateChatSummaryPrompt = (chatHistory: Message[], worldDescription?: string, aiStyle?: string) => {
     const history = chatHistory.map((m: Message) => `${m.role}: ${m.content}`).join('\n');
     return `
-You are a chat summarization AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+You are a chat summarization AI. Your responses MUST be a JSON object conforming to the following structure:
 ${CHAT_SUMMARY_JSON_STRUCTURE}
 
 Summarise the following chat history. The summary should be concise and focus on the key events, decisions, and outcomes of the story so far.
@@ -246,6 +246,10 @@ Summarise the following chat history. The summary should be concise and focus on
 ${history}
 --------------------
 
+${worldDescription ? `\n\n--- WORLD DESCRIPTION ---\n\n ${worldDescription}` : ''}
+
+${aiStyle ? `\n\n--- AI STYLE ---\n\n ${aiStyle}` : ''}
+
 JSON Output:
-`;
+`
 };
