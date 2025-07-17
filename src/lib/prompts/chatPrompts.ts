@@ -80,7 +80,4 @@ If ${playerPersona.name} acts in a way that aligns with your character’s prefe
 
 export const getChatPrompt = (character: Character) => `Continue the conversation impersonating ${character.basicInfo.name}`;
 
-export const CHAT_SUMMARISATION_PROMPT = (chatHistory: any) => {
-  const history = chatHistory.map((m: any) => `${m.role}: ${m.content}`).join('\n');
-  return `Summarise the following chat history from a text adventure game. The summary should be concise and focus on the key events, decisions, and outcomes of the story so far.\n\n${history}`;
-};
+

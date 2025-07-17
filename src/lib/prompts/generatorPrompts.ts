@@ -101,21 +101,14 @@ ${personaJson}
 Based on the provided character and player persona data, generate their relationship profile.`;
 
     if (worldDescription) {
-        prompt += `
-
-World Description: ${worldDescription}`;
+        prompt += `\n\nWorld Description: ${worldDescription}`;
     }
 
     if (aiStyle) {
-        prompt += `
-
-AI Style: ${aiStyle}`;
+        prompt += `\n\nAI Style: ${aiStyle}`;
     }
 
-    prompt += `
-
-JSON Output:
-`;
+    prompt += `\n\nJSON Output:\n`;
 
     return prompt;
 };
@@ -232,6 +225,26 @@ sexual_attraction should change based on the character data - preferences - "att
 ${worldDescription ? `\n\n--- WORLD DESCRIPTION ---\n\n ${worldDescription}` : ''}
 
 ${aiStyle ? `\n\n--- AI STYLE ---\n\n ${aiStyle}` : ''}
+
+JSON Output:
+`;
+};
+
+export const CHAT_SUMMARY_JSON_STRUCTURE = `{
+  "summary": string; // A concise summary of the chat history.
+}`;
+
+export const generateChatSummaryPrompt = (chatHistory: Message[]) => {
+    const history = chatHistory.map((m: Message) => `${m.role}: ${m.content}`).join('\n');
+    return `
+You are a chat summarization AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+${CHAT_SUMMARY_JSON_STRUCTURE}
+
+Summarise the following chat history. The summary should be concise and focus on the key events, decisions, and outcomes of the story so far.
+
+--- CHAT HISTORY ---
+${history}
+--------------------
 
 JSON Output:
 `;
