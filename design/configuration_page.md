@@ -1,0 +1,11 @@
+# REQUIREMENTS
+- User must be able to open a settings page
+- Settings page should contain a chat model selection dropdown
+- Settings page should contain a summarisation model selection dropdown
+- Settings page should contain a generation model selection dropdown
+- Model selection dropdowns should be populated with available models from OpenRouter API
+- Model selection should be split into providers and models
+- Provider should be a dropdown - hardcoded for now with only OpenRouter
+- Model should be a dropdown with search functionality (i.e. filter choices as user types)
+- Model should no longer be hardcoded in the llm library, but passed in as a parameter
+- The call to the LLM library should differentiate input model based on settings and context (i.e. chat vs generation vs summarisation)
