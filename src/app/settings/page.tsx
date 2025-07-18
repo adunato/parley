@@ -39,7 +39,7 @@ export default function SettingsPage() {
           filterFn={(item, query) =>
             item.id.toLowerCase().includes(query.toLowerCase())
           }
-          itemToString={(item) => `${item.id} (${item.provider})`}
+          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
         />
       </section>
 
@@ -54,7 +54,7 @@ export default function SettingsPage() {
           filterFn={(item, query) =>
             item.id.toLowerCase().includes(query.toLowerCase())
           }
-          itemToString={(item) => `${item.id} (${item.provider})`}
+          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
         />
       </section>
 
@@ -69,7 +69,7 @@ export default function SettingsPage() {
           filterFn={(item, query) =>
             item.id.toLowerCase().includes(query.toLowerCase())
           }
-          itemToString={(item) => `${item.id} (${item.provider})`}
+          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
         />
       </section>
     </div>
