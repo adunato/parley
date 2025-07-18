@@ -30,6 +30,8 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import RelationshipDisplay from "@/components/relationship-display";
+
 export default function CharacterConfiguration() {
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, playerPersonas } = useParleyStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
@@ -502,47 +504,28 @@ export default function CharacterConfiguration() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {displayCharacter && displayCharacter.relationships.length > 0 ? (
-                                            displayCharacter.relationships.map((relationship) => (
-                                                <div key={relationship.personaAlias} className="border p-3 rounded-md">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <h4 className="font-semibold">Relationship with {playerPersonas.find(p => p.alias === relationship.personaAlias)?.name || relationship.personaAlias}</h4>
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteRelationship(displayCharacter.id, relationship.personaAlias)}
-                                                            disabled={!isEditing}
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </div>
-                                                    {Object.entries(relationship).map(([trait, value]) => (
-                                                        <div key={trait} className="space-y-2">
-                                                            <Label htmlFor={`${relationship.personaAlias}-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
-                                                            <Input
-                                                                id={`${relationship.personaAlias}-${trait}`}
-                                                                type={typeof value === 'number' ? 'number' : 'text'}
-                                                                value={value as any}
-                                                                disabled
-                                                            />
+                                            displayCharacter.relationships.map((relationship) => {
+                                                const persona = playerPersonas.find(p => p.alias === relationship.personaAlias);
+                                                return (
+                                                    <div key={relationship.personaAlias} className="border p-3 rounded-md mb-4">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <h4 className="font-semibold">Relationship with {persona?.name || relationship.personaAlias}</h4>
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteRelationship(displayCharacter.id, relationship.personaAlias)}
+                                                                disabled={!isEditing}
+                                                            >
+                                                                Delete
+                                                            </Button>
                                                         </div>
-                                                    ))}
-                                                    {relationship.chat_summaries && relationship.chat_summaries.length > 0 && (
-                                                        <Accordion type="single" collapsible className="w-full">
-                                                            <AccordionItem value="item-1">
-                                                                <AccordionTrigger>Chat Summaries</AccordionTrigger>
-                                                                <AccordionContent>
-                                                                    {relationship.chat_summaries.map((summary, index) => (
-                                                                        <div key={index} className="border-t pt-2 mt-2">
-                                                                            <p className="text-sm font-semibold">{new Date(summary.timestamp).toLocaleString()}</p>
-                                                                            <p className="text-sm">{summary.summary}</p>
-                                                                        </div>
-                                                                    ))}
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    )}
-                                                </div>
-                                            ))
+                                                        <RelationshipDisplay 
+                                                            characterName={persona?.name || relationship.personaAlias} 
+                                                            relationship={relationship} 
+                                                        />
+                                                    </div>
+                                                );
+                                            })
                                         ) : (
                                             <p className="text-gray-500">Relationships are generated when you chat with a character using a persona.</p>
                                         )}
