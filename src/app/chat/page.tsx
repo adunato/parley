@@ -30,7 +30,10 @@ export default function ChatPage() {
         clearCumulativeRelationshipDelta, 
         chatMessages,
         worldDescription,
-        aiStyle
+        aiStyle,
+        chatModel,
+        summarizationModel,
+        generationModel
     } = useParleyStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
@@ -83,7 +86,8 @@ export default function ChatPage() {
                             character: selectedChatCharacter,
                             persona: selectedChatPersona,
                             worldDescription,
-                            aiStyle
+                            aiStyle,
+                            generationModel
                         }),
                     });
                     const data = await response.json();
@@ -126,6 +130,7 @@ export default function ChatPage() {
                         aiStyle: aiStyle,
                         characterName: selectedChatCharacter?.basicInfo?.name || "Unknown Character",
                         playerPersonaName: selectedChatPersona?.name || "Unknown Persona",
+                        summarizationModel: summarizationModel,
                     }),
                 });
                 const data = await response.json();
@@ -292,7 +297,8 @@ export default function ChatPage() {
                                                     latestExchange,
                                                     currentRelationship,
                                                     worldDescription,
-                                                    aiStyle
+                                                    aiStyle,
+                                                    generationModel
                                                 }),
                                             });
                                             const data = await response.json();

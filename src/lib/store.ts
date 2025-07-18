@@ -98,6 +98,12 @@ interface ParleyStore {
   cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
   clearCumulativeRelationshipDelta: () => void; // Called on new chat
+  chatModel: string;
+  setChatModel: (model: string) => void;
+  summarizationModel: string;
+  setSummarizationModel: (model: string) => void;
+  generationModel: string;
+  setGenerationModel: (model: string) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -197,6 +203,12 @@ export const useParleyStore = create<ParleyStore>()(
           }
         }),
       clearCumulativeRelationshipDelta: () => set({ cumulativeRelationshipDelta: undefined }),
+      chatModel: '',
+      setChatModel: (model) => set({ chatModel: model }),
+      summarizationModel: '',
+      setSummarizationModel: (model) => set({ summarizationModel: model }),
+      generationModel: '',
+      setGenerationModel: (model) => set({ generationModel: model }),
     }),
     {
       name: 'parley-storage',

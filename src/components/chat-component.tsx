@@ -20,7 +20,7 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel } = useParleyStore();
   const messagesRef = useRef<Message[]>([]);
 
   const debounceMessages = useDebouncedCallback(
@@ -48,6 +48,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
       relationship: relationship,
       worldDescription: worldDescription,
       aiStyle: aiStyle,
+      chatModel: chatModel,
     },
     initialMessages: chatMessages,
     initialInput: chatInput,

@@ -1,12 +1,13 @@
 import { LangChainAdapter } from 'ai';
-import { llm } from '@/lib/llm';
+import { getLlm } from '@/lib/llm';
 import { generateSystemPrompt, getChatPrompt } from '@/lib/prompts/chatPrompts';
 import { Message } from '@ai-sdk/react';
 import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
 import { useParleyStore } from '@/lib/store';
 
 export async function POST(req: Request) {
-  const { messages, character, persona, worldDescription, aiStyle } = await req.json();
+  const { messages, character, persona, worldDescription, aiStyle, chatModel } = await req.json();
+  const llm = getLlm(chatModel);
   const relationship = character.relationships.find((rel: any) => rel.personaAlias === persona.alias);
 
   if (!character || !persona) {

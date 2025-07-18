@@ -5,19 +5,21 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_BASE_URL =
     process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
 
-export const llm = new ChatOpenAI({
+export function getLlm(modelName: string = "deepseek/deepseek-chat") {
+  return new ChatOpenAI({
     configuration: {
-        baseURL: OPENROUTER_BASE_URL,
-        defaultHeaders: {
-            "HTTP-Referer": "https://github.com/OpenRouterTeam/openrouter-examples",
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        },
+      baseURL: OPENROUTER_BASE_URL,
+      defaultHeaders: {
+        "HTTP-Referer": "https://github.com/OpenRouterTeam/openrouter-examples",
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+      },
     },
-    // model: "mistralai/mistral-large",
-    model: "deepseek/deepseek-chat",
-});
+    model: modelName,
+  });
+}
 
-export async function generateJSON(prompt: string): Promise<any> {
+export async function generateJSON(prompt: string, modelName?: string): Promise<any> {
+  const llm = getLlm(modelName);
   const result = await llm.generate([[new HumanMessage(prompt)]]);
   const responseContent = result.generations[0][0].text;
 

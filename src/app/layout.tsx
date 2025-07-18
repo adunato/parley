@@ -44,6 +44,11 @@ export default function RootLayout({
                 World Info
               </Link>
             </li>
+            <li>
+              <Link href="/settings" className="text-white hover:text-gray-300">
+                Settings
+              </Link>
+            </li>
           </ul>
         </nav>
         <main className="flex-grow pt-16">{children}</main>
