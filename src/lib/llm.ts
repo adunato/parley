@@ -1,5 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from '@langchain/core/messages';
+import JSON5 from 'json5';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_BASE_URL =
@@ -22,27 +23,15 @@ export async function generateJSON(prompt: string, modelName?: string): Promise<
   const llm = getLlm(modelName);
   const result = await llm.generate([[new HumanMessage(prompt)]]);
   const responseContent = result.generations[0][0].text;
-
-  // Attempt to find a JSON block marked with ```json
-  const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
-  let jsonText = responseContent;
-
-  if (jsonMatch && jsonMatch[1]) {
-    jsonText = jsonMatch[1];
-  } else {
-    // If no markdown block is found, find the content between the first { and the last }
-    const firstBrace = responseContent.indexOf('{');
-    const lastBrace = responseContent.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      jsonText = responseContent.substring(firstBrace, lastBrace + 1);
-    }
-  }
+  console.log("Raw LLM response:", responseContent);
 
   try {
-    // Clean the extracted JSON text
-    const cleanedJson = jsonText      .replace(/\/\/[^\n]*/g, ''); // Remove comments
-
-    return JSON.parse(cleanedJson);
+    return JSON5.parse(
+      responseContent.slice(
+        responseContent.search(/[\{\[]/),
+        Math.max(responseContent.lastIndexOf('}'), responseContent.lastIndexOf(']')) + 1
+      )
+    );
   } catch (e) {
     console.error("Failed to parse JSON:", e);
     console.error("Original response from LLM:", responseContent);

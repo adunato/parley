@@ -20,6 +20,7 @@ Generate a detailed world description. The output should be a JSON object with a
 
 
 export const CHARACTER_JSON_STRUCTURE = `{
+  "id": string,
   "basicInfo": {
     "name": string,
     "age": number, // The character's age in years.
