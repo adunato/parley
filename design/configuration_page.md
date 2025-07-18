@@ -44,16 +44,19 @@ The frontend settings page will call this API route on component mount to popula
 *   **Persistence**: The selected model IDs will be persisted in `localStorage` so that they are remembered across browser sessions.
 
 ### Modifying the LLM Library (`src/lib/llm.ts`)
-The `llm.ts` library will be updated to accept a `model` parameter for its functions (e.g., `chat`, `generate`, `summarize`).
+The `llm` instance (which is `ChatOpenAI`) in `src/lib/llm.ts` will be updated to dynamically use the selected model. The `generateJSON` function, and any other future text generation functions, will accept an optional `model` parameter.
 
-*   **Default Model**: If no model is explicitly passed, a default model will be used (e.g., the current hardcoded model).
-*   **Dynamic Model Selection**: The API routes (`src/app/api/chat/route.ts`, `src/app/api/generate/.../route.ts`, `src/app/api/summarise/route.ts`) will retrieve the user's selected model from the global state (or `localStorage` if accessed directly on the server-side for initial requests) and pass it to the `llm.ts` functions.
+*   **Dynamic Model Selection**: The `llm` instance will be re-initialized or its `model` property updated based on the `model` parameter passed to the generation functions.
+*   **Default Model**: If no model is explicitly passed, the current default model (`deepseek/deepseek-chat`) will be used.
 
-### Differentiation of Input Models
-The API routes will be responsible for differentiating the input model based on their context:
-*   `src/app/api/chat/route.ts` will retrieve the user's selected **chat model** from the state and pass it to `llm.chat()`.
-*   `src/app/api/generate/.../route.ts` routes will retrieve the user's selected **generation model** from the state and pass it to `llm.generate()`.
-*   `src/app/api/summarise/route.ts` will retrieve the user's selected **summarization model** from the state and pass it to `llm.summarize()`.
+### Differentiation of Input Models (Client-Server Communication)
+The model configuration is indeed stored on the client side. To differentiate the input model on the server-side API routes, the client will send the selected model ID with each relevant API request.
+
+*   **Client-Side**: When making a request to a server-side API route (e.g., `/api/chat`, `/api/generate/character`, `/api/summarise`), the client will retrieve the appropriate selected model ID (e.g., chat model ID for `/api/chat`) from its local state/`localStorage` and include it in the request body.
+*   **Server-Side API Routes**: Each API route will:
+    1.  Receive the model ID as part of the incoming request (e.g., `req.body.modelId`).
+    2.  Pass this received `modelId` to the corresponding function in `src/lib/llm.ts` (e.g., `llm.generateJSON(prompt, modelId)`).
+    3.  The `llm.ts` functions will then use this `modelId` to configure the `ChatOpenAI` instance for that specific request.
 
 ## 3. Data Flow
 
@@ -62,6 +65,8 @@ The API routes will be responsible for differentiating the input model based on 
 3.  User selects desired models for Chat, Summarization, and Generation.
 4.  Selected model IDs are stored in global state and `localStorage`.
 5.  When an API route (e.g., `/api/chat`) is called:
-    *   The API route retrieves the appropriate model ID (e.g., chat model ID) from the persisted state.
-    *   The model ID is passed as a parameter to the relevant function in `src/lib/llm.ts`.
-    *   `llm.ts` uses the provided model ID to make the request to the OpenRouter API.
+    *   The client-side code retrieves the appropriate model ID (e.g., chat model ID) from its persisted state.
+    *   The client sends this model ID along with the request data to the server-side API route.
+    *   The server-side API route receives the model ID from the request.
+    *   The API route passes this `modelId` as a parameter to the relevant function in `src/lib/llm.ts` (e.g., `llm.generateJSON`).
+    *   `llm.ts` uses the provided `modelId` to configure the `ChatOpenAI` instance for the current request to the OpenRouter API.
