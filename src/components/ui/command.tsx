@@ -28,7 +28,7 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 shadow-lg">
         <Command
-          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]]:p-0 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]]:text-sm [&_svg]:h-4 [&_svg]:w-4 dark:[&_[cmdk-group-heading]]:text-gray-400"
+          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]]:p-0 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]]:text-sm [&_svg]:h-4 [&_svg]:w-4"
         >
           {children}
         </Command>
@@ -92,7 +92,7 @@ const CommandGroup = React.forwardRef<
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground dark:text-gray-50 dark:[&_[cmdk-group-heading]]:text-gray-400",
+      "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
       className
     )}
     {...props}
@@ -107,7 +107,7 @@ const CommandSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 h-px bg-border dark:bg-gray-800", className)}
+    className={cn("-mx-1 h-px bg-border", className)}
     {...props}
   />
 ))
@@ -126,7 +126,6 @@ const CommandItem = React.forwardRef<
     {...props}
   />
 ))
-
 CommandItem.displayName = CommandPrimitive.Item.displayName
 
 const CommandShortcut = React.forwardRef<

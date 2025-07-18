@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParleyStore } from "@/lib/store";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/components/ui/command";
+import { Combobox } from "@/components/ui/combobox";
 
 interface Model {
   id: string;
@@ -15,8 +14,6 @@ interface Model {
 export default function SettingsPage() {
   const [models, setModels] = useState<Model[]>([]);
   const { chatModel, setChatModel, summarizationModel, setSummarizationModel, generationModel, setGenerationModel } = useParleyStore();
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  
 
   useEffect(() => {
     async function fetchModels() {
@@ -25,10 +22,7 @@ export default function SettingsPage() {
       setModels(data);
     }
     fetchModels();
-
-    }, []);
-
-  
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
@@ -36,92 +30,47 @@ export default function SettingsPage() {
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Chat Model</h2>
-        <Select value={chatModel} onValueChange={setChatModel}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a chat model" />
-          </SelectTrigger>
-          <SelectContent className="p-0">
-            <Command>
-              <CommandInput
-                placeholder="Search models..."
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-              />
-              <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
-                {models
-                  .filter((model) =>
-                    model.id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.id} ({model.provider})
-                    </SelectItem>
-                  ))}
-              </CommandList>
-            </Command>
-          </SelectContent>
-        </Select>
+        <Label htmlFor="chat-model-select" className="sr-only">Chat Model</Label>
+        <Combobox<Model>
+          items={models}
+          value={chatModel}
+          onValueChange={setChatModel}
+          placeholder="Select a chat model..."
+          filterFn={(item, query) =>
+            item.id.toLowerCase().includes(query.toLowerCase())
+          }
+          itemToString={(item) => `${item.id} (${item.provider})`}
+        />
       </section>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Summarization Model</h2>
-        <Select value={summarizationModel} onValueChange={setSummarizationModel}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a summarization model" />
-          </SelectTrigger>
-          <SelectContent className="p-0">
-            <Command>
-              <CommandInput
-                placeholder="Search models..."
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-              />
-              <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
-                {models
-                  .filter((model) =>
-                    model.id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.id} ({model.provider})
-                    </SelectItem>
-                  ))}
-              </CommandList>
-            </Command>
-          </SelectContent>
-        </Select>
+        <Label htmlFor="summarization-model-select" className="sr-only">Summarization Model</Label>
+        <Combobox<Model>
+          items={models}
+          value={summarizationModel}
+          onValueChange={setSummarizationModel}
+          placeholder="Select a summarization model..."
+          filterFn={(item, query) =>
+            item.id.toLowerCase().includes(query.toLowerCase())
+          }
+          itemToString={(item) => `${item.id} (${item.provider})`}
+        />
       </section>
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Generation Model</h2>
-        <Select value={generationModel} onValueChange={setGenerationModel}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a generation model" />
-          </SelectTrigger>
-          <SelectContent className="p-0">
-            <Command>
-              <CommandInput
-                placeholder="Search models..."
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-              />
-              <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
-                {models
-                  .filter((model) =>
-                    model.id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.id} ({model.provider})
-                    </SelectItem>
-                  ))}
-              </CommandList>
-            </Command>
-          </SelectContent>
-        </Select>
+        <Label htmlFor="generation-model-select" className="sr-only">Generation Model</Label>
+        <Combobox<Model>
+          items={models}
+          value={generationModel}
+          onValueChange={setGenerationModel}
+          placeholder="Select a generation model..."
+          filterFn={(item, query) =>
+            item.id.toLowerCase().includes(query.toLowerCase())
+          }
+          itemToString={(item) => `${item.id} (${item.provider})`}
+        />
       </section>
     </div>
   );
