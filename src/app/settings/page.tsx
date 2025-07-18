@@ -53,7 +53,7 @@ export default function SettingsPage() {
             <SelectContent>
               {filteredModels.map((model) => (
                 <SelectItem key={model.id} value={model.id}>
-                  {model.name} ({model.provider})
+                  {model.id}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -78,7 +78,7 @@ export default function SettingsPage() {
             <SelectContent>
               {filteredModels.map((model) => (
                 <SelectItem key={model.id} value={model.id}>
-                  {model.name} ({model.provider})
+                  {model.id} ({model.provider})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
             <SelectContent>
               {filteredModels.map((model) => (
                 <SelectItem key={model.id} value={model.id}>
-                  {model.name} ({model.provider})
+                  {model.id}
                 </SelectItem>
               ))}
             </SelectContent>
