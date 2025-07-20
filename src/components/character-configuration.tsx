@@ -245,8 +245,11 @@ export default function CharacterConfiguration() {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <Avatar className="w-8 h-8 border-2 border-white">
+                                            <AvatarImage src={character.basicInfo.avatar} alt={character.basicInfo.name} />
+                                            <AvatarFallback>{character.basicInfo.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
                                         <h3 className="font-medium text-gray-900 truncate">{character.basicInfo.name}</h3>
                                     </div>
                                     <p className="text-sm text-gray-600 truncate">{character.basicInfo.role}</p>
@@ -267,9 +270,10 @@ export default function CharacterConfiguration() {
                         <div className="bg-white border-b border-gray-200 p-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <User className="w-6 h-6 text-blue-600" />
-                                    </div>
+                                    <Avatar className="w-12 h-12 border-4 border-white">
+                                        <AvatarImage src={displayCharacter.basicInfo.avatar} alt={displayCharacter.basicInfo.name} />
+                                        <AvatarFallback>{displayCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
                                         <p className="text-gray-600">
