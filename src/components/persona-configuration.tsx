@@ -31,6 +31,9 @@ export default function PersonaConfiguration() {
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
+    const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+    const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
+    const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -196,6 +199,86 @@ export default function PersonaConfiguration() {
         generatePersona(dialogPersonaPrompt);
     };
 
+    const handleGenerateAvatarDescription = async () => {
+        if (!displayPersona) return;
+        setIsGeneratingAvatar(true);
+        try {
+            const response = await fetch('/api/generate/avatar-description', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ characterOrPersonaData: displayPersona }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setDialogAvatarPrompt(data.imageDescription);
+                setIsAvatarPromptDialogOpen(true);
+            } else {
+                console.error('Failed to generate avatar description:', data.error);
+                alert('Error generating avatar description: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error generating avatar description:', error);
+            alert('An unexpected error occurred while generating the avatar description.');
+        } finally {
+            setIsGeneratingAvatar(false);
+        }
+    };
+
+    const handleGenerateAvatar = async () => {
+        if (!displayPersona || !dialogAvatarPrompt) return;
+        setIsGeneratingAvatar(true);
+        try {
+            const imageResponse = await fetch('/api/generate/avatar-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ imageDescription: dialogAvatarPrompt }),
+            });
+            const imageData = await imageResponse.json();
+
+            if (imageResponse.ok && imageData.imageData) {
+                // Convert base64 to Blob and then to File object for upload
+                const byteCharacters = atob(imageData.imageData);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'image/png' }); // Assuming PNG for now
+                const imageFile = new File([blob], `avatar_${Date.now()}.png`, { type: 'image/png' });
+
+                const formData = new FormData();
+                formData.append('avatar', imageFile);
+
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (uploadResponse.ok) {
+                    const uploadData = await uploadResponse.json();
+                    handleInputChange("avatar", uploadData.url);
+                } else {
+                    console.error('Failed to upload generated image', await uploadResponse.text());
+                    alert('Failed to upload generated image.');
+                }
+            } else {
+                console.error('Failed to generate image:', imageData.error);
+                alert('Error generating image: ' + imageData.error);
+            }
+        } catch (error) {
+            console.error('Error generating avatar:', error);
+            alert('An unexpected error occurred while generating the avatar.');
+        } finally {
+            setIsGeneratingAvatar(false);
+            setIsAvatarPromptDialogOpen(false);
+            setDialogAvatarPrompt('');
+        }
+    };
+
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Left Sidebar - Master List */}
@@ -350,6 +433,52 @@ export default function PersonaConfiguration() {
                                                             <DialogFooter>
                                                                 <Button onClick={handleGeneratePersonaWithPrompt} disabled={isGeneratingPersona}>
                                                                     {isGeneratingPersona ? 'Generating...' : 'Generate'}
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
+                                                        <TooltipTrigger asChild>
+                                                            <DialogTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                    onClick={handleGenerateAvatarDescription}
+                                                                    disabled={isGeneratingAvatar}
+                                                                >
+                                                                    <Upload className="h-4 w-4" />
+                                                                    <span className="sr-only">Generate Avatar</span>
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Avatar</p>
+                                                        </TooltipContent>
+                                                        <DialogContent className="sm:max-w-[425px]">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Tweak Avatar Description</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Review and edit the generated image description before generating the avatar.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <div className="grid gap-4 py-4">
+                                                                <Textarea
+                                                                    id="avatarPrompt"
+                                                                    value={dialogAvatarPrompt}
+                                                                    onChange={(e) => setDialogAvatarPrompt(e.target.value)}
+                                                                    className="min-h-[150px]"
+                                                                    rows={6}
+                                                                    placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
+                                                                />
+                                                            </div>
+                                                            <DialogFooter>
+                                                                <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
+                                                                    {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
                                                                 </Button>
                                                             </DialogFooter>
                                                         </DialogContent>
