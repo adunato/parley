@@ -16,7 +16,7 @@ export async function generateImage(character: Character) {
   const workflow = {
     "3": {
       "inputs": {
-        "seed": 156680208700286,
+        "seed": 104371019928516,
         "steps": 25,
         "cfg": 8,
         "sampler_name": "euler",
@@ -146,7 +146,7 @@ export async function generateImage(character: Character) {
     "12": {
       "inputs": {
         "name": "width",
-        "type": "number",
+        "type": "number (integer)",
         "default": 1024,
         "min": 16,
         "max": 16384
@@ -170,7 +170,7 @@ export async function generateImage(character: Character) {
     "14": {
       "inputs": {
         "name": "height",
-        "type": "number",
+        "type": "number (integer)",
         "default": 1024,
         "min": 16,
         "max": 16384
