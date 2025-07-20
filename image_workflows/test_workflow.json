@@ -1,180 +1,196 @@
 {
-    "3": {
-      "inputs": {
-        "seed": 104371019928516,
-        "steps": 25,
-        "cfg": 8,
-        "sampler_name": "euler",
-        "scheduler": "normal",
-        "denoise": 1,
-        "model": [
-          "4",
-          0
-        ],
-        "positive": [
-          "6",
-          0
-        ],
-        "negative": [
-          "7",
-          0
-        ],
-        "latent_image": [
-          "5",
-          0
-        ]
-      },
-      "class_type": "KSampler",
-      "_meta": {
-        "title": "KSampler"
-      }
+  "3": {
+    "inputs": {
+      "seed": [
+        "16",
+        0
+      ],
+      "steps": 25,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
     },
-    "4": {
-      "inputs": {
-        "ckpt_name": [
-          "10",
-          0
-        ]
-      },
-      "class_type": "CheckpointLoaderSimple",
-      "_meta": {
-        "title": "Load Checkpoint"
-      }
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "4": {
+    "inputs": {
+      "ckpt_name": [
+        "10",
+        0
+      ]
     },
-    "5": {
-      "inputs": {
-        "width": [
-          "12",
-          0
-        ],
-        "height": [
-          "14",
-          0
-        ],
-        "batch_size": 1
-      },
-      "class_type": "EmptyLatentImage",
-      "_meta": {
-        "title": "Empty Latent Image"
-      }
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": [
+        "12",
+        0
+      ],
+      "height": [
+        "14",
+        0
+      ],
+      "batch_size": 1
     },
-    "6": {
-      "inputs": {
-        "text": [
-          "11",
-          0
-        ],
-        "clip": [
-          "4",
-          1
-        ]
-      },
-      "class_type": "CLIPTextEncode",
-      "_meta": {
-        "title": "CLIP Text Encode (Prompt)"
-      }
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": [
+        "11",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
     },
-    "7": {
-      "inputs": {
-        "text": [
-          "13",
-          0
-        ],
-        "clip": [
-          "4",
-          1
-        ]
-      },
-      "class_type": "CLIPTextEncode",
-      "_meta": {
-        "title": "CLIP Text Encode (Prompt)"
-      }
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": [
+        "13",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
     },
-    "8": {
-      "inputs": {
-        "samples": [
-          "3",
-          0
-        ],
-        "vae": [
-          "4",
-          2
-        ]
-      },
-      "class_type": "VAEDecode",
-      "_meta": {
-        "title": "VAE Decode"
-      }
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
     },
-    "10": {
-      "inputs": {
-        "name": "ckpt_name",
-        "type": "choice",
-        "default": "epicrealismXL_vxiiiAb3ast.safetensors"
-      },
-      "class_type": "ETN_Parameter",
-      "_meta": {
-        "title": "Parameter"
-      }
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "10": {
+    "inputs": {
+      "name": "ckpt_name",
+      "type": "choice",
+      "default": "epicrealismXL_vxiiiAb3ast.safetensors"
     },
-    "11": {
-      "inputs": {
-        "name": "positive_prompt",
-        "type": "prompt (positive)",
-        "default": "a portrait of a girl"
-      },
-      "class_type": "ETN_Parameter",
-      "_meta": {
-        "title": "Parameter"
-      }
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "11": {
+    "inputs": {
+      "name": "positive_prompt",
+      "type": "prompt (positive)",
+      "default": "a portrait of a girl"
     },
-    "12": {
-      "inputs": {
-        "name": "width",
-        "type": "number (integer)",
-        "default": 1024,
-        "min": 16,
-        "max": 16384
-      },
-      "class_type": "ETN_Parameter",
-      "_meta": {
-        "title": "Parameter"
-      }
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "12": {
+    "inputs": {
+      "name": "width",
+      "type": "number (integer)",
+      "default": 1024,
+      "min": 16,
+      "max": 16384
     },
-    "13": {
-      "inputs": {
-        "name": "positive_prompt",
-        "type": "prompt (negative)",
-        "default": "text, watermark"
-      },
-      "class_type": "ETN_Parameter",
-      "_meta": {
-        "title": "Parameter"
-      }
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "13": {
+    "inputs": {
+      "name": "positive_prompt",
+      "type": "prompt (negative)",
+      "default": "text, watermark"
     },
-    "14": {
-      "inputs": {
-        "name": "height",
-        "type": "number (integer)",
-        "default": 1024,
-        "min": 16,
-        "max": 16384
-      },
-      "class_type": "ETN_Parameter",
-      "_meta": {
-        "title": "Parameter"
-      }
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "14": {
+    "inputs": {
+      "name": "height",
+      "type": "number (integer)",
+      "default": 1024,
+      "min": 16,
+      "max": 16384
     },
-    "15": {
-      "inputs": {
-        "images": [
-          "8",
-          0
-        ]
-      },
-      "class_type": "SaveImageWebsocket",
-      "_meta": {
-        "title": "SaveImageWebsocket"
-      }
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "15": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "SaveImageWebsocket"
+    }
+  },
+  "16": {
+    "inputs": {
+      "name": "seed",
+      "type": "number",
+      "default": 1024,
+      "min": 16,
+      "max": 1638700000
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
     }
   }
+}
