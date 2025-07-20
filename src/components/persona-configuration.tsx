@@ -35,15 +35,30 @@ export default function PersonaConfiguration() {
     const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
-    const handleImageUpload = () => {
+    const handleImageUpload = async () => {
         if (editedPersona && selectedImageFile) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                handleInputChange("avatar", reader.result as string);
-                setIsImageUploadDialogOpen(false);
-                setSelectedImageFile(null);
-            };
-            reader.readAsDataURL(selectedImageFile);
+            const formData = new FormData();
+            formData.append('avatar', selectedImageFile);
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    handleInputChange("avatar", data.url);
+                    setIsImageUploadDialogOpen(false);
+                    setSelectedImageFile(null);
+                } else {
+                    console.error('Failed to upload image', await res.text());
+                    alert('Failed to upload image.');
+                }
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                alert('An unexpected error occurred during image upload.');
+            }
         }
     };
 
