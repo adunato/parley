@@ -40,13 +40,16 @@ LLM-generated image description.
 * Editable Text: The dialog will contain the LLM-generated text, allowing the user to review and tweak it.
 * Submit Button: A "Submit" button within the dialog will send the (potentially modified) text to the ComfyUI server for image generation.
 
-4. Integration with comfyui.ts
+4. ComfyUI Workflow Management
 
-* Function Call: The (potentially modified) image description from the dialog will be sent to a function in src/lib/comfyui.ts (e.g., generateImage) to initiate the image generation process.
-* Input: The generateImage function in comfyui.ts will receive the user-approved image description as input.
-* Output: comfyui.ts will return the generated image, likely as a base64 data URL.
+* `comfyui.ts` Role: The `comfyui.ts` module will be updated to accept a complete JSON workflow as input and execute it directly without internal modifications.
+* Workflow Adapter: A new adapter module (e.g., `src/lib/imageWorkflowAdapter.ts`) will be created. Its responsibility will be to:
+    * Load the base workflow from `image_workflows/character_avatar.json`.
+    * Programmatically update the `default` value of the parameter with `name: "positive_prompt"` to the LLM-generated image description string.
+    * Programmatically update the `default` value of the parameter with `name: "seed"` to a random integer.
+    * Return the modified JSON workflow to `comfyui.ts`.
 
-4. Image Saving and Storage
+6. Image Saving and Storage
 
 * Public Directory: The generated image (base64 data URL) will be saved to the public/avatars directory. This will likely
   involve a new API route for handling image uploads/saving, similar to existing avatar uploading logic.
@@ -74,12 +77,19 @@ Implementation Steps
           character/persona data to get an image description.
         * Return the generated image description.
 3. Modify `comfyui.ts`:
-    * Update the generateImage function (or create a new one) to accept the LLM-generated image description as input.
-    * Ensure the comfyui.ts logic correctly uses this description to generate the image.
-4. Create Image Upload/Save API Route (if not already existing):
+    * Update the `generateImage` function (or create a new one) to accept a complete JSON workflow object as input.
+    * Ensure it executes the provided workflow as-is, without internal modifications to the workflow structure.
+4. Create `imageWorkflowAdapter.ts`:
+    * Create the file `src/lib/imageWorkflowAdapter.ts`.
+    * Implement a function (e.g., `getCharacterAvatarWorkflow`) that:
+        * Reads `image_workflows/character_avatar.json`.
+        * Finds the parameter with `name: "positive_prompt"` and sets its `default` value to the provided image description string.
+        * Finds the parameter with `name: "seed"` and sets its `default` value to a random integer.
+        * Returns the modified workflow JSON object.
+5. Create Image Upload/Save API Route (if not already existing):
     * If a generic image upload/save route doesn't exist, create one (e.g., src/app/api/upload/avatar/route.ts) that can
       take a base64 data URL and save it to public/avatars, returning the public URL.
-5. Integrate into Configuration Components:
+6. Integrate into Configuration Components:
     * `src/components/character-configuration.tsx`:
         * Add a new "Generate Avatar" button next to the existing avatar input.
         * Implement an onClick handler for this button.
