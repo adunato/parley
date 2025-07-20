@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Send, Bot, User } from "lucide-react"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -106,8 +107,15 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
-            {title}
+            {selectedChatCharacter ? (
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
+                <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <Bot className="h-5 w-5" />
+            )}
+            {selectedChatCharacter ? selectedChatCharacter.basicInfo.name : title}
           </CardTitle>
         </div>
       </CardHeader>
@@ -117,11 +125,16 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
           <div className="space-y-4 py-4">
             {messages.map((m) => (
               <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                {m.role === "assistant" && (
+                {m.role === "assistant" && selectedChatCharacter ? (
+                  <Avatar className="flex-shrink-0 h-8 w-8">
+                    <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
+                    <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ) : m.role === "assistant" ? (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                     <Bot className="h-4 w-4 text-blue-600" />
                   </div>
-                )}
+                ) : null}
 
                 <div
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
@@ -135,19 +148,31 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                 </div>
                 </div>
 
-                {m.role === "user" && (
+                {m.role === "user" && selectedChatPersona ? (
+                  <Avatar className="flex-shrink-0 h-8 w-8">
+                    <AvatarImage src={selectedChatPersona.avatar} alt={selectedChatPersona.name} />
+                    <AvatarFallback>{selectedChatPersona.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ) : m.role === "user" ? (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-blue-600" />
-                </div>
+                {selectedChatCharacter ? (
+                  <Avatar className="flex-shrink-0 h-8 w-8">
+                    <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
+                    <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-blue-600" />
+                  </div>
+                )}
                 <div className="bg-gray-100 text-gray-900 border rounded-lg px-4 py-2">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
