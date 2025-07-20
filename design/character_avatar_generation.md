@@ -34,11 +34,16 @@ LLM-generated image description.
 * Prompt: A new prompt for generating image descriptions will be defined in src/lib/prompts/imageGenerationPrompts.ts.
   This prompt will guide the LLM to produce relevant and high-quality descriptions.
 
-3. Integration with comfyui.ts
+3. User Review and Tweak of Image Description
 
-* Function Call: The new API route (avatar-description/route.ts) will call a function in src/lib/comfyui.ts (e.g.,
-  generateImage) to initiate the image generation process.
-* Input: The generateImage function in comfyui.ts will receive the LLM-generated image description as input.
+* Pop-up Dialog: After the LLM returns the image description, a pop-up dialog will be displayed to the user.
+* Editable Text: The dialog will contain the LLM-generated text, allowing the user to review and tweak it.
+* Submit Button: A "Submit" button within the dialog will send the (potentially modified) text to the ComfyUI server for image generation.
+
+4. Integration with comfyui.ts
+
+* Function Call: The (potentially modified) image description from the dialog will be sent to a function in src/lib/comfyui.ts (e.g., generateImage) to initiate the image generation process.
+* Input: The generateImage function in comfyui.ts will receive the user-approved image description as input.
 * Output: comfyui.ts will return the generated image, likely as a base64 data URL.
 
 4. Image Saving and Storage
@@ -80,9 +85,11 @@ Implementation Steps
         * Implement an onClick handler for this button.
         * The handler will:
             * Call the avatar-description API route to get the image description.
-            * Call the comfyui.ts function (via another API route if necessary) to generate the image.
-            * Call the image upload/save API route to save the generated image.
-            * Update the character's avatar field in the Zustand store with the new image URL.
+            * Display the image description in a pop-up dialog for user editing.
+            * On dialog submission (user confirms/tweaks text):
+                * Call the comfyui.ts function (via another API route if necessary) to generate the image.
+                * Call the image upload/save API route to save the generated image.
+                * Update the character's avatar field in the Zustand store with the new image URL.
             * Handle loading states and error feedback.
     * `src/components/persona-configuration.tsx`:
         * Repeat the integration steps for the persona configuration page.
