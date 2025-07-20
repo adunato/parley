@@ -14,112 +14,185 @@ client.connect();
 
 export async function generateImage(character: Character) {
   const workflow = {
-  "3": {
-    "inputs": {
-      "seed": Math.floor(Math.random() * 1000000000000000),
-      "steps": 25,
-      "cfg": 8,
-      "sampler_name": "euler",
-      "scheduler": "normal",
-      "denoise": 1,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+    "3": {
+      "inputs": {
+        "seed": 156680208700286,
+        "steps": 25,
+        "cfg": 8,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1,
+        "model": [
+          "4",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "7",
+          0
+        ],
+        "latent_image": [
+          "5",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
     },
-    "class_type": "KSampler",
-    "_meta": {
-      "title": "KSampler"
-    }
-  },
-  "4": {
-    "inputs": {
-      "ckpt_name": "epicrealismXL_vxiiiAb3ast.safetensors"
+    "4": {
+      "inputs": {
+        "ckpt_name": [
+          "10",
+          0
+        ]
+      },
+      "class_type": "CheckpointLoaderSimple",
+      "_meta": {
+        "title": "Load Checkpoint"
+      }
     },
-    "class_type": "CheckpointLoaderSimple",
-    "_meta": {
-      "title": "Load Checkpoint"
-    }
-  },
-  "5": {
-    "inputs": {
-      "width": 512,
-      "height": 512,
-      "batch_size": 1
+    "5": {
+      "inputs": {
+        "width": [
+          "12",
+          0
+        ],
+        "height": [
+          "14",
+          0
+        ],
+        "batch_size": 1
+      },
+      "class_type": "EmptyLatentImage",
+      "_meta": {
+        "title": "Empty Latent Image"
+      }
     },
-    "class_type": "EmptyLatentImage",
-    "_meta": {
-      "title": "Empty Latent Image"
-    }
-  },
-  "6": {
-    "inputs": {
-      "text": `a painting of a ${character.name}, ${character.description}`,
-      "clip": [
-        "4",
-        1
-      ]
+    "6": {
+      "inputs": {
+        "text": [
+          "11",
+          0
+        ],
+        "clip": [
+          "4",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
     },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "7": {
-    "inputs": {
-      "text": "text, wattermark",
-      "clip": [
-        "4",
-        1
-      ]
+    "7": {
+      "inputs": {
+        "text": [
+          "13",
+          0
+        ],
+        "clip": [
+          "4",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
     },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "8": {
-    "inputs": {
-      "samples": [
-        "3",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+    "8": {
+      "inputs": {
+        "samples": [
+          "3",
+          0
+        ],
+        "vae": [
+          "4",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
     },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "9": {
-    "inputs": {
-      "filename_prefix": "ComfyUI",
-      "images": [
-        "8",
-        0
-      ]
+    "10": {
+      "inputs": {
+        "name": "ckpt_name",
+        "type": "choice",
+        "default": "epicrealismXL_vxiiiAb3ast.safetensors"
+      },
+      "class_type": "ETN_Parameter",
+      "_meta": {
+        "title": "Parameter"
+      }
     },
-    "class_type": "SaveImage",
-    "_meta": {
-      "title": "Save Image"
+    "11": {
+      "inputs": {
+        "name": "positive_prompt",
+        "type": "prompt (positive)",
+        "default": "a portrait of a girl"
+      },
+      "class_type": "ETN_Parameter",
+      "_meta": {
+        "title": "Parameter"
+      }
+    },
+    "12": {
+      "inputs": {
+        "name": "width",
+        "type": "number",
+        "default": 1024,
+        "min": 16,
+        "max": 16384
+      },
+      "class_type": "ETN_Parameter",
+      "_meta": {
+        "title": "Parameter"
+      }
+    },
+    "13": {
+      "inputs": {
+        "name": "positive_prompt",
+        "type": "prompt (negative)",
+        "default": "text, watermark"
+      },
+      "class_type": "ETN_Parameter",
+      "_meta": {
+        "title": "Parameter"
+      }
+    },
+    "14": {
+      "inputs": {
+        "name": "height",
+        "type": "number",
+        "default": 1024,
+        "min": 16,
+        "max": 16384
+      },
+      "class_type": "ETN_Parameter",
+      "_meta": {
+        "title": "Parameter"
+      }
+    },
+    "15": {
+      "inputs": {
+        "images": [
+          "8",
+          0
+        ]
+      },
+      "class_type": "SaveImageWebsocket",
+      "_meta": {
+        "title": "SaveImageWebsocket"
+      }
     }
-  }
-};
+  };
 
   const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 
