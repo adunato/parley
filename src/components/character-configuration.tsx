@@ -41,34 +41,29 @@ export default function CharacterConfiguration() {
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
-    const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
-    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !editedCharacter) return;
 
-    const handleImageUpload = async () => {
-        if (editedCharacter && selectedImageFile) {
-            console.log('Frontend: Attempting to upload image for character.', selectedImageFile.name);
-            const formData = new FormData();
-            formData.append('avatar', selectedImageFile);
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-            try {
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    handleInputChange("basicInfo", "avatar", data.url);
-                    setIsImageUploadDialogOpen(false);
-                    setSelectedImageFile(null);
-                } else {
-                    console.error('Failed to upload image', await res.text());
-                    alert('Failed to upload image.');
-                }
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                alert('An unexpected error occurred during image upload.');
+            if (res.ok) {
+                const data = await res.json();
+                handleInputChange("basicInfo", "avatar", data.url);
+            } else {
+                console.error('Failed to upload image', await res.text());
+                alert('Failed to upload image.');
             }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('An unexpected error occurred during image upload.');
         }
     };
 
@@ -308,14 +303,24 @@ export default function CharacterConfiguration() {
                                         <div className="flex items-center gap-2">
                                         <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
                                         {isEditing && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="w-6 h-6"
-                                                onClick={() => setIsImageUploadDialogOpen(true)}
-                                            >
-                                                <Upload className="w-4 h-4" />
-                                            </Button>
+                                            <label className="cursor-pointer">
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={handleImageUpload}
+                                                    className="hidden"
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-6 h-6"
+                                                    asChild
+                                                >
+                                                    <div>
+                                                        <Upload className="w-4 h-4" />
+                                                    </div>
+                                                </Button>
+                                            </label>
                                         )}
                                     </div>
                                         <p className="text-gray-600">
@@ -412,29 +417,6 @@ export default function CharacterConfiguration() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Image Upload Dialog */}
-                        <Dialog open={isImageUploadDialogOpen} onOpenChange={setIsImageUploadDialogOpen}>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Upload Character Image</DialogTitle>
-                                    <DialogDescription>
-                                        Enter the URL of the image you want to use for this character's avatar.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <Input
-                                        id="imageFile"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => setSelectedImageFile(e.target.files ? e.target.files[0] : null)}
-                                    />
-                                </div>
-                                <DialogFooter>
-                                    <Button onClick={handleImageUpload}>Save Image</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
 
                         {/* Content */}
 
