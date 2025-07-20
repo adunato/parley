@@ -44,3 +44,6 @@ dist-test/
 
 *storybook.log
 storybook-static
+
+# Uploaded avatars
+public/avatars/
