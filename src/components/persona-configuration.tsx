@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Save, Plus, Sparkles, Type } from "lucide-react"
+import { User, Save, Plus, Sparkles, Type, Upload } from "lucide-react"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useParleyStore, PlayerPersona } from "@/lib/store"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -31,6 +32,20 @@ export default function PersonaConfiguration() {
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+    const handleImageUpload = () => {
+        if (editedPersona && selectedImageFile) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleInputChange("avatar", reader.result as string);
+                setIsImageUploadDialogOpen(false);
+                setSelectedImageFile(null);
+            };
+            reader.readAsDataURL(selectedImageFile);
+        }
+    };
 
     const selectedPersona = playerPersonas.find((p) => p.alias === selectedAlias)
 
@@ -196,8 +211,11 @@ export default function PersonaConfiguration() {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <Avatar className="w-8 h-8 border-2 border-white">
+                                            <AvatarImage src={persona.avatar} alt={persona.name} />
+                                            <AvatarFallback>{persona.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
                                         <h3 className="font-medium text-gray-900 truncate">{persona.name}</h3>
                                     </div>
                                     <p className="text-sm text-gray-600 truncate">{persona.alias}</p>
@@ -218,11 +236,24 @@ export default function PersonaConfiguration() {
                         <div className="bg-white border-b border-gray-200 p-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <User className="w-6 h-6 text-blue-600" />
-                                    </div>
+                                    <Avatar className="w-12 h-12 border-4 border-white">
+                                        <AvatarImage src={displayPersona.avatar} alt={displayPersona.name} />
+                                        <AvatarFallback>{displayPersona.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">{displayPersona.name}</h1>
+                                        <div className="flex items-center gap-2">
+                                            <h1 className="text-2xl font-bold text-gray-900">{displayPersona.name}</h1>
+                                            {isEditing && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-6 h-6"
+                                                    onClick={() => setIsImageUploadDialogOpen(true)}
+                                                >
+                                                    <Upload className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                        </div>
                                         <p className="text-gray-600">
                                             {displayPersona.alias} {displayPersona.role && `• ${displayPersona.role}`}
                                         </p>
@@ -313,6 +344,29 @@ export default function PersonaConfiguration() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Image Upload Dialog */}
+                        <Dialog open={isImageUploadDialogOpen} onOpenChange={setIsImageUploadDialogOpen}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Upload Persona Image</DialogTitle>
+                                    <DialogDescription>
+                                        Select an image file to use for this persona's avatar.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <Input
+                                        id="imageFile"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedImageFile(e.target.files ? e.target.files[0] : null)}
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button onClick={handleImageUpload}>Save Image</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6">
