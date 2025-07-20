@@ -416,21 +416,6 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Avatar</Label>
-                                            <Avatar className="h-32 w-32 rounded-full">
-                                                <AvatarImage src={displayCharacter.basicInfo.avatar || ""} />
-                                                <AvatarFallback>{displayCharacter.basicInfo.name.substring(0, 2)}</AvatarFallback>
-                                            </Avatar>
-                                            {isEditing && (
-                                                <Input
-                                                    id="avatar"
-                                                    value={displayCharacter.basicInfo.avatar || ""}
-                                                    onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
-                                                    placeholder="Enter image URL"
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="space-y-2">
                                             <Label htmlFor="reputation">Reputation</Label>
                                             <Textarea
                                                 id="reputation"
