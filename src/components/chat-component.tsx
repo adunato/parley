@@ -124,9 +124,6 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         <div className="h-full overflow-y-auto px-4">
           <div className="space-y-4 py-4">
             {messages.map((m) => {
-              if (m.role === "user") {
-                console.log('Selected Persona:', selectedChatPersona, 'Avatar:', selectedChatPersona?.avatar);
-              }
               return (
               <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && selectedChatCharacter ? (

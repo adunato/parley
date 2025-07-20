@@ -63,7 +63,6 @@ export default function ChatPage() {
 
     const handlePersonaSelect = (personaAlias: string) => {
         const persona = playerPersonas.find(p => p.alias === personaAlias);
-        console.log('Selected persona:', persona);
         if (persona) {
             setSelectedChatPersona(persona);
         } else {

@@ -46,6 +46,7 @@ export default function CharacterConfiguration() {
 
     const handleImageUpload = async () => {
         if (editedCharacter && selectedImageFile) {
+            console.log('Frontend: Attempting to upload image for character.', selectedImageFile.name);
             const formData = new FormData();
             formData.append('avatar', selectedImageFile);
 

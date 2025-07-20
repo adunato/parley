@@ -1,34 +1,28 @@
-import { IncomingForm } from 'formidable';
-import fs from 'fs';
+import { writeFile } from 'fs/promises';
 import path from 'path';
 
+export async function POST(req: Request) {
+  console.log('Image upload request received.');
+  try {
+    const formData = await req.formData();
+    const file = formData.get('avatar') as File;
 
+    if (!file) {
+      console.error('No file found in upload.');
+      return new Response(JSON.stringify({ error: 'No file uploaded' }), { status: 400 });
+    }
 
-export async function POST(req: Request): Promise<Response> {
-  const form = new IncomingForm();
-  form.uploadDir = path.join(process.cwd(), 'public', 'avatars');
-  form.keepExtensions = true;
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filename = `${Date.now()}-${file.name}`;
+    const filePath = path.join(process.cwd(), 'public', 'avatars', filename);
 
-  return new Promise<Response>((resolve, reject) => {
-    form.parse(req as any, (err, fields, files) => {
-      if (err) {
-        reject(new Response(JSON.stringify({ error: 'Upload error' }), { status: 500 }));
-        return;
-      }
+    await writeFile(filePath, buffer);
+    const fileUrl = `/avatars/${filename}`;
+    console.log(`File uploaded: ${filename}, URL: ${fileUrl}`);
 
-      const file = files.avatar?.[0] ?? files.avatar;
-      if (!file) {
-        reject(new Response(JSON.stringify({ error: 'No file uploaded' }), { status: 400 }));
-        return;
-      }
-
-      const filename = path.basename(file.filepath);
-
-      resolve(
-        new Response(JSON.stringify({ url: `/avatars/${filename}` }), {
-          status: 200,
-        })
-      );
-    });
-  });
+    return new Response(JSON.stringify({ url: fileUrl }), { status: 200 });
+  } catch (error) {
+    console.error('Error during file upload:', error);
+    return new Response(JSON.stringify({ error: 'Upload failed' }), { status: 500 });
+  }
 }
