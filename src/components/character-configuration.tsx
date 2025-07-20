@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown } from "lucide-react"
+import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -41,6 +41,16 @@ export default function CharacterConfiguration() {
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
+    const [imageUploadUrl, setImageUploadUrl] = useState('');
+
+    const handleImageUpload = () => {
+        if (editedCharacter && imageUploadUrl) {
+            handleInputChange("basicInfo", "avatar", imageUploadUrl);
+            setIsImageUploadDialogOpen(false);
+            setImageUploadUrl('');
+        }
+    };
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
@@ -275,7 +285,17 @@ export default function CharacterConfiguration() {
                                         <AvatarFallback>{displayCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div>
+                                        <div className="flex items-center gap-2">
                                         <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="w-6 h-6"
+                                            onClick={() => alert("Image upload functionality coming soon!")}
+                                        >
+                                            <Upload className="w-4 h-4" />
+                                        </Button>
+                                    </div>
                                         <p className="text-gray-600">
                                             {displayCharacter.basicInfo.role} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
                                         </p>
@@ -369,6 +389,33 @@ export default function CharacterConfiguration() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Image Upload Dialog */}
+                        <Dialog open={isImageUploadDialogOpen} onOpenChange={setIsImageUploadDialogOpen}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Upload Character Image</DialogTitle>
+                                    <DialogDescription>
+                                        Enter the URL of the image you want to use for this character's avatar.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <Input
+                                        id="imageUrl"
+                                        placeholder="https://example.com/your-image.jpg"
+                                        value={imageUploadUrl}
+                                        onChange={(e) => setImageUploadUrl(e.target.value)}
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button onClick={handleImageUpload}>Save Image</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* Content */}
+
+                        
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6">
@@ -488,7 +535,7 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
 
-                                
+
 
                                 {/* Relationship to Player Persona */}
                                 <Card>
@@ -515,9 +562,9 @@ export default function CharacterConfiguration() {
                                                                 Delete
                                                             </Button>
                                                         </div>
-                                                        <RelationshipDisplay 
-                                                            characterName={persona?.name || relationship.personaAlias} 
-                                                            relationship={relationship} 
+                                                        <RelationshipDisplay
+                                                            characterName={persona?.name || relationship.personaAlias}
+                                                            relationship={relationship}
                                                         />
                                                     </div>
                                                 );
