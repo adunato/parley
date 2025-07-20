@@ -15,6 +15,13 @@ client.connect();
 
 export async function generateImage(character: Character) {
   const workflow = JSON.parse(fs.readFileSync('./image_workflows/test_workflow.json', 'utf8'));
+  for (const nodeId in workflow) {
+    const node = workflow[nodeId];
+    if (node.class_type === "ETN_Parameter" && node.inputs && node.inputs.name === "seed") {
+      node.inputs.default = Math.floor(Math.random() * 1000000000); // Set a random seed
+      break;
+    }
+  }
 
   const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 

@@ -183,7 +183,7 @@
   "16": {
     "inputs": {
       "name": "seed",
-      "type": "number",
+      "type": "number (integer)",
       "default": 1024,
       "min": 16,
       "max": 1638700000
@@ -191,6 +191,19 @@
     "class_type": "ETN_Parameter",
     "_meta": {
       "title": "Parameter"
+    }
+  },
+  "17": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
     }
   }
 }
