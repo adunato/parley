@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown } from "lucide-react"
-import AvatarUploader from "@/components/ui/avatar-uploader"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
     AccordionContent,
@@ -417,13 +417,17 @@ export default function CharacterConfiguration() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Avatar</Label>
-                                            {isEditing ? (
-                                                <AvatarUploader
-                                                    currentAvatar={displayCharacter.basicInfo.avatar || ""}
-                                                    onAvatarChange={(newAvatar) => handleInputChange("basicInfo", "avatar", newAvatar)}
+                                            <Avatar className="h-32 w-32 rounded-full">
+                                                <AvatarImage src={displayCharacter.basicInfo.avatar || ""} />
+                                                <AvatarFallback>{displayCharacter.basicInfo.name.substring(0, 2)}</AvatarFallback>
+                                            </Avatar>
+                                            {isEditing && (
+                                                <Input
+                                                    id="avatar"
+                                                    value={displayCharacter.basicInfo.avatar || ""}
+                                                    onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
+                                                    placeholder="Enter image URL"
                                                 />
-                                            ) : (
-                                                <img src={displayCharacter.basicInfo.avatar || "/placeholder.svg"} alt="Avatar" className="w-32 h-32 rounded-full object-cover" />
                                             )}
                                         </div>
                                         <div className="space-y-2">
