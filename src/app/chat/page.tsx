@@ -53,7 +53,6 @@ export default function ChatPage() {
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
-        console.log('Selected character:', character);
         if (character) {
             setSelectedChatCharacter(character);
         } else {
