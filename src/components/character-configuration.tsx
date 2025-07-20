@@ -42,13 +42,17 @@ export default function CharacterConfiguration() {
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
-    const [imageUploadUrl, setImageUploadUrl] = useState('');
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
     const handleImageUpload = () => {
-        if (editedCharacter && imageUploadUrl) {
-            handleInputChange("basicInfo", "avatar", imageUploadUrl);
-            setIsImageUploadDialogOpen(false);
-            setImageUploadUrl('');
+        if (editedCharacter && selectedImageFile) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleInputChange("basicInfo", "avatar", reader.result as string);
+                setIsImageUploadDialogOpen(false);
+                setSelectedImageFile(null);
+            };
+            reader.readAsDataURL(selectedImageFile);
         }
     };
 
@@ -291,7 +295,7 @@ export default function CharacterConfiguration() {
                                             variant="ghost"
                                             size="icon"
                                             className="w-6 h-6"
-                                            onClick={() => alert("Image upload functionality coming soon!")}
+                                            onClick={() => setIsImageUploadDialogOpen(true)}
                                         >
                                             <Upload className="w-4 h-4" />
                                         </Button>
@@ -401,10 +405,10 @@ export default function CharacterConfiguration() {
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
                                     <Input
-                                        id="imageUrl"
-                                        placeholder="https://example.com/your-image.jpg"
-                                        value={imageUploadUrl}
-                                        onChange={(e) => setImageUploadUrl(e.target.value)}
+                                        id="imageFile"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setSelectedImageFile(e.target.files ? e.target.files[0] : null)}
                                     />
                                 </div>
                                 <DialogFooter>
