@@ -291,14 +291,16 @@ export default function CharacterConfiguration() {
                                     <div>
                                         <div className="flex items-center gap-2">
                                         <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="w-6 h-6"
-                                            onClick={() => setIsImageUploadDialogOpen(true)}
-                                        >
-                                            <Upload className="w-4 h-4" />
-                                        </Button>
+                                        {isEditing && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="w-6 h-6"
+                                                onClick={() => setIsImageUploadDialogOpen(true)}
+                                            >
+                                                <Upload className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                         <p className="text-gray-600">
                                             {displayCharacter.basicInfo.role} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
@@ -318,13 +320,7 @@ export default function CharacterConfiguration() {
                                             <Button variant="destructive" onClick={handleDeleteCharacter}>
                                                 Delete
                                             </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                                            <Button variant="outline" onClick={handleConvertToPersona}>
-                                                Convert to Persona
-                                            </Button>
+                                            
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -388,6 +384,13 @@ export default function CharacterConfiguration() {
                                                     </Dialog>
                                                 </Tooltip>
                                             </TooltipProvider>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
+                                            <Button variant="outline" onClick={handleConvertToPersona}>
+                                                Convert to Persona
+                                            </Button>
                                         </>
                                     )}
                                 </div>
