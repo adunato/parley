@@ -272,10 +272,6 @@ export default function PersonaConfiguration() {
                                             <Button variant="destructive" onClick={handleDeletePersona}>
                                                 Delete
                                             </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -339,6 +335,10 @@ export default function PersonaConfiguration() {
                                                     </Dialog>
                                                 </Tooltip>
                                             </TooltipProvider>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
                                         </>
                                     )}
                                 </div>
