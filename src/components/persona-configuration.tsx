@@ -148,7 +148,7 @@ export default function PersonaConfiguration() {
                     firstImpression: data.persona.firstImpression || "",
                     role: data.persona.role || "",
                     faction: data.persona.faction || "",
-                    avatar: data.persona.avatar || "",
+                    avatar: "",
                     appearance: data.persona.appearance || "",
                 };
 

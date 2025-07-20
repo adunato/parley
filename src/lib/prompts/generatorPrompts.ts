@@ -26,7 +26,6 @@ export const CHARACTER_JSON_STRUCTURE = `{
     "age": number, // The character's age in years.
     "role": string,
     "faction": string,
-    "avatar": string,
     "reputation": string,
     "background": string,
     "firstImpression": string,
@@ -82,8 +81,15 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
 import { Character, PlayerPersona, Relationship } from "../store";
 
 export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
-    const characterJson = JSON.stringify(character, null, 2);
-    const personaJson = JSON.stringify(persona, null, 2);
+    const characterCopy = { ...character };
+    if (characterCopy.basicInfo) {
+        delete characterCopy.basicInfo.avatar;
+    }
+    const personaCopy = { ...persona };
+    delete personaCopy.avatar;
+
+    const characterJson = JSON.stringify(characterCopy, null, 2);
+    const personaJson = JSON.stringify(personaCopy, null, 2);
 
     let prompt = `
 You are a relationship-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
@@ -125,7 +131,6 @@ export const PERSONA_JSON_STRUCTURE = `{
     "firstImpression": string,
     "role": string,
     "faction": string,
-    "avatar": string,
     "appearance": string
   }
 }`;
@@ -186,8 +191,15 @@ export const generateRelationshipDeltaPrompt = (
     worldDescription?: string,
     aiStyle?: string
 ) => {
-    const characterJson = JSON.stringify(character, null, 2);
-    const personaJson = JSON.stringify(persona, null, 2);
+    const characterCopy = { ...character };
+    if (characterCopy.basicInfo) {
+        delete characterCopy.basicInfo.avatar;
+    }
+    const personaCopy = { ...persona };
+    delete personaCopy.avatar;
+
+    const characterJson = JSON.stringify(characterCopy, null, 2);
+    const personaJson = JSON.stringify(personaCopy, null, 2);
     const chatHistoryJson = JSON.stringify(chatHistory, null, 2);
     const latestExchangeJson = JSON.stringify(latestExchange, null, 2);
     const currentRelationshipJson = JSON.stringify(currentRelationship, null, 2);

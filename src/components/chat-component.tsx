@@ -123,7 +123,11 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
       <CardContent className="flex-1 p-0 overflow-hidden">
         <div className="h-full overflow-y-auto px-4">
           <div className="space-y-4 py-4">
-            {messages.map((m) => (
+            {messages.map((m) => {
+              if (m.role === "user") {
+                console.log('Selected Persona:', selectedChatPersona, 'Avatar:', selectedChatPersona?.avatar);
+              }
+              return (
               <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && selectedChatCharacter ? (
                   <Avatar className="flex-shrink-0 h-8 w-8">
@@ -159,7 +163,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                   </div>
                 ) : null}
               </div>
-            ))}
+            )})}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">
