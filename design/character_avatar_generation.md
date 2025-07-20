@@ -49,14 +49,12 @@ LLM-generated image description.
     * Programmatically update the `default` value of the parameter with `name: "seed"` to a random integer.
     * Return the modified JSON workflow to `comfyui.ts`.
 
-6. Image Saving and Storage
+5. Image Saving and Storage
 
-* Public Directory: The generated image (base64 data URL) will be saved to the public/avatars directory. This will likely
-  involve a new API route for handling image uploads/saving, similar to existing avatar uploading logic.
-* State Update: The avatar field of the Character or PlayerPersona object in the Zustand store (src/lib/store.ts) will be
-  updated with the URL of the newly saved image.
+* Existing API Route: The existing `/api/upload` route will be used to save the generated image (base64 data URL converted to a File object on the frontend) to the `public/avatars` directory.
+* State Update: The `avatar` field of the `Character` or `PlayerPersona` object in the Zustand store (`src/lib/store.ts`) will be updated with the URL of the newly saved image.
 
-5. Prompt Management
+6. Prompt Management
 
 * New File: A new TypeScript file, src/lib/prompts/imageGenerationPrompts.ts, will be created.
 * Content: This file will contain the prompt string(s) used by the LLM to generate image descriptions for avatars. It
@@ -86,9 +84,9 @@ Implementation Steps
         * Finds the parameter with `name: "positive_prompt"` and sets its `default` value to the provided image description string.
         * Finds the parameter with `name: "seed"` and sets its `default` value to a random integer.
         * Returns the modified workflow JSON object.
-5. Create Image Upload/Save API Route (if not already existing):
-    * If a generic image upload/save route doesn't exist, create one (e.g., src/app/api/upload/avatar/route.ts) that can
-      take a base64 data URL and save it to public/avatars, returning the public URL.
+5. Update Image Saving Logic:
+    * Ensure the generated image (base64 data URL) is converted to a `File` object (or similar) on the frontend before being sent to the existing `/api/upload` route.
+    * The response from `/api/upload` (containing the image URL) will then be used to update the character/persona avatar in the Zustand store.
 6. Integrate into Configuration Components:
     * `src/components/character-configuration.tsx`:
         * Add a new "Generate Avatar" button next to the existing avatar input.
