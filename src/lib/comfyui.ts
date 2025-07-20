@@ -19,7 +19,10 @@ export async function generateImage(workflow: any) {
   const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 
   if (queuedPrompt.images && queuedPrompt.images.length > 0) {
-    return queuedPrompt.images[0].data;
+    const imageUrl = queuedPrompt.images[0].data as string;
+    const imageResponse = await fetch(imageUrl);
+    const imageBuffer = await imageResponse.arrayBuffer();
+    return Buffer.from(imageBuffer).toString('base64');
   } else {
     throw new Error("No image found in the ComfyUI response.");
   }
