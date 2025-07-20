@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown } from "lucide-react"
+import AvatarUploader from "@/components/ui/avatar-uploader"
 import {
     Accordion,
     AccordionContent,
@@ -415,13 +416,15 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="avatar">Avatar URL</Label>
-                                            <Input
-                                                id="avatar"
-                                                value={displayCharacter.basicInfo.avatar || ""}
-                                                onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
-                                                disabled={!isEditing}
-                                            />
+                                            <Label>Avatar</Label>
+                                            {isEditing ? (
+                                                <AvatarUploader
+                                                    currentAvatar={displayCharacter.basicInfo.avatar || ""}
+                                                    onAvatarChange={(newAvatar) => handleInputChange("basicInfo", "avatar", newAvatar)}
+                                                />
+                                            ) : (
+                                                <img src={displayCharacter.basicInfo.avatar || "/placeholder.svg"} alt="Avatar" className="w-32 h-32 rounded-full object-cover" />
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="reputation">Reputation</Label>
