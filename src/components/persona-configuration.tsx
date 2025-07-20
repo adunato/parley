@@ -32,33 +32,29 @@ export default function PersonaConfiguration() {
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
-    const [isImageUploadDialogOpen, setIsImageUploadDialogOpen] = useState(false);
-    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !editedPersona) return;
 
-    const handleImageUpload = async () => {
-        if (editedPersona && selectedImageFile) {
-            const formData = new FormData();
-            formData.append('avatar', selectedImageFile);
+        const formData = new FormData();
+        formData.append('avatar', file);
 
-            try {
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    handleInputChange("avatar", data.url);
-                    setIsImageUploadDialogOpen(false);
-                    setSelectedImageFile(null);
-                } else {
-                    console.error('Failed to upload image', await res.text());
-                    alert('Failed to upload image.');
-                }
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                alert('An unexpected error occurred during image upload.');
+            if (res.ok) {
+                const data = await res.json();
+                handleInputChange("avatar", data.url);
+            } else {
+                console.error('Failed to upload image', await res.text());
+                alert('Failed to upload image.');
             }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('An unexpected error occurred during image upload.');
         }
     };
 
@@ -259,14 +255,24 @@ export default function PersonaConfiguration() {
                                         <div className="flex items-center gap-2">
                                             <h1 className="text-2xl font-bold text-gray-900">{displayPersona.name}</h1>
                                             {isEditing && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="w-6 h-6"
-                                                    onClick={() => setIsImageUploadDialogOpen(true)}
-                                                >
-                                                    <Upload className="w-4 h-4" />
-                                                </Button>
+                                                <label className="cursor-pointer">
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        onChange={handleImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="w-6 h-6"
+                                                        asChild
+                                                    >
+                                                        <div>
+                                                            <Upload className="w-4 h-4" />
+                                                        </div>
+                                                    </Button>
+                                                </label>
                                             )}
                                         </div>
                                         <p className="text-gray-600">
@@ -359,29 +365,6 @@ export default function PersonaConfiguration() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Image Upload Dialog */}
-                        <Dialog open={isImageUploadDialogOpen} onOpenChange={setIsImageUploadDialogOpen}>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Upload Persona Image</DialogTitle>
-                                    <DialogDescription>
-                                        Select an image file to use for this persona's avatar.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <Input
-                                        id="imageFile"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => setSelectedImageFile(e.target.files ? e.target.files[0] : null)}
-                                    />
-                                </div>
-                                <DialogFooter>
-                                    <Button onClick={handleImageUpload}>Save Image</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6">
