@@ -6,6 +6,8 @@ You are an AI assistant that generates detailed image descriptions for character
 ${IMAGE_DESCRIPTION_JSON_STRUCTURE}
 
 Generate a detailed image description based on the following character or persona data. Focus on visual aspects such as appearance, clothing, and any distinguishing features that would be relevant for generating an avatar. The description should be concise but rich in detail.
+The format of the input data should be compliant with image generation requirements (i.e. Stable Diffusion). 
+As an example, input appearance description as: "Eryndor is tall and lean, with shoulder-length auburn hair tied back in a loose braid. He wears a dark blue scholar's robe embroidered with silver runes, and a pendant bearing the symbol of Luminara rests on his chest. His hands are often stained with ink from hours of meticulous note-taking." should translate into the following image generation prompt: "eryndor, auburn hair, dark blue robe, ink, luminara, note-taking, scholar's robe, shoulder-length, tall, lean"
 
 --- CHARACTER/PERSONA DATA ---
 ${JSON.stringify(characterOrPersonaData, null, 2)}
