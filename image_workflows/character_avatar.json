@@ -148,7 +148,7 @@
     "inputs": {
       "name": "positive_prompt",
       "type": "prompt (negative)",
-      "default": "text, watermark"
+      "default": "bad quality, low resolution, blurry"
     },
     "class_type": "ETN_Parameter",
     "_meta": {
