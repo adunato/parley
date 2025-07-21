@@ -4,7 +4,7 @@ export const generateImageDescriptionPrompt = (characterOrPersonaData: any, aiSt
     const { name, age, role, appearance } = characterOrPersonaData.basicInfo;
     const characterDescription = `Name: ${name || 'N/A'}\nAge: ${age || 'N/A'}\nRole: ${role || 'N/A'}\nAppearance: ${appearance || 'N/A'}`;
     let prompt = `
-You are an AI assistant that generates detailed image descriptions for character or persona avatars in a text adventure game. Your responses MUST be a JSON object conforming to the following structure:
+You are an AI assistant that generates detailed image descriptions for character or persona avatars. Your responses MUST be a JSON object conforming to the following structure:
 ${IMAGE_DESCRIPTION_JSON_STRUCTURE}
 
 Generate a detailed image description based on the following character or persona data. Focus on visual aspects such as appearance, clothing, and any distinguishing features that would be relevant for generating an avatar. The description should be concise but rich in detail.
