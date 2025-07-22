@@ -378,7 +378,7 @@ export default function CharacterConfiguration() {
                         <div className="bg-white border-b border-gray-200 p-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Avatar className="w-12 h-12 border-4 border-white">
+                                    <Avatar className="w-20 h-20 border-4 border-white">
                                         <AvatarImage src={displayCharacter.basicInfo.avatar} alt={displayCharacter.basicInfo.name} />
                                         <AvatarFallback>{displayCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
