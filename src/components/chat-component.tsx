@@ -108,7 +108,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             {selectedChatCharacter ? (
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-16 w-16">
                 <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
                 <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
               </Avatar>
