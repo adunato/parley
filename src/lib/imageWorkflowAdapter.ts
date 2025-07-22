@@ -24,7 +24,7 @@ export function getCharacterAvatarWorkflow(imageDescription: string) {
 export function getCharacterAvatarPoseWorkflow(imageDescription: string) {
   const workflowPath = path.join(process.cwd(), 'image_workflows', 'character_avatar_pose.json');
   const workflow = JSON.parse(fs.readFileSync(workflowPath, 'utf8'));
-  const imageDescriptionSuffix = ", closeup portrait, front view, detailed, cinematic, 4k, sharp focus, high resolution";
+  const imageDescriptionSuffix = ", closeup portrait, front view, detailed, 4k, sharp focus, high resolution, natural light, realistic";
   const poseImagePath = path.join(process.cwd(), 'image_workflows', 'character_portrait_pose.png');
   const poseImageBase64 = fs.readFileSync(poseImagePath, 'base64');
 

@@ -63,7 +63,10 @@
   },
   "6": {
     "inputs": {
-      "text": "closeup portrait, front view, Eryndor Veyne, 32-year-old, arcane historian, auburn hair, shoulder-length, loose braid, dark blue scholar's robe, silver runes, Luminara pendant, detailed, cinematic, 4k, sharp focus, high resolution",
+      "text": [
+        "11",
+        0
+      ],
       "clip": [
         "4",
         1
@@ -120,10 +123,8 @@
   "11": {
     "inputs": {
       "name": "positive_prompt",
-      "type": "auto",
-      "default": "Eryndor Veyne, 32-year-old arcane historian, auburn hair, shoulder-length, loose braid, dark blue scholar's robe, silver runes, Luminara pendant, ink-stained hands., closeup portrait, front view, detailed, cinematic, 4k, sharp focus, high resolution",
-      "min": 0,
-      "max": 0
+      "type": "prompt (positive)",
+      "default": "Eryndor Veyne, 32-year-old arcane historian, auburn hair, shoulder-length, loose braid, dark blue scholar's robe, silver runes, Luminara pendant, ink-stained hands., closeup portrait, front view, detailed, cinematic, 4k, sharp focus, high resolution"
     },
     "class_type": "ETN_Parameter",
     "_meta": {
@@ -147,7 +148,7 @@
     "inputs": {
       "name": "negative_prompt",
       "type": "prompt (negative)",
-      "default": "bad quality, low resolution, blurry"
+      "default": "bad quality, low resolution, blurry, hyperrealistic, uncanny valley, overexposed, underexposed"
     },
     "class_type": "ETN_Parameter",
     "_meta": {
