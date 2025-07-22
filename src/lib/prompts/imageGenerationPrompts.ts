@@ -1,6 +1,6 @@
 export const IMAGE_DESCRIPTION_JSON_STRUCTURE = `{  "imageDescription": string; // A detailed description of the character or persona for image generation.}`;
 
-export const generateImageDescriptionPrompt = (characterOrPersonaData: any, aiStyle?: string) => {
+export const generateImageDescriptionPrompt = (characterOrPersonaData: any) => {
     const { name, age, role, appearance } = characterOrPersonaData.basicInfo;
     const characterDescription = `Name: ${name || 'N/A'}\nAge: ${age || 'N/A'}\nRole: ${role || 'N/A'}\nAppearance: ${appearance || 'N/A'}`;
     let prompt = `
@@ -17,10 +17,6 @@ ${characterDescription}
 ------------------------------
 `;
 
-
-    if (aiStyle) {
-        prompt += `\n\nAI Style: ${aiStyle}`;
-    }
 
     prompt += `\n\nJSON Output:\n`;
 
