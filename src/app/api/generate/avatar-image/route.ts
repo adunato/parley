@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCharacterAvatarWorkflow } from '@/lib/imageWorkflowAdapter';
+import {getCharacterAvatarPoseWorkflow, getCharacterAvatarWorkflow} from '@/lib/imageWorkflowAdapter';
 import { generateImage } from '@/lib/comfyui';
 
 export async function POST(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Image description is required' }, { status: 400 });
     }
 
-    const workflow = getCharacterAvatarWorkflow(imageDescription);
+    const workflow = getCharacterAvatarPoseWorkflow(imageDescription);
     const imageData = await generateImage(workflow);
 
     return NextResponse.json({ imageData }, { status: 200 });

@@ -1,0 +1,263 @@
+{
+  "3": {
+    "inputs": {
+      "seed": [
+        "16",
+        0
+      ],
+      "steps": 25,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "21",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "4": {
+    "inputs": {
+      "ckpt_name": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": [
+        "12",
+        0
+      ],
+      "height": [
+        "14",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "closeup portrait, front view, Eryndor Veyne, 32-year-old, arcane historian, auburn hair, shoulder-length, loose braid, dark blue scholar's robe, silver runes, Luminara pendant, detailed, cinematic, 4k, sharp focus, high resolution",
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": [
+        "13",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "10": {
+    "inputs": {
+      "name": "ckpt_name",
+      "type": "choice",
+      "default": "epicrealismXL_vxiiiAb3ast.safetensors"
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "11": {
+    "inputs": {
+      "name": "positive_prompt",
+      "type": "auto",
+      "default": "Eryndor Veyne, 32-year-old arcane historian, auburn hair, shoulder-length, loose braid, dark blue scholar's robe, silver runes, Luminara pendant, ink-stained hands., closeup portrait, front view, detailed, cinematic, 4k, sharp focus, high resolution",
+      "min": 0,
+      "max": 0
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "12": {
+    "inputs": {
+      "name": "width",
+      "type": "number (integer)",
+      "default": 1024,
+      "min": 16,
+      "max": 16384
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "13": {
+    "inputs": {
+      "name": "negative_prompt",
+      "type": "prompt (negative)",
+      "default": "bad quality, low resolution, blurry"
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "14": {
+    "inputs": {
+      "name": "height",
+      "type": "number (integer)",
+      "default": 1024,
+      "min": 16,
+      "max": 16384
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "15": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImageWebsocket",
+    "_meta": {
+      "title": "SaveImageWebsocket"
+    }
+  },
+  "16": {
+    "inputs": {
+      "name": "seed",
+      "type": "number (integer)",
+      "default": 1024,
+      "min": 16,
+      "max": 1638700000
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "17": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "21": {
+    "inputs": {
+      "switch": "On",
+      "strength": 0.5000000000000001,
+      "conditioning": [
+        "6",
+        0
+      ],
+      "control_net": [
+        "22",
+        0
+      ],
+      "image": [
+        "25",
+        0
+      ]
+    },
+    "class_type": "CR Apply ControlNet",
+    "_meta": {
+      "title": "🕹️ CR Apply ControlNet"
+    }
+  },
+  "22": {
+    "inputs": {
+      "control_net_name": "xinsir-controlnet-union-sdxl-1.0-promax.safetensors"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Load ControlNet Model"
+    }
+  },
+  "23": {
+    "inputs": {
+      "name": "Parameter",
+      "type": "auto",
+      "default": "",
+      "min": 0,
+      "max": 0
+    },
+    "class_type": "ETN_Parameter",
+    "_meta": {
+      "title": "Parameter"
+    }
+  },
+  "25": {
+    "inputs": {
+      "base64_data": "",
+      "image_output": "Preview",
+      "save_prefix": "ComfyUI"
+    },
+    "class_type": "easy loadImageBase64",
+    "_meta": {
+      "title": "Input Character Pose"
+    }
+  }
+}
