@@ -1,4 +1,5 @@
-import { useParleyStore, Character, PlayerPersona } from "@/lib/store"
+import { useParleyStore } from "@/lib/store"
+import { Character, Persona as PlayerPersona } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -123,7 +124,16 @@ export default function CharacterConfiguration() {
         const newId = (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString()
         const newCharacter: Character = {
             id: newId,
-            basicInfo: { name: "New Character" },
+            basicInfo: {
+                name: "New Character",
+                age: 0,
+                role: "",
+                faction: "",
+                reputation: "",
+                background: "",
+                firstImpression: "",
+                appearance: "",
+            },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
             preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
             relationships: [],
@@ -143,10 +153,10 @@ export default function CharacterConfiguration() {
         }
     }
 
-    const handleDeleteRelationship = (characterId: string, personaAlias: string) => {
+    const handleDeleteRelationship = (characterId: string, personaId: string) => {
         if (editedCharacter) {
             const updatedRelationships = editedCharacter.relationships.filter(
-                (rel) => !(rel.characterId === characterId && rel.personaAlias === personaAlias)
+                (rel) => !(rel.characterId === characterId && rel.personaId === personaId)
             );
             setEditedCharacter({ ...editedCharacter, relationships: updatedRelationships });
         }
@@ -157,18 +167,21 @@ export default function CharacterConfiguration() {
     const handleConvertToPersona = () => {
         if (displayCharacter) {
             const newPersona: PlayerPersona = {
-                name: displayCharacter.basicInfo.name,
-                alias: displayCharacter.basicInfo.name.replace(/\s/g, '') + '-persona',
-                reputation: displayCharacter.basicInfo.reputation || '',
-                background: displayCharacter.basicInfo.background || '',
-                firstImpression: displayCharacter.basicInfo.firstImpression || '',
-                role: displayCharacter.basicInfo.role || '',
-                faction: displayCharacter.basicInfo.faction || '',
-                avatar: displayCharacter.basicInfo.avatar || '',
-                appearance: displayCharacter.basicInfo.appearance || '',
+                id: displayCharacter.id,
+                basicInfo: {
+                    name: displayCharacter.basicInfo.name,
+                    age: displayCharacter.basicInfo.age,
+                    role: displayCharacter.basicInfo.role,
+                    faction: displayCharacter.basicInfo.faction,
+                    reputation: displayCharacter.basicInfo.reputation,
+                    background: displayCharacter.basicInfo.background,
+                    firstImpression: displayCharacter.basicInfo.firstImpression,
+                    appearance: displayCharacter.basicInfo.appearance,
+                    avatar: displayCharacter.basicInfo.avatar,
+                },
             };
             addPlayerPersona(newPersona);
-            alert(`Converted ${newPersona.name} to a new persona: ${newPersona.alias}`);
+            alert(`Converted ${newPersona.basicInfo.name} to a new persona: ${newPersona.id}`);
         }
     };
 
@@ -680,32 +693,7 @@ export default function CharacterConfiguration() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        {displayCharacter && displayCharacter.relationships.length > 0 ? (
-                                            displayCharacter.relationships.map((relationship) => {
-                                                const persona = playerPersonas.find(p => p.alias === relationship.personaAlias);
-                                                return (
-                                                    <div key={relationship.personaAlias} className="border p-3 rounded-md mb-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <h4 className="font-semibold">Relationship with {persona?.name || relationship.personaAlias}</h4>
-                                                            <Button
-                                                                variant="destructive"
-                                                                size="sm"
-                                                                onClick={() => handleDeleteRelationship(displayCharacter.id, relationship.personaAlias)}
-                                                                disabled={!isEditing}
-                                                            >
-                                                                Delete
-                                                            </Button>
-                                                        </div>
-                                                        <RelationshipDisplay
-                                                            characterName={persona?.name || relationship.personaAlias}
-                                                            relationship={relationship}
-                                                        />
-                                                    </div>
-                                                );
-                                            })
-                                        ) : (
-                                            <p className="text-gray-500">Relationships are generated when you chat with a character using a persona.</p>
-                                        )}
+                                        
                                     </CardContent>
                                 </Card>
 

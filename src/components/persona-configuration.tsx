@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { User, Save, Plus, Sparkles, Type, Upload } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useParleyStore, PlayerPersona } from "@/lib/store"
+import { useParleyStore } from "@/lib/store"
+import { Persona } from "@/lib/types";
 import { Badge } from "@/components/ui/badge"
 import {
     Dialog,
@@ -26,8 +27,8 @@ import {
 
 export default function PersonaConfiguration() {
     const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona, worldDescription, aiStyle, _hasHydrated } = useParleyStore()
-    const [selectedAlias, setSelectedAlias] = useState<string | null>(playerPersonas[0]?.alias || null)
-    const [editedPersona, setEditedPersona] = useState<PlayerPersona | null>(null)
+    const [selectedId, setSelectedId] = useState<string | null>(playerPersonas[0]?.id || null)
+    const [editedPersona, setEditedPersona] = useState<Persona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
@@ -50,7 +51,7 @@ export default function PersonaConfiguration() {
 
             if (res.ok) {
                 const data = await res.json();
-                handleInputChange("avatar", data.url);
+                handleInputChange("basicInfo", "avatar", data.url);
             } else {
                 console.error('Failed to upload image', await res.text());
                 alert('Failed to upload image.');
@@ -61,13 +62,13 @@ export default function PersonaConfiguration() {
         }
     };
 
-    const selectedPersona = playerPersonas.find((p) => p.alias === selectedAlias)
+    const selectedPersona = playerPersonas.find((p) => p.id === selectedId)
 
     useEffect(() => {
         if (selectedPersona) {
             setEditedPersona({ ...selectedPersona })
         } else if (playerPersonas.length > 0) {
-            setSelectedAlias(playerPersonas[0].alias)
+            setSelectedId(playerPersonas[0].id)
             setEditedPersona({ ...playerPersonas[0] })
         } else {
             setEditedPersona(null)
@@ -75,15 +76,15 @@ export default function PersonaConfiguration() {
         setIsEditing(false);
     }, [selectedPersona, playerPersonas])
 
-    const handleSelect = (persona: PlayerPersona) => {
-        setSelectedAlias(persona.alias)
+    const handleSelect = (persona: Persona) => {
+        setSelectedId(persona.id)
         setEditedPersona({ ...persona })
         setIsEditing(false);
     }
 
     const handleSave = () => {
         if (editedPersona) {
-            if (playerPersonas.some(p => p.alias === editedPersona.alias)) {
+            if (playerPersonas.some(p => p.id === editedPersona.id)) {
                 updatePlayerPersona(editedPersona)
             } else {
                 addPlayerPersona(editedPersona)
@@ -98,33 +99,56 @@ export default function PersonaConfiguration() {
         setIsEditing(false);
     }
 
-    const handleInputChange = (field: keyof PlayerPersona, value: string) => {
-        setEditedPersona((prev) => (prev ? { ...prev, [field]: value } : null))
+    const handleInputChange = (
+        section: keyof Persona | "basicInfo",
+        field: string,
+        value: string | number | string[] | undefined
+    ) => {
+        if (editedPersona) {
+            setEditedPersona((prev) => {
+                if (!prev) return null
+
+                const newPersona = { ...prev }
+
+                if (section === "basicInfo") {
+                    newPersona[section] = {
+                        ...newPersona[section],
+                        [field]: value,
+                    } as any // Type assertion for nested objects
+                } else {
+                    (newPersona as any)[field] = value // For top-level fields if any
+                }
+                return newPersona
+            })
+        }
     }
 
     const handleAddPersona = () => {
-        const newPersona: PlayerPersona = {
-            name: "New Persona",
-            alias: `Persona-${playerPersonas.length + 1}`,
-            reputation: "",
-            background: "",
-            firstImpression: "",
-            role: "",
-            faction: "",
-            avatar: "",
-            appearance: "",
+        const newId = `Persona-${playerPersonas.length + 1}`
+        const newPersona: Persona = {
+            id: newId,
+            basicInfo: {
+                name: "New Persona",
+                age: 0,
+                role: "",
+                faction: "",
+                reputation: "",
+                background: "",
+                firstImpression: "",
+                appearance: "",
+            }
         }
         addPlayerPersona(newPersona)
-        setSelectedAlias(newPersona.alias)
+        setSelectedId(newId)
         setEditedPersona(newPersona)
         setIsEditing(true);
     }
 
     const handleDeletePersona = () => {
-        if (editedPersona && editedPersona.alias) {
-            deletePlayerPersona(editedPersona.alias)
+        if (editedPersona && editedPersona.id) {
+            deletePlayerPersona(editedPersona.id)
             setEditedPersona(null)
-            setSelectedAlias(playerPersonas[0]?.alias || null)
+            setSelectedId(playerPersonas[0]?.id || null)
             setIsEditing(false);
         }
     }
@@ -153,28 +177,29 @@ export default function PersonaConfiguration() {
             });
             const data = await response.json();
             if (response.ok) {
-                const generatedPersona: PlayerPersona = {
-                    name: data.persona.name || "",
-                    alias: data.persona.alias || `Persona-${playerPersonas.length + 1}`,
-                    age: data.persona.age || 0,
-                    reputation: data.persona.reputation || "",
-                    background: data.persona.background || "",
-                    firstImpression: data.persona.firstImpression || "",
-                    role: data.persona.role || "",
-                    faction: data.persona.faction || "",
-                    avatar: "",
-                    appearance: data.persona.appearance || "",
+                const generatedPersona: Persona = {
+                    id: data.persona.id || `Persona-${playerPersonas.length + 1}`,
+                    basicInfo: {
+                        name: data.persona.basicInfo.name || "",
+                        age: data.persona.basicInfo.age || 0,
+                        role: data.persona.basicInfo.role || "",
+                        faction: data.persona.basicInfo.faction || "",
+                        reputation: data.persona.basicInfo.reputation || "",
+                        background: data.persona.basicInfo.background || "",
+                        firstImpression: data.persona.basicInfo.firstImpression || "",
+                        appearance: data.persona.basicInfo.appearance || "",
+                    }
                 };
 
-                if (selectedAlias && selectedPersona) {
+                if (selectedId && selectedPersona) {
                     // Overwrite the currently selected persona
-                    updatePlayerPersona({ ...selectedPersona, ...generatedPersona, alias: selectedPersona.alias });
-                    setSelectedAlias(selectedPersona.alias);
-                    setEditedPersona({ ...selectedPersona, ...generatedPersona, alias: selectedPersona.alias });
+                    updatePlayerPersona({ ...selectedPersona, ...generatedPersona, id: selectedPersona.id });
+                    setSelectedId(selectedPersona.id);
+                    setEditedPersona({ ...selectedPersona, ...generatedPersona, id: selectedPersona.id });
                 } else {
                     // Add as a new persona
                     addPlayerPersona(generatedPersona);
-                    setSelectedAlias(generatedPersona.alias);
+                    setSelectedId(generatedPersona.id);
                     setEditedPersona(generatedPersona);
                 }
             } else {
@@ -260,7 +285,7 @@ export default function PersonaConfiguration() {
 
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
-                    handleInputChange("avatar", uploadData.url);
+                    handleInputChange("basicInfo", "avatar", uploadData.url);
                 } else {
                     console.error('Failed to upload generated image', await uploadResponse.text());
                     alert('Failed to upload generated image.');
@@ -297,25 +322,25 @@ export default function PersonaConfiguration() {
                 <div className="flex-1 overflow-y-auto">
                     {playerPersonas.map((persona) => (
                         <div
-                            key={persona.alias}
+                            key={persona.id}
                             onClick={() => handleSelect(persona)}
                             className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                                selectedAlias === persona.alias ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                                selectedId === persona.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
                             }`}
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-1">
                                         <Avatar className="w-8 h-8 border-2 border-white">
-                                            <AvatarImage src={persona.avatar} alt={persona.name} />
-                                            <AvatarFallback>{persona.name.charAt(0)}</AvatarFallback>
+                                            <AvatarImage src={persona.basicInfo.avatar} alt={persona.basicInfo.name} />
+                                            <AvatarFallback>{persona.basicInfo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className="font-medium text-gray-900 truncate">{persona.name}</h3>
+                                        <h3 className="font-medium text-gray-900 truncate">{persona.basicInfo.name}</h3>
                                     </div>
-                                    <p className="text-sm text-gray-600 truncate">{persona.alias}</p>
-                                    <p className="text-xs text-gray-500 truncate">{persona.role}</p>
+                                    <p className="text-sm text-gray-600 truncate">{persona.id}</p>
+                                    <p className="text-xs text-gray-500 truncate">{persona.basicInfo.role}</p>
                                 </div>
-                                <Badge className="text-xs bg-gray-100 text-gray-800">{persona.faction}</Badge>
+                                <Badge className="text-xs bg-gray-100 text-gray-800">{persona.basicInfo.faction}</Badge>
                             </div>
                         </div>
                     ))}
@@ -331,12 +356,12 @@ export default function PersonaConfiguration() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="w-20 h-20 border-4 border-white">
-                                        <AvatarImage src={displayPersona.avatar} alt={displayPersona.name} />
-                                        <AvatarFallback>{displayPersona.name.charAt(0)}</AvatarFallback>
+                                        <AvatarImage src={displayPersona.basicInfo.avatar} alt={displayPersona.basicInfo.name} />
+                                        <AvatarFallback>{displayPersona.basicInfo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h1 className="text-2xl font-bold text-gray-900">{displayPersona.name}</h1>
+                                            <h1 className="text-2xl font-bold text-gray-900">{displayPersona.basicInfo.name}</h1>
                                             {isEditing && (
                                                 <label className="cursor-pointer">
                                                     <input 
@@ -359,7 +384,7 @@ export default function PersonaConfiguration() {
                                             )}
                                         </div>
                                         <p className="text-gray-600">
-                                            {displayPersona.alias} {displayPersona.role && `• ${displayPersona.role}`}
+                                            {displayPersona.id} {displayPersona.basicInfo.role && `• ${displayPersona.basicInfo.role}`}
                                         </p>
                                     </div>
                                 </div>
@@ -511,8 +536,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="name">Name</Label>
                                             <Input
                                                 id="name"
-                                                value={displayPersona.name}
-                                                onChange={(e) => handleInputChange("name", e.target.value)}
+                                                value={displayPersona.basicInfo.name}
+                                                onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -520,8 +545,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="alias">Alias</Label>
                                             <Input
                                                 id="alias"
-                                                value={displayPersona.alias}
-                                                onChange={(e) => handleInputChange("alias", e.target.value)}
+                                                value={displayPersona.id}
+                                                onChange={(e) => handleInputChange("id", "id", e.target.value)}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -530,8 +555,8 @@ export default function PersonaConfiguration() {
                                             <Input
                                                 id="age"
                                                 type="number"
-                                                value={displayPersona.age || ""}
-                                                onChange={(e) => handleInputChange("age", e.target.value)}
+                                                value={displayPersona.basicInfo.age || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -539,8 +564,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="role">Role</Label>
                                             <Input
                                                 id="role"
-                                                value={displayPersona.role || ""}
-                                                onChange={(e) => handleInputChange("role", e.target.value)}
+                                                value={displayPersona.basicInfo.role || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -548,8 +573,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="faction">Faction</Label>
                                             <Input
                                                 id="faction"
-                                                value={displayPersona.faction || ""}
-                                                onChange={(e) => handleInputChange("faction", e.target.value)}
+                                                value={displayPersona.basicInfo.faction || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -557,8 +582,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="avatar">Avatar URL</Label>
                                             <Input
                                                 id="avatar"
-                                                value={displayPersona.avatar || ""}
-                                                onChange={(e) => handleInputChange("avatar", e.target.value)}
+                                                value={displayPersona.basicInfo.avatar || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
                                                 disabled={!isEditing}
                                             />
                                         </div>
@@ -566,8 +591,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="appearance">Appearance</Label>
                                             <Textarea
                                                 id="appearance"
-                                                value={displayPersona.appearance || ""}
-                                                onChange={(e) => handleInputChange("appearance", e.target.value)}
+                                                value={displayPersona.basicInfo.appearance || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "appearance", e.target.value)}
                                                 disabled={!isEditing}
                                                 rows={3}
                                             />
@@ -588,8 +613,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="reputation">Reputation</Label>
                                             <Textarea
                                                 id="reputation"
-                                                value={displayPersona.reputation || ""}
-                                                onChange={(e) => handleInputChange("reputation", e.target.value)}
+                                                value={displayPersona.basicInfo.reputation || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "reputation", e.target.value)}
                                                 disabled={!isEditing}
                                                 rows={3}
                                             />
@@ -598,8 +623,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="background">Background</Label>
                                             <Textarea
                                                 id="background"
-                                                value={displayPersona.background || ""}
-                                                onChange={(e) => handleInputChange("background", e.target.value)}
+                                                value={displayPersona.basicInfo.background || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "background", e.target.value)}
                                                 disabled={!isEditing}
                                                 rows={3}
                                             />
@@ -608,8 +633,8 @@ export default function PersonaConfiguration() {
                                             <Label htmlFor="firstImpression">First Impression</Label>
                                             <Textarea
                                                 id="firstImpression"
-                                                value={displayPersona.firstImpression || ""}
-                                                onChange={(e) => handleInputChange("firstImpression", e.target.value)}
+                                                value={displayPersona.basicInfo.firstImpression || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
                                                 disabled={!isEditing}
                                                 rows={3}
                                             />

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { Relationship } from "@/lib/store";
+import { Relationship } from "@/lib/types";
 import { useParleyStore } from "@/lib/store";
 import { Loader2 } from "lucide-react"; // Import Loader2 icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,7 +42,7 @@ export default function ChatPage() {
 
     useEffect(() => {
         if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
+            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaId === selectedChatPersona.id);
             if (existingRelationship) {
                 setCurrentRelationship(existingRelationship);
             } else {
@@ -60,18 +60,18 @@ export default function ChatPage() {
         }
     };
 
-    const handlePersonaSelect = (personaAlias: string) => {
-        const persona = playerPersonas.find(p => p.alias === personaAlias);
+    const handlePersonaSelect = (personaId: string) => {
+        const persona = playerPersonas.find(p => p.id === personaId);
         if (persona) {
             setSelectedChatPersona(persona);
         } else {
-            console.error('No persona found with alias:', personaAlias);
+            console.error('No persona found with ID:', personaId);
         }
     };
 
     const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = selectedChatCharacter?.relationships.find(rel => rel.personaAlias === selectedChatPersona.alias);
+            const existingRelationship = selectedChatCharacter?.relationships.find(rel => rel.personaId === selectedChatPersona.id);
 
             if (!existingRelationship) {
                 try {
@@ -90,7 +90,7 @@ export default function ChatPage() {
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        const newRelationship = { ...data.relationship, characterId: selectedChatCharacter.id, personaAlias: selectedChatPersona.alias };
+                        const newRelationship = { ...data.relationship, characterId: selectedChatCharacter.id, personaId: selectedChatPersona.id };
                         const updatedCharacter = { ...selectedChatCharacter, relationships: [...selectedChatCharacter.relationships, newRelationship] };
                         updateCharacter(updatedCharacter);
                         setCurrentRelationship(newRelationship);
@@ -127,7 +127,7 @@ export default function ChatPage() {
                         worldInfo: worldDescription,
                         aiStyle: aiStyle,
                         characterName: selectedChatCharacter?.basicInfo?.name || "Unknown Character",
-                        playerPersonaName: selectedChatPersona?.name || "Unknown Persona",
+                        playerPersonaName: selectedChatPersona?.basicInfo?.name || "Unknown Persona",
                         summarizationModel: summarizationModel,
                     }),
                 });
@@ -136,7 +136,7 @@ export default function ChatPage() {
                     const newSummary = { summary: data.summary, timestamp: new Date() };
                     
                     const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                        if (rel.personaAlias === selectedChatPersona.alias) {
+                        if (rel.personaId === selectedChatPersona.id) {
                             const existingSummaries = rel.chat_summaries || [];
                             return {
                                 ...rel,
@@ -148,7 +148,7 @@ export default function ChatPage() {
                     
                     // Apply both summary and relationship delta in a single update
                     const updatedRelationshipsWithDelta = updatedRelationships.map(rel => {
-                        if (rel.personaAlias === selectedChatPersona.alias && cumulativeRelationshipDelta) {
+                        if (rel.personaId === selectedChatPersona.id && cumulativeRelationshipDelta) {
                             return {
                                 ...rel,
                                 closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
@@ -228,14 +228,14 @@ export default function ChatPage() {
                                 <label htmlFor="persona-select" className="block text-sm font-medium text-gray-700 mb-2">
                                     Select Persona
                                 </label>
-                                <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.alias || ""}>
+                                <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
                                     <SelectTrigger id="persona-select">
                                         <SelectValue placeholder="Choose a persona" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {playerPersonas.map((persona) => (
-                                            <SelectItem key={persona.alias} value={persona.alias}>
-                                                {persona.name} ({persona.alias})
+                                            <SelectItem key={persona.id} value={persona.id}>
+                                                {persona.basicInfo.name} ({persona.id})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

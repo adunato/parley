@@ -151,8 +151,8 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
                 {m.role === "user" && selectedChatPersona ? (
                   <Avatar className="flex-shrink-0 h-8 w-8">
-                    <AvatarImage src={selectedChatPersona.avatar} alt={selectedChatPersona.name} />
-                    <AvatarFallback>{selectedChatPersona.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
+                    <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 ) : m.role === "user" ? (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">

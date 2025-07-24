@@ -1,36 +1,11 @@
 import { create } from 'zustand';
 import { persist, devtools } from 'zustand/middleware';
 import { Message } from '@ai-sdk/react';
-
-interface BasicInfo {
-    name: string
-    age?: number
-    role?: string
-    faction?: string
-    avatar?: string
-    reputation?: string
-    background?: string
-    firstImpression?: string
-    appearance?: string
-}
-
-export interface Personality {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    neuroticism: number
-}
-
-interface Preferences {
-    attractedToTraits?: string[]
-    dislikesTraits?: string[]
-    gossipTendency?: "low" | "medium" | "high"
-}
+import { Character, Persona } from './types';
 
 export interface Relationship {
   characterId: string;
-  personaAlias: string;
+  personaId: string;
   closeness: number;
   sexual_attraction: number;
   respect: number;
@@ -45,27 +20,6 @@ export interface ChatSummary {
   timestamp: Date;
 }
 
-export interface Character {
-    id: string
-    basicInfo: BasicInfo
-    personality: Personality
-    preferences?: Preferences
-    relationships: Relationship[];
-}
-
-export interface PlayerPersona {
-  name: string;
-  alias: string;
-  age?: number;
-  reputation?: string;
-  background?: string;
-  firstImpression?: string;
-  appearance?: string;
-  role?: string;
-  faction?: string;
-  avatar?: string;
-}
-
 interface ParleyStore {
   gameInitialized: boolean;
   initializeGame: () => void;
@@ -73,9 +27,9 @@ interface ParleyStore {
   addCharacter: (character: Character) => void;
   updateCharacter: (character: Character) => void;
   deleteCharacter: (id: string) => void;
-  playerPersonas: PlayerPersona[];
-  addPlayerPersona: (persona: PlayerPersona) => void;
-  updatePlayerPersona: (persona: PlayerPersona) => void;
+  playerPersonas: Persona[];
+  addPlayerPersona: (persona: Persona) => void;
+  updatePlayerPersona: (persona: Persona) => void;
   deletePlayerPersona: (id: string) => void;
   worldDescription: string;
   setWorldDescription: (description: string) => void;
@@ -83,8 +37,8 @@ interface ParleyStore {
   setAiStyle: (style: string) => void;
   selectedChatCharacter?: Character;
   setSelectedChatCharacter: (character: Character | undefined) => void;
-  selectedChatPersona?: PlayerPersona;
-  setSelectedChatPersona: (persona: PlayerPersona | undefined) => void;
+  selectedChatPersona?: Persona;
+  setSelectedChatPersona: (persona: Persona | undefined) => void;
   chatMessages: Message[];
   setChatMessages: (messages: Message[]) => void;
   chatInput: string;
@@ -131,12 +85,12 @@ export const useParleyStore = create<ParleyStore>()(
       updatePlayerPersona: (updatedPersona) =>
         set((state) => ({
           playerPersonas: state.playerPersonas.map((p) =>
-            p.alias === updatedPersona.alias ? updatedPersona : p
+            p.id === updatedPersona.id ? updatedPersona : p
           ),
         })),
       deletePlayerPersona: (id) =>
         set((state) => ({
-          playerPersonas: state.playerPersonas.filter((p) => p.alias !== id),
+          playerPersonas: state.playerPersonas.filter((p) => p.id !== id),
         })),
       worldDescription: '',
       setWorldDescription: (description) => set({ worldDescription: description }),
@@ -231,6 +185,21 @@ export const useParleyStore = create<ParleyStore>()(
             state.characters = state.characters.map(character => ({
               ...character,
               relationships: character.relationships || []
+            }));
+          }
+          if (state.playerPersonas) {
+            state.playerPersonas = state.playerPersonas.map(persona => ({
+              ...persona,
+              basicInfo: persona.basicInfo || {
+                name: persona.id, // Use ID as name if basicInfo is missing
+                age: 0,
+                role: "",
+                faction: "",
+                reputation: "",
+                background: "",
+                firstImpression: "",
+                appearance: "",
+              }
             }));
           }
         }

@@ -1,20 +1,36 @@
 import { generateImage } from "../lib/comfyui.js";
-import { Character } from "../lib/entityStore.js";
+import { Character } from "../lib/types";
 
 async function runTest() {
   const dummyCharacter: Character = {
     id: "test-character",
-    name: "Test Character",
-    description: "a brave knight with shining armor",
-    personalityTraits: ["brave", "loyal"],
-    motives: ["protect the innocent"],
-    affiliation: "knights of the round table",
-    sceneIntroduced: "forest clearing",
-    imageUrl: "", // This will be populated by the generateImage function
+    basicInfo: {
+      name: "Test Character",
+      age: 30,
+      role: "Knight",
+      faction: "Knights of the Round Table",
+      reputation: "Renowned for bravery",
+      background: "Trained since childhood in the art of chivalry.",
+      firstImpression: "Stoic and honorable.",
+      appearance: "Tall, with shining armor and a noble bearing.",
+    },
+    personality: {
+      openness: 50,
+      conscientiousness: 80,
+      extraversion: 40,
+      agreeableness: 70,
+      neuroticism: 20,
+    },
+    preferences: {
+      attractedToTraits: ["courage", "kindness"],
+      dislikesTraits: ["deceit", "cowardice"],
+      gossipTendency: "low",
+    },
+    relationships: [],
   };
 
   try {
-    console.log("Attempting to generate image for:", dummyCharacter.name);
+    console.log("Attempting to generate image for:", dummyCharacter.basicInfo.name);
     const imageUrl = await generateImage(dummyCharacter);
     console.log("Successfully generated image. URL:", imageUrl);
   } catch (error) {

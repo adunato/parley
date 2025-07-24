@@ -8,7 +8,7 @@ import { useParleyStore } from '@/lib/store';
 export async function POST(req: Request) {
   const { messages, character, persona, worldDescription, aiStyle, chatModel } = await req.json();
   const llm = getLlm(chatModel);
-  const relationship = character.relationships.find((rel: any) => rel.personaAlias === persona.alias);
+  const relationship = character.relationships.find((rel: any) => rel.personaId === persona.id);
 
   if (!character || !persona) {
     return new Response(JSON.stringify({ error: "Character and persona data are required." }), { status: 400 });

@@ -78,7 +78,7 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
   "description": string,        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
 }`;
 
-import { Character, PlayerPersona, Relationship } from "../store";
+import { Character, Persona as PlayerPersona, Relationship } from "../types";
 
 export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
@@ -114,19 +114,9 @@ Based on the provided character and player persona data, generate their relation
 };
 
 
-export const PERSONA_JSON_STRUCTURE = `{
-  "playerProfile": {
-    "name": string,
-    "alias": string,
-    "age": number, // The player's age in years.
-    "reputation": string,
-    "background": string,
-    "firstImpression": string,
-    "role": string,
-    "faction": string,
-    "appearance": string
-  }
-}`;
+import { toInlineCommentJsonc } from "../json5-parser";
+
+export const PERSONA_JSON_STRUCTURE = toInlineCommentJsonc('src/lib/json5/persona.json5');
 
 export const generatePersonaPrompt = (personaDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
