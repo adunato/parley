@@ -1,0 +1,15 @@
+{
+          "id": "string",
+          "basicInfo": {
+            "name": "string",
+            "alias": "string",
+            // The player's age in years.
+            "age": "number",
+            "reputation": "string",
+            "background": "string",
+            "firstImpression": "string",
+            "role": "string",
+            "faction": "string",
+            "appearance": "string"
+          }
+        }
