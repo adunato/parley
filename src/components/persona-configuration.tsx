@@ -563,6 +563,15 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
+                                            <Label htmlFor="gender">Gender</Label>
+                                            <Input
+                                                id="gender"
+                                                value={displayPersona.basicInfo.gender || ""}
+                                                onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
+                                                disabled={!isEditing}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
                                             <Label htmlFor="role">Role</Label>
                                             <Input
                                                 id="role"
