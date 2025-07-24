@@ -7,6 +7,7 @@ async function runTest() {
     basicInfo: {
       name: "Test Character",
       age: 30,
+      gender: "Male",
       role: "Knight",
       faction: "Knights of the Round Table",
       reputation: "Renowned for bravery",

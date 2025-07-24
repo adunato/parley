@@ -130,6 +130,7 @@ export default function PersonaConfiguration() {
             basicInfo: {
                 name: "New Persona",
                 age: 0,
+                gender: "",
                 role: "",
                 faction: "",
                 reputation: "",
@@ -182,6 +183,7 @@ export default function PersonaConfiguration() {
                     basicInfo: {
                         name: data.persona.basicInfo.name || "",
                         age: data.persona.basicInfo.age || 0,
+                        gender: data.persona.basicInfo.gender || "",
                         role: data.persona.basicInfo.role || "",
                         faction: data.persona.basicInfo.faction || "",
                         reputation: data.persona.basicInfo.reputation || "",

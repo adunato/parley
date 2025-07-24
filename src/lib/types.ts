@@ -3,6 +3,7 @@
 export interface BasicInfo {
   name: string;
   age: number;
+  gender: string;
   role: string;
   faction: string;
   reputation: string;

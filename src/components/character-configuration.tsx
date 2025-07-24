@@ -127,6 +127,7 @@ export default function CharacterConfiguration() {
             basicInfo: {
                 name: "New Character",
                 age: 0,
+                gender: "",
                 role: "",
                 faction: "",
                 reputation: "",
@@ -171,6 +172,7 @@ export default function CharacterConfiguration() {
                 basicInfo: {
                     name: displayCharacter.basicInfo.name,
                     age: displayCharacter.basicInfo.age,
+                    gender: displayCharacter.basicInfo.gender,
                     role: displayCharacter.basicInfo.role,
                     faction: displayCharacter.basicInfo.faction,
                     reputation: displayCharacter.basicInfo.reputation,
