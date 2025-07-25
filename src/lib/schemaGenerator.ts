@@ -112,11 +112,11 @@ export function generateCharacterJsonStructureWithoutRelationships(): string {
     const schema = generator.createSchema('Character');
     
     // Remove relationships from the schema
-    if (schema.definitions && schema.definitions.Character && schema.definitions.Character.properties) {
+    if (schema.definitions && typeof schema.definitions.Character === 'object' && schema.definitions.Character.properties) {
       delete schema.definitions.Character.properties.relationships;
       // Also remove from required array if present
       if (schema.definitions.Character.required) {
-        schema.definitions.Character.required = schema.definitions.Character.required.filter((field: string) => field !== 'relationships');
+        schema.definitions.Character.required = (schema.definitions.Character.required as string[]).filter((field: string) => field !== 'relationships');
       }
     }
     

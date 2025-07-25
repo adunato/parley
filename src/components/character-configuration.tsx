@@ -73,9 +73,17 @@ export default function CharacterConfiguration() {
 
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
+    useEffect(() => {
+        const character = characters.find((c) => c.id === selectedId);
+        if (character) {
+            setEditedCharacter({ ...character });
+        } else {
+            setEditedCharacter(null);
+        }
+    }, [selectedId, characters]);
+
     const handleSelect = (character: Character) => {
         setSelectedId(character.id)
-        setEditedCharacter({ ...character })
         setIsEditing(false);
     }
 
@@ -694,7 +702,39 @@ export default function CharacterConfiguration() {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        
+                                        {displayCharacter.relationships.length > 0 ? (
+                                            <Accordion type="single" collapsible className="w-full">
+                                                {displayCharacter.relationships.map((relationship) => {
+                                                    const persona = playerPersonas.find(p => p.id === relationship.personaId);
+                                                    return (
+                                                        <AccordionItem key={relationship.personaId} value={relationship.personaId}>
+                                                            <AccordionTrigger>
+                                                                <div className="flex items-center justify-between w-full pr-4">
+                                                                    <span>{persona?.basicInfo.name || "Unknown Persona"}</span>
+                                                                    {isEditing && (
+                                                                        <Button
+                                                                            variant="destructive"
+                                                                            size="sm"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation(); // Prevent the accordion from toggling
+                                                                                handleDeleteRelationship(displayCharacter.id, relationship.personaId);
+                                                                            }}
+                                                                        >
+                                                                            Delete
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                            <AccordionContent>
+                                                                <RelationshipDisplay characterName={displayCharacter.basicInfo.name} relationship={relationship} />
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    );
+                                                })}
+                                            </Accordion>
+                                        ) : (
+                                            <p className="text-sm text-gray-500">No relationships yet.</p>
+                                        )}
                                     </CardContent>
                                 </Card>
 
