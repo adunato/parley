@@ -596,6 +596,16 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
+                                            <Label htmlFor="age">Age</Label>
+                                            <Input
+                                                id="age"
+                                                type="number"
+                                                value={displayCharacter.basicInfo.age || 0}
+                                                onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
+                                                disabled={!isEditing}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
                                             <Label htmlFor="gender">Gender</Label>
                                             <Input
                                                 id="gender"
