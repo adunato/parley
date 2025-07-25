@@ -10,8 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Image description is required' }, { status: 400 });
     }
 
-    const workflow = getCharacterAvatarPoseWorkflow(imageDescription);
-    const imageData = await generateImage(workflow);
+    const imageData = await generateImage(imageDescription);
 
     return NextResponse.json({ imageData }, { status: 200 });
   } catch (error) {

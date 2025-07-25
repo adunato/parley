@@ -13,21 +13,19 @@ const client = new Client({
 
 client.connect();
 
-export async function generateImage(character: Character) {
+export async function generateImage(imageDescription: string) {
   const workflow = JSON.parse(fs.readFileSync('./image_workflows/character_avatar.json', 'utf8'));
 
-  // Inject character data into the workflow
-  // This is a simplified example, you'll need to map character data to your specific workflow nodes
-  // For example, if your workflow has a node named "character_name" that takes a string input:
-  // workflow.nodes.find(node => node.name === "character_name").inputs.string_input = character.basicInfo.name;
-  // You'll need to inspect your actual workflow JSON to determine the correct paths.
-  // For now, let's assume a simple text input node for the prompt.
-  const promptNode = workflow.nodes.find((node: any) => node.type === "CLIPTextEncode" && node.inputs.text.includes("positive"));
-  if (promptNode) {
-    promptNode.inputs.text = `A portrait of ${character.basicInfo.name}, ${character.basicInfo.appearance}, ${character.basicInfo.firstImpression}. ${character.basicInfo.background}.`;
-  }
+  const nodes = Object.values(workflow);
 
-  
+  // Find the positive prompt node and update its text
+  const promptNode = nodes.find((node: any) => node.class_type === "ETN_Parameter" && node.inputs.name === "positive_prompt") as any;
+
+  if (promptNode) {
+    promptNode.inputs.default = imageDescription;
+  } else {
+    throw new Error("Could not find the positive prompt node in the workflow.");
+  }
 
   const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 

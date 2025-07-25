@@ -32,7 +32,7 @@ async function runTest() {
 
   try {
     console.log("Attempting to generate image for:", dummyCharacter.basicInfo.name);
-    const imageUrl = await generateImage(dummyCharacter);
+    const imageUrl = await generateImage(dummyCharacter.basicInfo.appearance);
     console.log("Successfully generated image. URL:", imageUrl);
   } catch (error) {
     console.error("Failed to generate image:", error);
