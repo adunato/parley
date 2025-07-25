@@ -19,31 +19,7 @@ Generate a detailed world description. The output should be a JSON object with a
 };
 
 
-export const CHARACTER_JSON_STRUCTURE = `{
-  "id": string,
-  "basicInfo": {
-    "name": string,
-    "age": number, // The character's age in years.
-    "role": string,
-    "faction": string,
-    "reputation": string,
-    "background": string,
-    "firstImpression": string,
-    "appearance": string
-  },
-  "personality": {
-    "openness": number, // An integer between -100 and 100.
-    "conscientiousness": number, // An integer between -100 and 100.
-    "extraversion": number, // An integer between -100 and 100.
-    "agreeableness": number, // An integer between -100 and 100.
-    "neuroticism": number // An integer between -100 and 100.
-  },
-  "preferences": {
-    "attractedToTraits": string[],
-    "dislikesTraits": string[],
-    "gossipTendency": "low" | "medium" | "high" // Must be one of "low", "medium", or "high".
-  }
-}`;
+export const CHARACTER_JSON_STRUCTURE = generateCharacterJsonStructure();
 
 export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
@@ -75,10 +51,11 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
   "respect": number,         // An integer between -100 (complete distrust or contempt) and 100 (deep respect, trust, and admiration)
   "engagement": number,      // An integer between -100 (disinterest or boredom) and 100 (high curiosity and emotional investment)
   "stability": number,        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
-  "description": string,        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
+  "description": string        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
 }`;
 
 import { Character, Persona as PlayerPersona, Relationship } from "../types";
+import { generateCharacterJsonStructure, generatePersonaJsonStructure } from '../schemaGenerator';
 
 export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
@@ -114,9 +91,7 @@ Based on the provided character and player persona data, generate their relation
 };
 
 
-import { toInlineCommentJsonc } from "../json5-parser";
-
-export const PERSONA_JSON_STRUCTURE = toInlineCommentJsonc('src/lib/json5/persona.json5');
+export const PERSONA_JSON_STRUCTURE = generatePersonaJsonStructure();
 
 export const generatePersonaPrompt = (personaDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
