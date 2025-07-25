@@ -19,7 +19,7 @@ Generate a detailed world description. The output should be a JSON object with a
 };
 
 
-export const CHARACTER_JSON_STRUCTURE = generateCharacterJsonStructure();
+export const CHARACTER_JSON_STRUCTURE = generateCharacterJsonStructureWithoutRelationships();
 
 export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
     let prompt = `
@@ -55,7 +55,7 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
 }`;
 
 import { Character, Persona as PlayerPersona, Relationship } from "../types";
-import { generateCharacterJsonStructure, generatePersonaJsonStructure } from '../schemaGenerator';
+import { generateCharacterJsonStructure, generatePersonaJsonStructure, generateCharacterJsonStructureWithoutRelationships } from '../schemaGenerator';
 
 export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
     const characterJson = JSON.stringify(character, null, 2);

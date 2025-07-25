@@ -130,3 +130,32 @@ export function generateCharacterJsonStructure(): string {
     return 'any';
   }
 }
+
+export function generateCharacterJsonStructureWithoutRelationships(): string {
+  console.log('Generating Character JSON structure without relationships...');
+  console.log('Config:', config);
+  try {
+    const generator = createGenerator({ ...config, type: 'Character' });
+    console.log('Generator created successfully for Character');
+    const schema = generator.createSchema('Character');
+    console.log('Character schema generated:', JSON.stringify(schema, null, 2));
+    
+    // Remove relationships from the schema
+    if (schema.definitions && schema.definitions.Character && schema.definitions.Character.properties) {
+      delete schema.definitions.Character.properties.relationships;
+      // Also remove from required array if present
+      if (schema.definitions.Character.required) {
+        schema.definitions.Character.required = schema.definitions.Character.required.filter((field: string) => field !== 'relationships');
+      }
+    }
+    
+    console.log('Character schema without relationships:', JSON.stringify(schema, null, 2));
+    const result = convertSchemaToPromptFormat(schema, schema.definitions);
+    console.log('Character prompt format result without relationships:', result);
+    return result;
+  } catch (error) {
+    console.error('Error generating Character schema without relationships:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    return 'any';
+  }
+}
