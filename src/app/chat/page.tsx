@@ -71,7 +71,15 @@ export default function ChatPage() {
 
     const handleStartChat = async () => {
         if (selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = selectedChatCharacter?.relationships.find(rel => rel.personaId === selectedChatPersona.id);
+            // Always get the latest character data from the store
+            const characterFromStore = characters.find(c => c.id === selectedChatCharacter.id);
+            if (!characterFromStore) {
+                console.error("Selected character not found in the main characters list.");
+                alert("An error occurred. Could not find the selected character.");
+                return;
+            }
+
+            const existingRelationship = characterFromStore.relationships.find(rel => rel.personaId === selectedChatPersona.id);
 
             if (!existingRelationship) {
                 try {
@@ -81,7 +89,7 @@ export default function ChatPage() {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            character: selectedChatCharacter,
+                            character: characterFromStore, // Use the latest character data
                             persona: selectedChatPersona,
                             worldDescription,
                             aiStyle,
@@ -90,8 +98,8 @@ export default function ChatPage() {
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        const newRelationship = { ...data.relationship, characterId: selectedChatCharacter.id, personaId: selectedChatPersona.id };
-                        const updatedCharacter = { ...selectedChatCharacter, relationships: [...selectedChatCharacter.relationships, newRelationship] };
+                        const newRelationship = { ...data.relationship, characterId: characterFromStore.id, personaId: selectedChatPersona.id };
+                        const updatedCharacter = { ...characterFromStore, relationships: [...characterFromStore.relationships, newRelationship] };
                         updateCharacter(updatedCharacter);
                         setCurrentRelationship(newRelationship);
                     } else {

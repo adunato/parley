@@ -75,10 +75,13 @@ export const useParleyStore = create<ParleyStore>()(
                     }]
                 })),
                 updateCharacter: (updatedCharacter) => {
-                    return set((state) => ({
+                    set((state) => ({
                         characters: state.characters.map((char) =>
                             char.id === updatedCharacter.id ? updatedCharacter : char
                         ),
+                        selectedChatCharacter: state.selectedChatCharacter?.id === updatedCharacter.id
+                            ? updatedCharacter
+                            : state.selectedChatCharacter,
                     }));
                 },
                 deleteCharacter: (id) =>
