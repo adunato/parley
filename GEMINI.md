@@ -15,6 +15,10 @@ The project follows the standard Next.js App Router structure.
 -   Static assets and global styles are in `src/app/`.
 -   TypeScript types are defined within the relevant components or imported from external libraries.
 
+## Code Design
+
+When given a design document as input, you should always wait for user approval of the design before making any changes to the code.
+
 ## Code Editing Steps
 
 1. Ask questions is you don't understand the user prompt. 
