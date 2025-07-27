@@ -35,6 +35,11 @@ export default function RootLayout({
               </Link>
             </li>
             <li>
+              <Link href="/character-group-config" className="text-white hover:text-gray-300">
+                Character Groups
+              </Link>
+            </li>
+            <li>
               <Link href="/persona-config" className="text-white hover:text-gray-300">
                 Personas
               </Link>

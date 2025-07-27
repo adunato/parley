@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Character, Persona, Relationship } from './types';
+import { Character, Persona, Relationship, CharacterGroup } from './types';
 
 type EntityStore = {
   characters: Character[];
+  characterGroups: CharacterGroup[];
   addCharacter: (character: Character) => void;
   updateCharacter: (character: Character) => void;
   deleteCharacter: (id: string) => void;
@@ -11,6 +12,9 @@ type EntityStore = {
   addPlayerPersona: (persona: Persona) => void;
   updatePlayerPersona: (persona: Persona) => void;
   deletePlayerPersona: (id: string) => void;
+  addCharacterGroup: (characterGroup: CharacterGroup) => void;
+  updateCharacterGroup: (characterGroup: CharacterGroup) => void;
+  deleteCharacterGroup: (id: string) => void;
   selectedChatCharacter?: Character;
   setSelectedChatCharacter: (character: Character | undefined) => void;
   selectedChatPersona?: Persona;
@@ -58,6 +62,20 @@ export const useEntityStore = create<EntityStore>()(
         set((state) => ({
           playerPersonas: state.playerPersonas.filter((p) => p.id !== id),
         })),
+      characterGroups: [],
+      addCharacterGroup: (characterGroup) => set((state) => ({
+        characterGroups: [...state.characterGroups, characterGroup]
+      })),
+      updateCharacterGroup: (updatedCharacterGroup) =>
+        set((state) => ({
+          characterGroups: state.characterGroups.map((group) =>
+            group.id === updatedCharacterGroup.id ? updatedCharacterGroup : group
+          ),
+        })),
+      deleteCharacterGroup: (id) =>
+        set((state) => ({
+          characterGroups: state.characterGroups.filter((group) => group.id !== id),
+        })),
       selectedChatCharacter: undefined,
       setSelectedChatCharacter: (character) => set({selectedChatCharacter: character}),
       selectedChatPersona: undefined,
@@ -91,6 +109,7 @@ export const useEntityStore = create<EntityStore>()(
           selectedChatCharacter: undefined,
           selectedChatPersona: undefined,
           cumulativeRelationshipDelta: undefined,
+          characterGroups: [],
         });
         useEntityStore.persist.clearStorage();
       },

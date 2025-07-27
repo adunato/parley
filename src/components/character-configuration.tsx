@@ -37,7 +37,7 @@ import {useEntityStore} from "@/lib/entityStore";
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup } = useEntityStore()
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -47,6 +47,7 @@ export default function CharacterConfiguration() {
     const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !editedCharacter) return;
@@ -79,10 +80,16 @@ export default function CharacterConfiguration() {
         const character = characters.find((c) => c.id === selectedId);
         if (character) {
             setEditedCharacter({ ...character });
+            // Initialize characterGroupMemberships based on which groups this character belongs to
+            const currentGroupIds = characterGroups
+                .filter(group => group.characters.includes(character.id))
+                .map(group => group.id);
+            setCharacterGroupMemberships(currentGroupIds);
         } else {
             setEditedCharacter(null);
+            setCharacterGroupMemberships([]);
         }
-    }, [selectedId, characters]);
+    }, [selectedId, characters, characterGroups]);
 
     const handleSelect = (character: Character) => {
         setSelectedId(character.id)
@@ -96,8 +103,24 @@ export default function CharacterConfiguration() {
             } else {
                 addCharacter({ ...editedCharacter, id: editedCharacter.id || (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString() })
             }
+
+            // Update character group memberships
+            characterGroups.forEach(group => {
+                const isMember = characterGroupMemberships.includes(group.id);
+                const alreadyInGroup = group.characters.includes(editedCharacter.id);
+
+                if (isMember && !alreadyInGroup) {
+                    // Add character to group
+                    updateCharacterGroup({ ...group, characters: [...group.characters, editedCharacter.id] });
+                } else if (!isMember && alreadyInGroup) {
+                    // Remove character from group
+                    updateCharacterGroup({ ...group, characters: group.characters.filter(charId => charId !== editedCharacter.id) });
+                }
+            });
+
             setEditedCharacter(null)
             setIsEditing(false);
+            setCharacterGroupMemberships([]); // Clear memberships after saving
         }
     }
 
@@ -749,6 +772,43 @@ export default function CharacterConfiguration() {
                                         )}
                                     </CardContent>
                                 </Card>
+
+                                {/* Character Groups */}
+                                {isEditing && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Book className="w-5 h-5" />
+                                                Character Groups
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            {characterGroups.length > 0 ? (
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {characterGroups.map((group) => (
+                                                        <div key={group.id} className="flex items-center space-x-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                id={`group-${group.id}`}
+                                                                checked={characterGroupMemberships.includes(group.id)}
+                                                                onChange={() => {
+                                                                    setCharacterGroupMemberships((prev) =>
+                                                                        prev.includes(group.id)
+                                                                            ? prev.filter((id) => id !== group.id)
+                                                                            : [...prev, group.id]
+                                                                    );
+                                                                }}
+                                                            />
+                                                            <Label htmlFor={`group-${group.id}`}>{group.name}</Label>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-500">No character groups defined. Create them in the Character Group Configuration page.</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
 
                                 {/* Preferences */}
                                 <Card>

@@ -15,7 +15,10 @@ To enhance the adventure and provide fresh experiences, Parley incorporates AI-p
 The game features a clean and responsive web interface, ensuring that players can easily navigate choices, manage their character/persona, and engage with the narrative without friction. This includes dedicated displays for character traits and dynamic relationship metrics.
 
 ### 4. Persistent Data Management
-Player-created characters and personas are designed to be persistent. The system allows for the creation, editing, and **overwriting** of these records, ensuring that players can refine their game elements over time without losing progress or creating redundant entries.
+Player-created characters, personas, and now **Character Groups** are designed to be persistent. The system allows for the creation, editing, and **overwriting** of these records, ensuring that players can refine their game elements over time without losing progress or creating redundant entries.
+
+### 5. Character Grouping
+Characters can be organized into custom groups, allowing for better management and narrative possibilities. A character can belong to multiple groups, providing flexibility in how relationships and story arcs are managed within the game.
 
 ## Architectural Aspects
 

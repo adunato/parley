@@ -54,3 +54,10 @@ export interface ChatSummary {
   summary: string;
   timestamp: Date;
 }
+
+export interface CharacterGroup {
+  id: string;
+  name: string;
+  characters: string[];
+  description: string;
+}
