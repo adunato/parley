@@ -33,9 +33,11 @@ import {
 } from "@/components/ui/tooltip";
 
 import RelationshipDisplay from "@/components/relationship-display";
+import {useEntityStore} from "@/lib/entityStore";
 
 export default function CharacterConfiguration() {
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, worldDescription, aiStyle, _hasHydrated, playerPersonas } = useParleyStore()
+    const { worldDescription, aiStyle, _hasHydrated } = useParleyStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas } = useEntityStore()
     const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);

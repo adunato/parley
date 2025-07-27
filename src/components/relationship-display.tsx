@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Relationship } from "@/lib/store"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import {Relationship} from "@/lib/types";
 
 interface RelationshipDisplayProps {
     characterName: string

@@ -11,23 +11,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
+import {useEntityStore} from "@/lib/entityStore";
 
 
 export default function ChatPage() {
     const { 
-        characters, 
-        playerPersonas, 
-        setSelectedChatCharacter, 
-        setSelectedChatPersona, 
-        selectedChatCharacter, 
-        selectedChatPersona, 
-        clearChat, 
+        clearChat,
         _hasHydrated, 
         chatSessionId, 
-        updateCharacter, 
-        cumulativeRelationshipDelta, 
-        updateCumulativeRelationshipDelta, 
-        clearCumulativeRelationshipDelta, 
         chatMessages,
         worldDescription,
         aiStyle,
@@ -35,6 +26,19 @@ export default function ChatPage() {
         summarizationModel,
         generationModel
     } = useParleyStore();
+
+    const {
+        characters,
+        playerPersonas,
+        setSelectedChatCharacter,
+        setSelectedChatPersona,
+        selectedChatCharacter,
+        selectedChatPersona,
+        updateCharacter,
+        cumulativeRelationshipDelta,
+        updateCumulativeRelationshipDelta,
+        clearCumulativeRelationshipDelta,
+    } = useEntityStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);

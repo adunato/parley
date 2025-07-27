@@ -2,7 +2,7 @@ import type React from "react"
 import { useEffect, useRef } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
-import { useParleyStore, Relationship } from "@/lib/store";
+import { useParleyStore} from "@/lib/store";
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,8 @@ import { Send, Bot, User } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {Relationship} from "@/lib/types";
+import { useEntityStore } from "@/lib/entityStore";
 
 interface ChatComponentProps {
   className?: string
@@ -21,7 +23,8 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { selectedChatCharacter, selectedChatPersona, chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel } = useParleyStore();
+  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona} = useEntityStore();
   const messagesRef = useRef<Message[]>([]);
 
   const debounceMessages = useDebouncedCallback(
