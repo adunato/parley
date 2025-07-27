@@ -19,7 +19,9 @@ Create a new entity for character groups.
 We will introduce a new type `CharacterGroup` in `src/lib/types.ts` with the following structure:
 
 ```typescript
-export interface CharacterGroup extends BaseEntity {
+export interface CharacterGroup {
+  id: string;
+  name: string;
   characters: string[];
   description: string;
 }
