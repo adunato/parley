@@ -4,7 +4,8 @@ This project is a web-based text adventure game built with Next.js and TypeScrip
 
 ## MCP Servers
 
-- Use Serena to understand the codebase and its relationships between objects.
+- Activate project "parley" in Serena at the start
+- Use Serena to understand the codebase and its relationships between objects - use find_symbol and find_referencing_symbols when trying to understand how a symbol is used
 
 ## Game Design Document
 

@@ -33,6 +33,54 @@ Each type of entity will likely have its own dedicated Zustand store or a part o
 
 This separation ensures a cleaner architecture, improves maintainability, and makes it easier to reason about where different pieces of game data reside and how they are managed.
 
+## Consumer Amendments
+
+Components and other consumers of the store will need to adjust their imports and state access patterns. Instead of importing `useParleyStore` and accessing all state from a single source, consumers will now import from either `store.ts` or `entityStore.ts` based on the type of data they need.
+
+This explicit separation at the import level will make it clearer which type of data a component is interacting with, reinforcing the architectural boundaries.
+
+### Specific Consumer Amendments
+
+Here's a breakdown of how each file currently using `useParleyStore` will need to be modified:
+
+*   **`src/app/api/chat/route.ts`**
+    *   **Current Usage:** `worldDescription`, `aiStyle`, `chatModel`
+    *   **Change:** These are game state variables. The import will change from `useParleyStore` to `useStore` (or similar, from `store.ts`). The access pattern will remain similar, e.g., `const { worldDescription, aiStyle, chatModel } = useStore();`
+
+*   **`src/app/chat/page.tsx`**
+    *   **Current Usage:** `characters`, `playerPersonas`, `setSelectedChatCharacter`, `setSelectedChatPersona`, `selectedChatCharacter`, `selectedChatPersona`, `clearChat`, `_hasHydrated`, `chatSessionId`, `updateCharacter`, `cumulativeRelationshipDelta`, `updateCumulativeRelationshipDelta`, `clearCumulativeRelationshipDelta`, `chatMessages`, `worldDescription`, `aiStyle`, `chatModel`, `summarizationModel`, `generationModel`
+    *   **Change:**
+        *   **From `store.ts` (Game State):** `setSelectedChatCharacter`, `setSelectedChatPersona`, `selectedChatCharacter`, `selectedChatPersona`, `clearChat`, `_hasHydrated`, `chatSessionId`, `cumulativeRelationshipDelta`, `updateCumulativeRelationshipDelta`, `clearCumulativeRelationshipDelta`, `chatMessages`, `worldDescription`, `aiStyle`, `chatModel`, `summarizationModel`, `generationModel`.
+        *   **From `entityStore.ts` (Game Entities):** `characters`, `playerPersonas`, `updateCharacter`.
+        *   Imports will be split: `import { useStore } from '@/lib/store';` and `import { useEntityStore } from '@/lib/entityStore';`.
+        *   Access patterns will reflect the split, e.g., `const { selectedChatCharacter, ... } = useStore();` and `const { characters, updateCharacter, ... } = useEntityStore();`
+
+*   **`src/app/settings/page.tsx`**
+    *   **Current Usage:** `chatModel`, `setChatModel`, `summarizationModel`, `setSummarizationModel`, `generationModel`, `setGenerationModel`
+    *   **Change:** These are game state variables. The import will change from `useParleyStore` to `useStore` (or similar, from `store.ts`). The access pattern will remain similar.
+
+*   **`src/app/world-info/page.tsx`**
+    *   **Current Usage:** `worldDescription`, `setWorldDescription`, `aiStyle`, `setAiStyle`, `clearAllData`
+    *   **Change:** These are game state variables. The import will change from `useParleyStore` to `useStore` (or similar, from `store.ts`). The access pattern will remain similar.
+
+*   **`src/components/character-configuration.tsx`**
+    *   **Current Usage:** `characters`, `addCharacter`, `updateCharacter`, `deleteCharacter`, `addPlayerPersona`, `worldDescription`, `aiStyle`, `_hasHydrated`, `playerPersonas`
+    *   **Change:**
+        *   **From `store.ts` (Game State):** `worldDescription`, `aiStyle`, `_hasHydrated`.
+        *   **From `entityStore.ts` (Game Entities):** `characters`, `addCharacter`, `updateCharacter`, `deleteCharacter`, `addPlayerPersona`, `playerPersonas`.
+        *   Imports will be split. Access patterns will reflect the split.
+
+*   **`src/components/chat-component.tsx`**
+    *   **Current Usage:** `selectedChatCharacter`, `selectedChatPersona`, `chatMessages`, `setChatMessages`, `chatInput`, `setChatInput`, `worldDescription`, `aiStyle`, `chatModel`
+    *   **Change:** These are game state variables (or selected entities which are part of game state). The import will change from `useParleyStore` to `useStore` (or similar, from `store.ts`). The access pattern will remain similar.
+
+*   **`src/components/persona-configuration.tsx`**
+    *   **Current Usage:** `playerPersonas`, `addPlayerPersona`, `updatePlayerPersona`, `deletePlayerPersona`, `worldDescription`, `aiStyle`, `_hasHydrated`
+    *   **Change:**
+        *   **From `store.ts` (Game State):** `worldDescription`, `aiStyle`, `_hasHydrated`.
+        *   **From `entityStore.ts` (Game Entities):** `playerPersonas`, `addPlayerPersona`, `updatePlayerPersona`, `deletePlayerPersona`.
+        *   Imports will be split. Access patterns will reflect the split.
+
 # IMPLEMENTATION
 
 The implementation of this refactoring will involve several key steps:
