@@ -774,41 +774,42 @@ export default function CharacterConfiguration() {
                                 </Card>
 
                                 {/* Character Groups */}
-                                {isEditing && (
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2">
-                                                <Book className="w-5 h-5" />
-                                                Character Groups
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            {characterGroups.length > 0 ? (
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {characterGroups.map((group) => (
-                                                        <div key={group.id} className="flex items-center space-x-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id={`group-${group.id}`}
-                                                                checked={characterGroupMemberships.includes(group.id)}
-                                                                onChange={() => {
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Book className="w-5 h-5" />
+                                            Character Groups
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        {characterGroups.length > 0 ? (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {characterGroups.map((group) => (
+                                                    <div key={group.id} className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`group-${group.id}`}
+                                                            checked={characterGroupMemberships.includes(group.id)}
+                                                            onChange={() => {
+                                                                if (isEditing) {
                                                                     setCharacterGroupMemberships((prev) =>
                                                                         prev.includes(group.id)
                                                                             ? prev.filter((id) => id !== group.id)
                                                                             : [...prev, group.id]
                                                                     );
-                                                                }}
-                                                            />
-                                                            <Label htmlFor={`group-${group.id}`}>{group.name}</Label>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm text-gray-500">No character groups defined. Create them in the Character Group Configuration page.</p>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                )}
+                                                                }
+                                                            }}
+                                                            disabled={!isEditing}
+                                                        />
+                                                        <Label htmlFor={`group-${group.id}`}>{group.name}</Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500">No character groups defined. Create them in the Character Group Configuration page.</p>
+                                        )}
+                                    </CardContent>
+                                </Card>
 
                                 {/* Preferences */}
                                 <Card>
