@@ -1,68 +1,118 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Character, Persona } from './types';
+import { Character, Persona, Relationship } from './types';
 
 type EntityStore = {
-  characters: Record<string, Character>; // characterId -> Character
-  playerPersonas: Record<string, Persona>; // personaId -> Persona
-  addCharacter: (char: Character) => void;
-  updateCharacter: (id: string, updates: Partial<Character>) => void;
-  getCharacterById: (id: string) => Character | undefined;
+  characters: Character[];
+  addCharacter: (character: Character) => void;
+  updateCharacter: (character: Character) => void;
+  deleteCharacter: (id: string) => void;
+  playerPersonas: Persona[];
   addPlayerPersona: (persona: Persona) => void;
-  updatePlayerPersona: (id: string, updates: Partial<Persona>) => void;
-  getPlayerPersonaById: (id: string) => Persona | undefined;
+  updatePlayerPersona: (persona: Persona) => void;
+  deletePlayerPersona: (id: string) => void;
+  selectedChatCharacter?: Character;
+  setSelectedChatCharacter: (character: Character | undefined) => void;
+  selectedChatPersona?: Persona;
+  setSelectedChatPersona: (persona: Persona | undefined) => void;
+  clearCharacters: () => void;
+  cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
+  updateCumulativeRelationshipDelta: (delta: Relationship) => void;
+  clearCumulativeRelationshipDelta: () => void; // Called on new chat
 };
 
 export const useEntityStore = create<EntityStore>()(
   persist(
     (set, get) => ({
-      characters: {},
-      playerPersonas: {},
-
-      addCharacter: (char) =>
+      characters: [],
+      addCharacter: (character) => set((state) => ({
+        characters: [...state.characters, {
+          ...character,
+          relationships: []
+        }]
+      })),
+      updateCharacter: (updatedCharacter) => {
         set((state) => ({
-          characters: {
-            ...state.characters,
-            [char.id]: char,
-          },
-        })),
-
-      updateCharacter: (id, updates) =>
+          characters: state.characters.map((char) =>
+            char.id === updatedCharacter.id ? updatedCharacter : char
+          ),
+          selectedChatCharacter: state.selectedChatCharacter?.id === updatedCharacter.id
+            ? updatedCharacter
+            : state.selectedChatCharacter,
+        }));
+      },
+      deleteCharacter: (id) =>
         set((state) => ({
-          characters: {
-            ...state.characters,
-            [id]: {
-              ...state.characters[id],
-              ...updates,
-            },
-          },
+          characters: state.characters.filter((char) => char.id !== id),
         })),
-
-      getCharacterById: (id) => get().characters[id],
-
-      addPlayerPersona: (persona) =>
+      playerPersonas: [],
+      addPlayerPersona: (persona) => set((state) => ({playerPersonas: [...state.playerPersonas, persona]})),
+      updatePlayerPersona: (updatedPersona) =>
         set((state) => ({
-          playerPersonas: {
-            ...state.playerPersonas,
-            [persona.id]: persona,
-          },
+          playerPersonas: state.playerPersonas.map((p) =>
+            p.id === updatedPersona.id ? updatedPersona : p
+          ),
         })),
-
-      updatePlayerPersona: (id, updates) =>
+      deletePlayerPersona: (id) =>
         set((state) => ({
-          playerPersonas: {
-            ...state.playerPersonas,
-            [id]: {
-              ...state.playerPersonas[id],
-              ...updates,
-            },
-          },
+          playerPersonas: state.playerPersonas.filter((p) => p.id !== id),
         })),
-
-      getPlayerPersonaById: (id) => get().playerPersonas[id],
+      selectedChatCharacter: undefined,
+      setSelectedChatCharacter: (character) => set({selectedChatCharacter: character}),
+      selectedChatPersona: undefined,
+      setSelectedChatPersona: (persona) => set({selectedChatPersona: persona}),
+      clearCharacters: () => set({characters: []}),
+      cumulativeRelationshipDelta: undefined,
+      updateCumulativeRelationshipDelta: (delta: Relationship) =>
+        set((state) => {
+          const currentDelta = state.cumulativeRelationshipDelta;
+          if (currentDelta) {
+            return {
+              cumulativeRelationshipDelta: {
+                ...currentDelta,
+                closeness: currentDelta.closeness + delta.closeness,
+                sexual_attraction: currentDelta.sexual_attraction + delta.sexual_attraction,
+                respect: currentDelta.respect + delta.respect,
+                engagement: currentDelta.engagement + delta.engagement,
+                stability: currentDelta.stability + delta.stability,
+                description: `${currentDelta.description}\n${delta.description}`,
+              },
+            };
+          } else {
+            return {cumulativeRelationshipDelta: delta};
+          }
+        }),
+      clearCumulativeRelationshipDelta: () => set({cumulativeRelationshipDelta: undefined}),
     }),
     {
       name: 'entity-store', // persists to localStorage
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Ensure all characters have a relationships array
+          if (state.characters) {
+            state.characters = state.characters.map(character => ({
+              ...character,
+              relationships: character.relationships || []
+            }));
+          }
+          if (state.playerPersonas) {
+            state.playerPersonas = state.playerPersonas.map(persona => ({
+              ...persona,
+              basicInfo: persona.basicInfo || {
+                name: persona.id, // Use ID as name if basicInfo is missing
+                age: 0,
+                gender: "",
+                role: "",
+                faction: "",
+                reputation: "",
+                background: "",
+                firstImpression: "",
+                appearance: "",
+              }
+            }));
+          }
+        }
+      },
     }
   )
 );
