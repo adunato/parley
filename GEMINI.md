@@ -2,6 +2,10 @@
 
 This project is a web-based text adventure game built with Next.js and TypeScript. The application presents a story with choices to the user.
 
+## MCP Servers
+
+- Use Serena to understand the codebase and its relationships between objects.
+
 ## Game Design Document
 
 After each change, you should check `game_design.md` and update it as needed.
