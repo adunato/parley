@@ -19,6 +19,7 @@ type EntityStore = {
   cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
   clearCumulativeRelationshipDelta: () => void; // Called on new chat
+  clearAllData: () => void;
 };
 
 export const useEntityStore = create<EntityStore>()(
@@ -83,6 +84,16 @@ export const useEntityStore = create<EntityStore>()(
           }
         }),
       clearCumulativeRelationshipDelta: () => set({cumulativeRelationshipDelta: undefined}),
+      clearAllData: () => {
+        set({
+          characters: [],
+          playerPersonas: [],
+          selectedChatCharacter: undefined,
+          selectedChatPersona: undefined,
+          cumulativeRelationshipDelta: undefined,
+        });
+        useEntityStore.persist.clearStorage();
+      },
     }),
     {
       name: 'entity-store', // persists to localStorage

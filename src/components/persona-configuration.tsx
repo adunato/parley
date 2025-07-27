@@ -24,12 +24,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {useEntityStore} from "../../dist-test/lib/entityStore";
+import {useEntityStore} from "@/lib/entityStore";
 
 export default function PersonaConfiguration() {
     const {  worldDescription, aiStyle, _hasHydrated } = useParleyStore()
     const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona} = useEntityStore()
-    const [selectedId, setSelectedId] = useState<string | null>(playerPersonas[0]?.id || null)
+    const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedPersona, setEditedPersona] = useState<Persona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
