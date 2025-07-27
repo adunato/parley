@@ -38,7 +38,7 @@ import {useEntityStore} from "@/lib/entityStore";
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated } = useParleyStore()
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas } = useEntityStore()
-    const [selectedId, setSelectedId] = useState<string | null>(characters[0]?.id || null)
+    const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);

@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useParleyStore } from '@/lib/store';
+import { useEntityStore } from '@/lib/entityStore';
 import { useEffect, useState } from 'react';
 import { Sparkles, Type, Trash2 } from 'lucide-react';
 import {
@@ -23,7 +24,8 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function WorldInfoPage() {
-  const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData } = useParleyStore();
+  const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData: clearParleyData } = useParleyStore();
+  const { clearAllData: clearEntityData } = useEntityStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
   const [isAiStylePromptDialogOpen, setIsAiStylePromptDialogOpen] = useState(false);
@@ -111,7 +113,8 @@ export default function WorldInfoPage() {
   };
 
   const handleClearAllData = () => {
-    clearAllData();
+    clearParleyData();
+    clearEntityData();
     setIsClearDataDialogOpen(false);
   };
 

@@ -1,7 +1,6 @@
 import {create} from 'zustand';
 import {persist, devtools} from 'zustand/middleware';
 import {Message} from '@ai-sdk/react';
-import {useEntityStore} from "@/lib/entityStore";
 
 interface ChatSummary {
     summary: string;
@@ -69,7 +68,6 @@ export const useParleyStore = create<ParleyStore>()(
                         chatInput: '',
                         chatSessionId: 0,
                     });
-                    useEntityStore.getState().clearAllData();
                     useParleyStore.persist.clearStorage();
                 },
                 chatModel: '',
@@ -80,7 +78,7 @@ export const useParleyStore = create<ParleyStore>()(
                 setGenerationModel: (model) => set({generationModel: model}),
             }),
             {
-                name: 'parley-storage', // unique name
+                name: 'parley-storage',
                 storage: {
                     getItem: (name) => {
                         const item = localStorage.getItem(name);
@@ -93,8 +91,7 @@ export const useParleyStore = create<ParleyStore>()(
                         localStorage.removeItem(name);
                     },
                 },
-            }
-        ),
+            }),
         {
             serialize: {
                 options: true,
