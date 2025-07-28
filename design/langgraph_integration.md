@@ -31,3 +31,5 @@ Create a test module that uses LangGraph to generate a chat prompt.
     *   Calls the LangGraph API route or directly tests the LangGraph module.
     *   Asserts the structure and content of the generated prompts and responses.
 9.  **Build Project:** Run `npm run build` to verify that all changes compile without errors.
+
+**IMPORTANT:** DO NOT MODIFY THE EXISTING CHAT FUNCTIONALITY. Focus on LangGraph integration and state management. We will integrate LangGraph into the existing chat functionality later as a separate feature.
