@@ -11,7 +11,7 @@ This project is a web-based text adventure game built with Next.js and TypeScrip
 
 ### Context7
 
-- When writing code always use the context7
+- Always use the context7 to verify code and design assumptions
 
 ## Project Structure
 
