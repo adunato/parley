@@ -20,6 +20,7 @@ async function callLLMNode(state: LangGraphState) {
   console.log("Calling LLM...");
   const llm = getLlm();
   const response = await llm.invoke(state.chatHistory);
+  console.log("LLM response:", response.content);
   return { ...state, chatHistory: state.chatHistory.concat(new AIMessage(response.content as string)) };
 }
 

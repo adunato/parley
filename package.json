@@ -55,6 +55,7 @@
     "@types/node": "24.0.10",
     "@types/react": "19.1.8",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.2.1",
     "jest": "^30.0.5",
     "postcss": "^8.4.38",
     "storybook": "^8.6.14",
