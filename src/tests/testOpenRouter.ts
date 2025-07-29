@@ -1,6 +1,9 @@
 import { ChatOpenAI } from "@langchain/openai";
+import dotenv from "dotenv";
 
-const OPENROUTER_API_KEY = "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";
+dotenv.config({ path: '.env.local' });
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_BASE_URL =
     process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
 

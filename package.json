@@ -11,7 +11,8 @@
     "test:comfyui": "tsc -p tsconfig.test.json && node dist-test/tests/testComfyUI.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:langgraph": "jest src/tests/langgraph.test.ts"
+    "test:langgraph": "jest src/tests/langgraph.test.ts",
+    "serve:langgraph": "npx ts-node src/server/apiServer.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.23",
@@ -31,9 +32,11 @@
     "@storybook/test": "^8.6.14",
     "@types/ws": "^8.18.1",
     "ai": "^4.3.17",
+    "body-parser": "^2.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "express": "^5.1.0",
     "json5": "^2.2.3",
     "langchain": "^0.3.29",
     "lucide-react": "^0.525.0",
@@ -62,6 +65,7 @@
     "tailwindcss": "3.4.4",
     "ts-jest": "^29.4.0",
     "ts-json-schema-generator": "^2.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "5.8.3"
   }
 }
