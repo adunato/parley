@@ -33,10 +33,10 @@ import {
 } from "@/components/ui/tooltip";
 
 import RelationshipDisplay from "@/components/relationship-display";
-import {useEntityStore} from "@/lib/entityStore";
+import { useEntityStore } from "@/lib/entityStore";
 
 export default function CharacterConfiguration() {
-    const { worldDescription, aiStyle, _hasHydrated } = useParleyStore()
+    const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup } = useEntityStore()
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
@@ -251,7 +251,7 @@ export default function CharacterConfiguration() {
                         agreeableness: data.character.personality.agreeableness || 0,
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
-                    
+
                     preferences: {
                         attractedToTraits: data.character.preferences?.attractedToTraits || [],
                         dislikesTraits: data.character.preferences?.dislikesTraits || [],
@@ -331,7 +331,10 @@ export default function CharacterConfiguration() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ imageDescription: dialogAvatarPrompt }),
+                body: JSON.stringify({
+                    imageDescription: dialogAvatarPrompt,
+                    overrides: avatarGenerationSettings
+                }),
             });
             const imageData = await imageResponse.json();
 
@@ -395,9 +398,8 @@ export default function CharacterConfiguration() {
                         <div
                             key={character.id}
                             onClick={() => handleSelect(character)}
-                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                                selectedId === character.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
-                            }`}
+                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedId === character.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                                }`}
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
@@ -432,28 +434,28 @@ export default function CharacterConfiguration() {
                                     </Avatar>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                        <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
-                                        {isEditing && (
-                                            <label className="cursor-pointer">
-                                                <input 
-                                                    type="file" 
-                                                    accept="image/*" 
-                                                    onChange={handleImageUpload}
-                                                    className="hidden"
-                                                />
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="w-6 h-6"
-                                                    asChild
-                                                >
-                                                    <div>
-                                                        <Upload className="w-4 h-4" />
-                                                    </div>
-                                                </Button>
-                                            </label>
-                                        )}
-                                    </div>
+                                            <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
+                                            {isEditing && (
+                                                <label className="cursor-pointer">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="w-6 h-6"
+                                                        asChild
+                                                    >
+                                                        <div>
+                                                            <Upload className="w-4 h-4" />
+                                                        </div>
+                                                    </Button>
+                                                </label>
+                                            )}
+                                        </div>
                                         <p className="text-gray-600">
                                             {displayCharacter.basicInfo.role} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
                                         </p>
@@ -472,7 +474,7 @@ export default function CharacterConfiguration() {
                                             <Button variant="destructive" onClick={handleDeleteCharacter}>
                                                 Delete
                                             </Button>
-                                            
+
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -597,7 +599,7 @@ export default function CharacterConfiguration() {
 
                         {/* Content */}
 
-                        
+
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6">

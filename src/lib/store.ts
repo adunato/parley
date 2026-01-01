@@ -1,10 +1,20 @@
-import {create} from 'zustand';
-import {persist, devtools} from 'zustand/middleware';
-import {Message} from '@ai-sdk/react';
+import { create } from 'zustand';
+import { persist, devtools } from 'zustand/middleware';
+import { Message } from '@ai-sdk/react';
 
 interface ChatSummary {
     summary: string;
     timestamp: Date;
+}
+
+export interface AvatarGenerationSettings {
+    width: number;
+    height: number;
+    steps: number;
+    cfg: number;
+    negativePrompt: string;
+    model: string;
+    seed: number;
 }
 
 interface ParleyStore {
@@ -29,6 +39,8 @@ interface ParleyStore {
     setSummarizationModel: (model: string) => void;
     generationModel: string;
     setGenerationModel: (model: string) => void;
+    avatarGenerationSettings: AvatarGenerationSettings;
+    setAvatarGenerationSettings: (settings: Partial<AvatarGenerationSettings>) => void;
 }
 
 export const useParleyStore = create<ParleyStore>()(
@@ -37,15 +49,15 @@ export const useParleyStore = create<ParleyStore>()(
             (set, get) => ({
                 gameInitialized: false,
 
-                initializeGame: () => set({gameInitialized: true}),
+                initializeGame: () => set({ gameInitialized: true }),
                 worldDescription: '',
-                setWorldDescription: (description) => set({worldDescription: description}),
+                setWorldDescription: (description) => set({ worldDescription: description }),
                 aiStyle: '',
-                setAiStyle: (style) => set({aiStyle: style}),
+                setAiStyle: (style) => set({ aiStyle: style }),
                 chatMessages: [],
-                setChatMessages: (messages) => set({chatMessages: messages}),
+                setChatMessages: (messages) => set({ chatMessages: messages }),
                 chatInput: '',
-                setChatInput: (input) => set({chatInput: input}),
+                setChatInput: (input) => set({ chatInput: input }),
                 clearChat: () => set((state) => {
                     const prevChatSessionId = state.chatSessionId;
                     localStorage.removeItem(`ai-sdk:chat:main-chat-${prevChatSessionId}`);
@@ -56,7 +68,7 @@ export const useParleyStore = create<ParleyStore>()(
                         chatSessionId: newChatSessionId,
                     };
                 }),
-                _setHasHydrated: (hydrated) => set({_hasHydrated: hydrated}),
+                _setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
                 chatSessionId: 0,
                 _hasHydrated: false,
                 clearAllData: () => {
@@ -71,11 +83,23 @@ export const useParleyStore = create<ParleyStore>()(
                     useParleyStore.persist.clearStorage();
                 },
                 chatModel: '',
-                setChatModel: (model) => set({chatModel: model}),
+                setChatModel: (model) => set({ chatModel: model }),
                 summarizationModel: '',
-                setSummarizationModel: (model) => set({summarizationModel: model}),
+                setSummarizationModel: (model) => set({ summarizationModel: model }),
                 generationModel: '',
-                setGenerationModel: (model) => set({generationModel: model}),
+                setGenerationModel: (model: string) => set({ generationModel: model }),
+                avatarGenerationSettings: {
+                    width: 1024,
+                    height: 1024,
+                    steps: 25,
+                    cfg: 8,
+                    negativePrompt: 'bad quality, low resolution, blurry',
+                    model: 'epicrealismXL_vxiiiAb3ast.safetensors',
+                    seed: -1, // -1 means random
+                },
+                setAvatarGenerationSettings: (settings) => set((state) => ({
+                    avatarGenerationSettings: { ...state.avatarGenerationSettings, ...settings }
+                })),
             }),
             {
                 name: 'parley-storage',
@@ -97,7 +121,7 @@ export const useParleyStore = create<ParleyStore>()(
                 options: true,
                 replacer: (_key, value) => {
                     if (value instanceof Map) {
-                        return {dataType: 'Map', value: Array.from(value.entries())};
+                        return { dataType: 'Map', value: Array.from(value.entries()) };
                     }
                     return value;
                 },

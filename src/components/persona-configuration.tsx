@@ -24,11 +24,11 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {useEntityStore} from "@/lib/entityStore";
+import { useEntityStore } from "@/lib/entityStore";
 
 export default function PersonaConfiguration() {
-    const {  worldDescription, aiStyle, _hasHydrated } = useParleyStore()
-    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona} = useEntityStore()
+    const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
+    const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona } = useEntityStore()
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedPersona, setEditedPersona] = useState<Persona | null>(null)
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
@@ -264,7 +264,10 @@ export default function PersonaConfiguration() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ imageDescription: dialogAvatarPrompt }),
+                body: JSON.stringify({
+                    imageDescription: dialogAvatarPrompt,
+                    overrides: avatarGenerationSettings
+                }),
             });
             const imageData = await imageResponse.json();
 
@@ -328,9 +331,8 @@ export default function PersonaConfiguration() {
                         <div
                             key={persona.id}
                             onClick={() => handleSelect(persona)}
-                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                                selectedId === persona.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
-                            }`}
+                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedId === persona.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                                }`}
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
@@ -368,9 +370,9 @@ export default function PersonaConfiguration() {
                                             <h1 className="text-2xl font-bold text-gray-900">{displayPersona.basicInfo.name}</h1>
                                             {isEditing && (
                                                 <label className="cursor-pointer">
-                                                    <input 
-                                                        type="file" 
-                                                        accept="image/*" 
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
                                                         onChange={handleImageUpload}
                                                         className="hidden"
                                                     />

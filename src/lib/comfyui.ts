@@ -13,19 +13,40 @@ const client = new Client({
 
 client.connect();
 
-export async function generateImage(imageDescription: string) {
+export async function generateImage(imageDescription: string, overrides: Record<string, any> = {}) {
   const workflow = JSON.parse(fs.readFileSync('./image_workflows/character_avatar.json', 'utf8'));
 
-  const nodes = Object.values(workflow);
+  const nodes = Object.values(workflow) as any[];
 
-  // Find the positive prompt node and update its text
-  const promptNode = nodes.find((node: any) => node.class_type === "ETN_Parameter" && node.inputs.name === "positive_prompt") as any;
+  // Merge imageDescription into overrides as positive_prompt if not present
+  const finalOverrides: Record<string, any> = {
+    positive_prompt: imageDescription,
+    ...overrides
+  };
 
-  if (promptNode) {
-    promptNode.inputs.default = imageDescription;
-  } else {
-    throw new Error("Could not find the positive prompt node in the workflow.");
+  // Handle random seed if set to -1
+  if (finalOverrides.seed === -1) {
+    finalOverrides.seed = Math.floor(Math.random() * 1000000000);
   }
+
+  // Iterate through all nodes to find ETN_Parameter nodes and apply overrides
+  nodes.forEach((node) => {
+    if (node.class_type === "ETN_Parameter") {
+      const parameterName = node.inputs.name;
+      if (finalOverrides.hasOwnProperty(parameterName)) {
+        node.inputs.default = finalOverrides[parameterName];
+      }
+    }
+
+    // Handle KSampler specific overrides (Steps, CFG, etc) which are not ETN_Parameters
+    if (node.class_type === "KSampler") {
+      ['steps', 'cfg', 'sampler_name', 'scheduler', 'denoise'].forEach((key) => {
+        if (finalOverrides.hasOwnProperty(key)) {
+          node.inputs[key] = finalOverrides[key];
+        }
+      });
+    }
+  });
 
   const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 

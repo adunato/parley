@@ -146,7 +146,7 @@
   },
   "13": {
     "inputs": {
-      "name": "positive_prompt",
+      "name": "negative_prompt",
       "type": "prompt (negative)",
       "default": "bad quality, low resolution, blurry"
     },
