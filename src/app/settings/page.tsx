@@ -22,11 +22,17 @@ export default function SettingsPage() {
     avatarGenerationSettings, setAvatarGenerationSettings
   } = useParleyStore();
 
+  const [comfyuiModels, setComfyuiModels] = useState<Model[]>([]);
+
   useEffect(() => {
     async function fetchModels() {
       const response = await fetch("/api/models");
       const data = await response.json();
       setModels(data);
+
+      const comfyResponse = await fetch("/api/models/comfyui");
+      const comfyData = await comfyResponse.json();
+      setComfyuiModels(comfyData.models.map((m: string) => ({ id: m, name: m, provider: 'ComfyUI' })));
     }
     fetchModels();
   }, []);
@@ -141,21 +147,25 @@ export default function SettingsPage() {
             <Textarea
               id="negative-prompt"
               value={avatarGenerationSettings.negativePrompt}
-              onChange={(e) => setAvatarGenerationSettings({ negativePrompt: e.target.value })}
+              onChange={(e) => setAvatarGenerationSettings({ ...avatarGenerationSettings, negativePrompt: e.target.value })}
               placeholder="Enter negative prompt..."
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="model">Model Checkpoint Name</Label>
-            <Input
-              id="model"
+            <Combobox<Model>
+              items={comfyuiModels}
               value={avatarGenerationSettings.model}
-              onChange={(e) => setAvatarGenerationSettings({ model: e.target.value })}
-              placeholder="e.g. epicrealismXL_vxiiiAb3ast.safetensors"
+              onValueChange={(value) => setAvatarGenerationSettings({ ...avatarGenerationSettings, model: value })}
+              placeholder="Select a checkpoint..."
+              filterFn={(item, query) =>
+                item.id.toLowerCase().includes(query.toLowerCase())
+              }
+              itemToString={(item) => item.id}
             />
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

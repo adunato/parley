@@ -40,8 +40,7 @@ To compile the project and prepare it for deployment, run:
 
 ## Git commit rules
 
-Do not commit unless user asks for it.
-Due to an unusual shell behavior, multi-word commit messages with `git commit -m "message"` are not currently supported. Please use hyphens instead of spaces for multi-word messages (e.g., `git commit -m "feat-add-new-feature"`).
+Always commit after any code changes.
 
 ---
 

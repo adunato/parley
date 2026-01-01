@@ -24,6 +24,11 @@ export async function generateImage(imageDescription: string, overrides: Record<
     ...overrides
   };
 
+  // Map 'model' to 'ckpt_name' if present (settings use 'model', workflow uses 'ckpt_name')
+  if (finalOverrides.model) {
+    finalOverrides.ckpt_name = finalOverrides.model;
+  }
+
   // Handle random seed if set to -1
   if (finalOverrides.seed === -1) {
     finalOverrides.seed = Math.floor(Math.random() * 1000000000);
@@ -64,5 +69,23 @@ export async function generateImage(imageDescription: string, overrides: Record<
       throw new Error("ComfyUI is not running or not accessible at 127.0.0.1:8188");
     }
     throw error;
+  }
+}
+
+export async function getAvailableModels(): Promise<string[]> {
+  try {
+    const response = await fetch("http://127.0.0.1:8188/object_info/CheckpointLoaderSimple");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`);
+    }
+    const data = await response.json() as any;
+    return data.CheckpointLoaderSimple.input.required.ckpt_name[0];
+  } catch (error: any) {
+    if (error.code === 'ECONNREFUSED' || (error.cause && error.cause.code === 'ECONNREFUSED')) {
+      console.warn("ComfyUI is not accessible. Returning empty model list.");
+      return [];
+    }
+    console.error("Error fetching ComfyUI models:", error);
+    return [];
   }
 }
