@@ -4,6 +4,7 @@ import fs from 'fs';
 import { Character } from '@/lib/types';
 import WebSocket from "ws";
 import fetch from "node-fetch";
+import path from 'path';
 
 const client = new Client({
   api_host: "127.0.0.1:8188",
@@ -54,6 +55,31 @@ export async function generateImage(imageDescription: string, overrides: Record<
   });
 
   try {
+
+    // Save the workflow to a file for debugging
+    console.log("[ComfyUI] generateImage called. Attempting to save workflow log...");
+    try {
+      console.log(`[ComfyUI] Current working directory: ${process.cwd()}`);
+      const logDir = path.join(process.cwd(), 'logs');
+      console.log(`[ComfyUI] Target log directory: ${logDir}`);
+
+      if (!fs.existsSync(logDir)) {
+        console.log("[ComfyUI] Log directory does not exist. Creating...");
+        fs.mkdirSync(logDir, { recursive: true });
+        console.log("[ComfyUI] Log directory created.");
+      } else {
+        console.log("[ComfyUI] Log directory already exists.");
+      }
+
+      const logPath = path.join(logDir, 'latest_image_generation.json');
+      console.log(`[ComfyUI] Writing workflow to: ${logPath}`);
+
+      fs.writeFileSync(logPath, JSON.stringify(workflow, null, 2));
+      console.log(`[ComfyUI] Successfully saved workflow to ${logPath}`);
+    } catch (err) {
+      console.error("[ComfyUI] CRITICAL ERROR: Failed to save workflow log:", err);
+    }
+
     const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 
     if (queuedPrompt.images && queuedPrompt.images.length > 0) {
