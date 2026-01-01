@@ -14,13 +14,15 @@ export async function POST(req: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `${Date.now()}-${file.name}`;
-    const filePath = path.join(process.cwd(), 'public', 'avatars', filename);
+    // Store in generated-images instead of public
+    const filePath = path.join(process.cwd(), 'generated-images', 'avatars', filename);
 
     // Ensure directory exists
     await mkdir(path.dirname(filePath), { recursive: true });
 
     await writeFile(filePath, buffer);
-    const fileUrl = `/avatars/${filename}`;
+    // Return URL to the dynamic API route
+    const fileUrl = `/api/images/avatars/${filename}`;
     console.log(`File uploaded: ${filename}, URL: ${fileUrl}`);
 
     return new Response(JSON.stringify({ url: fileUrl }), { status: 200 });

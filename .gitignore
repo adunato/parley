@@ -48,3 +48,4 @@ storybook-static
 # Uploaded avatars
 public/avatars/
 .serena/
+/generated-images
