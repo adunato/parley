@@ -15,6 +15,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ imageData }, { status: 200 });
   } catch (error) {
     console.error('Error generating avatar image:', error);
-    return NextResponse.json({ error: 'Failed to generate avatar image' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to generate avatar image' }, { status: 500 });
   }
 }

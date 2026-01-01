@@ -48,14 +48,21 @@ export async function generateImage(imageDescription: string, overrides: Record<
     }
   });
 
-  const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
+  try {
+    const queuedPrompt = await client.enqueue_polling(workflow, { workflow: workflow });
 
-  if (queuedPrompt.images && queuedPrompt.images.length > 0) {
-    const imageUrl = queuedPrompt.images[0].data as string;
-    const imageResponse = await fetch(imageUrl);
-    const imageBuffer = await imageResponse.arrayBuffer();
-    return Buffer.from(imageBuffer).toString('base64');
-  } else {
-    throw new Error("No image found in the ComfyUI response.");
+    if (queuedPrompt.images && queuedPrompt.images.length > 0) {
+      const imageUrl = queuedPrompt.images[0].data as string;
+      const imageResponse = await fetch(imageUrl);
+      const imageBuffer = await imageResponse.arrayBuffer();
+      return Buffer.from(imageBuffer).toString('base64');
+    } else {
+      throw new Error("No image found in the ComfyUI response.");
+    }
+  } catch (error: any) {
+    if (error.cause && error.cause.code === 'ECONNREFUSED') {
+      throw new Error("ComfyUI is not running or not accessible at 127.0.0.1:8188");
+    }
+    throw error;
   }
 }
