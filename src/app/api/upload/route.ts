@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
 export async function POST(req: Request) {
@@ -16,6 +16,9 @@ export async function POST(req: Request) {
     const filename = `${Date.now()}-${file.name}`;
     const filePath = path.join(process.cwd(), 'public', 'avatars', filename);
 
+    // Ensure directory exists
+    await mkdir(path.dirname(filePath), { recursive: true });
+
     await writeFile(filePath, buffer);
     const fileUrl = `/avatars/${filename}`;
     console.log(`File uploaded: ${filename}, URL: ${fileUrl}`);
@@ -23,6 +26,6 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ url: fileUrl }), { status: 200 });
   } catch (error) {
     console.error('Error during file upload:', error);
-    return new Response(JSON.stringify({ error: 'Upload failed' }), { status: 500 });
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Upload failed' }), { status: 500 });
   }
 }

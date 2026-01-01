@@ -134,23 +134,21 @@ export default function CharacterConfiguration() {
         field: string,
         value: string | number | string[] | undefined
     ) => {
-        if (editedCharacter) {
-            setEditedCharacter((prev) => {
-                if (!prev) return null
+        setEditedCharacter((prev) => {
+            if (!prev) return null
 
-                const newCharacter = { ...prev }
+            const newCharacter = { ...prev }
 
-                if (section === "basicInfo" || section === "personality" || section === "preferences") {
-                    newCharacter[section] = {
-                        ...newCharacter[section],
-                        [field]: value,
-                    } as any // Type assertion for nested objects
-                } else {
-                    (newCharacter as any)[field] = value // For top-level fields if any
-                }
-                return newCharacter
-            })
-        }
+            if (section === "basicInfo" || section === "personality" || section === "preferences") {
+                newCharacter[section] = {
+                    ...newCharacter[section],
+                    [field]: value,
+                } as any // Type assertion for nested objects
+            } else {
+                (newCharacter as any)[field] = value // For top-level fields if any
+            }
+            return newCharacter
+        })
     }
 
     const handleAddCharacter = () => {
@@ -359,7 +357,19 @@ export default function CharacterConfiguration() {
 
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
-                    handleInputChange("basicInfo", "avatar", uploadData.url);
+                    const avatarUrl = `${uploadData.url}?t=${Date.now()}`;
+                    console.log('Setting avatar URL:', avatarUrl);
+
+                    if (editedCharacter) {
+                        handleInputChange("basicInfo", "avatar", avatarUrl);
+                    } else if (selectedCharacter) {
+                        // Directly update the store if we are not in edit mode
+                        const updatedCharacter = {
+                            ...selectedCharacter,
+                            basicInfo: { ...selectedCharacter.basicInfo, avatar: avatarUrl }
+                        };
+                        updateCharacter(updatedCharacter);
+                    }
                 } else {
                     console.error('Failed to upload generated image', await uploadResponse.text());
                     alert('Failed to upload generated image.');

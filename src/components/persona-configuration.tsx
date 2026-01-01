@@ -106,23 +106,21 @@ export default function PersonaConfiguration() {
         field: string,
         value: string | number | string[] | undefined
     ) => {
-        if (editedPersona) {
-            setEditedPersona((prev) => {
-                if (!prev) return null
+        setEditedPersona((prev) => {
+            if (!prev) return null
 
-                const newPersona = { ...prev }
+            const newPersona = { ...prev }
 
-                if (section === "basicInfo") {
-                    newPersona[section] = {
-                        ...newPersona[section],
-                        [field]: value,
-                    } as any // Type assertion for nested objects
-                } else {
-                    (newPersona as any)[field] = value // For top-level fields if any
-                }
-                return newPersona
-            })
-        }
+            if (section === "basicInfo") {
+                newPersona[section] = {
+                    ...newPersona[section],
+                    [field]: value,
+                } as any // Type assertion for nested objects
+            } else {
+                (newPersona as any)[field] = value // For top-level fields if any
+            }
+            return newPersona
+        })
     }
 
     const handleAddPersona = () => {
@@ -292,7 +290,18 @@ export default function PersonaConfiguration() {
 
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
-                    handleInputChange("basicInfo", "avatar", uploadData.url);
+                    const avatarUrl = `${uploadData.url}?t=${Date.now()}`;
+
+                    if (editedPersona) {
+                        handleInputChange("basicInfo", "avatar", avatarUrl);
+                    } else if (selectedPersona) {
+                        // Directly update the store if we are not in edit mode
+                        const updatedPersona = {
+                            ...selectedPersona,
+                            basicInfo: { ...selectedPersona.basicInfo, avatar: avatarUrl }
+                        };
+                        updatePlayerPersona(updatedPersona);
+                    }
                 } else {
                     console.error('Failed to upload generated image', await uploadResponse.text());
                     alert('Failed to upload generated image.');
