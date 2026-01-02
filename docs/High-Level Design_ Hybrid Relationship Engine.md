@@ -21,12 +21,11 @@ This ensures that character behavior remains consistent, numerically balanced, a
 
 Before detailing the architecture, we must define the atomic units that drive the system. The engine functions by converting these narrative concepts into mathematical values.
 
-### 2.1 Traits & Magnitude (The Input Atoms)
+### 2.1 Traits (The Input Atoms)
 
 A **Trait** is the smallest unit of recognizable behavior or "social flavor."
 
 * **Definition:** An objective tag assigned to an action (e.g., "Lying" = Dishonesty).
-* **Magnitude:** Every trait has an intensity ( to ). A polite greeting is Kindness (); saving a life is Kindness ().
 
 ### 2.2 Relationship Axes (The Output Containers)
 
@@ -53,12 +52,6 @@ The **OCEAN** model (Openness, Conscientiousness, Extraversion, Agreeableness, N
 Polarity defines whether a character inherently "Likes" or "Dislikes" a specific Trait.
 
 * **Role:** It sets the direction (Positive/Negative) of the change. A Thief might have a **Positive Polarity** for Dishonesty, while a Paladin has a **Negative Polarity** for the same Trait.
-
-### 2.6 Acclimatization (The Dampener)
-
-Acclimatization is the system's memory of recent history.
-
-* **Role:** It prevents "spamming." If a character performs the same deed (e.g., Flirtation) repeatedly in a short window, the impact is mathematically reduced (diminishing returns) to simulate boredom or annoyance.
 
 ---
 
@@ -346,12 +339,3 @@ Function CalculateRelationshipImpact(Deed, Character, RelationshipState) {
 * **Sensitivity Matrix:** A set of rules defining how a character's OCEAN values act as multipliers for specific traits (e.g., High Conscientiousness amplifies the negative impact of Laziness).
 * **TraitTag:** A specific keyword (e.g., "Kindness", "Aggression") from the controlled vocabulary that the LLM assigns to user actions.
 * **Witness:** The LLM component acting as a classifier. Its sole job is to observe the narrative and output an InteractionDeed without making game logic decisions.
-
----
-
-## 7. Implementation Guide (Next Steps)
-
-* **Define the JSON Schema:** Create the exact JSON format the LLM must output to match `InteractionDeed`.
-* **Hardcode the Matrices:** Implement the `SensitivityMatrix` and `RoutingTable` in your code (C#, Python, etc.). Do not let the LLM generate these.
-* **Prompt Engineering:** Write a system prompt that provides the LLM with the `TraitTag` list and strict instructions to output only valid JSON.
-* **Unit Testing:** Run a "Laziness" deed against Evelyn (High Conscientiousness) vs. a Low Conscientiousness character to verify the mathematical multiplier works as intended.
