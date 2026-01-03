@@ -24,17 +24,22 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 2: Ideal Match Data Model
-**Goal:** Implement the "Ideal Match" preference profile in the backend and UI.
+**Goal:** Implement the "Ideal Match" preference profile in the backend, UI, and Generator.
 
-#### [MODIFY] `src/types/character.ts` (or equivalent)
-- Add `idealMatch` property (Type: OCEAN) to the Character interface.
+#### [MODIFY] `src/lib/types.ts`
+- Add `idealMatch` property (Type: OCEAN) to the `Character` interface.
 
-#### [MODIFY] `src/components/character-configuration.tsx`
-- Add UI section to configure "Ideal Match" (Sliders for O,C,E,A,N) alongside the existing Personality configuration.
+#### [MODIFY] `src/components/character-configuration.tsx` (UI)
+- Update `handleAddCharacter` to initialize `idealMatch` with default values.
+- Add UI section (Card/Sliders) to configure "Ideal Match" alongside the existing Personality configuration.
+
+#### [MODIFY] `src/app/api/generate/character/route.ts` (Generation)
+- Update the manual character object construction to include `idealMatch` from the parsed LLM result.
+- *Note:* The Schema Generator (`src/lib/schemaGenerator.ts`) automatically reflects changes in `types.ts`, so the Prompt will update automatically.
 
 #### Phase 2 Verification
-- **Manual Check:** Open Character Editor. Adjust "Ideal Match" sliders. Save. Reload page. Verify values persist.
-- **Code Check:** Inspect the Character JSON object in the console or network tab to ensure `idealMatch` is present and correctly structured.
+- **Manual Check:** open Character Editor. Adjust "Ideal Match" sliders. Save. Reload page. Verify values persist.
+- **Generation Test:** Generate a new character via LLM (using the "Sparkle" button). Inspect the internal state to ensure `idealMatch` is populated with non-zero/meaningful values.
 
 ---
 
