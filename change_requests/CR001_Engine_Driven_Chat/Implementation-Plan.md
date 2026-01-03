@@ -44,21 +44,34 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 3: Relationship Data Model (PRQC)
-**Goal:** Replace the current generic relationship model with the strict PRQC schema.
+**Goal:** Replace the current generic relationship model with the strict PRQC schema across the entire stack (Database, UI, Generator).
 
-#### [MODIFY] `src/types/relationship.ts` (or equivalent)
-- Update Relationship interface to enforce the PRQC structure:
+#### [MODIFY] `src/lib/types.ts`
+- Update `Relationship` interface to enforce the PRQC structure:
     - `satisfaction` (0-100)
     - `commitment` (0-100)
     - `intimacy` (0-100)
     - `trust` (0-100)
     - `passion` (0-100)
+    - *Remove deprecated fields:* `closeness`, `sexual_attraction`, `respect`, `engagement`, `stability`.
+
+#### [MODIFY] `src/components/relationship-display.tsx` (UI)
+- Update `RelationshipBar` components to map to the new PRQC fields.
+- Update labels and tooltips to match new definitions (e.g., "Satisfaction" instead of "Closeness").
+
+#### [MODIFY] `src/lib/prompts/generatorPrompts.ts`
+- Update `RELATIONSHIP_JSON_STRUCTURE` to match the PRQC schema.
+- Update `generateRelationshipPrompt` and `generateRelationshipDeltaPrompt` to instruct the LLM to output PRQC values.
+
+#### [MODIFY] `src/app/api/generate/relationship/route.ts` & `src/app/api/generate/relationship-delta/route.ts`
+- Verify these endpoints correctly handle the new schema (they likely rely on the shared `generatorPrompts`, but manual verification of the `parsedResult` mapping is needed).
 
 #### [MODIFY] `src/lib/store.ts` (or State Manager)
-- Ensure default new relationships are initialized with neutral PRQC values (or values defined by character/scenario).
+- Ensure default new relationships are initialized with neutral PRQC values (e.g., 50/50/50/50/50 or as appropriate).
 
 #### Phase 3 Verification
-- **Manual Check:** Start a new chat. Inspect the initial state (via Redux DevTools or Console log). Verify the active relationship object contains valid PRQC keys.
+- **Manual Check:** Start a new chat or create a new relationship in the UI. Inspect the Relationship Display card. Verify it shows the 5 PRQC bars.
+- **Generation Test:** Trigger "Generate Relationship" (if available via UI or API test). Verify the returned JSON contains `satisfaction`, `commitment`, etc.
 
 ---
 
