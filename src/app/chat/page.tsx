@@ -36,11 +36,13 @@ export default function ChatPage() {
         selectedChatPersona,
         updateCharacter,
         cumulativeRelationshipDelta,
+        updateCumulativeRelationshipDelta,
         clearCumulativeRelationshipDelta,
     } = useEntityStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
+    const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
@@ -195,7 +197,7 @@ export default function ChatPage() {
     const handleNewChat = () => {
         clearCumulativeRelationshipDelta();
         clearChat();
-        clearCumulativeRelationshipDelta();
+        setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
 
@@ -286,12 +288,39 @@ export default function ChatPage() {
                                 chatSessionId={chatSessionId}
                                 className="flex-grow"
                                 relationship={currentRelationship}
+                                onMessageFinish={async (message, fullMessages) => {
+                                    if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+                                        try {
+                                            const response = await fetch('/api/engine/process-turn', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    chatHistory: fullMessages,
+                                                    character: selectedChatCharacter,
+                                                    persona: selectedChatPersona,
+                                                    currentRelationship: currentRelationship,
+                                                    modelName: generationModel
+                                                }),
+                                            });
+                                            const data = await response.json();
+                                            if (response.ok && data.delta) {
+                                                updateCumulativeRelationshipDelta(data.delta);
+                                                setLatestDeltaDescription(data.description);
+                                            } else {
+                                                console.error('Engine process failed:', data.error || data.description);
+                                            }
+                                        } catch (error) {
+                                            console.error('Error processing turn:', error);
+                                        }
+                                    }
+                                }}
                             />
                             {currentRelationship && selectedChatCharacter && (
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
                                     cumulativeDeltaRelationship={cumulativeRelationshipDelta}
+                                    latestDeltaDescription={latestDeltaDescription}
 
                                 />
                             )}
