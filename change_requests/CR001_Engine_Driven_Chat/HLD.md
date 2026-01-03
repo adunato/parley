@@ -1,40 +1,64 @@
-# High Level Design: Engine Driven Chat (CR001)
+# High Level Design: Hybrid Relationship Engine Implementation (CR001)
 
-## Overview
-The current chat system reacts directly to user input via an LLM, determining relationships and responses in a single opaque pass. This change request proposes a shift to a structured, **Engine-Driven Pipeline** powered by LangGraph.
+## 1. Context & Scope
+The original "Engine Driven Chat" (CR001) which proposed a per-message classification loop is being superseded by the **Hybrid Relationship Engine v2.0**. 
 
-The new flow introduces a multi-stage process:
-1.  **Classification**: The user's message is first analyzed by an LLM to assign predefined semantic tags.
-2.  **Deterministic Reaction**: A code-based engine uses these tags, along with current game state and character personality, to deterministically calculate the character's internal reaction and intended behavioral tone.
-3.  **Response Generation**: Finally, the LLM generates the dialogue response, constrained by the specific reaction parameters and context provided by the engine.
+**Reference Design:** `docs/High-Level Design_ Hybrid Relationship Engine v2.0.md`
 
-This hybrid approach combines the creativity of LLMs with the consistency and game-design control of a deterministic rule system.
+This document outlines the **delta** between the current codebase and the target v2.0 state. It describes the specific modules and logic flows that must be implemented to achieve the "Director / Actor / Analyst" cycle.
 
-## Goals
--   **Structured Pipeline**: Implement a LangGraph backend to orchestrate the chat flow.
--   **Input Classification**: Utilize LLMs to strictly classify user intent into predefined tags.
--   **Deterministic State**: Move character reaction logic (relationship changes, mood shifts) out of the LLM and into deterministic code algorithms.
--   **Controlled Generation**: Ensure LLM responses adhere to the specific emotional and behavioral constraints calculated by the engine.
+## 2. Current Codebase State
+*   **Architecture:** Simple Request/Response Loop.
+*   **Prompt Generation:** `src/app/api/chat/route.ts` calls `generateSystemPrompt` which injects all character/persona/world data into a large template.
+*   **State:** Relationship state is passed from the client in the request body. No server-side persistence or mutation logic currently exists in the chat route.
+*   **Logic:** Purely LLM-driven. No deterministic guardrails based on state thresholds.
 
-## Use Case Flow
-1.  **User Input**: User sends a text message.
-2.  **Classification (LLM)**:
-    *   Input: User message, Context (Brief).
-    *   Output: A set of Tags (e.g., `[AGGRESSIVE, QUESTION]`).
-3.  **Reaction Assessment (Engine/Code)**:
-    *   Input: Tags, Character Personality, Current Relationship Score.
-    *   Logic: `calculate_reaction(tags, personality, state)`.
-    *   Output: Reaction Parameters (e.g., `Mood: Hostile`, `RelationshipDelta: -5`).
-4.  **Response Generation (LLM)**:
-    *   Input: User message, Reaction Parameters, Dialogue History.
-    *   Output: Character dialogue that embodies the calculated mood.
-5.  **State Update**: Apply `RelationshipDelta` to the database.
+## 3. High-Level Architecture Changes
 
-## Architecture
-(Placeholder)
+The monolithic "Chat" process will be split into three distinct components:
 
-## Data Models
-(Placeholder)
+### 3.1 The Director (Pre-Scene / Setup)
+*   **Objective:** Replace the generic `generateSystemPrompt` with a rigid Rule Engine.
+*   **New Module:** `lib/engine/director.ts`
+*   **Logic:**
+    *   Taking `OCEAN` and `PRQC` (Relationship) stats as input.
+    *   Querying a static `Instruction Catalogue`.
+    *   Outputting a **System Prompt** composed of specific, mandatory instructions (e.g., "Trust is < 20, do not believe user").
+*   **Impact on `route.ts`:** The API will now call the Director to get the system prompt logic, rather than using a generic template.
 
-## API Changes
-(Placeholder)
+### 3.2 The Actor (Real-Time Chat)
+*   **Objective:** Lightweight, standard LLM interaction constrained by the Director.
+*   **Modifications to `src/app/api/chat/route.ts`:**
+    *   **Input:** Uses the Director-generated prompt.
+    *   **Output Monitoring:** The stream must be monitored for the `[EVENT: TRIGGER_ASSESSMENT]` token.
+    *   **Emergency Brake:** If the token is detected, the stream must support a mechanism to halt/notify the client to trigger an immediate analysis (though for Phase 1, we may just log this).
+
+### 3.3 The Analyst & Judge (Post-Scene)
+*   **Objective:** Asynchronous state updates.
+*   **New API Route:** `/api/engine/process-scene`
+*   **New Module:** `lib/engine/analyst.ts`
+    *   Sends chat history to LLM.
+    *   Returns a **Scene Report** (JSON with aggregate traits).
+*   **New Module:** `lib/engine/judge.ts`
+    *   Takes Scene Report + Current State.
+    *   Calculates mathematical operational updates to PRQC.
+*   **Frontend Impact:** Client needs to decide when a "Scene" ends (e.g., manual button user flow or session end) and call this endpoint.
+
+## 4. Data Structures
+
+### 4.1 Instruction Catalogue (`lib/engine/rules.ts`)
+A static typescript object/configuration containing the Rules defined in `MASTER CATALOGUE OF LLM ACTING RULES.md`.
+
+```typescript
+type Rule = {
+  id: string;
+  condition: (character: Ocean, relation: Prqc) => boolean;
+  instruction: string;
+}
+```
+
+### 4.2 Sensitivity Matrix (`lib/engine/math.ts`)
+Configuration defining how specific aggregate traits (e.g., "Aggression", "Flirtation") map to PRQC updates based on Character personality.
+
+## 5. Implementation Roadmap
+See `Implementation-Plan.md` for the phased execution steps.
