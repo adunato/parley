@@ -40,8 +40,8 @@ The monolithic "Chat" process will be split into three distinct components:
     *   Sends chat history to LLM.
     *   Returns a **Scene Report** (JSON with aggregate traits).
 *   **New Module:** `lib/engine/judge.ts`
-    *   Takes Scene Report + Current State.
-    *   Calculates mathematical operational updates to PRQC.
+    *   Takes Scene Report + Character Ideal Match Profile.
+    *   Calculates mathematical operational updates to PRQC based on the delta between behavior and Ideal Match.
 *   **Frontend Impact:** Client needs to decide when a "Scene" ends (e.g., manual button user flow or session end) and call this endpoint.
 
 ## 4. Data Structures
@@ -58,10 +58,17 @@ type Rule = {
 ```
 
 ### 4.2 Sensitivity Matrix (`lib/engine/math.ts`)
-Configuration defining how specific aggregate traits (e.g., "Aggression", "Flirtation") map to PRQC updates based on Character personality.
+Configuration defining how specific aggregate traits (e.g., "Aggression", "Flirtation") map to PRQC updates.
 
-### 4.3 Relationship Model (`PRQC`)
-The previous undefined or generic relationship state must be strictly typed to support the math engine. Values are 0-100.
+### 4.3 Ideal Match Profile (`IdealMatch`)
+An immutable OCEAN profile representing the character's perfect partner. Used by the Judge to calculate relationship satisfaction.
+
+```typescript
+type IdealMatch = Ocean; // Reuses the OCEAN structure
+```
+
+### 4.4 Relationship Model Replacement (`PRQC`)
+The existing generic relationship state is **Depracated**. It must be replaced by the strict PRQC schema. Values are 0-100.
 
 ```typescript
 type PRQC = {
