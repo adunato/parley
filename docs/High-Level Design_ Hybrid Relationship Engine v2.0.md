@@ -97,9 +97,9 @@ The output of the Analyst LLM after the conversation.
   "scene\_id": "1024",  
   "summary": "The user tried to convince the character to steal the artifact. The character refused due to low trust.",  
   "aggregate\_traits": {  
-    "Ambition": 0.8,  
-    "Dishonesty": 0.6,  
-    "Persuasion": 0.4  
+    "Openness": 0.8,  
+    "Conscientiousness": 0.6,  
+    "Extraversion": 0.4  
   },  
   "major\_events": \["User proposed theft", "User lied about security"\]  
 }
