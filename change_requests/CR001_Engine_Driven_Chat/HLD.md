@@ -51,28 +51,60 @@ The monolithic "Chat" process will be split into three distinct components:
         5.  **Update:** Application of deltas to the Relationship State.
 *   **Frontend Impact:** Client needs to decide when a "Scene" ends (e.g., manual button user flow or session end) and call this endpoint.
 
-#### 3.3.1 Example Payloads
+#### 3.3.1 Data Processing Flow Example
 
-**The Input: Scene Report (from Analyst)**
+**Step 1: The Analyst Generates the Scene Report**
+*   **Input:** Raw Chat History.
+*   **Component:** `Analyst` (LLM).
+*   **Output:** `SceneReport`.
+
 ```json
 {
   "scene_id": "1024",
-  "summary": "The user tried to convince the character to steal the artifact.",
   "aggregate_traits": {
-    "Openness": 0.8,
-    "Conscientiousness": 0.6,
-    "Extraversion": 0.4
+    "Openness": 0.8, // User showed high openness
+    "Aggression": 0.2
   },
-  "major_events": ["User proposed theft", "User lied about security"]
+  "major_events": ["User confessed a secret"]
 }
 ```
 
-**The Logic: Judge Calculation Loop**
-For the trait `Openness` (0.8):
-1.  **Fetch Preference:** Character's Ideal Match has `Openness: High`.
-2.  **Determine Sensitivity:** Since they match, `SensitivityMatrix` returns a positive multiplier (e.g., `1.5`).
-3.  **Route:** `RoutingTable` maps `Openness` to targets `['Satisfaction', 'Intimacy']`.
-4.  **Calculate:** `0.8 * 1.5 = +1.2`. Apply this Delta to *both* Satisfaction and Intimacy.
+**Step 2: The Judge Processing Loop (Iterates for EACH Trait)**
+*   **Input:** `SceneReport`, `Character.IdealMatch`, `SensitivityMatrix`, `RoutingTable`.
+*   **Component:** `Judge` (Deterministic Logic).
+
+*For example, processing the trait "Openness" (0.8):*
+
+1.  **Sensitivity Lookup:**
+    *   *Question:* Does the Character like "Openness"?
+    *   *Input:* `Character.IdealMatch.Openness` = 0.9 (High).
+    *   *Logic:* `SensitivityMatrix.getMultiplier(0.9, 0.8)` -> Returns `1.5` (Strong Match).
+
+2.  **Target Routing:**
+    *   *Question:* What does "Openness" affect?
+    *   *Logic:* `RoutingTable["Openness"]` -> Returns `["Intimacy", "Trust"]`.
+
+3.  **Delta Calculation:**
+    *   *Logic:* `TraitValue (0.8) * Multiplier (1.5) = +1.2`.
+    *   *Result:* Add `+1.2` to `Intimacy` and `+1.2` to `Trust` accumulators.
+
+*(Repeat for "Aggression" and any other traits present in the report)*
+
+**Step 3: Final State Update**
+*   **Component:** `Runtime State Manager`.
+*   **Action:** Apply deltas to current PRQC values and append events.
+
+```json
+// Previous State
+{ "Intimacy": 50, "Trust": 40, "memory": [] }
+
+// New State
+{
+  "Intimacy": 51.2,
+  "Trust": 41.2,
+  "memory": ["User confessed a secret"]
+}
+```
 
 ## 4. Data Structures
 
