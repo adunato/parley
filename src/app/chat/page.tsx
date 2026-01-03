@@ -36,13 +36,11 @@ export default function ChatPage() {
         selectedChatPersona,
         updateCharacter,
         cumulativeRelationshipDelta,
-        updateCumulativeRelationshipDelta,
         clearCumulativeRelationshipDelta,
     } = useEntityStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
-    const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
@@ -189,7 +187,7 @@ export default function ChatPage() {
             }
         }
         clearCumulativeRelationshipDelta();
-        setLatestDeltaDescription(undefined);
+        clearCumulativeRelationshipDelta();
         setIsChatActive(false);
         clearChat();
     };
@@ -197,7 +195,7 @@ export default function ChatPage() {
     const handleNewChat = () => {
         clearCumulativeRelationshipDelta();
         clearChat();
-        setLatestDeltaDescription(undefined);
+        clearCumulativeRelationshipDelta();
         setIsChatActive(false);
     };
 
@@ -288,47 +286,12 @@ export default function ChatPage() {
                                 chatSessionId={chatSessionId}
                                 className="flex-grow"
                                 relationship={currentRelationship}
-                                onMessageFinish={async (message, fullMessages) => {
-                                    if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-                                        const latestExchange = {
-                                            userMessage: fullMessages[fullMessages.length - 2]?.content || "",
-                                            characterResponse: message.content,
-                                        };
-
-                                        try {
-                                            const response = await fetch('/api/generate/relationship-delta', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                    character: selectedChatCharacter,
-                                                    persona: selectedChatPersona,
-                                                    chatHistory: fullMessages,
-                                                    latestExchange,
-                                                    currentRelationship,
-                                                    worldDescription,
-                                                    aiStyle,
-                                                    generationModel
-                                                }),
-                                            });
-                                            const data = await response.json();
-                                            if (response.ok && data.relationshipDelta) {
-                                                updateCumulativeRelationshipDelta(data.relationshipDelta);
-                                                setLatestDeltaDescription(data.relationshipDelta.description);
-                                            } else {
-                                                console.error('Failed to generate relationship delta:', data.error);
-                                            }
-                                        } catch (error) {
-                                            console.error('Error generating relationship delta:', error);
-                                        }
-                                    }
-                                }}
                             />
                             {currentRelationship && selectedChatCharacter && (
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
                                     cumulativeDeltaRelationship={cumulativeRelationshipDelta}
-                                    latestDeltaDescription={latestDeltaDescription}
 
                                 />
                             )}

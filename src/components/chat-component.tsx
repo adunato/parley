@@ -18,10 +18,9 @@ interface ChatComponentProps {
   title?: string
   chatSessionId: number;
   relationship?: Relationship;
-  onMessageFinish?: (message: Message, fullMessages: Message[]) => void;
 }
 
-export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
+export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore();
   const { selectedChatCharacter, selectedChatPersona } = useEntityStore();
@@ -57,12 +56,6 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     },
     initialMessages: chatMessages,
     initialInput: chatInput,
-    onFinish: (message) => {
-      if (onMessageFinish) {
-        const fullHistory = [...messagesRef.current]; // Manual append
-        onMessageFinish(message, fullHistory);
-      }
-    },
   });
 
   useEffect(() => {
@@ -143,8 +136,8 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
                   <div
                     className={`max-w-[80%] rounded-lg px-4 py-2 ${m.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-900 border"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-900 border"
                       }`}
                   >
                     <div className="text-sm whitespace-pre-wrap">
