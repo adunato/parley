@@ -88,12 +88,30 @@ type Rule = {
 ```
 
 ### 4.2 Sensitivity Matrix & Routing Table (`lib/engine/math.ts`)
-Two distinct configurations driving the Judge's logic:
+Two distinct configurations driving the Judge's logic.
 
-*   **SensitivityMatrix:** `(IdealMatchTrait, InputTrait) => Multiplier`
-    *   Determines *how much* impact a trait has based on preference (e.g., "I love ambitious people" = 1.5x multiplier).
-*   **RoutingTable:** `InputTrait => PRQC_Component[]`
-    *   Determines *which* relationship stats are affected (e.g., "Betrayal" -> `['Trust', 'Satisfaction']`).
+**Implementation:**
+This module exports two primary objects:
+
+1.  **RoutingTable**: A static dictionary mapping Traits to affected Relationship Components.
+    ```typescript
+    export const RoutingTable: Record<string, (keyof PRQC)[]> = {
+        "Aggression": ["trust", "satisfaction"],
+        "Flirtation": ["passion", "intimacy"],
+        "Support": ["commitment", "satisfaction"]
+    };
+    ```
+
+2.  **SensitivityMatrix**: A helper to calculate impact multipliers based on Character Preferences.
+    ```typescript
+    export const SensitivityMatrix = {
+        getMultiplier: (idealMatchVal: number, userTraitVal: number): number => {
+            // Logic: Closer match = Higher multiplier (e.g., 1.5x)
+            // Distant match = Lower multiplier (e.g., 0.5x)
+            return calculateMultiplier(idealMatchVal, userTraitVal);
+        }
+    };
+    ```
 
 ### 4.3 Ideal Match Profile (`IdealMatch`)
 An immutable OCEAN profile representing the character's perfect partner. Used by the Judge to calculate relationship satisfaction.
