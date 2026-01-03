@@ -133,32 +133,44 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 6: The Analyst & Judge (Math Engine)
-**Goal:** Implement the post-scene feedback loop that updates relationship stats and visualizes the results.
+**Goal:** Implement the logic-based feedback loop (Engine) that updates relationship stats, replacing the direct LLM hallucination.
 
 #### [NEW] `src/lib/engine/analyst.ts`
-- Implement `AnalyzeScene(chatLog)`: Calls LLM to summarize "User Traits" exhibited (Aggression, Kindness, etc.) into a `SceneReport`.
+- Implement `AnalyzeTurn(chatHistory, character, persona)`: Calls LLM to scan *only the latest message* for "Signals" (Flirt, Insult, Gift, etc.). Returns structured `Signal[]`.
 
 #### [NEW] `src/lib/engine/judge.ts`
-- Implement `CalculateImpact(sceneReport, character, relationship)`:
-    - Uses `SensitivityMatrix` to map "User Traits" to "PRQC Deltas".
-    - Adjusts impact based on `Character.IdealMatch` (e.g. if User matches Ideal, bonus to Passion/Satisfaction).
+- Implement `JudgeTurn(currentStats, signals)`:
+    - Uses deterministic math rules to map `Signal[]` to `PRQC Delta`.
+    - Example: `Signal: FLIRT` -> `+1 Passion, +1 Satisfaction`.
 
-#### [NEW] `src/components/scene-report-display.tsx`
-- Create a UI component to visualize the "Scene Report":
-    - **Detected Traits:** Lists what the Analyst found (e.g., "High Aggression").
-    - **Impact:** Shows the calculated deltas (e.g., "Trust -15").
-    - **Result:** Shows the new PRQC values.
-
-#### [NEW] `src/app/api/engine/process-scene/route.ts`
-- Receives chat log.
+#### [NEW] `src/app/api/engine/process-turn/route.ts`
+- Receives chat log & context.
 - Runs `Analyst` -> `Judge`.
-- Returns the full `SceneReport` and updated Relationship stats to the client.
+- Returns `delta` and `description` to the client.
 
 #### Phase 6 Verification
-- **Automated Tests:** Create unit tests for `judge.ts` ensuring math is correct.
-    - *Example:* "High Aggression input should lower Trust."
-- **Integration Test:** Call `/api/engine/process-scene` with a mock chat log and verify it returns a valid JSON with calculated Relationship adjustments.
-- **Visual Check:** Mock a `SceneReport` and render the `SceneReportDisplay` component to ensure it looks correct.
+- **Automated Tests:** Unit tests for `judge.ts` math.
+- **Integration Test:** Call `/api/engine/process-turn` with mock data.
+
+---
+
+### Phase 6.5: Engine Trigger (Event-Driven)
+**Goal:** Ensure the Engine only runs when impactful events occur, controlled by the Director.
+
+#### [MODIFY] `src/app/api/chat/route.ts`
+- Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
+- If detected, insert a special header/data chunk to tell the client "Run Assessment Now".
+
+#### [MODIFY] `src/components/chat-component.tsx`
+- Listen for the trigger signal from the stream.
+- ONLY call `/api/engine/process-turn` when receiving this signal.
+
+#### [MODIFY] `src/lib/engine/director.ts` / Prompt
+- Instruct Director to output `[EVENT: TRIGGER_ASSESSMENT]` when significant relationship shifts occur.
+
+#### Phase 6.5 Verification
+- **Manual Check:** Chat casually. Verify NO assessment runs.
+- **Manual Check:** Do something drastic (e.g. "I love you"). Verify Director outputs the event tag, and Client runs the assessment.
 
 ---
 
