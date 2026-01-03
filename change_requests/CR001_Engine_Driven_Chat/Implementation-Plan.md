@@ -76,19 +76,38 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 4: System Prompt Generation
-**Goal:** Integrate the deterministic Director logic into the existing system prompt generator.
+**Goal:** Integrate the deterministic Director logic into the existing system prompt generator without replacing the current template structure.
 
 #### [NEW] `src/lib/engine/director.ts`
 - Implement `GenerateSystemPrompt(character, relationship)` function.
 - Logic: Iterate through `InstructionCatalogue`, evaluate IF conditions against the `character.ocean` and `relationship.prqc`, return a string of "Acting Instructions".
 
 #### [MODIFY] `src/lib/prompts/chatPrompts.ts`
-- Update `generateSystemPrompt` to accept an `actingInstructions` (string) argument.
-- Append these instructions to the final prompt string (e.g., under a new header `--- ACTING INSTRUCTIONS ---`).
+- **Goal:** Update the existing `generateSystemPrompt` function to include the new instructions while preserving all existing sections (Character Data, Player Persona Data, Relationship Data, etc.).
+- Update function signature to accept an optional `actingInstructions` (string) argument.
+- Inject these instructions into the prompt string (specifically under a new header `--- ACTING INSTRUCTIONS ---` or similar), ensuring they supplement rather than replace the existing context.
+
+#### [MODIFY] `src/lib/store.ts`
+- Add `systemPromptTemplate` to the persisted store (`ParleyStore`).
+- Default value should be the current hardcoded prompt converted to a template using variables: `{{character}}`, `{{persona}}`, `{{relationship}}`, `{{world}}`, `{{style}}`, `{{summaries}}`, and the new `{{instructions}}`.
+
+#### [MODIFY] `src/app/settings/page.tsx`
+- Add a configuration section for "System Prompt Template".
+- Provide a textarea to edit `systemPromptTemplate`.
+- Display a list of available variables (`{{instructions}}` for Director instructions).
+
+#### [MODIFY] `src/lib/prompts/chatPrompts.ts`
+- **Goal:** Update `generateSystemPrompt` to use the configurable template.
+- Update function signature to accept the `template` string.
+- Implement logic to replace `{{variable}}` placeholders with the corresponding JSON/text data.
+- Ensure `{{instructions}}` is populated with the `actingInstructions` from the Director.
 
 #### [MODIFY] `src/app/api/chat/route.ts`
-- Call `Director.GenerateSystemPrompt` to get the rule-based instructions.
-- Pass these instructions into the existing `generateSystemPrompt` call.
+- Import `Director`.
+- Retrieve `systemPromptTemplate` from limits/store (passed via request body or fetched if server-side store access is possible/safe, though usually passed from client in this architecture).
+- Call `Director.GenerateSystemPrompt` to get `actingInstructions`.
+- Generate the final prompt using the template and instructions.
+- **Log the final generated System Prompt to the console** for debugging/verification.
 
 #### Phase 4 Verification
 - **Manual Guardrail Check:** Set Character Trust to 10. Chat with them. Verify the instructions appear in the debug log and that the character output is skeptical/hostile (based on Section 2 rules).
