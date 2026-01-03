@@ -47,6 +47,7 @@ export default function ChatPage() {
 
     // Phase 7: Scene Summary State
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(false);
     const [sceneDelta, setSceneDelta] = useState<PRQC | null>(null);
     const [sceneAnalysisDescription, setSceneAnalysisDescription] = useState<string | null>(null);
     const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
@@ -135,8 +136,11 @@ export default function ChatPage() {
     const handleEndChat = async () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
 
-            // 1. Run Analyst (Process Turn / Scene)
-            // Note: In Phase 11 this will be Event Driven. For now, we analyze clarity at the end.
+            // 1. Open Modal and Start Loading
+            setIsSummaryModalOpen(true);
+            setIsLoadingSummary(true);
+
+            // 2. Run Analyst (Process Turn / Scene)
             let analysisResult: { delta: PRQC, description: string } | null = null;
             try {
                 const response = await fetch('/api/engine/process-turn', {
@@ -160,7 +164,7 @@ export default function ChatPage() {
                 console.error("Error running Analyst:", error);
             }
 
-            // 2. Generate Summary
+            // 3. Generate Summary
             try {
                 const response = await fetch('/api/summarise', {
                     method: 'POST',
@@ -182,8 +186,8 @@ export default function ChatPage() {
                 console.error("Error generating summary:", error);
             }
 
-            // 3. Open Modal to show results
-            setIsSummaryModalOpen(true);
+            // 4. Finish Loading
+            setIsLoadingSummary(false);
         }
     };
 
@@ -350,6 +354,7 @@ export default function ChatPage() {
 
             <SceneSummaryModal
                 isOpen={isSummaryModalOpen}
+                isLoading={isLoadingSummary}
                 onClose={handleCloseSummary}
                 relationshipDelta={sceneDelta}
                 analysisDescription={sceneAnalysisDescription}
