@@ -60,5 +60,21 @@ type Rule = {
 ### 4.2 Sensitivity Matrix (`lib/engine/math.ts`)
 Configuration defining how specific aggregate traits (e.g., "Aggression", "Flirtation") map to PRQC updates based on Character personality.
 
+### 4.3 Relationship Model (`PRQC`)
+The previous undefined or generic relationship state must be strictly typed to support the math engine. Values are 0-100.
+
+```typescript
+type PRQC = {
+  passion: number;      // "The Spark" - Physical attraction/drive
+  romance: number;      // [DEPRECATED in favor of Intimacy/Commitment split] -> Satisfaction?
+  // V2.0 Standard:
+  satisfaction: number; // "The Mood" - Current happiness with interaction
+  commitment: number;   // "The Anchor" - Long term willingness to stay
+  intimacy: number;     // "The Depth" - Emotional safety/secret sharing
+  trust: number;        // "The Security" - Believing the user
+}
+```
+*Note: The existing codebase may need migration to ensure these 5 specific keys exist on the relationship object.*
+
 ## 5. Implementation Roadmap
 See `Implementation-Plan.md` for the phased execution steps.
