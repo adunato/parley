@@ -8,29 +8,73 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 
 ## Proposed Changes
 
-### Phase 1: The Director (Basic Rules & Prompting)
-**Goal:** Replace the current generic system prompt with a deterministic, rule-based "Guardrail" system, focusing on **Base Identity** and **Relationship State**.
+### Phase 1: Rules Catalogue Implementation
+**Goal:** Define the core `InstructionCatalogue` containing all behavioral rules.
 
 #### [NEW] `src/lib/engine/rules.ts`
-- Define `InstructionCatalogue` constant.
-- **Scope:** Implement rules ONLY for **Section 1 (OCEAN)** and **Section 2 (PRQC)** from the Master Catalogue.
 - Define Types for `OCEAN`, `PRQC`, and `Rule`.
+- Implement `InstructionCatalogue` constant.
+- **Scope:** Implement rules for **Section 1 (OCEAN)** and **Section 2 (PRQC)** from the Master Catalogue.
+
+#### Phase 1 Verification
+- **Automated Tests:** Create unit tests that import `InstructionCatalogue`.
+- **Test Case:** Select a specific rule (e.g., "High Openness") and assert that its Condition Logic returns `true` for matching stats (O=80) and `false` for non-matching stats (O=20).
+- **Test Case:** Verify the Instruction text matches the `MASTER CATALOGUE OF LLM ACTING RULES.md`.
+
+---
+
+### Phase 2: Ideal Match Data Model
+**Goal:** Implement the "Ideal Match" preference profile in the backend and UI.
+
+#### [MODIFY] `src/types/character.ts` (or equivalent)
+- Add `idealMatch` property (Type: OCEAN) to the Character interface.
+
+#### [MODIFY] `src/components/character-configuration.tsx`
+- Add UI section to configure "Ideal Match" (Sliders for O,C,E,A,N) alongside the existing Personality configuration.
+
+#### Phase 2 Verification
+- **Manual Check:** Open Character Editor. Adjust "Ideal Match" sliders. Save. Reload page. Verify values persist.
+- **Code Check:** Inspect the Character JSON object in the console or network tab to ensure `idealMatch` is present and correctly structured.
+
+---
+
+### Phase 3: Relationship Data Model (PRQC)
+**Goal:** Replace the current generic relationship model with the strict PRQC schema.
+
+#### [MODIFY] `src/types/relationship.ts` (or equivalent)
+- Update Relationship interface to enforce the PRQC structure:
+    - `satisfaction` (0-100)
+    - `commitment` (0-100)
+    - `intimacy` (0-100)
+    - `trust` (0-100)
+    - `passion` (0-100)
+
+#### [MODIFY] `src/lib/store.ts` (or State Manager)
+- Ensure default new relationships are initialized with neutral PRQC values (or values defined by character/scenario).
+
+#### Phase 3 Verification
+- **Manual Check:** Start a new chat. Inspect the initial state (via Redux DevTools or Console log). Verify the active relationship object contains valid PRQC keys.
+
+---
+
+### Phase 4: System Prompt Generation
+**Goal:** Implement the Director logic to generate prompts based on the data and rules from previous phases.
 
 #### [NEW] `src/lib/engine/director.ts`
 - Implement `GenerateSystemPrompt(character, relationship)` function.
-- Logic: Iterate through `InstructionCatalogue`, evaluate IF conditions against stats, append THEN instructions.
+- Logic: Iterate through `InstructionCatalogue`, evaluate IF conditions against the `character.ocean` and `relationship.prqc`, append THEN instructions.
 
 #### [MODIFY] `src/app/api/chat/route.ts`
 - Replace `generateSystemPrompt` call with the new `Director.GenerateSystemPrompt`.
 - Ensure character/relationship state passed from client conforms to the new Type requirements.
 
-#### Phase 1 Verification
-- **Automated Tests:** Create unit tests checking standard Personality triggers (e.g., High O, Low C) and Relationship State triggers (e.g., Low Trust).
+#### Phase 4 Verification
 - **Manual Guardrail Check:** Set Character Trust to 10. Chat with them. Verify they are skeptical/hostile in their response tone (based on Section 2 rules).
+- **Integration Test:** Verify that the "Ideal Match" data is available to the Director (even if not used for *Rules* yet, it should be passed through for future phases).
 
 ---
 
-### Phase 2: The Analyst & Judge (Math Engine)
+### Phase 5: The Analyst & Judge (Math Engine)
 **Goal:** Implement the post-scene feedback loop that updates relationship stats.
 
 #### [NEW] `src/lib/engine/analyst.ts`
@@ -41,21 +85,21 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 #### [NEW] `src/lib/engine/judge.ts`
 - Implement `CalculateImpact(sceneReport, character, currentRelationship)` function.
 - Define `SensitivityMatrix` (how Traits affect specific PRQC values).
-- Logic: Apply multipliers and return `RelationShipDelta`.
+- Logic: Use `character.idealMatch` vs `sceneReport` to calculate operational deltas.
 
 #### [NEW] `src/app/api/engine/process-scene/route.ts`
 - Endpoint to accept a finished chat log.
 - Runs `Analyst` -> `Judge`.
 - Returns the updated Relationship stats to the client.
 
-#### Phase 2 Verification
+#### Phase 5 Verification
 - **Automated Tests:** Create unit tests for `judge.ts` ensuring math is correct.
     - *Example:* "High Aggression input should lower Trust."
 - **Integration Test:** Call `/api/engine/process-scene` with a mock chat log and verify it returns a valid JSON with calculated Relationship adjustments.
 
 ---
 
-### Phase 3: Integration (The Loop)
+### Phase 6: Integration (The Loop)
 **Goal:** Connect the components into a circular gameplay loop.
 
 #### [MODIFY] `src/app/page.tsx` (or Main Chat Component)
@@ -69,18 +113,18 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
 - If detected, insert a special stop signal or header to inform the client to trigger an immediate force-analysis.
 
-#### Phase 3 Verification
+#### Phase 6 Verification
 - **Cycle Check:**
     -   Start Scene (Trust: 50).
     -   Be aggressive/insulting.
     -   End Scene (Click Sleep button).
-    -   Verify Trust dropsin the Summary Modal (e.g., to 40).
+    -   Verify Trust drops in the Summary Modal (e.g., to 40).
     -   Start Next Scene. Verify behavior is slightly colder (Director output changes).
     -   Verify data persistence (if DB is hooked up) or state persistence across the session.
 
 ---
 
-### Phase 4: Advanced Rules (Intersections & Constraints)
+### Phase 7: Advanced Rules (Intersections & Constraints)
 **Goal:** Implement the complex, high-specificity rules from Sections 3, 4, and 5.
 
 #### [MODIFY] `src/lib/engine/rules.ts`
@@ -94,6 +138,6 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Update `GenerateSystemPrompt` to accept `UserPersona` and evaluate the new advanced rules.
 - Ensure "Hard Constraints" (Section 5) take precedence or are appended with high priority (SYSTEM_MESSAGE reinforcement).
 
-#### Phase 4 Verification
+#### Phase 7 Verification
 - **Intersection Test:** Create a character with High Neuroticism (80) and High Commitment (80). Verify "Anxious Attachment" instruction appears in the prompt.
 - **Constraint Test:** Set Intimacy to 5 and Trust to 5. Verify "Stranger Danger" protocol prevents the character from agreeing to a defined "Go to second location" test prompt.

@@ -30,6 +30,7 @@ The engine does not rely on the LLM to "feel" emotions. It relies on a database 
 ### **2.2 OCEAN & PRQC (The DNA)**
 
 * **OCEAN (Personality):** The immutable "Identity" of the character (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism).  
+* **Ideal Match (Preference):** An immutable secondary OCEAN profile representing the character's "Perfect Partner".  
 * **PRQC (Relationship State):** The mutable "Health" of the connection (Satisfaction, Commitment, Intimacy, Trust, Passion).
 
 ### **2.3 The Scene Report (The Aggregate Input)**
@@ -150,8 +151,9 @@ def CalculateSceneImpact(SceneReport, Character, Relationship):
     impact\_deltas \= {Trust: 0, Satisfaction: 0, ...}  
       
     for trait, magnitude in SceneReport.aggregate\_traits:  
-        \# 1\. Sensitivity Check (How much does the Char care?)  
-        multiplier \= SensitivityMatrix.Get(Character.OCEAN, trait)  
+        \# 1. Sensitivity Check (Compare User Action vs Ideal Match)  
+        \# We compare the trait to the Character's *Ideal Match*, not their own personality.  
+        multiplier = SensitivityMatrix.Get(Character.IdealMatch, trait)  
           
         \# 2\. Routing (Which stat does this affect?)  
         targets \= RoutingTable.GetTargets(trait)  
