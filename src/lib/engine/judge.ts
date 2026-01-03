@@ -106,14 +106,12 @@ export function JudgeScene(
         descriptions.push(...sceneReport.major_events);
     }
 
-    // Summary of stat changes
-    if (appliedTraits.length > 0) {
-        descriptions.push(`Impacts: ${appliedTraits.join(', ')}`);
-    }
+    // We do NOT append relationship updates to the text description. 
+    // The UI will display the 'delta' and 'applied_traits' separately.
 
     return {
         delta: totalDelta,
-        description: descriptions.join('\n'),
+        description: descriptions.join('\n'), // Primarily events
         applied_traits: appliedTraits
     };
 }

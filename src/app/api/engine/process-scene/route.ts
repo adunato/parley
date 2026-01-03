@@ -43,7 +43,8 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({
             delta: judgment.delta,
             description: judgment.description,
-            sceneReport: sceneReport
+            sceneReport: sceneReport,
+            applied_traits: judgment.applied_traits
         }), { status: 200 });
 
     } catch (error) {
