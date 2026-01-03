@@ -51,7 +51,7 @@ export const useEntityStore = create<EntityStore>()(
           characters: state.characters.filter((char) => char.id !== id),
         })),
       playerPersonas: [],
-      addPlayerPersona: (persona) => set((state) => ({playerPersonas: [...state.playerPersonas, persona]})),
+      addPlayerPersona: (persona) => set((state) => ({ playerPersonas: [...state.playerPersonas, persona] })),
       updatePlayerPersona: (updatedPersona) =>
         set((state) => ({
           playerPersonas: state.playerPersonas.map((p) =>
@@ -77,10 +77,10 @@ export const useEntityStore = create<EntityStore>()(
           characterGroups: state.characterGroups.filter((group) => group.id !== id),
         })),
       selectedChatCharacter: undefined,
-      setSelectedChatCharacter: (character) => set({selectedChatCharacter: character}),
+      setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
       selectedChatPersona: undefined,
-      setSelectedChatPersona: (persona) => set({selectedChatPersona: persona}),
-      clearCharacters: () => set({characters: []}),
+      setSelectedChatPersona: (persona) => set({ selectedChatPersona: persona }),
+      clearCharacters: () => set({ characters: [] }),
       cumulativeRelationshipDelta: undefined,
       updateCumulativeRelationshipDelta: (delta: Relationship) =>
         set((state) => {
@@ -98,10 +98,10 @@ export const useEntityStore = create<EntityStore>()(
               },
             };
           } else {
-            return {cumulativeRelationshipDelta: delta};
+            return { cumulativeRelationshipDelta: delta };
           }
         }),
-      clearCumulativeRelationshipDelta: () => set({cumulativeRelationshipDelta: undefined}),
+      clearCumulativeRelationshipDelta: () => set({ cumulativeRelationshipDelta: undefined }),
       clearAllData: () => {
         set({
           characters: [],
@@ -122,7 +122,8 @@ export const useEntityStore = create<EntityStore>()(
           if (state.characters) {
             state.characters = state.characters.map(character => ({
               ...character,
-              relationships: character.relationships || []
+              relationships: character.relationships || [],
+              idealMatch: character.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }
             }));
           }
           if (state.playerPersonas) {

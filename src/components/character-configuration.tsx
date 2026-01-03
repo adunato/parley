@@ -130,7 +130,7 @@ export default function CharacterConfiguration() {
     }
 
     const handleInputChange = (
-        section: keyof Character | "basicInfo" | "personality" | "preferences",
+        section: keyof Character | "basicInfo" | "personality" | "preferences" | "idealMatch",
         field: string,
         value: string | number | string[] | undefined
     ) => {
@@ -139,7 +139,7 @@ export default function CharacterConfiguration() {
 
             const newCharacter = { ...prev }
 
-            if (section === "basicInfo" || section === "personality" || section === "preferences") {
+            if (section === "basicInfo" || section === "personality" || section === "preferences" || section === "idealMatch") {
                 newCharacter[section] = {
                     ...newCharacter[section],
                     [field]: value,
@@ -167,6 +167,7 @@ export default function CharacterConfiguration() {
                 appearance: "",
             },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
+            idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
             preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
             relationships: [],
         }
@@ -724,15 +725,78 @@ export default function CharacterConfiguration() {
                                         {Object.entries(displayCharacter.personality).map(([trait, value]) => (
                                             <div key={trait} className="space-y-2">
                                                 <Label htmlFor={trait}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
-                                                <Input
-                                                    id={trait}
-                                                    type="number"
-                                                    value={value as number}
-                                                    onChange={(e) => handleInputChange("personality", trait, parseInt(e.target.value))}
-                                                    disabled={!isEditing}
-                                                    min={-100}
-                                                    max={100}
-                                                />
+                                                <div className="flex items-center gap-4">
+                                                    <Input
+                                                        id={trait}
+                                                        type="number"
+                                                        value={Math.round((value as number) / 10)}
+                                                        onChange={(e) => {
+                                                            const val = parseInt(e.target.value);
+                                                            if (!isNaN(val)) {
+                                                                handleInputChange("personality", trait, Math.min(100, Math.max(0, val * 10)));
+                                                            }
+                                                        }}
+                                                        disabled={!isEditing}
+                                                        min={1}
+                                                        max={10}
+                                                        className="w-20"
+                                                    />
+                                                    <input
+                                                        type="range"
+                                                        min="1"
+                                                        max="10"
+                                                        value={Math.round((value as number) / 10)}
+                                                        onChange={(e) => handleInputChange("personality", trait, parseInt(e.target.value) * 10)}
+                                                        disabled={!isEditing}
+                                                        className="flex-1"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+
+                                {/* Ideal Match (OCEAN Preferences) */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Heart className="w-5 h-5" />
+                                            Ideal Match (Partner Preferences)
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="text-sm text-gray-500 mb-4">
+                                            Define the personality traits this character finds most attractive in a partner.
+                                        </div>
+                                        {displayCharacter.idealMatch && Object.entries(displayCharacter.idealMatch).map(([trait, value]) => (
+                                            <div key={trait} className="space-y-2">
+                                                <Label htmlFor={`ideal-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <div className="flex items-center gap-4">
+                                                    <Input
+                                                        id={`ideal-${trait}`}
+                                                        type="number"
+                                                        value={Math.round((value as number) / 10)}
+                                                        onChange={(e) => {
+                                                            const val = parseInt(e.target.value);
+                                                            if (!isNaN(val)) {
+                                                                handleInputChange("idealMatch", trait, Math.min(100, Math.max(0, val * 10)));
+                                                            }
+                                                        }}
+                                                        disabled={!isEditing}
+                                                        min={1}
+                                                        max={10}
+                                                        className="w-20"
+                                                    />
+                                                    <input
+                                                        type="range"
+                                                        min="1"
+                                                        max="10"
+                                                        value={Math.round((value as number) / 10)}
+                                                        onChange={(e) => handleInputChange("idealMatch", trait, parseInt(e.target.value) * 10)}
+                                                        disabled={!isEditing}
+                                                        className="flex-1"
+                                                    />
+                                                </div>
                                             </div>
                                         ))}
                                     </CardContent>
@@ -882,6 +946,6 @@ export default function CharacterConfiguration() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

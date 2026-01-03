@@ -22,6 +22,13 @@ async function runTest() {
       agreeableness: 70,
       neuroticism: 20,
     },
+    idealMatch: {
+      openness: 50,
+      conscientiousness: 50,
+      extraversion: 50,
+      agreeableness: 50,
+      neuroticism: 50,
+    },
     preferences: {
       attractedToTraits: ["courage", "kindness"],
       dislikesTraits: ["deceit", "cowardice"],

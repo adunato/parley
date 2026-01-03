@@ -30,6 +30,7 @@ export interface Character {
     dislikesTraits: string[];
     gossipTendency: "low" | "medium" | "high";
   };
+  idealMatch: Personality;
   relationships: Relationship[];
 }
 
