@@ -2,7 +2,7 @@ import type React from "react"
 import { useEffect, useRef } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
-import { useParleyStore} from "@/lib/store";
+import { useParleyStore } from "@/lib/store";
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Send, Bot, User } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import {Relationship} from "@/lib/types";
+import { Relationship } from "@/lib/types";
 import { useEntityStore } from "@/lib/entityStore";
 
 interface ChatComponentProps {
@@ -23,8 +23,8 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel } = useParleyStore();
-  const { selectedChatCharacter, selectedChatPersona} = useEntityStore();
+  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona } = useEntityStore();
   const messagesRef = useRef<Message[]>([]);
 
   const debounceMessages = useDebouncedCallback(
@@ -53,6 +53,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
       worldDescription: worldDescription,
       aiStyle: aiStyle,
       chatModel: chatModel,
+      systemPromptTemplate: systemPromptTemplate,
     },
     initialMessages: chatMessages,
     initialInput: chatInput,
@@ -128,42 +129,42 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
           <div className="space-y-4 py-4">
             {messages.map((m) => {
               return (
-              <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                {m.role === "assistant" && selectedChatCharacter ? (
-                  <Avatar className="flex-shrink-0 h-8 w-8">
-                    <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
-                    <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                ) : m.role === "assistant" ? (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-blue-600" />
-                  </div>
-                ) : null}
+                <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {m.role === "assistant" && selectedChatCharacter ? (
+                    <Avatar className="flex-shrink-0 h-8 w-8">
+                      <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
+                      <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : m.role === "assistant" ? (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-blue-600" />
+                    </div>
+                  ) : null}
 
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    m.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-900 border"
-                  }`}
-                >
-                  <div className="text-sm whitespace-pre-wrap">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
-                </div>
-                </div>
-
-                {m.role === "user" && selectedChatPersona ? (
-                  <Avatar className="flex-shrink-0 h-8 w-8">
-                    <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
-                    <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                ) : m.role === "user" ? (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
+                  <div
+                    className={`max-w-[80%] rounded-lg px-4 py-2 ${m.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-900 border"
+                      }`}
+                  >
+                    <div className="text-sm whitespace-pre-wrap">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                    </div>
                   </div>
-                ) : null}
-              </div>
-            )})}
+
+                  {m.role === "user" && selectedChatPersona ? (
+                    <Avatar className="flex-shrink-0 h-8 w-8">
+                      <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
+                      <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : m.role === "user" ? (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">
