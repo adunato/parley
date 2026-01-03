@@ -281,8 +281,7 @@ export default function ChatPage() {
                             {selectedChatCharacter && (
                                 <CharacterTraitsDisplay
                                     personality={selectedChatCharacter.personality}
-                                    likes={selectedChatCharacter.preferences?.attractedToTraits || []}
-                                    dislikes={selectedChatCharacter.preferences?.dislikesTraits || []}
+                                    idealMatch={selectedChatCharacter.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }}
                                 />
                             )}
                             <ChatComponent
