@@ -14,10 +14,15 @@ export interface BasicInfo {
 }
 
 export interface Personality {
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   openness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   conscientiousness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   extraversion: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   agreeableness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   neuroticism: number;
 }
 
