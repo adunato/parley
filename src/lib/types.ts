@@ -42,11 +42,11 @@ export interface Persona {
 export interface Relationship {
   characterId: string;
   personaId: string;
-  closeness: number;
-  sexual_attraction: number;
-  respect: number;
-  engagement: number;
-  stability: number;
+  satisfaction: number;
+  commitment: number;
+  intimacy: number;
+  trust: number;
+  passion: number;
   description: string;
   chat_summaries?: ChatSummary[]; // Made optional with ?
 }

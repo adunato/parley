@@ -11,14 +11,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
-import {useEntityStore} from "@/lib/entityStore";
+import { useEntityStore } from "@/lib/entityStore";
 
 
 export default function ChatPage() {
-    const { 
+    const {
         clearChat,
-        _hasHydrated, 
-        chatSessionId, 
+        _hasHydrated,
+        chatSessionId,
         chatMessages,
         worldDescription,
         aiStyle,
@@ -146,7 +146,7 @@ export default function ChatPage() {
                 const data = await response.json();
                 if (response.ok) {
                     const newSummary = { summary: data.summary, timestamp: new Date() };
-                    
+
                     const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
                         if (rel.personaId === selectedChatPersona.id) {
                             const existingSummaries = rel.chat_summaries || [];
@@ -157,28 +157,28 @@ export default function ChatPage() {
                         }
                         return rel;
                     });
-                    
+
                     // Apply both summary and relationship delta in a single update
                     const updatedRelationshipsWithDelta = updatedRelationships.map(rel => {
                         if (rel.personaId === selectedChatPersona.id && cumulativeRelationshipDelta) {
                             return {
                                 ...rel,
-                                closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
-                                sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
-                                respect: rel.respect + cumulativeRelationshipDelta.respect,
-                                engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
-                                stability: rel.stability + cumulativeRelationshipDelta.stability,
+                                satisfaction: rel.satisfaction + cumulativeRelationshipDelta.satisfaction,
+                                commitment: rel.commitment + cumulativeRelationshipDelta.commitment,
+                                intimacy: rel.intimacy + cumulativeRelationshipDelta.intimacy,
+                                trust: rel.trust + cumulativeRelationshipDelta.trust,
+                                passion: rel.passion + cumulativeRelationshipDelta.passion,
                                 description: rel.description,
                                 // Preserve the chat_summaries we just added
-                                chat_summaries: rel.chat_summaries 
+                                chat_summaries: rel.chat_summaries
                             };
                         }
                         return rel;
                     });
 
-                    const updatedCharacter = { 
-                        ...selectedChatCharacter, 
-                        relationships: updatedRelationshipsWithDelta 
+                    const updatedCharacter = {
+                        ...selectedChatCharacter,
+                        relationships: updatedRelationshipsWithDelta
                     };
                     updateCharacter(updatedCharacter);
                 } else {
@@ -330,7 +330,7 @@ export default function ChatPage() {
                                     relationship={currentRelationship}
                                     cumulativeDeltaRelationship={cumulativeRelationshipDelta}
                                     latestDeltaDescription={latestDeltaDescription}
-                                    
+
                                 />
                             )}
                         </div>
