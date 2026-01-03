@@ -168,7 +168,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
 - If detected, insert a special stop signal or header to inform the client to trigger an immediate force-analysis.
 
-#### Phase 7 Verification
+#### Phase 8 Verification
 - **Cycle Check:**
     -   Start Scene (Trust: 50).
     -   Be aggressive/insulting.
@@ -179,7 +179,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 
 ---
 
-### Phase 9: Advanced Rules (Intersections & Constraints)
+### Phase 10: Advanced Rules (Intersections & Constraints)
 **Goal:** Implement the complex, high-specificity rules from Sections 3, 4, and 5.
 
 #### [MODIFY] `src/lib/engine/rules.ts`
@@ -193,7 +193,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Update `GenerateSystemPrompt` to accept `UserPersona` and evaluate the new advanced rules.
 - Ensure "Hard Constraints" (Section 5) take precedence or are appended with high priority (SYSTEM_MESSAGE reinforcement).
 
-### Phase 10: Engine Trigger (Event-Driven)
+### Phase 11: Engine Trigger (Event-Driven)
 **Goal:** Ensure the Engine only runs when impactful events occur, controlled by the Director.
 
 #### [MODIFY] `src/app/api/chat/route.ts`
