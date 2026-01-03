@@ -76,48 +76,74 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 4: System Prompt Generation
-**Goal:** Implement the Director logic to generate prompts based on the data and rules from previous phases.
+**Goal:** Integrate the deterministic Director logic into the existing system prompt generator.
 
 #### [NEW] `src/lib/engine/director.ts`
 - Implement `GenerateSystemPrompt(character, relationship)` function.
-- Logic: Iterate through `InstructionCatalogue`, evaluate IF conditions against the `character.ocean` and `relationship.prqc`, append THEN instructions.
+- Logic: Iterate through `InstructionCatalogue`, evaluate IF conditions against the `character.ocean` and `relationship.prqc`, return a string of "Acting Instructions".
+
+#### [MODIFY] `src/lib/prompts/chatPrompts.ts`
+- Update `generateSystemPrompt` to accept an `actingInstructions` (string) argument.
+- Append these instructions to the final prompt string (e.g., under a new header `--- ACTING INSTRUCTIONS ---`).
 
 #### [MODIFY] `src/app/api/chat/route.ts`
-- Replace `generateSystemPrompt` call with the new `Director.GenerateSystemPrompt`.
-- Ensure character/relationship state passed from client conforms to the new Type requirements.
+- Call `Director.GenerateSystemPrompt` to get the rule-based instructions.
+- Pass these instructions into the existing `generateSystemPrompt` call.
 
 #### Phase 4 Verification
-- **Manual Guardrail Check:** Set Character Trust to 10. Chat with them. Verify they are skeptical/hostile in their response tone (based on Section 2 rules).
+- **Manual Guardrail Check:** Set Character Trust to 10. Chat with them. Verify the instructions appear in the debug log and that the character output is skeptical/hostile (based on Section 2 rules).
 - **Integration Test:** Verify that the "Ideal Match" data is available to the Director (even if not used for *Rules* yet, it should be passed through for future phases).
 
 ---
 
-### Phase 5: The Analyst & Judge (Math Engine)
-**Goal:** Implement the post-scene feedback loop that updates relationship stats.
+### Phase 5: Character Chat
+**Goal:** Align the chat flow to the new design by eliminating per-message relationship assessments.
 
-#### [NEW] `src/lib/engine/analyst.ts`
-- Implement `AnalyzeScene(chatHistory)` function.
-- Define prompt for LLM to summarize conversation and extract `AggregateTraits` (e.g., Aggression: 0.8).
-- Output: `SceneReport` JSON.
+#### [MODIFY] `src/app/chat/page.tsx`
+- Remove the `onMessageFinish` callback prop passed to `ChatComponent`.
+- Delete the logic that calls `/api/generate/relationship-delta` after every message.
+- Ensure the chat purely sends messages and receives responses without triggering side effects.
 
-#### [NEW] `src/lib/engine/judge.ts`
-- Implement `CalculateImpact(sceneReport, character, currentRelationship)` function.
-- Define `SensitivityMatrix` (how Traits affect specific PRQC values).
-- Logic: Use `character.idealMatch` vs `sceneReport` to calculate operational deltas.
-
-#### [NEW] `src/app/api/engine/process-scene/route.ts`
-- Endpoint to accept a finished chat log.
-- Runs `Analyst` -> `Judge`.
-- Returns the updated Relationship stats to the client.
+#### [MODIFY] `src/components/chat-component.tsx`
+- Remove the `onMessageFinish` prop from the interface and the component logic.
 
 #### Phase 5 Verification
-- **Automated Tests:** Create unit tests for `judge.ts` ensuring math is correct.
-    - *Example:* "High Aggression input should lower Trust."
-- **Integration Test:** Call `/api/engine/process-scene` with a mock chat log and verify it returns a valid JSON with calculated Relationship adjustments.
+- **Manual Check:** Chat with a character. Open the Network tab. Verify that NO calls to `relationship-delta` are made after the bot responds.
+- **UI Check:** Verify the Relationship Display does not update or flash "deltas" during the active conversation.
 
 ---
 
-### Phase 6: Integration (The Loop)
+### Phase 6: The Analyst & Judge (Math Engine)
+**Goal:** Implement the post-scene feedback loop that updates relationship stats and visualizes the results.
+
+#### [NEW] `src/lib/engine/analyst.ts`
+- Implement `AnalyzeScene(chatLog)`: Calls LLM to summarize "User Traits" exhibited (Aggression, Kindness, etc.) into a `SceneReport`.
+
+#### [NEW] `src/lib/engine/judge.ts`
+- Implement `CalculateImpact(sceneReport, character, relationship)`:
+    - Uses `SensitivityMatrix` to map "User Traits" to "PRQC Deltas".
+    - Adjusts impact based on `Character.IdealMatch` (e.g. if User matches Ideal, bonus to Passion/Satisfaction).
+
+#### [NEW] `src/components/scene-report-display.tsx`
+- Create a UI component to visualize the "Scene Report":
+    - **Detected Traits:** Lists what the Analyst found (e.g., "High Aggression").
+    - **Impact:** Shows the calculated deltas (e.g., "Trust -15").
+    - **Result:** Shows the new PRQC values.
+
+#### [NEW] `src/app/api/engine/process-scene/route.ts`
+- Receives chat log.
+- Runs `Analyst` -> `Judge`.
+- Returns the full `SceneReport` and updated Relationship stats to the client.
+
+#### Phase 6 Verification
+- **Automated Tests:** Create unit tests for `judge.ts` ensuring math is correct.
+    - *Example:* "High Aggression input should lower Trust."
+- **Integration Test:** Call `/api/engine/process-scene` with a mock chat log and verify it returns a valid JSON with calculated Relationship adjustments.
+- **Visual Check:** Mock a `SceneReport` and render the `SceneReportDisplay` component to ensure it looks correct.
+
+---
+
+### Phase 7: Integration (The Loop)
 **Goal:** Connect the components into a circular gameplay loop.
 
 #### [MODIFY] `src/app/page.tsx` (or Main Chat Component)
@@ -131,7 +157,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
 - If detected, insert a special stop signal or header to inform the client to trigger an immediate force-analysis.
 
-#### Phase 6 Verification
+#### Phase 7 Verification
 - **Cycle Check:**
     -   Start Scene (Trust: 50).
     -   Be aggressive/insulting.
@@ -142,7 +168,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 
 ---
 
-### Phase 7: Advanced Rules (Intersections & Constraints)
+### Phase 8: Advanced Rules (Intersections & Constraints)
 **Goal:** Implement the complex, high-specificity rules from Sections 3, 4, and 5.
 
 #### [MODIFY] `src/lib/engine/rules.ts`
@@ -156,6 +182,6 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Update `GenerateSystemPrompt` to accept `UserPersona` and evaluate the new advanced rules.
 - Ensure "Hard Constraints" (Section 5) take precedence or are appended with high priority (SYSTEM_MESSAGE reinforcement).
 
-#### Phase 7 Verification
+#### Phase 8 Verification
 - **Intersection Test:** Create a character with High Neuroticism (80) and High Commitment (80). Verify "Anxious Attachment" instruction appears in the prompt.
 - **Constraint Test:** Set Intimacy to 5 and Trust to 5. Verify "Stranger Danger" protocol prevents the character from agreeing to a defined "Go to second location" test prompt.
