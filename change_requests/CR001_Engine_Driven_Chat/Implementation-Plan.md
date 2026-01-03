@@ -136,21 +136,27 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 **Goal:** Implement the logic-based feedback loop (Engine) that updates relationship stats, replacing the direct LLM hallucination.
 
 #### [NEW] `src/lib/engine/analyst.ts`
-- Implement `AnalyzeTurn(chatHistory, character, persona)`: Calls LLM to scan *only the latest message* for "Signals" (Flirt, Insult, Gift, etc.). Returns structured `Signal[]`.
+- Implement `AnalyzeScene(chatHistory, character, persona)`: Calls LLM to scan *the entire recent history/scene* for "Aggregate Traits" (OCEAN + Behavioral) and "Major Events".
+- Returns `SceneReport` (JSON).
+
+#### [NEW] `src/lib/engine/math.ts`
+- Implement `RoutingTable`: Maps Traits (e.g., "Aggression") to affected PRQC components.
+- Implement `SensitivityMatrix`: Helper to calculate multipliers based on `Character.IdealMatch` vs `User.Trait`.
 
 #### [NEW] `src/lib/engine/judge.ts`
-- Implement `JudgeTurn(currentStats, signals)`:
-    - Uses deterministic math rules to map `Signal[]` to `PRQC Delta`.
-    - Example: `Signal: FLIRT` -> `+1 Passion, +1 Satisfaction`.
+- Implement `JudgeScene(currentStats, sceneReport, character)`:
+    - Uses `SensitivityMatrix` to calculate impact multiplier based on `Character.IdealMatch`.
+    - Uses `RoutingTable` to map User Traits to `PRQC Deltas`.
+    - Calculates final `totalDelta` (Direction * Strength * Multiplier).
 
-#### [NEW] `src/app/api/engine/process-turn/route.ts`
+#### [NEW] `src/app/api/engine/process-scene/route.ts`
 - Receives chat log & context.
-- Runs `Analyst` -> `Judge`.
+- Runs `Analyst` (Scene Report) -> `Judge` (Math Logic).
 - Returns `delta` and `description` to the client.
 
 #### Phase 6 Verification
-- **Automated Tests:** Unit tests for `judge.ts` math.
-- **Integration Test:** Call `/api/engine/process-turn` with mock data.
+- **Automated Tests:** Unit tests for `judge.ts` math logic (Sensitivity/Routing).
+- **Integration Test:** Call `/api/engine/process-scene` with mock character/history data.
 
 ---
 

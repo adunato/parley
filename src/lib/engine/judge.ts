@@ -1,28 +1,17 @@
-import { PRQC } from '../types';
-import { Signal, SignalCategory } from './analyst';
+import { PRQC, Character, OCEAN } from '../types';
+import { SceneReport } from './analyst';
+import { RoutingTable, SensitivityMatrix } from './math';
 
 export interface JudgeResult {
     delta: PRQC;
     description: string;
+    applied_traits: string[];
 }
 
-const BASE_DELTAS: Record<SignalCategory, Partial<PRQC>> = {
-    'FLIRT': { satisfaction: 1, passion: 2, intimacy: 1 },
-    'INSULT': { satisfaction: -5, trust: -5, passion: -2, commitment: -2 },
-    'COMPLIMENT': { satisfaction: 2, passion: 1 },
-    'AGREE': { satisfaction: 1, trust: 1 },
-    'DISAGREE': { satisfaction: -1 }, // Healthy disagreement is minor
-    'GIFT_SMALL': { satisfaction: 3, commitment: 1 },
-    'GIFT_LARGE': { satisfaction: 10, commitment: 5, trust: 2 },
-    'REVEAL_SECRET': { intimacy: 5, trust: 5, commitment: 2 },
-    'BETRAYAL': { trust: -20, satisfaction: -10, commitment: -10, passion: -5 },
-    'SACRIFICE': { trust: 10, commitment: 10, intimacy: 5, passion: 5 },
-    'DEMAND': { satisfaction: -2, trust: -1 }
-};
-
-export function JudgeTurn(
+export function JudgeScene(
     currentStats: PRQC,
-    signals: Signal[]
+    sceneReport: SceneReport,
+    character: Character
 ): JudgeResult {
     const totalDelta: PRQC = {
         satisfaction: 0,
@@ -33,36 +22,98 @@ export function JudgeTurn(
     };
 
     const descriptions: string[] = [];
+    const appliedTraits: string[] = [];
 
-    for (const signal of signals) {
-        const base = BASE_DELTAS[signal.category];
-        if (!base) continue;
+    // Iterate over each trait found in the Scene Report
+    for (const [traitName, traitScore] of Object.entries(sceneReport.aggregate_traits)) {
+        // 1. Get Multiplier (How much does the Character care?)
+        // Map traitName to IdealMatch key if possible (e.g. "Openness" -> idealMatch.openness)
+        // Or just generic "trait" if not in OCEAN.
 
-        // Apply weight multiplier (1-5)
-        // We use a simple 0.5 + (weight * 0.5) multiplier? 
-        // Or just direct multiplication? 
-        // Let's say weight 3 is standard (1.0x).
-        // 1 = 0.5x
-        // 5 = 2.0x
-        const multiplier = signal.weight <= 0 ? 1 : (0.5 + (signal.weight * 0.2)); // 1->0.7, 3->1.1, 5->1.5. Let's tweak.
-        // Simple: 1=0.5, 2=0.75, 3=1.0, 4=1.25, 5=1.5
-        const mult = 0.25 + (signal.weight * 0.25);
+        let idealMatchVal: number | undefined = undefined;
 
-        if (base.satisfaction) totalDelta.satisfaction += Math.round(base.satisfaction * mult);
-        if (base.commitment) totalDelta.commitment += Math.round(base.commitment * mult);
-        if (base.intimacy) totalDelta.intimacy += Math.round(base.intimacy * mult);
-        if (base.trust) totalDelta.trust += Math.round(base.trust * mult);
-        if (base.passion) totalDelta.passion += Math.round(base.passion * mult);
+        // Attempt to find trait in IdealMatch (OCEAN)
+        // capitalization check: OCEAN keys are lowercase in our type, but likely Title Case from Analyst.
+        const normalizedKey = traitName.toLowerCase() as keyof OCEAN;
+        if (character.idealMatch && normalizedKey in character.idealMatch) {
+            // idealMatch values are 0-100, we need 0-1.
+            idealMatchVal = character.idealMatch[normalizedKey] / 100;
+        }
 
-        descriptions.push(`${signal.category} (${signal.reasoning})`);
+        // Calculate Multiplier
+        // We pass the traitScore (0-1) and idealMatchVal (0-1)
+        const multiplier = SensitivityMatrix.getMultiplier(idealMatchVal, traitScore);
+
+        // 2. Routing (What does this trait affect?)
+        const targets = RoutingTable[traitName] || RoutingTable[traitName.charAt(0).toUpperCase() + traitName.slice(1).toLowerCase()];
+
+        if (!targets) {
+            // Trait not in routing table (maybe "Funny" or "Smart"?)
+            // We could have a default routing or ignore.
+            continue;
+        }
+
+        // 3. Delta Calculation
+        // Logic: TraitScore (0-1) * Multiplier (1-2) * BaseScalingFactor
+        // Let's say a Strong Trait (0.8) with High Multiplier (1.5) should give +5 to stats?
+        const BASE_SCALING = 5;
+
+        // But wait, is it positive or negative?
+        // Analyst output "Aggression: 0.8". 
+        // If IdealMatch has Aggression: 0.9 (Loves it) -> Positive impact.
+        // If IdealMatch has Aggression: 0.1 (Hates it) -> Negative impact?
+        // The SensitivityMatrix in math.ts only returned a Magnitude Multiplier 1.0 - 2.0.
+        // It didn't handle direction. We need to handle direction here.
+
+        let direction = 1;
+
+        // If it's an OCEAN trait, direction depends on Ideal Match.
+        // If Ideal is High (>50) and Trait is High -> Good.
+        // If Ideal is Low (<50) and Trait is High -> Bad.
+        if (idealMatchVal !== undefined) {
+            if (Math.abs(idealMatchVal - traitScore) > 0.5) {
+                // Large gap -> Negative impact? 
+                // E.g. Ideal 0.9, Trait 0.1 (Not present) -> Low impact anyway (Score is low).
+                // E.g. Ideal 0.1, Trait 0.9 (Present but unwanted) -> Gap is 0.8. Negative!
+                direction = -1;
+            }
+        } else {
+            // Non-OCEAN traits (e.g. "Dishonesty"). 
+            // We must assume mapped defaults. 
+            // "Dishonesty" usually negative. "Support" usually positive.
+            // This is tricky without a "Trait Metadata" table.
+            // For now, let's hardcode a few negative ones or assume positive unless known bad.
+            const NEGATIVE_TRAITS = ["Aggression", "Dishonesty", "Betrayal", "Insult", "Neuroticism"];
+            if (NEGATIVE_TRAITS.includes(traitName) || NEGATIVE_TRAITS.includes(traitName.charAt(0).toUpperCase() + traitName.slice(1))) {
+                direction = -1;
+            }
+        }
+
+        const deltaVal = Math.round(traitScore * multiplier * BASE_SCALING * direction);
+
+        if (deltaVal === 0) continue;
+
+        // Apply to targets
+        targets.forEach(target => {
+            totalDelta[target] += deltaVal;
+        });
+
+        appliedTraits.push(`${traitName} (${deltaVal > 0 ? '+' : ''}${deltaVal})`);
     }
 
-    // Special Logic: Initimacy Gating
-    // If you FLIRT but Intimacy is low (<20), it might backfire or be less effective.
-    // For now, let's just keep it simple math.
+    // Append Major Events to descriptions
+    if (sceneReport.major_events && sceneReport.major_events.length > 0) {
+        descriptions.push(...sceneReport.major_events);
+    }
+
+    // Summary of stat changes
+    if (appliedTraits.length > 0) {
+        descriptions.push(`Impacts: ${appliedTraits.join(', ')}`);
+    }
 
     return {
         delta: totalDelta,
-        description: descriptions.length > 0 ? descriptions.join('; ') : "No significant impact."
+        description: descriptions.join('\n'),
+        applied_traits: appliedTraits
     };
 }

@@ -1,5 +1,5 @@
-import { AnalyzeTurn } from '@/lib/engine/analyst';
-import { JudgeTurn } from '@/lib/engine/judge';
+import { AnalyzeScene } from '@/lib/engine/analyst';
+import { JudgeScene } from '@/lib/engine/judge';
 import { PRQC } from '@/lib/types';
 import { JudgeResult } from '@/lib/engine/judge';
 
@@ -11,20 +11,20 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Missing required data" }), { status: 400 });
         }
 
-        // 1. Analyst: Extract Signals
-        const signals = await AnalyzeTurn(chatHistory, character, persona, modelName);
+        // 1. Analyst: Extract Scene Report (Aggregate Traits & Events)
+        const sceneReport = await AnalyzeScene(chatHistory, character, persona, modelName);
 
-        console.log("--- ANALYST SIGNALS ---");
-        console.log(JSON.stringify(signals, null, 2));
+        console.log("--- ANALYST SCENE REPORT ---");
+        console.log(JSON.stringify(sceneReport, null, 2));
 
-        if (signals.length === 0) {
+        if (Object.keys(sceneReport.aggregate_traits).length === 0) {
             return new Response(JSON.stringify({
                 delta: null,
                 description: "No significant interaction detected."
             }), { status: 200 });
         }
 
-        // 2. Judge: Calculate Delta
+        // 2. Judge: Calculate Delta using Math Engine
         // Transform relationship to PRQC if needed (it assumes type compatibility)
         const currentStats: PRQC = {
             satisfaction: currentRelationship.satisfaction,
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
             passion: currentRelationship.passion
         };
 
-        const judgment: JudgeResult = JudgeTurn(currentStats, signals);
+        const judgment: JudgeResult = JudgeScene(currentStats, sceneReport, character);
 
         console.log("--- JUDGE RESULT ---");
         console.log(JSON.stringify(judgment, null, 2));
@@ -43,11 +43,11 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({
             delta: judgment.delta,
             description: judgment.description,
-            signals: signals
+            sceneReport: sceneReport
         }), { status: 200 });
 
     } catch (error) {
-        console.error("Engine Process Turn Error:", error);
+        console.error("Engine Process Scene Error:", error);
         return new Response(JSON.stringify({ error: "Internal Engine Error" }), { status: 500 });
     }
 }
