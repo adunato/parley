@@ -40,9 +40,39 @@ The monolithic "Chat" process will be split into three distinct components:
     *   Sends chat history to LLM.
     *   Returns a **Scene Report** (JSON with aggregate traits).
 *   **New Module:** `lib/engine/judge.ts`
-    *   Takes Scene Report + Character Ideal Match Profile.
-    *   Calculates mathematical operational updates to PRQC based on the delta between behavior and Ideal Match.
+    *    **Process:**
+        1.  **Input:** Takes the `Scene Report` (user behavior) and the Character's `Ideal Match` (preferences).
+        2.  **Sensitivity Check:** Compares the user's aggregate traits against the Ideal Match profile.
+            *   *Logic:* `Multiplier = SensitivityMatrix.Get(Character.IdealMatch, Trait)`
+            *   *Note:* Impact is driven by how well the user fits the character's *type*, not just raw compatibility.
+        3.  **Routing:** Looks up the trait in the `RoutingTable` to identify *all* affected PRQC components.
+            *   *Logic:* `Targets[] = RoutingTable.Get(Trait)` (e.g., "Aggression" -> `["Trust", "Satisfaction"]`).
+        4.  **Calculation:** `Delta = TraitMagnitude * Multiplier` (Applied to each target in `Targets[]`).
+        5.  **Update:** Application of deltas to the Relationship State.
 *   **Frontend Impact:** Client needs to decide when a "Scene" ends (e.g., manual button user flow or session end) and call this endpoint.
+
+#### 3.3.1 Example Payloads
+
+**The Input: Scene Report (from Analyst)**
+```json
+{
+  "scene_id": "1024",
+  "summary": "The user tried to convince the character to steal the artifact.",
+  "aggregate_traits": {
+    "Openness": 0.8,
+    "Conscientiousness": 0.6,
+    "Extraversion": 0.4
+  },
+  "major_events": ["User proposed theft", "User lied about security"]
+}
+```
+
+**The Logic: Judge Calculation Loop**
+For the trait `Openness` (0.8):
+1.  **Fetch Preference:** Character's Ideal Match has `Openness: High`.
+2.  **Determine Sensitivity:** Since they match, `SensitivityMatrix` returns a positive multiplier (e.g., `1.5`).
+3.  **Route:** `RoutingTable` maps `Openness` to targets `['Satisfaction', 'Intimacy']`.
+4.  **Calculate:** `0.8 * 1.5 = +1.2`. Apply this Delta to *both* Satisfaction and Intimacy.
 
 ## 4. Data Structures
 
@@ -57,8 +87,13 @@ type Rule = {
 }
 ```
 
-### 4.2 Sensitivity Matrix (`lib/engine/math.ts`)
-Configuration defining how specific aggregate traits (e.g., "Aggression", "Flirtation") map to PRQC updates.
+### 4.2 Sensitivity Matrix & Routing Table (`lib/engine/math.ts`)
+Two distinct configurations driving the Judge's logic:
+
+*   **SensitivityMatrix:** `(IdealMatchTrait, InputTrait) => Multiplier`
+    *   Determines *how much* impact a trait has based on preference (e.g., "I love ambitious people" = 1.5x multiplier).
+*   **RoutingTable:** `InputTrait => PRQC_Component[]`
+    *   Determines *which* relationship stats are affected (e.g., "Betrayal" -> `['Trust', 'Satisfaction']`).
 
 ### 4.3 Ideal Match Profile (`IdealMatch`)
 An immutable OCEAN profile representing the character's perfect partner. Used by the Judge to calculate relationship satisfaction.
