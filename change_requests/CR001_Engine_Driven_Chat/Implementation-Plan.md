@@ -154,26 +154,6 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 
 ---
 
-### Phase 6.5: Engine Trigger (Event-Driven)
-**Goal:** Ensure the Engine only runs when impactful events occur, controlled by the Director.
-
-#### [MODIFY] `src/app/api/chat/route.ts`
-- Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
-- If detected, insert a special header/data chunk to tell the client "Run Assessment Now".
-
-#### [MODIFY] `src/components/chat-component.tsx`
-- Listen for the trigger signal from the stream.
-- ONLY call `/api/engine/process-turn` when receiving this signal.
-
-#### [MODIFY] `src/lib/engine/director.ts` / Prompt
-- Instruct Director to output `[EVENT: TRIGGER_ASSESSMENT]` when significant relationship shifts occur.
-
-#### Phase 6.5 Verification
-- **Manual Check:** Chat casually. Verify NO assessment runs.
-- **Manual Check:** Do something drastic (e.g. "I love you"). Verify Director outputs the event tag, and Client runs the assessment.
-
----
-
 ### Phase 7: Integration (The Loop)
 **Goal:** Connect the components into a circular gameplay loop.
 
@@ -199,7 +179,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 
 ---
 
-### Phase 8: Advanced Rules (Intersections & Constraints)
+### Phase 9: Advanced Rules (Intersections & Constraints)
 **Goal:** Implement the complex, high-specificity rules from Sections 3, 4, and 5.
 
 #### [MODIFY] `src/lib/engine/rules.ts`
@@ -213,6 +193,16 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Update `GenerateSystemPrompt` to accept `UserPersona` and evaluate the new advanced rules.
 - Ensure "Hard Constraints" (Section 5) take precedence or are appended with high priority (SYSTEM_MESSAGE reinforcement).
 
-#### Phase 8 Verification
-- **Intersection Test:** Create a character with High Neuroticism (80) and High Commitment (80). Verify "Anxious Attachment" instruction appears in the prompt.
-- **Constraint Test:** Set Intimacy to 5 and Trust to 5. Verify "Stranger Danger" protocol prevents the character from agreeing to a defined "Go to second location" test prompt.
+### Phase 10: Engine Trigger (Event-Driven)
+**Goal:** Ensure the Engine only runs when impactful events occur, controlled by the Director.
+
+#### [MODIFY] `src/app/api/chat/route.ts`
+- Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
+- If detected, insert a special header/data chunk to tell the client "Run Assessment Now".
+
+#### [MODIFY] `src/components/chat-component.tsx`
+- Listen for the trigger signal from the stream.
+- ONLY call `/api/engine/process-turn` when receiving this signal.
+
+#### [MODIFY] `src/lib/engine/director.ts` / Prompt
+- Instruct Director to output `[EVENT: TRIGGER_ASSESSMENT]` when significant relationship shifts occur.
