@@ -3,10 +3,10 @@ import { getLlm } from '@/lib/llm';
 import { generateSystemPrompt, getChatPrompt } from '@/lib/prompts/chatPrompts';
 import { Message } from '@ai-sdk/react';
 import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
-import { useParleyStore } from '@/lib/store';
+import { GenerateSystemPrompt } from '@/lib/engine/director';
 
 export async function POST(req: Request) {
-  const { messages, character, persona, worldDescription, aiStyle, chatModel } = await req.json();
+  const { messages, character, persona, worldDescription, aiStyle, chatModel, systemPromptTemplate } = await req.json();
   const llm = getLlm(chatModel);
   const relationship = character.relationships.find((rel: any) => rel.personaId === persona.id);
 
@@ -16,7 +16,12 @@ export async function POST(req: Request) {
 
   const chatSummaries = relationship?.chat_summaries;
 
-  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, worldDescription, aiStyle, chatSummaries);
+  const actingInstructions = relationship ? GenerateSystemPrompt(character, relationship) : "";
+  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, systemPromptTemplate, worldDescription, aiStyle, chatSummaries, actingInstructions);
+
+  console.log("--- GENERATED SYSTEM PROMPT ---");
+  console.log(finalSystemPrompt);
+  console.log("-------------------------------");
 
   const langchainMessages = messages.map((message: Message) => {
     if (message.role === 'user') {

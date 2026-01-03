@@ -19,7 +19,8 @@ export default function SettingsPage() {
     chatModel, setChatModel,
     summarizationModel, setSummarizationModel,
     generationModel, setGenerationModel,
-    avatarGenerationSettings, setAvatarGenerationSettings
+    avatarGenerationSettings, setAvatarGenerationSettings,
+    systemPromptTemplate, setSystemPromptTemplate
   } = useParleyStore();
 
   const [comfyuiModels, setComfyuiModels] = useState<Model[]>([]);
@@ -84,6 +85,25 @@ export default function SettingsPage() {
           }
           itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
         />
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">System Prompt Template</h2>
+        <div className="space-y-2">
+          <Label htmlFor="system-prompt-template">
+            Template
+            <span className="text-xs font-normal text-muted-foreground ml-2">
+              Available variables: {'{{character}}'}, {'{{persona}}'}, {'{{relationship}}'}, {'{{world}}'}, {'{{style}}'}, {'{{summaries}}'}, {'{{instructions}}'}
+            </span>
+          </Label>
+          <Textarea
+            id="system-prompt-template"
+            className="font-mono text-sm min-h-[300px]"
+            value={systemPromptTemplate}
+            onChange={(e) => setSystemPromptTemplate(e.target.value)}
+            placeholder="Enter system prompt template..."
+          />
+        </div>
       </section>
 
       <section className="mb-8">
