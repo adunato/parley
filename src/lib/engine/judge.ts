@@ -106,12 +106,23 @@ export function JudgeScene(
         descriptions.push(...sceneReport.major_events);
     }
 
-    // We do NOT append relationship updates to the text description. 
-    // The UI will display the 'delta' and 'applied_traits' separately.
+    // Summary of stat changes (The "Table" of PRQC Deltas)
+    const impactSummary: string[] = [];
+    for (const [key, value] of Object.entries(totalDelta)) {
+        if (value !== 0) {
+            impactSummary.push(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value > 0 ? '+' : ''}${value}`);
+        }
+    }
+
+    if (impactSummary.length > 0) {
+        descriptions.push(`\nRELATIONSHIP UPDATE:\n${impactSummary.join('\n')}`);
+    } else {
+        descriptions.push(`\nRELATIONSHIP UPDATE:\nNo significant changes.`);
+    }
 
     return {
         delta: totalDelta,
-        description: descriptions.join('\n'), // Primarily events
+        description: descriptions.join('\n'), // Events + PRQC Summary
         applied_traits: appliedTraits
     };
 }

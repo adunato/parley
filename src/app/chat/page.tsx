@@ -50,18 +50,12 @@ export default function ChatPage() {
     const [isLoadingSummary, setIsLoadingSummary] = useState(false);
     const [sceneDelta, setSceneDelta] = useState<PRQC | null>(null);
     const [sceneAnalysisDescription, setSceneAnalysisDescription] = useState<string | null>(null);
+    const [sceneAppliedTraits, setSceneAppliedTraits] = useState<string[]>([]);
     const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaId === selectedChatPersona.id);
-            if (existingRelationship) {
-                setCurrentRelationship(existingRelationship);
-            } else {
-                setCurrentRelationship(undefined);
-            }
-        }
-    }, [_hasHydrated, selectedChatCharacter, selectedChatPersona]);
+    // ... (useEffect omitted)
+
+    // ... (useEffect omitted)
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
@@ -143,7 +137,7 @@ export default function ChatPage() {
             // 2. Run Analyst (Process Turn / Scene)
             let analysisResult: { delta: PRQC, description: string } | null = null;
             try {
-                const response = await fetch('/api/engine/process-turn', {
+                const response = await fetch('/api/engine/process-scene', { // UPDATED ENDPOINT
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -159,6 +153,7 @@ export default function ChatPage() {
                     analysisResult = { delta: data.delta, description: data.description };
                     setSceneDelta(data.delta);
                     setSceneAnalysisDescription(data.description);
+                    setSceneAppliedTraits(data.applied_traits || []); // Capture Traits
                 }
             } catch (error) {
                 console.error("Error running Analyst:", error);
@@ -237,6 +232,7 @@ export default function ChatPage() {
         setIsSummaryModalOpen(false);
         setSceneDelta(null);
         setSceneAnalysisDescription(null);
+        setSceneAppliedTraits([]);
         setSceneSummaryText(null);
 
         clearCumulativeRelationshipDelta(); // Just in case
@@ -359,6 +355,7 @@ export default function ChatPage() {
                 relationshipDelta={sceneDelta}
                 analysisDescription={sceneAnalysisDescription}
                 sceneSummary={sceneSummaryText}
+                appliedTraits={sceneAppliedTraits}
             />
         </div>
     );

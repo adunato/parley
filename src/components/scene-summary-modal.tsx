@@ -18,6 +18,7 @@ interface SceneSummaryModalProps {
     relationshipDelta: PRQC | null;
     analysisDescription: string | null;
     sceneSummary: string | null;
+    appliedTraits?: string[];
 }
 
 export function SceneSummaryModal({
@@ -26,7 +27,8 @@ export function SceneSummaryModal({
     onClose,
     relationshipDelta,
     analysisDescription,
-    sceneSummary
+    sceneSummary,
+    appliedTraits = []
 }: SceneSummaryModalProps) {
 
     const renderDelta = (label: string, value: number) => {
@@ -45,7 +47,7 @@ export function SceneSummaryModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Scene Complete</DialogTitle>
                 </DialogHeader>
@@ -68,12 +70,24 @@ export function SceneSummaryModal({
                                 </div>
                             </div>
 
-                            {/* Analysis Section */}
-                            {analysisDescription && (
+                            {/* Behavioral Analysis (Traits Table) */}
+                            {appliedTraits && appliedTraits.length > 0 && (
                                 <div className="space-y-2">
-                                    <h3 className="text-sm font-semibold text-gray-900">Analyst Report</h3>
-                                    <div className="p-3 bg-blue-50 rounded-md border border-blue-100">
-                                        <p className="text-sm text-blue-800 italic">"{analysisDescription}"</p>
+                                    <h3 className="text-sm font-semibold text-gray-900">Behavioral Analysis</h3>
+                                    <div className="rounded-md border border-gray-200 overflow-hidden text-sm">
+                                        <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 font-medium text-gray-500">
+                                            Detected Traits & Impacts
+                                        </div>
+                                        <div className="divide-y divide-gray-100 bg-white">
+                                            {appliedTraits.map((traitStr, idx) => (
+                                                <div key={idx} className="px-3 py-2 flex items-center justify-between">
+                                                    <span className="text-gray-800">{traitStr.split('(')[0].trim()}</span>
+                                                    <span className={`font-mono font-medium ${traitStr.includes('+') ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {traitStr.match(/\((.*?)\)/)?.[1] || traitStr}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -81,7 +95,7 @@ export function SceneSummaryModal({
                             {/* Relationship Impact Section */}
                             {relationshipDelta && (
                                 <div className="space-y-2">
-                                    <h3 className="text-sm font-semibold text-gray-900">Relationship Impact</h3>
+                                    <h3 className="text-sm font-semibold text-gray-900">Relationship Statistics</h3>
                                     <div className="rounded-md border p-3 bg-white shadow-sm">
                                         {renderDelta("Satisfaction", relationshipDelta.satisfaction)}
                                         {renderDelta("Commitment", relationshipDelta.commitment)}
@@ -95,6 +109,16 @@ export function SceneSummaryModal({
                                                 No significant changes.
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Events Log (Description) */}
+                            {analysisDescription && (
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-semibold text-gray-900">Major Events</h3>
+                                    <div className="p-3 bg-blue-50 rounded-md border border-blue-100 text-xs text-blue-800">
+                                        <p className="whitespace-pre-wrap">{analysisDescription.replace(/RELATIONSHIP UPDATE:[\s\S]*/, '').trim()}</p>
                                     </div>
                                 </div>
                             )}
