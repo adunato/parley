@@ -179,10 +179,3 @@ The Actor LLM is instructed to append a specific flag if a boundary is crossed.
 3. Game Client triggers the **Analyst & Judge** immediately on the partial scene history.  
 4. Game Client triggers the **Director** to regenerate the System Prompt based on the *new* stats.  
 5. Game Client resumes chat with the updated personality state.
-
-## **7\. Implementation Guide**
-
-1. **Build the Catalogue:** Create the JSON database of all possible acting instructions mapped to OCEAN/PRQC values.  
-2. **The Analyst Prompt:** Design a prompt that takes a chat log and outputs the SceneReport JSON. It needs to be accurate at identifying OCEAN traits in user text.  
-3. **The Sensitivity Matrix:** Hardcode the multipliers (e.g., High C \* Laziness \= \-2.0 Satisfaction).  
-4. **Testing:** Simulate a scene where a user is "High Aggression" against a "High Neuroticism" character and verify that the Post-Scene calculation results in a massive Trust drop for the *next* interaction.
