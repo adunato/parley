@@ -1,4 +1,5 @@
-import { InstructionCatalogue, OCEAN, PRQC } from '../lib/engine/rules';
+import { InstructionCatalogue } from '../lib/engine/rules';
+import { OCEAN, PRQC } from '../lib/types';
 
 describe('InstructionCatalogue', () => {
     const mockOCEAN: OCEAN = {

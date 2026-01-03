@@ -1,5 +1,5 @@
-import { Character, Relationship } from '../types';
-import { InstructionCatalogue, OCEAN, PRQC } from './rules';
+import { Character, Relationship, OCEAN, PRQC } from '../types';
+import { InstructionCatalogue } from './rules';
 
 export function GenerateSystemPrompt(character: Character, relationship: Relationship): string {
     const ocean: OCEAN = character.personality;

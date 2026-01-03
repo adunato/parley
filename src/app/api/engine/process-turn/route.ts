@@ -1,6 +1,6 @@
 import { AnalyzeTurn } from '@/lib/engine/analyst';
 import { JudgeTurn } from '@/lib/engine/judge';
-import { PRQC } from '@/lib/engine/rules';
+import { PRQC } from '@/lib/types';
 import { JudgeResult } from '@/lib/engine/judge';
 
 export async function POST(req: Request) {

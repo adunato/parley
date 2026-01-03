@@ -10,8 +10,10 @@ import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
+import { SceneSummaryModal } from "@/components/scene-summary-modal";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 import { useEntityStore } from "@/lib/entityStore";
+import { PRQC } from "@/lib/types";
 
 
 export default function ChatPage() {
@@ -42,6 +44,12 @@ export default function ChatPage() {
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
+
+    // Phase 7: Scene Summary State
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [sceneDelta, setSceneDelta] = useState<PRQC | null>(null);
+    const [sceneAnalysisDescription, setSceneAnalysisDescription] = useState<string | null>(null);
+    const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
 
     useEffect(() => {
         if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
@@ -126,13 +134,37 @@ export default function ChatPage() {
 
     const handleEndChat = async () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-            // Summarize the chat
+
+            // 1. Run Analyst (Process Turn / Scene)
+            // Note: In Phase 11 this will be Event Driven. For now, we analyze clarity at the end.
+            let analysisResult: { delta: PRQC, description: string } | null = null;
+            try {
+                const response = await fetch('/api/engine/process-turn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chatHistory: chatMessages,
+                        character: selectedChatCharacter,
+                        persona: selectedChatPersona,
+                        currentRelationship: currentRelationship,
+                        modelName: generationModel
+                    }),
+                });
+                const data = await response.json();
+                if (response.ok && data.delta) {
+                    analysisResult = { delta: data.delta, description: data.description };
+                    setSceneDelta(data.delta);
+                    setSceneAnalysisDescription(data.description);
+                }
+            } catch (error) {
+                console.error("Error running Analyst:", error);
+            }
+
+            // 2. Generate Summary
             try {
                 const response = await fetch('/api/summarise', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chatHistory: chatMessages,
                         worldInfo: worldDescription,
@@ -144,53 +176,68 @@ export default function ChatPage() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    const newSummary = { summary: data.summary, timestamp: new Date() };
-
-                    const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                        if (rel.personaId === selectedChatPersona.id) {
-                            const existingSummaries = rel.chat_summaries || [];
-                            return {
-                                ...rel,
-                                chat_summaries: [...existingSummaries, newSummary],
-                            };
-                        }
-                        return rel;
-                    });
-
-                    // Apply both summary and relationship delta in a single update
-                    const updatedRelationshipsWithDelta = updatedRelationships.map(rel => {
-                        if (rel.personaId === selectedChatPersona.id && cumulativeRelationshipDelta) {
-                            return {
-                                ...rel,
-                                satisfaction: rel.satisfaction + cumulativeRelationshipDelta.satisfaction,
-                                commitment: rel.commitment + cumulativeRelationshipDelta.commitment,
-                                intimacy: rel.intimacy + cumulativeRelationshipDelta.intimacy,
-                                trust: rel.trust + cumulativeRelationshipDelta.trust,
-                                passion: rel.passion + cumulativeRelationshipDelta.passion,
-                                description: rel.description,
-                                // Preserve the chat_summaries we just added
-                                chat_summaries: rel.chat_summaries
-                            };
-                        }
-                        return rel;
-                    });
-
-                    const updatedCharacter = {
-                        ...selectedChatCharacter,
-                        relationships: updatedRelationshipsWithDelta
-                    };
-                    updateCharacter(updatedCharacter);
-                } else {
-                    console.error('Failed to generate summary:', data.error);
+                    setSceneSummaryText(data.summary);
                 }
             } catch (error) {
-                console.error('Error generating summary:', error);
+                console.error("Error generating summary:", error);
             }
+
+            // 3. Open Modal to show results
+            setIsSummaryModalOpen(true);
         }
-        clearCumulativeRelationshipDelta();
-        clearCumulativeRelationshipDelta();
-        setIsChatActive(false);
+    };
+
+    const handleCloseSummary = () => {
+        if (selectedChatCharacter && selectedChatPersona && sceneSummaryText) {
+            const newSummary = { summary: sceneSummaryText, timestamp: new Date() };
+
+            const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
+                if (rel.personaId === selectedChatPersona.id) {
+                    // Add Summary
+                    const existingSummaries = rel.chat_summaries || [];
+                    const updatedSummaries = [...existingSummaries, newSummary];
+
+                    // Apply Delta (if exists)
+                    if (sceneDelta) {
+                        return {
+                            ...rel,
+                            satisfaction: Math.max(0, Math.min(100, rel.satisfaction + (sceneDelta.satisfaction || 0))),
+                            commitment: Math.max(0, Math.min(100, rel.commitment + (sceneDelta.commitment || 0))),
+                            intimacy: Math.max(0, Math.min(100, rel.intimacy + (sceneDelta.intimacy || 0))),
+                            trust: Math.max(0, Math.min(100, rel.trust + (sceneDelta.trust || 0))),
+                            passion: Math.max(0, Math.min(100, rel.passion + (sceneDelta.passion || 0))),
+                            chat_summaries: updatedSummaries
+                        };
+                    }
+
+                    return {
+                        ...rel,
+                        chat_summaries: updatedSummaries
+                    };
+                }
+                return rel;
+            });
+
+            const updatedCharacter = {
+                ...selectedChatCharacter,
+                relationships: updatedRelationships
+            };
+
+            updateCharacter(updatedCharacter);
+
+            // Update local state to reflect changes immediately if needed, though clearChat usually resets UI
+            const newRel = updatedRelationships.find(r => r.personaId === selectedChatPersona.id);
+            if (newRel) setCurrentRelationship(newRel);
+        }
+
+        setIsSummaryModalOpen(false);
+        setSceneDelta(null);
+        setSceneAnalysisDescription(null);
+        setSceneSummaryText(null);
+
+        clearCumulativeRelationshipDelta(); // Just in case
         clearChat();
+        setIsChatActive(false);
     };
 
     const handleNewChat = () => {
@@ -300,6 +347,14 @@ export default function ChatPage() {
                     </div>
                 </div>
             )}
+
+            <SceneSummaryModal
+                isOpen={isSummaryModalOpen}
+                onClose={handleCloseSummary}
+                relationshipDelta={sceneDelta}
+                analysisDescription={sceneAnalysisDescription}
+                sceneSummary={sceneSummaryText}
+            />
         </div>
     );
 }

@@ -1,18 +1,4 @@
-export interface OCEAN {
-    openness: number;
-    conscientiousness: number;
-    extraversion: number;
-    agreeableness: number;
-    neuroticism: number;
-}
-
-export interface PRQC {
-    satisfaction: number;
-    commitment: number;
-    intimacy: number;
-    trust: number;
-    passion: number;
-}
+import { OCEAN, PRQC } from '../types';
 
 export type RuleCategory = 'OCEAN' | 'PRQC' | 'COMPLEX' | 'MATCH' | 'SYSTEM';
 

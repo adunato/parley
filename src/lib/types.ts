@@ -26,6 +26,16 @@ export interface Personality {
   neuroticism: number;
 }
 
+export type OCEAN = Personality;
+
+export interface PRQC {
+  satisfaction: number;
+  commitment: number;
+  intimacy: number;
+  trust: number;
+  passion: number;
+}
+
 export interface Character {
   id: string;
   basicInfo: BasicInfo;

@@ -1,4 +1,4 @@
-import { PRQC } from './rules';
+import { PRQC } from '../types';
 import { Signal, SignalCategory } from './analyst';
 
 export interface JudgeResult {
