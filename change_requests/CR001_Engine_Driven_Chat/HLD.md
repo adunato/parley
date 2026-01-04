@@ -31,7 +31,11 @@ The monolithic "Chat" process will be split into three distinct components:
 *   **Modifications to `src/app/api/chat/route.ts`:**
     *   **Input:** Uses the Director-generated prompt.
     *   **Output Monitoring:** The stream must be monitored for the `[EVENT: TRIGGER_ASSESSMENT]` token.
-    *   **Emergency Brake:** If the token is detected, the stream must support a mechanism to halt/notify the client to trigger an immediate analysis (though for Phase 1, we may just log this).
+    *   **Emergency Brake:** If the token `[EVENT: TRIGGER_ASSESSMENT]` is detected:
+        1.  Client pauses chat.
+        2.  Partial history is sent to Analyst.
+        3.  Director regenerates prompt with new state.
+        4.  Chat resumes.
 
 ### 3.3 The Analyst & Judge (Post-Scene)
 *   **Objective:** Asynchronous state updates.
@@ -78,7 +82,10 @@ The monolithic "Chat" process will be split into three distinct components:
 1.  **Sensitivity Lookup:**
     *   *Question:* Does the Character like "Openness"?
     *   *Input:* `Character.IdealMatch.Openness` = 0.9 (High).
-    *   *Logic:* `SensitivityMatrix.getMultiplier(0.9, 0.8)` -> Returns `1.5` (Strong Match).
+    *   *Logic:*
+        *   `Distance = |0.9 - 0.8| = 0.1`
+        *   `Alignment = 1.0 - 0.1 = 0.9`
+        *   `Multiplier = 0.5 + 0.9 = 1.4` (Strong Match).
 
 2.  **Target Routing:**
     *   *Question:* What does "Openness" affect?
@@ -138,9 +145,11 @@ This module exports two primary objects:
     ```typescript
     export const SensitivityMatrix = {
         getMultiplier: (idealMatchVal: number, userTraitVal: number): number => {
-            // Logic: Closer match = Higher multiplier (e.g., 1.5x)
-            // Distant match = Lower multiplier (e.g., 0.5x)
-            return calculateMultiplier(idealMatchVal, userTraitVal);
+            // Logic: Inverse Distance Formula
+            // Multiplier = 0.5 + (1.0 - |Ideal - User|)
+            // Range: 0.5 (Opposite) to 1.5 (Perfect Match)
+            const distance = Math.abs(idealMatchVal - userTraitVal);
+            return 0.5 + (1.0 - distance);
         }
     };
     ```
