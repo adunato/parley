@@ -41,5 +41,11 @@ This Change Request focuses on optimizing the prompts used in the application.
 - Create `config/prqc-traits.ts` to define these descriptions across 5 levels.
 - Update `GenerateSystemPrompt` to substitute numbers with these descriptions.
 
+### 3.7 Data Consolidation & Persona Contextualization
+- **Persona Data**: Break down `{{persona}}` into `{{personaBasicInfo}}`.
+- **Relationship Data**: Remove `chat_summaries` from the `{{relationship}}` JSON output.
+- **Prompt Template**: Update `chat_system` to use explicit field variables.
+
+
 
 
