@@ -1,6 +1,7 @@
 import { Character, ChatSummary, Persona as PlayerPersona, Relationship } from "../types";
 import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
 import { PromptStore } from "../store/promptStore";
+import { getOceanDescription } from "../../../config/ocean-traits";
 
 export const generateSystemPrompt = (
     character: Character,
@@ -16,8 +17,15 @@ export const generateSystemPrompt = (
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
     const relationshipJson = JSON.stringify(relationship, null, 2);
     const characterBasicInfoJson = JSON.stringify(character.basicInfo, null, 2);
-    const characterPersonalityJson = JSON.stringify(character.personality, null, 2);
-    const characterIdealMatchJson = JSON.stringify(character.idealMatch, null, 2);
+
+
+    const characterPersonalityDescriptive = Object.entries(character.personality).map(([trait, value]) => {
+        return `${trait.charAt(0).toUpperCase() + trait.slice(1)}: ${getOceanDescription(trait as any, value)}`;
+    }).join('\n');
+
+    const characterIdealMatchDescriptive = Object.entries(character.idealMatch).map(([trait, value]) => {
+        return `${trait.charAt(0).toUpperCase() + trait.slice(1)}: ${getOceanDescription(trait as any, value)}`;
+    }).join('\n');
 
     let worldSection = '';
     if (worldDescription) {
@@ -42,8 +50,8 @@ export const generateSystemPrompt = (
         '{{characterName}}': character.basicInfo.name,
         '{{character}}': characterJson,
         '{{characterBasicInfo}}': characterBasicInfoJson,
-        '{{characterPersonality}}': characterPersonalityJson,
-        '{{characterIdealMatch}}': characterIdealMatchJson,
+        '{{characterPersonality}}': characterPersonalityDescriptive,
+        '{{characterIdealMatch}}': characterIdealMatchDescriptive,
         '{{personaName}}': playerPersona.basicInfo.name,
         '{{persona}}': playerPersonaJson,
         '{{relationship}}': relationshipJson,
