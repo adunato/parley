@@ -47,7 +47,8 @@ export interface ParleySettingsExport {
         model: string;
         seed: number;
     };
-    templates: {
+    prompts: Record<string, string>;
+    templates?: {
         systemPrompt: string;
     };
 }
@@ -140,21 +141,10 @@ export const ProjectService = {
             parleyStore.setWorldDescription(data.world.description);
             parleyStore.setAiStyle(data.world.style);
             parleyStore.setChatMessages(data.session.chatMessages);
-            parleyStore.clearChat(); // This resets session ID effectively, we might need a direct setter for session ID if we want to restore strictly. 
-            // NOTE: existing clearChat logic increments session Id. 
-            // For full restore, we might need to be careful. useParleyStore doesn't have a simple 'setChatSessionId' exposed publicly in interface?
-            // Inspection of store.ts shows it's part of state but maybe only settable via internal actions.
-            // Let's assume for now we just load the messages. If we need exact session ID restoration we might need store update.
+            parleyStore.clearChat();
 
             // Entity Store
-            entityStore.clearAllData(); // Reset first
-            // We need to use internal setters or just hack the state if the store doesn't expose bulk set.
-            // The EntityStore exposes separate adders. We should probably add a 'bulkLoad' or 'setAll' to the store for efficiency, 
-            // but for now we can iterate or use a temporary approach.
-            // ACTUALLY: The safest way is to clear and re-add.
-
-            // But wait, re-add triggers persistence which might be slow.
-            // Let's rely on `useEntityStore.setState` which is available on the zustand hook result (as `.setState` on the store object itself).
+            entityStore.clearAllData();
             useEntityStore.setState({
                 characters: data.entities.characters,
                 characterGroups: data.entities.characterGroups,
@@ -176,9 +166,6 @@ export const ProjectService = {
     deleteProject: (id: string) => {
         useProjectLibraryStore.getState().deleteProject(id);
         localStorage.removeItem(`${PROJECT_STORAGE_PREFIX}${id}`);
-
-        // If deleting current, what to do? User should ideally select another or create new. 
-        // Logic handled in UI usually.
     },
 
     // --- Import / Export ---
@@ -198,13 +185,11 @@ export const ProjectService = {
                 try {
                     const json = JSON.parse(e.target?.result as string) as ParleyProjectExport;
 
-                    // Basic Validation
                     if (!json.entities || !json.world) {
                         throw new Error("Invalid Project File");
                     }
 
                     const newId = crypto.randomUUID();
-                    // Avoid name collision?
                     let name = json.metadata.name;
                     const existingName = useProjectLibraryStore.getState().projects.find(p => p.name === name);
                     if (existingName) name = `${name} (Imported)`;
@@ -216,12 +201,8 @@ export const ProjectService = {
                         lastModified: Date.parse(json.timestamp) || Date.now()
                     };
 
-                    // Save Data
                     localStorage.setItem(`${PROJECT_STORAGE_PREFIX}${newId}`, JSON.stringify(json));
-
-                    // Add to Library
                     useProjectLibraryStore.getState().addProject(newProject);
-
                     resolve(newId);
 
                 } catch (err) {
@@ -234,8 +215,24 @@ export const ProjectService = {
 
     // --- Settings Management ---
 
-    exportSettingsToJSON: (): string => {
+    exportSettingsToJSON: async (): Promise<string> => {
         const store = useParleyStore.getState();
+
+        let promptsExport: Record<string, string> = {};
+        try {
+            const res = await fetch('/api/settings/prompts');
+            if (res.ok) {
+                const configs = await res.json();
+                Object.keys(configs).forEach(key => {
+                    promptsExport[key] = configs[key].template;
+                });
+            } else {
+                console.error("Failed to fetch prompts for export");
+            }
+        } catch (e) {
+            console.error("Error exporting prompts", e);
+        }
+
         const settings: ParleySettingsExport = {
             version: 1,
             timestamp: new Date().toISOString(),
@@ -245,9 +242,7 @@ export const ProjectService = {
                 generationModel: store.generationModel,
             },
             avatarGeneration: store.avatarGenerationSettings,
-            templates: {
-                systemPrompt: store.systemPromptTemplate
-            }
+            prompts: promptsExport
         };
         return JSON.stringify(settings, null, 2);
     },
@@ -255,7 +250,7 @@ export const ProjectService = {
     importSettingsFromJSON: async (file: File): Promise<void> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const json = JSON.parse(e.target?.result as string) as ParleySettingsExport;
 
@@ -264,11 +259,35 @@ export const ProjectService = {
                     }
 
                     const store = useParleyStore.getState();
+                    // Sync Store
                     store.setChatModel(json.models.chatModel);
                     store.setSummarizationModel(json.models.summarizationModel);
                     store.setGenerationModel(json.models.generationModel);
                     store.setAvatarGenerationSettings(json.avatarGeneration);
-                    store.setSystemPromptTemplate(json.templates.systemPrompt);
+
+                    // Import Prompts
+                    if (json.prompts) {
+                        for (const [id, template] of Object.entries(json.prompts)) {
+                            await fetch('/api/settings/prompts', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id, template })
+                            });
+                        }
+
+                        // Sync chat_system to store cache if present
+                        if (json.prompts['chat_system']) {
+                            store.setSystemPromptTemplate(json.prompts['chat_system']);
+                        }
+                    } else if (json.templates?.systemPrompt) {
+                        // Legacy fallback
+                        store.setSystemPromptTemplate(json.templates.systemPrompt);
+                        await fetch('/api/settings/prompts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: 'chat_system', template: json.templates.systemPrompt })
+                        });
+                    }
 
                     resolve();
                 } catch (err) {
@@ -282,13 +301,8 @@ export const ProjectService = {
     // --- Migration ---
 
     checkForLegacyData: () => {
-        // Check if we have data in default stores but NO projects in library.
         const library = useProjectLibraryStore.getState().projects;
         if (library.length > 0) return;
-
-        // If library is empty, check if there is data in useParleyStore/useEntityStore 'persist' storage.
-        // Zustand persist uses localStorage keys: 'parley-storage' and 'entity-store'.
-        // We can inspect the *current* state via getState() to see if it's non-empty.
 
         const entityState = useEntityStore.getState();
         const parleyState = useParleyStore.getState();
@@ -307,13 +321,8 @@ export const ProjectService = {
                 description: "Auto-migrated from previous version."
             };
 
-            // 1. Add to Library
             useProjectLibraryStore.getState().addProject(defaultProject);
-
-            // 2. Persist current state as this project
             ProjectService.saveProject(newId);
-
-            // 3. Mark as active
             useProjectLibraryStore.getState().setCurrentProjectId(newId);
         }
     }

@@ -6,9 +6,9 @@ import { ProjectService } from "@/lib/services/projectService";
 export function SettingsManager() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleExportSettings = () => {
+    const handleExportSettings = async () => {
         try {
-            const json = ProjectService.exportSettingsToJSON();
+            const json = await ProjectService.exportSettingsToJSON();
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
