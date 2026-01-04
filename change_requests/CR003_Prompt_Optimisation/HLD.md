@@ -31,3 +31,9 @@ This Change Request focuses on optimizing the prompts used in the application.
     - `{{characterIdealMatch}}`: Contains ideal match traits.
 - Update `chat_system` prompt template to use these new variables with descriptive headers to provide better context to the LLM.
 
+### 3.5 OCEAN Trait Descriptions
+- Replace raw numerical values for OCEAN traits with descriptive text in the prompt.
+- Create `config/ocean-traits.ts` to define these descriptions across 5 levels (e.g., Very Low, Low, Moderate, High, Very High).
+- Update `GenerateSystemPrompt` to substitute numbers with these descriptions.
+
+
