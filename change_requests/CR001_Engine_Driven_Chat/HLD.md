@@ -207,24 +207,23 @@ Used by `lib/engine/analyst.ts` to generate the Scene Report.
 
 **Current Implementation (`src/lib/engine/analyst.ts`):**
 ```text
-You are the Analyst Engine for a relationship simulation.
-Your task is to analyze the RECENT CHAT HISTORY (Scene) between a Player and a Character.
-
+(Abbreviated for HLD Compliance)
 Output a JSON object with:
-1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score representing the PLAYER'S behavior during this scene.
+1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score...
    - Include standard OCEAN traits.
-   - Include other relevant traits: Aggression, Flirtation, Support, Vulnerability, Dishonesty, Generosity.
-   - 0.0 = Not present / Opposite.
-   - 1.0 = Strongest display of this trait.
-   
-2. "major_events": A list of strings describing key events, revelations, or actions that occurred. Focus on things that would impact a long-term relationship.
+   - Include specific Routing Table traits: Aggression.
+   - [HLD NOTE: Codebase currently includes extra traits 'Flirtation, Support, Vulnerability...' which are not in the Design Rulebook. This requires cleanup].
+```
 
-Example Output:
+**Required Output Schema:**
+```json
 {
-  "aggregate_traits": { "Extraversion": 0.8, "Flirtation": 0.7 },
+  "aggregate_traits": { "Extraversion": 0.8, "Aggression": 0.2 },
   "major_events": ["Player complimented the Character's outfit."]
 }
 ```
+
+*   **Gap Analysis:** The actual code (`analyst.ts`) requests a broader list of traits ("Flirtation", "Dishonesty", etc.) than is supported by the `RoutingTable` in the Design. The Prompt should be tightened to request **only** OCEAN and traits explicitly mapped in `math.ts`.
 
 ### 5.3 The Director Output (Example)
 The Director does not use an LLM. It outputs a string block injected into `{{instructions}}`.
