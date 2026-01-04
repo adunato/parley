@@ -72,3 +72,30 @@ The Settings page (`src/app/settings/page.tsx`) will be redesigned.
 ## 5. Variable Standardization
 All prompts will be updated to use a consistent double-curly-brace syntax (`{{variable}}`) for replacements.
 Existing string concatenation logic in `src/lib/prompts/*.ts` will be replaced with a robust `.replace` or template engine approach to ensure user-placed variables are correctly populated.
+
+## 6. Implementation Plan
+
+### Phase 1: Backend Foundation
+1.  **Create Prompt Store**: Implement `src/lib/store/promptStore.ts` to handle loading/saving of prompts to a JSON file. Defined types for `PromptConfig`.
+2.  **Implement API Routes**:
+    *   `src/app/api/settings/prompts/route.ts` (GET, POST)
+    *   `src/app/api/settings/prompts/reset/route.ts` (POST)
+3.  **Refactor Prompt Generators**: Update usage of `generateSystemPrompt`, `generateCharacterPrompt`, etc., in `src/lib/prompts/` and `src/lib/engine/` to fetch templates from the `PromptStore` before string interpolation.
+
+### Phase 2: Frontend Implementation
+1.  **Create UI Components**:
+    *   `src/components/settings/SettingsTabs.tsx`: Tab navigation.
+    *   `src/components/settings/PromptEditor.tsx`: Reusable editor with variable legend.
+    *   `src/components/settings/TextGenerationSettings.tsx`: Container for text prompts.
+    *   `src/components/settings/ImageGenerationSettings.tsx`: Container for image prompts.
+2.  **Update Settings Page**: Refactor `src/app/settings/page.tsx` to use the new tabs and components.
+
+### Phase 3: Integration & specific Prompts
+1.  **Analyst Engine**: Move `ANALYST_SYSTEM_PROMPT` from `analyst.ts` to the central prompt system and ensure it's loaded correctly.
+2.  **Generator Prompts**: Ensure all generator functions (`world`, `character`, `relationship`, etc.) correctly retrieve the latest stored prompt.
+
+### Phase 4: Verification
+1.  **Validation**:
+    *   Verify checking settings updates persists prompts.
+    *   Verify generating content uses the modified prompts.
+    *   Verify "Reset to Default" restores original behavior.
