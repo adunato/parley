@@ -50,7 +50,7 @@ The monolithic "Chat" process will be split into three distinct components:
             *   *Logic:* `Multiplier = SensitivityMatrix.Get(Character.IdealMatch, Trait)`
             *   *Note:* Impact is driven by how well the user fits the character's *type*, not just raw compatibility.
         3.  **Routing:** Looks up the trait in the `RoutingTable` to identify *all* affected PRQC components.
-            *   *Logic:* `Targets[] = RoutingTable.Get(Trait)` (e.g., "Aggression" -> `["Trust", "Satisfaction"]`).
+            *   *Logic:* `Targets[] = RoutingTable.Get(Trait)` (e.g., "Neuroticism" -> `["Trust", "Satisfaction"]`).
         4.  **Calculation:** `Delta = TraitMagnitude * Multiplier` (Applied to each target in `Targets[]`).
         5.  **Update:** Application of deltas to the Relationship State.
 *   **Frontend Impact:** Client needs to decide when a "Scene" ends (e.g., manual button user flow or session end) and call this endpoint.
@@ -67,7 +67,7 @@ The monolithic "Chat" process will be split into three distinct components:
   "scene_id": "1024",
   "aggregate_traits": {
     "Openness": 0.8, // User showed high openness
-    "Aggression": 0.2
+    "Neuroticism": 0.2
   },
   "major_events": ["User confessed a secret"]
 }
@@ -95,7 +95,7 @@ The monolithic "Chat" process will be split into three distinct components:
     *   *Logic:* `TraitValue (0.8) * Multiplier (1.5) = +1.2`.
     *   *Result:* Add `+1.2` to `Intimacy` and `+1.2` to `Trust` accumulators.
 
-*(Repeat for "Aggression" and any other traits present in the report)*
+*(Repeat for "Neuroticism" and any other traits present in the report)*
 
 **Step 3: Final State Update**
 *   **Component:** `Runtime State Manager`.
@@ -135,9 +135,11 @@ This module exports two primary objects:
 1.  **RoutingTable**: A static dictionary mapping Traits to affected Relationship Components.
     ```typescript
     export const RoutingTable: Record<string, (keyof PRQC)[]> = {
-        "Aggression": ["trust", "satisfaction"],
-        "Flirtation": ["passion", "intimacy"],
-        "Support": ["commitment", "satisfaction"]
+        "Openness": ["intimacy", "satisfaction"],
+        "Conscientiousness": ["trust", "commitment"],
+        "Extraversion": ["passion", "satisfaction"],
+        "Agreeableness": ["satisfaction", "trust"],
+        "Neuroticism": ["satisfaction", "commitment"]
     };
     ```
 
@@ -177,6 +179,25 @@ type PRQC = {
 ```
 *Note: The existing codebase may need migration to ensure these 5 specific keys exist on the relationship object.*
 
+### 4.5 Scene Report Specification (`JudgeResult`)
+The contract for the data returned by the Judge Engine to the client.
+
+```typescript
+type SceneReport = {
+    // Structural Metadata
+    scene_id: string;
+    
+    // The "Receipt" of the calculation
+    applied_traits: string[]; // Formatted strings: e.g. "Openness (+1.2)", "Neuroticism (-0.5)"
+    
+    // The Impact
+    delta: PRQC; // The numeric changes applied to relationship
+    
+    // The Narrative
+    description: string; // List of major events + summary of changes
+}
+```
+
 ## 5. LLM Prompts
 
 ### 5.1 The Actor System Prompt
@@ -211,19 +232,18 @@ Used by `lib/engine/analyst.ts` to generate the Scene Report.
 Output a JSON object with:
 1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score...
    - Include standard OCEAN traits.
-   - Include specific Routing Table traits: Aggression.
-   - [HLD NOTE: Codebase currently includes extra traits 'Flirtation, Support, Vulnerability...' which are not in the Design Rulebook. This requires cleanup].
+   - Do NOT include any other traits.
 ```
 
 **Required Output Schema:**
 ```json
 {
-  "aggregate_traits": { "Extraversion": 0.8, "Aggression": 0.2 },
+  "aggregate_traits": { "Extraversion": 0.8, "Neuroticism": 0.2 },
   "major_events": ["Player complimented the Character's outfit."]
 }
 ```
 
-*   **Gap Analysis:** The actual code (`analyst.ts`) requests a broader list of traits ("Flirtation", "Dishonesty", etc.) than is supported by the `RoutingTable` in the Design. The Prompt should be tightened to request **only** OCEAN and traits explicitly mapped in `math.ts`.
+*   **Gap Analysis:** The actual code (`analyst.ts`) requests a broader list of traits ("Flirtation", "Dishonesty", etc.) than is supported by the `RoutingTable` in the Design. The Prompt should be tightened to request **only** OCEAN traits.
 
 ### 5.3 The Director Output (Example)
 The Director does not use an LLM. It outputs a string block injected into `{{instructions}}`.
