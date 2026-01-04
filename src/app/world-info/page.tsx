@@ -23,6 +23,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { ProjectManager } from '@/components/world/ProjectManager';
+import { ProjectService } from '@/lib/services/projectService';
+
 export default function WorldInfoPage() {
   const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData: clearParleyData } = useParleyStore();
   const { clearAllData: clearEntityData } = useEntityStore();
@@ -32,6 +35,13 @@ export default function WorldInfoPage() {
   const [worldDialogPrompt, setWorldDialogPrompt] = useState(''); // New state for the world description dialog's prompt
   const [aiStyleDialogPrompt, setAiStyleDialogPrompt] = useState(''); // New state for the AI style dialog's prompt
   const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
+
+  // Check for legacy data on mount
+  useEffect(() => {
+    // We only want to run this once or when specific conditions are met
+    // Logic inside checkForLegacyData handles the "only if empty" check
+    ProjectService.checkForLegacyData();
+  }, []);
 
   const generateWorld = async (prompt?: string) => {
     setIsLoading(true);
@@ -113,18 +123,22 @@ export default function WorldInfoPage() {
   };
 
   const handleClearAllData = () => {
+    // Check if we have a current project, if so, we might want to delete it or just clear content?
+    // "Clear All Data" in this context usually meant resetting the app. 
+    // Now it should probably just clear the active state content.
     clearParleyData();
     clearEntityData();
     setIsClearDataDialogOpen(false);
   };
 
   return (
-        <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center">World Information</CardTitle>
         </CardHeader>
         <CardContent>
+          <ProjectManager />
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
               <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
