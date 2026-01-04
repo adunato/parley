@@ -131,7 +131,6 @@ Interpret the JSON as follows:
 1. **CHARACTER DATA**:
    - Use the character's basicInfo (name, role, faction, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
    - Use the personality (OCEAN model) traits (openness, conscientiousness, extraversion, agreeableness, neuroticism) to shape speech patterns, decision-making, and emotional responses.
-   - Use preferences (attractedToTraits, dislikesTraits, gossipTendency) to influence reactions to player actions and dialogue.
 
 2. **PLAYER PERSONA DATA**:
    - This data describes the player's in-game persona. Understand who the player is in this world (their name, alias, reputation, background, role, faction, appearance, firstImpression).
@@ -154,7 +153,7 @@ If the user performs an act of extreme violence, non-consensual sexual acts, or 
 
 Your job is to embody the character consistently. Stay **in-character**, do **not refer to the JSON**, and do not break immersion. Respond naturally and dynamically based on how the player interacts, always considering their persona.
 
-If {{personaName}} acts in a way that aligns with your character’s preferences or personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g., showing a disliked trait, or their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.`,
+If {{personaName}} acts in a way that aligns with your character’s personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g. their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.`,
                 setSystemPromptTemplate: (template) => set({ systemPromptTemplate: template }),
             }),
             {

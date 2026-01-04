@@ -130,7 +130,7 @@ export default function CharacterConfiguration() {
     }
 
     const handleInputChange = (
-        section: keyof Character | "basicInfo" | "personality" | "preferences" | "idealMatch",
+        section: keyof Character | "basicInfo" | "personality" | "idealMatch",
         field: string,
         value: string | number | string[] | undefined
     ) => {
@@ -139,7 +139,7 @@ export default function CharacterConfiguration() {
 
             const newCharacter = { ...prev }
 
-            if (section === "basicInfo" || section === "personality" || section === "preferences" || section === "idealMatch") {
+            if (section === "basicInfo" || section === "personality" || section === "idealMatch") {
                 newCharacter[section] = {
                     ...newCharacter[section],
                     [field]: value,
@@ -168,7 +168,7 @@ export default function CharacterConfiguration() {
             },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
             idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
-            preferences: { attractedToTraits: [], dislikesTraits: [], gossipTendency: "low" },
+            // preferences removed
             relationships: [],
         }
         addCharacter(newCharacter)
@@ -251,11 +251,7 @@ export default function CharacterConfiguration() {
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
 
-                    preferences: {
-                        attractedToTraits: data.character.preferences?.attractedToTraits || [],
-                        dislikesTraits: data.character.preferences?.dislikesTraits || [],
-                        gossipTendency: data.character.preferences?.gossipTendency || "low",
-                    },
+
                 };
 
                 if (selectedId && selectedCharacter) {
@@ -888,51 +884,7 @@ export default function CharacterConfiguration() {
                                 </Card>
 
                                 {/* Preferences */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Settings className="w-5 h-5" />
-                                            Preferences
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="attractedToTraits">Attracted To Traits (comma-separated)</Label>
-                                            <Input
-                                                id="attractedToTraits"
-                                                value={displayCharacter.preferences?.attractedToTraits?.join(", ") || ""}
-                                                onChange={(e) => handleInputChange("preferences", "attractedToTraits", e.target.value.split(",").map(s => s.trim()))}
-                                                disabled={!isEditing}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="dislikesTraits">Dislikes Traits (comma-separated)</Label>
-                                            <Input
-                                                id="dislikesTraits"
-                                                value={displayCharacter.preferences?.dislikesTraits?.join(", ") || ""}
-                                                onChange={(e) => handleInputChange("preferences", "dislikesTraits", e.target.value.split(",").map(s => s.trim()))}
-                                                disabled={!isEditing}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="gossipTendency">Gossip Tendency</Label>
-                                            <Select
-                                                value={displayCharacter.preferences?.gossipTendency || "low"}
-                                                onValueChange={(value) => handleInputChange("preferences", "gossipTendency", value)}
-                                                disabled={!isEditing}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="low">Low</SelectItem>
-                                                    <SelectItem value="medium">Medium</SelectItem>
-                                                    <SelectItem value="high">High</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+
                             </div>
                         </div>
                     </>
