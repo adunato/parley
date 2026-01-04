@@ -36,4 +36,10 @@ This Change Request focuses on optimizing the prompts used in the application.
 - Create `config/ocean-traits.ts` to define these descriptions across 5 levels (e.g., Very Low, Low, Moderate, High, Very High).
 - Update `GenerateSystemPrompt` to substitute numbers with these descriptions.
 
+### 3.6 PRQC Trait Descriptions
+- Replace raw numerical values for relationship metrics (PRQC) with descriptive text in the prompt.
+- Create `config/prqc-traits.ts` to define these descriptions across 5 levels.
+- Update `GenerateSystemPrompt` to substitute numbers with these descriptions.
+
+
 
