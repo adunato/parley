@@ -1,5 +1,5 @@
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
 import { useParleyStore } from "@/lib/store";
@@ -26,6 +26,15 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
   const { selectedChatCharacter, selectedChatPersona } = useEntityStore();
   const messagesRef = useRef<Message[]>([]);
 
+  // Local state for 'Actor' functionality
+  const [isAssessing, setIsAssessing] = useState(false);
+  const [internalRelationship, setInternalRelationship] = useState<Relationship | undefined>(relationship);
+
+  // Sync internal relationship when prop changes
+  useEffect(() => {
+    setInternalRelationship(relationship);
+  }, [relationship]);
+
   const debounceMessages = useDebouncedCallback(
     (messages: Message[]) => setChatMessages(messages),
     300
@@ -43,12 +52,12 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     };
   }, [debounceMessages, debounceInput]);
 
-  const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput, stop } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,
-      relationship: relationship,
+      relationship: internalRelationship,
       worldDescription: worldDescription,
       aiStyle: aiStyle,
       chatModel: chatModel,
@@ -57,6 +66,71 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     initialMessages: chatMessages,
     initialInput: chatInput,
   });
+
+  // Emergency Brake Monitoring
+  useEffect(() => {
+    // Check if the stream or message list has an assessment trigger
+    const monitorAssessment = () => {
+      // Only check the latest message from assistant
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage || lastMessage.role !== 'assistant') return;
+
+      const hasTrigger = lastMessage.content.includes('[EVENT: TRIGGER_ASSESSMENT]');
+
+      if (hasTrigger) {
+        if (status === 'streaming') {
+          stop(); // Stop generation immediately
+        }
+        // Trigger assessment if not already assessing
+        if (!isAssessing) {
+          handleEmergencyAssessment();
+        }
+      }
+    };
+
+    monitorAssessment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, status]);
+
+  const handleEmergencyAssessment = async () => {
+    // Double check to prevent multiple calls
+    if (isAssessing || !selectedChatCharacter || !selectedChatPersona || !internalRelationship) return;
+
+    setIsAssessing(true);
+
+    try {
+      const response = await fetch('/api/engine/process-scene', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatHistory: messages,
+          character: selectedChatCharacter,
+          persona: selectedChatPersona,
+          currentRelationship: internalRelationship,
+          modelName: chatModel
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.delta) {
+          const newRel = {
+            ...internalRelationship,
+            satisfaction: Math.max(0, Math.min(100, internalRelationship.satisfaction + (data.delta.satisfaction || 0))),
+            commitment: Math.max(0, Math.min(100, internalRelationship.commitment + (data.delta.commitment || 0))),
+            intimacy: Math.max(0, Math.min(100, internalRelationship.intimacy + (data.delta.intimacy || 0))),
+            trust: Math.max(0, Math.min(100, internalRelationship.trust + (data.delta.trust || 0))),
+            passion: Math.max(0, Math.min(100, internalRelationship.passion + (data.delta.passion || 0))),
+          };
+          setInternalRelationship(newRel);
+        }
+      }
+    } catch (e) {
+      console.error("Emergency Assessment Failed", e);
+    } finally {
+      setIsAssessing(false);
+    }
+  };
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -67,7 +141,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     debounceInput(input);
   }, [input, debounceInput]);
 
-  const isLoading = status === "submitted" || status === "streaming"
+  const isLoading = status === "submitted" || status === "streaming" || isAssessing
 
   // Scroll to bottom whenever messages change
   const scrollToBottom = () => {
@@ -114,6 +188,11 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
             )}
             {selectedChatCharacter ? selectedChatCharacter.basicInfo.name : title}
           </CardTitle>
+          {isAssessing && (
+            <span className="text-sm text-amber-600 font-semibold animate-pulse flex items-center">
+              ⚠ Assessing Behavior...
+            </span>
+          )}
         </div>
       </CardHeader>
 
