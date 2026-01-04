@@ -61,7 +61,13 @@ The data flow is circular, occurring in three distinct phases per gameplay inter
 * **Input:** Full Chat History of the scene.  
 * **Process (Analyst):** LLM summarization to generate a **Scene Report** (Traits displayed).  
 * **Process (Judge):** Deterministic code calculates the mathematical impact of those traits using the **Sensitivity Matrix**.  
-* **Output:** Updates the PRQC values in the Runtime State.
+*   **Output:** Updates the PRQC values in the Runtime State.
+
+### **Phase 4: Emergency Interrupt (Conditional)**
+
+*   **Trigger:** Triggered **during** Phase 2 if the Actor detects a critical boundary violation.
+*   **Process:** Immediately pauses Phase 2 and invokes Phase 3 (Analyst/Judge) on the partial scene.
+*   **Result:** Forces a premature cycle completion and restarts Phase 1 (Director) with new constraints.
 
 ## **4. Data Flows**
 
@@ -162,6 +168,26 @@ The persistent "Soul" of the relationship.
   },
   "memory_tags": ["Lied about artifact", "Saved my life"]
 }
+```
+
+### **4.4 Emergency Interrupt (Real-Time Safety)**
+
+**Event Sequence**
+| Step | Component | Input | Action | Output |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Actor (LLM) | User Input | Generates response and detects boundary violation (e.g., violence). | `AIMessage` + `[EVENT: TRIGGER_ASSESSMENT]` |
+| 2 | Stream Monitor | `AIMessage` | Detects the trigger token. | `InterruptSignal` |
+| 3 | Game Client | `InterruptSignal` | Pauses UI, stops generation. | `PartialChatHistory` |
+| 4 | Analyst & Judge | `PartialChatHistory` | Runs immediate assessment (See 4.3). | `UpdatedRuntimeState` |
+| 5 | Director | `UpdatedRuntimeState` | Generates new System Prompt. | `NewSystemPrompt` |
+
+**Data Models**
+
+**The Event Trigger Token**
+A specific string appended to the stream to signal the client.
+
+```text
+[EVENT: TRIGGER_ASSESSMENT]
 ```
 
 ## **5. Processing Logic**
@@ -265,19 +291,13 @@ def CalculateSceneImpact(SceneReport, Character, Relationship):
     return Relationship
 ```
 
-## **6\. Emergency Interrupts (Real-Time Safety)**
+### **5.4 Emergency Interrupt Logic (Real-Time Safety)**
 
 While the system is primarily asynchronous, certain actions require immediate feedback.
 
-The Trigger Mechanism:  
-The Actor LLM is instructed to append a specific flag if a boundary is crossed.
-
-* **Instruction:** "If the user performs an act of extreme violence or confesses a major secret, append \[EVENT: TRIGGER\_ASSESSMENT\] to your response."
-
-**The Handler:**
-
-1. Game Client detects \[EVENT: TRIGGER\_ASSESSMENT\].  
-2. Game Client **pauses** the chat.  
-3. Game Client triggers the **Analyst & Judge** immediately on the partial scene history.  
-4. Game Client triggers the **Director** to regenerate the System Prompt based on the *new* stats.  
-5. Game Client resumes chat with the updated personality state.
+**Algorithm: The Handler Loop**
+1.  **Trigger:** Actor (LLM) appends `[EVENT: TRIGGER_ASSESSMENT]` (as defined in 4.2).
+2.  **Pause:** Client detects token and pauses user input.
+3.  **Analyze (Partial):** Client sends partial history to **Analyst & Judge** (See 5.3).
+4.  **Re-Direct:** Client triggers **Director** (See 5.1) with new state to generate a fresh Prompt.
+5.  **Resume:** Client resumes session with new personality/guardrails.
