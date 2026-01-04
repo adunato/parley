@@ -177,5 +177,66 @@ type PRQC = {
 ```
 *Note: The existing codebase may need migration to ensure these 5 specific keys exist on the relationship object.*
 
-## 5. Implementation Roadmap
+## 5. LLM Prompts
+
+### 5.1 The Actor System Prompt
+The final system prompt sent to the Chat LLM is a composite of static context and dynamic Director instructions.
+
+**Structure:**
+```text
+You are {{characterName}}.
+{{character}}
+{{persona}}
+{{world}}
+
+--- RELATIONSHIP CONTEXT ---
+{{relationship}}
+
+--- BEHAVIORAL CONTROLS (THE DIRECTOR) ---
+{{instructions}}
+
+--- EMERGENCY SAFETY ---
+If the user performs an act of extreme violence, non-consensual sexual acts, or confesses a major secret that fundamentally changes the narrative, you MUST append the following token to your response:
+[EVENT: TRIGGER_ASSESSMENT]
+```
+
+*   **Gap Analysis:** The current codebase (`src/lib/prompts/chatPrompts.ts`) supports the `{{instructions}}` placeholder but does **not** yet include the specific "Emergency Safety" text in the default template. This must be added to the client-side default configuration.
+
+### 5.2 The Analyst System Prompt
+Used by `lib/engine/analyst.ts` to generate the Scene Report.
+
+**Current Implementation (`src/lib/engine/analyst.ts`):**
+```text
+You are the Analyst Engine for a relationship simulation.
+Your task is to analyze the RECENT CHAT HISTORY (Scene) between a Player and a Character.
+
+Output a JSON object with:
+1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score representing the PLAYER'S behavior during this scene.
+   - Include standard OCEAN traits.
+   - Include other relevant traits: Aggression, Flirtation, Support, Vulnerability, Dishonesty, Generosity.
+   - 0.0 = Not present / Opposite.
+   - 1.0 = Strongest display of this trait.
+   
+2. "major_events": A list of strings describing key events, revelations, or actions that occurred. Focus on things that would impact a long-term relationship.
+
+Example Output:
+{
+  "aggregate_traits": { "Extraversion": 0.8, "Flirtation": 0.7 },
+  "major_events": ["Player complimented the Character's outfit."]
+}
+```
+
+### 5.3 The Director Output (Example)
+The Director does not use an LLM. It outputs a string block injected into `{{instructions}}`.
+
+**Example Output:**
+```text
+[RULE: low_trust_protocol] 
+Trust is CRITICAL (15/100). Do not believe the user's promises without physical proof. Be skeptical.
+
+[RULE: high_neuroticism]
+You are currently feeling anxious. Interpret silence as disapproval.
+```
+
+## 6. Implementation Roadmap
 See `Implementation-Plan.md` for the phased execution steps.
