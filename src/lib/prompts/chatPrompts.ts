@@ -2,6 +2,7 @@ import { Character, ChatSummary, Persona as PlayerPersona, Relationship } from "
 import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
 import { PromptStore } from "../store/promptStore";
 import { getOceanDescription } from "../../../config/ocean-traits";
+import { getPrqcDescription } from "../../../config/prqc-traits";
 
 export const generateSystemPrompt = (
     character: Character,
@@ -14,8 +15,20 @@ export const generateSystemPrompt = (
     actingInstructions?: string
 ) => {
     const characterJson = JSON.stringify(character, null, 2);
+
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
-    const relationshipJson = JSON.stringify(relationship, null, 2);
+
+    // Create a new relationship object with descriptive values instead of raw numbers for PRQC
+    const relationshipDescriptive = {
+        ...relationship,
+        satisfaction: `${getPrqcDescription('satisfaction', relationship.satisfaction)}`,
+        commitment: `${getPrqcDescription('commitment', relationship.commitment)}`,
+        intimacy: `${getPrqcDescription('intimacy', relationship.intimacy)}`,
+        trust: `${getPrqcDescription('trust', relationship.trust)}`,
+        passion: `${getPrqcDescription('passion', relationship.passion)}`,
+    };
+    const relationshipJson = JSON.stringify(relationshipDescriptive, null, 2);
+
     const characterBasicInfoJson = JSON.stringify(character.basicInfo, null, 2);
 
 
