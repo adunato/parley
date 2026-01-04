@@ -164,50 +164,106 @@ The persistent "Soul" of the relationship.
 }
 ```
 
-## **5\. Processing Logic**
+## **5. Processing Logic**
 
-### **5.1 The Director Logic (Prompt Generation)**
+### **5.1 The Director Logic (Rule Engine)**
 
-This function runs **before** the chat window opens.
+The Director operates on a "filtering" basis, not a generative one. It selects pre-written instructions based on state conditions.
 
-def GenerateSystemPrompt(Character, Relationship):  
-    instructions \= \[\]  
-      
-    \# 1\. Identity Check  
-    if Character.OCEAN.Neuroticism \> 75:  
-        instructions.append(Catalogue.Get("neuroticism\_high\_filter"))  
-          
-    \# 2\. State Check  
-    if Relationship.Trust \< 20:  
-        instructions.append(Catalogue.Get("trust\_low\_guardrail"))  
-          
-    \# 3\. Intersection Check  
-    if Character.OCEAN.Conscientiousness \> 80 and Relationship.Satisfaction \< 30:  
-        instructions.append(Catalogue.Get("resentful\_servant\_protocol"))  
-          
-    return ConstructPrompt(instructions)
+**Algorithm: Rule Selection**
+1.  **Fetch Rules:** Load all definitions from `Instruction Catalogue`.
+2.  **Evaluate:** For each rule, evaluate `condition(Character, Relationship)`.
+    *   *Logic:* `IF (Rule.Condition == TRUE) THEN Keep Rule`
+3.  **Prioritize:** (Optional) Sort by priority flag if defined.
+4.  **Construct:** Concatenate `Rule.Instruction` text blocks into the final system prompt.
 
-### **5.2 The Judge Logic (Math Calculation)**
+**Pseudo-Code Representation**
+```python
+def GenerateSystemPrompt(Character, Relationship):
+    active_instructions = []
+    
+    for rule in InstructionCatalogue:
+        # Evaluation Logic
+        if rule.evaluate_condition(Character, Relationship):
+            active_instructions.append(rule.text)
+            
+    # Assembly Logic
+    return " ".join(active_instructions)
+```
 
-This function runs **after** the scene concludes. It uses the SceneReport to update the PRQC stats.
+### **5.2 The Actor Logic (Stream Monitoring)**
 
-def CalculateSceneImpact(SceneReport, Character, Relationship):  
-    impact\_deltas \= {Trust: 0, Satisfaction: 0, ...}  
-      
-    for trait, magnitude in SceneReport.aggregate\_traits:  
-        \# 1. Sensitivity Check (Compare User Action vs Ideal Match)  
-        \# We compare the trait to the Character's *Ideal Match*, not their own personality.  
-        multiplier = SensitivityMatrix.Get(Character.IdealMatch, trait)  
-          
-        \# 2\. Routing (Which stat does this affect?)  
-        targets \= RoutingTable.GetTargets(trait)  
-          
-        \# 3\. Calculation  
-        for target in targets:  
-             impact\_deltas\[target\] \+= magnitude \* multiplier  
-               
-    \# 4\. Apply Updates  
-    Relationship.Apply(impact\_deltas)
+The Actor is primarily the LLM generation process, but the application layer must enforce safety via stream monitoring.
+
+**Algorithm: Trigger Detection**
+1.  **Buffer Stream:** Maintain a rolling buffer of the last N tokens/characters.
+2.  **Scan:** Check if buffer contains `[EVENT: TRIGGER_ASSESSMENT]`.
+3.  **Interrupt:** If found, close socket, discard remaining generation, and flag `SceneEnd`.
+
+### **5.3 The Judge Logic (Mathematical Impact)**
+
+This is the core deterministic engine that converts "Narrative" (Traits) into "Numbers" (PRQC).
+
+**Formula 1: Sensitivity Calculation (The Multiplier)**
+How much does the Character *care* about this specific behavior? We compare the User's actions against the Character's **Ideal Match**.
+
+*   **Inputs:**
+    *   `UserTraitValue` (0.0 to 1.0) - From Scene Report.
+    *   `IdealMatchValue` (0.0 to 1.0) - From Character Profile.
+*   **Logic:**
+    *   High alignment (User is what Character wants) -> **> 1.0 Multiplier (Bonus)**
+    *   Low alignment (User is opposite of what Character wants) -> **< 1.0 Multiplier (Penalty/Dampening)**
+    *   Neutral -> **1.0 Multiplier**
+
+*   **Calculation Logic (Inverse Distance):**
+    We calculate how close the User's behavior was to the Ideal.
+    1.  `Distance = |IdealMatchValue - UserTraitValue|` (Range 0.0 to 1.0)
+    2.  `Alignment = 1.0 - Distance` (Range 1.0 to 0.0)
+    3.  `Multiplier = 0.5 + Alignment` (Range 0.5 to 1.5)
+
+    *Example:*
+    *   Ideal: 0.9 (Loves Extroverts)
+    *   User: 0.8 (Highly Extroverted) -> Distance 0.1 -> Multiplier **1.4** (Strong Bonus)
+    *   User: 0.1 (Introverted) -> Distance 0.8 -> Multiplier **0.7** (Dampened)
+
+**Formula 2: Routing (The Targets)**
+A single trait can affect multiple relationship dimensions.
+
+*   **Logic:**
+    `TargetMetrics[] = RoutingTable[TraitName]`
+    *   *Example:* "Aggression" -> `["Trust", "Satisfaction"]`
+
+**Formula 3: Impact Application (The Delta)**
+Calculate the change for each targeted metric.
+
+*   **Calculation (Per Target):**
+    `Delta = UserTraitValue * Multiplier`
+*   **Update:**
+    `NewMetricValue = Clamp(OldMetricValue + Delta, 0, 100)`
+
+**Complete Execution Flow (Pseudo-Code)**
+```python
+def CalculateSceneImpact(SceneReport, Character, Relationship):
+    
+    for TraitName, TraitValue in SceneReport.AggregateTraits:
+        
+        # 1. Determine Sensitivity (The "Why")
+        # We check against the IDEAL MATCH, not the character's own personality.
+        IdealVal = Character.IdealMatch[TraitName] 
+        Multiplier = SensitivityMatrix.Get(IdealVal, TraitValue)
+        
+        # 2. Determine Targets (The "Where")
+        Targets = RoutingTable[TraitName]
+        
+        # 3. Apply Impact (The "How Much")
+        for MetricKey in Targets:
+             Delta = TraitValue * Multiplier
+             
+             # Apply to current state
+             Relationship[MetricKey] = Loop.Clamp(Relationship[MetricKey] + Delta, 0, 100)
+             
+    return Relationship
+```
 
 ## **6\. Emergency Interrupts (Real-Time Safety)**
 
