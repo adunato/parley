@@ -63,62 +63,106 @@ The data flow is circular, occurring in three distinct phases per gameplay inter
 * **Process (Judge):** Deterministic code calculates the mathematical impact of those traits using the **Sensitivity Matrix**.  
 * **Output:** Updates the PRQC values in the Runtime State.
 
-## **4\. Data Models**
+## **4. Data Flows**
 
-### **4.1 The Instruction Catalogue**
+### **4.1 The Director (Pre-Scene)**
 
-The database of logic rules.
+**Event Sequence**
+| Step | Component | Input | Action | Output |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Game Client | Character State (OCEAN + PRQC) | Requests a tailored System Prompt for the upcoming scene. | `DirectorRequest` |
+| 2 | Director Engine | `DirectorRequest` + `Instruction Catalogue` | Evaluates state against conditional rules (e.g., "If Trust < 20..."). | Matches List |
+| 3 | Director Engine | Matches List | Compiles the active instructions into a coherent system prompt. | `SystemPrompt` (String) |
 
-{  
-  "rules": \[  
-    {  
-      "id": "trust\_low\_guardrail",  
-      "condition": "Trust \< 20",  
-      "instruction": "HARD CONSTRAINT: You are suspicious. Do not believe unverifiable statements. Demand proof."  
-    },  
-    {  
-      "id": "neuroticism\_high\_filter",  
-      "condition": "OCEAN.Neuroticism \> 75",  
-      "instruction": "Interpret ambiguity as a threat. If the user is vague, assume the worst."  
-    },  
-    {  
-      "id": "ideal\_match\_bonus",  
-      "condition": "User.LastSceneTrait \== Character.IdealTrait",  
-      "instruction": "The user recently impressed you. Be slightly more receptive than your stats would normally allow."  
-    }  
-  \]  
+**Data Models**
+
+**The Instruction Catalogue (Rule Definition)**
+The database of conditional logic that drives the Director.
+
+```json
+{
+  "rules": [
+    {
+      "id": "trust_low_guardrail",
+      "condition": "Relationship.Trust < 20",
+      "instruction": "HARD CONSTRAINT: You are suspicious. Do not believe unverifiable statements. Demand proof."
+    },
+    {
+      "id": "neuroticism_high_filter",
+      "condition": "Character.OCEAN.Neuroticism > 75",
+      "instruction": "Interpret ambiguity as a threat. If the user is vague, assume the worst."
+    },
+    {
+      "id": "ideal_match_bonus",
+      "condition": "User.LastSceneTrait == Character.IdealMatch.PrimaryTrait",
+      "instruction": "The user recently impressed you. Be slightly more receptive than your stats would normally allow."
+    }
+  ]
 }
+```
 
-### **4.2 The Scene Report**
+### **4.2 The Actor (Real-Time)**
 
-The output of the Analyst LLM after the conversation.
+**Event Sequence**
+| Step | Component | Input | Action | Output |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | User | Text Input | Sends a chat message. | `UserMessage` |
+| 2 | Actor (LLM) | `SystemPrompt` + `ChatHistory` | Generates a response while adhering to the Director's guardrails. | `AIMessage` (Stream) |
+| 3 | Stream Monitor | `AIMessage` Stream | Scans for emergency flags (e.g., violence, broken rules). | `EventTrigger` (Optional) |
 
-{  
-  "scene\_id": "1024",  
-  "summary": "The user tried to convince the character to steal the artifact. The character refused due to low trust.",  
-  "aggregate\_traits": {  
-    "Openness": 0.8,  
-    "Conscientiousness": 0.6,  
-    "Extraversion": 0.4  
-  },  
-  "major\_events": \["User proposed theft", "User lied about security"\]  
+**Data Models**
+
+**The Event Trigger (Emergency Brake)**
+A token appended to the stream if a critical boundary is crossed.
+
+```text
+[EVENT: TRIGGER_ASSESSMENT]
+```
+
+### **4.3 The Analyst & Judge (Post-Scene)**
+
+**Event Sequence**
+| Step | Component | Input | Action | Output |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Game Client | `ChatHistory` | Detects scene end and submits history for processing. | `AnalysisRequest` |
+| 2 | Analyst (LLM) | `ChatHistory` | Summarizes the interaction and scores the user's aggregate behavior key traits. | `SceneReport` |
+| 3 | Judge (Engine) | `SceneReport` + `IdealMatch` + `Matrices` | 1. Compares User Traits vs. Character's Ideal Match (Sensitivity).<br>2. Maps Traits to Relationship Stats (Routing).<br>3. Calculates numeric impact. | `ImpactDeltas` |
+| 4 | State Manager | `ImpactDeltas` + `CurrentState` | Applies the deltas to the persistent relationship values (PRQC). | `NewRuntimeState` |
+
+**Data Models**
+
+**The Scene Report (Analyst Output)**
+The psychological summary of the user's behavior during the scene.
+
+```json
+{
+  "scene_id": "1024",
+  "summary": "The user tried to convince the character to steal the artifact. The character refused due to low trust.",
+  "aggregate_traits": {
+    "Openness": 0.8,
+    "Conscientiousness": 0.6,
+    "Aggression": 0.2
+  },
+  "major_events": ["User proposed theft", "User lied about security"]
 }
+```
 
-### **4.3 The Runtime State**
+**The Runtime State (PRQC)**
+The persistent "Soul" of the relationship.
 
-The persistent memory of the relationship.
-
-{  
-  "target\_id": "Player\_One",  
-  "metrics": {  
-    "Satisfaction": 45,  
-    "Commitment": 80,  
-    "Intimacy": 30,  
-    "Trust": 15,  
-    "Passion": 10  
-  },  
-  "memory\_tags": \["Lied about artifact", "Saved my life"\]  
+```json
+{
+  "target_id": "Player_One",
+  "relationship_metrics": {
+    "Satisfaction": 45,  // Current happiness with interaction
+    "Commitment": 80,    // Long term willingness to stay
+    "Intimacy": 30,      // Emotional depth/secret sharing
+    "Trust": 15,         // Reliability/Belief in user
+    "Passion": 10        // Physical/Emotional drive
+  },
+  "memory_tags": ["Lied about artifact", "Saved my life"]
 }
+```
 
 ## **5\. Processing Logic**
 
