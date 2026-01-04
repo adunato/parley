@@ -40,11 +40,7 @@ export interface Character {
   id: string;
   basicInfo: BasicInfo;
   personality: Personality;
-  preferences: {
-    attractedToTraits: string[];
-    dislikesTraits: string[];
-    gossipTendency: "low" | "medium" | "high";
-  };
+
   idealMatch: Personality;
   relationships: Relationship[];
 }

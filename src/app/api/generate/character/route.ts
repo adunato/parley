@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       basicInfo: parsedResult.basicInfo,
       personality: parsedResult.personality,
       idealMatch: parsedResult.idealMatch,
-      preferences: parsedResult.preferences,
+
       relationships: []
     }
 

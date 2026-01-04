@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { SettingsTabs } from "@/components/settings/SettingsTabs";
 import { PromptConfig } from "@/lib/store/promptStore";
+import { useParleyStore } from "@/lib/store";
 
 interface Model {
   id: string;
@@ -15,6 +16,7 @@ export default function SettingsPage() {
   const [comfyuiModels, setComfyuiModels] = useState<Model[]>([]);
   const [prompts, setPrompts] = useState<Record<string, PromptConfig>>({});
   const [loading, setLoading] = useState(true);
+  const { setSystemPromptTemplate } = useParleyStore();
 
   async function fetchModels() {
     try {
@@ -35,8 +37,10 @@ export default function SettingsPage() {
       const response = await fetch("/api/settings/prompts");
       const data = await response.json();
       setPrompts(data);
+      return data;
     } catch (error) {
       console.error("Failed to fetch prompts", error);
+      return {};
     }
   }
 
@@ -56,7 +60,10 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, template })
       });
-      await fetchPrompts(); // Reload to ensure sync
+      const updatedPrompts = await fetchPrompts(); // Reload to ensure sync
+      if (id === 'chat_system') {
+        setSystemPromptTemplate(template);
+      }
     } catch (error) {
       console.error("Failed to save prompt", error);
     }
@@ -69,7 +76,10 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
       });
-      await fetchPrompts(); // Reload to get default
+      const updatedPrompts = await fetchPrompts(); // Reload to get default
+      if (id === 'chat_system' && updatedPrompts['chat_system']) {
+        setSystemPromptTemplate(updatedPrompts['chat_system'].template);
+      }
     } catch (error) {
       console.error("Failed to reset prompt", error);
     }

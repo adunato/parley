@@ -29,11 +29,7 @@ async function runTest() {
       agreeableness: 50,
       neuroticism: 50,
     },
-    preferences: {
-      attractedToTraits: ["courage", "kindness"],
-      dislikesTraits: ["deceit", "cowardice"],
-      gossipTendency: "low",
-    },
+
     relationships: [],
   };
 
