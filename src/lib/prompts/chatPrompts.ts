@@ -15,6 +15,9 @@ export const generateSystemPrompt = (
     const characterJson = JSON.stringify(character, null, 2);
     const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
     const relationshipJson = JSON.stringify(relationship, null, 2);
+    const characterBasicInfoJson = JSON.stringify(character.basicInfo, null, 2);
+    const characterPersonalityJson = JSON.stringify(character.personality, null, 2);
+    const characterIdealMatchJson = JSON.stringify(character.idealMatch, null, 2);
 
     let worldSection = '';
     if (worldDescription) {
@@ -38,6 +41,9 @@ export const generateSystemPrompt = (
     const substitutions: Record<string, string> = {
         '{{characterName}}': character.basicInfo.name,
         '{{character}}': characterJson,
+        '{{characterBasicInfo}}': characterBasicInfoJson,
+        '{{characterPersonality}}': characterPersonalityJson,
+        '{{characterIdealMatch}}': characterIdealMatchJson,
         '{{personaName}}': playerPersona.basicInfo.name,
         '{{persona}}': playerPersonaJson,
         '{{relationship}}': relationshipJson,

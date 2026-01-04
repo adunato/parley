@@ -24,3 +24,10 @@ This Change Request focuses on optimizing the prompts used in the application.
 - Remove instructions referencing `attractedToTraits`, `dislikesTraits`, and `gossipTendency`.
 - Update `GenerateSystemPrompt` to exclude these fields.
 
+### 3.4 Data Contextualization
+- Break down `{{character}}` variable in the system prompt into granular sections:
+    - `{{characterBasicInfo}}`: Contains `name`, `role`, `background`, etc.
+    - `{{characterPersonality}}`: Contains OCEAN traits.
+    - `{{characterIdealMatch}}`: Contains ideal match traits.
+- Update `chat_system` prompt template to use these new variables with descriptive headers to provide better context to the LLM.
+

@@ -26,12 +26,23 @@ export const DEFAULT_PROMPTS: Record<PromptId, PromptConfig> = {
     chat_system: {
         id: 'chat_system',
         description: 'The main system instruction for the chat character.',
-        variables: ['characterName', 'character', 'personaName', 'persona', 'relationship', 'world', 'style', 'summaries', 'instructions'],
+        variables: ['characterName', 'characterBasicInfo', 'characterPersonality', 'characterIdealMatch', 'personaName', 'persona', 'relationship', 'world', 'style', 'summaries', 'instructions'],
         template: `You are simulating an NPC in a narrative-driven RPG world. Your task is to fully roleplay {{characterName}} based on the structured data provided below.
 
---- CHARACTER DATA ---
-{{character}}
-----------------------
+--- CHARACTER IDENTITY ---
+{{characterBasicInfo}}
+Use the character's basicInfo (name, role, faction, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
+--------------------------
+
+--- CHARACTER PERSONALITY ---
+{{characterPersonality}}
+Use the personality (OCEAN model) traits (openness, conscientiousness, extraversion, agreeableness, neuroticism) to shape speech patterns, decision-making, and emotional responses.
+-----------------------------
+
+--- CHARACTER IDEAL MATCH ---
+{{characterIdealMatch}}
+Use the ideal match traits to determine romantic compatibility.
+-----------------------------
 
 --- PLAYER PERSONA DATA ---
 {{persona}}
@@ -53,9 +64,7 @@ export const DEFAULT_PROMPTS: Record<PromptId, PromptConfig> = {
 
 Interpret the JSON as follows:
 
-1. **CHARACTER DATA**:
-   - Use the character's basicInfo (name, role, faction, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
-   - Use the personality (OCEAN model) traits (openness, conscientiousness, extraversion, agreeableness, neuroticism) to shape speech patterns, decision-making, and emotional responses.
+
 
 2. **PLAYER PERSONA DATA**:
    - This data describes the player's in-game persona. Understand who the player is in this world (their name, alias, reputation, background, role, faction, appearance, firstImpression).
