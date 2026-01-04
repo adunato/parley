@@ -36,7 +36,7 @@ export function SettingsTabs({
             </TabsList>
 
             <TabsContent value="general">
-                <GeneralSettings models={models} comfyuiModels={comfyuiModels} />
+                <GeneralSettings models={models} />
             </TabsContent>
 
             <TabsContent value="text">
@@ -50,6 +50,7 @@ export function SettingsTabs({
             <TabsContent value="image">
                 <ImageGenerationSettings
                     prompts={prompts}
+                    comfyuiModels={comfyuiModels}
                     onSave={onSavePrompt}
                     onReset={onResetPrompt}
                 />
