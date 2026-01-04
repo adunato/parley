@@ -14,7 +14,7 @@ Your task is to analyze the RECENT CHAT HISTORY (Scene) between a Player and a C
 Output a JSON object with:
 1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score representing the PLAYER'S behavior during this scene.
    - Include standard OCEAN traits (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism) if applicable.
-   - Include other relevant traits if strongly present: Aggression, Flirtation, Support, Vulnerability, Dishonesty, Generosity.
+   - Include other relevant traits if strongly present: Aggression, Flirtation, Support.
    - 0.0 = Not present / Opposite.
    - 1.0 = Strongest display of this trait.
    
