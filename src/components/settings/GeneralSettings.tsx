@@ -3,6 +3,7 @@
 import { useParleyStore } from "@/lib/store";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import { SettingsManager } from "./SettingsManager";
 
 interface Model {
     id: string;
@@ -66,6 +67,13 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                     }
                     itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
                 />
+            </section>
+
+            <section className="pt-4 border-t">
+                <h2 className="text-xl font-semibold mb-2">Data Management</h2>
+                <div className="flex gap-4">
+                    <SettingsManager />
+                </div>
             </section>
         </div>
     );
