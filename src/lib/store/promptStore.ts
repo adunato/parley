@@ -26,7 +26,7 @@ export const DEFAULT_PROMPTS: Record<PromptId, PromptConfig> = {
     chat_system: {
         id: 'chat_system',
         description: 'The main system instruction for the chat character.',
-        variables: ['characterName', 'characterBasicInfo', 'characterPersonality', 'characterIdealMatch', 'personaName', 'persona', 'relationship', 'world', 'style', 'summaries', 'instructions'],
+        variables: ['characterName', 'characterBasicInfo', 'characterPersonality', 'characterIdealMatch', 'personaName', 'persona', 'personaBasicInfo', 'relationship', 'world', 'style', 'summaries', 'instructions'],
         template: `You are simulating an NPC in a narrative-driven RPG world. Your task is to fully roleplay {{characterName}} based on the structured data provided below.
 
 --- CHARACTER IDENTITY ---
@@ -45,7 +45,7 @@ Use the ideal match traits to determine romantic compatibility.
 -----------------------------
 
 --- PLAYER PERSONA DATA ---
-{{persona}}
+{{personaBasicInfo}}
 ---------------------------
 
 --- RELATIONSHIP DATA [how {{characterName}} feels about {{personaName}}] ---
