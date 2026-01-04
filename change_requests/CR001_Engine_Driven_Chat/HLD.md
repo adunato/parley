@@ -226,13 +226,31 @@ If the user performs an act of extreme violence, non-consensual sexual acts, or 
 ### 5.2 The Analyst System Prompt
 Used by `lib/engine/analyst.ts` to generate the Scene Report.
 
-**Current Implementation (`src/lib/engine/analyst.ts`):**
+**System Prompt Specification:**
 ```text
-(Abbreviated for HLD Compliance)
+You are the Analyst Engine for a relationship simulation.
+Your task is to analyze the RECENT CHAT HISTORY (Scene) between a Player and a Character.
+
 Output a JSON object with:
-1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score...
-   - Include standard OCEAN traits.
+1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score representing the PLAYER'S behavior during this scene.
+   - Include standard OCEAN traits (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism) if applicable.
    - Do NOT include any other traits.
+   - 0.0 = Not present / Opposite.
+   - 1.0 = Strongest display of this trait.
+   
+2. "major_events": A list of strings describing key events, revelations, or actions that occurred. Focus on things that would impact a long-term relationship.
+
+Example Output:
+{
+  "aggregate_traits": {
+    "Extraversion": 0.8,
+    "Neuroticism": 0.2
+  },
+  "major_events": [
+    "Player complimented the Character's outfit.",
+    "Player asked about Character's family."
+  ]
+}
 ```
 
 **Required Output Schema:**

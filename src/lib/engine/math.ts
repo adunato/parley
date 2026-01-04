@@ -10,12 +10,7 @@ export const RoutingTable: Record<string, (keyof PRQC)[]> = {
     "Conscientiousness": ["trust", "commitment"],
     "Extraversion": ["passion", "satisfaction"],
     "Agreeableness": ["satisfaction", "trust"],
-    "Neuroticism": ["satisfaction", "commitment"], // Often negative impact if high
-
-    // Specific Behaviors (mapped from Analyst output)
-    "Aggression": ["trust", "satisfaction", "commitment"],
-    "Flirtation": ["passion", "intimacy"],
-    "Support": ["commitment", "satisfaction", "trust"]
+    "Neuroticism": ["satisfaction", "commitment"] // Often negative impact if high
 };
 
 /**
