@@ -1,38 +1,13 @@
 import { Character, Persona } from '../types';
 import { Message } from '@ai-sdk/react';
 import { generateJSON } from '../llm';
+import { PromptStore } from '../store/promptStore';
 
 export interface SceneReport {
     scene_id?: string;
     aggregate_traits: Record<string, number>; // e.g. "Openness": 0.8
     major_events: string[];
 }
-
-const ANALYST_SYSTEM_PROMPT = `You are the Analyst Engine for a relationship simulation.
-Your task is to analyze the RECENT CHAT HISTORY (Scene) between a Player and a Character.
-
-Output a JSON object with:
-1. "aggregate_traits": A dictionary mapping behavioral traits to a 0.0-1.0 score representing the PLAYER'S behavior during this scene.
-   - Include standard OCEAN traits (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism) if applicable.
-   - Do NOT include any other traits.
-   - 0.0 = Not present / Opposite.
-   - 1.0 = Strongest display of this trait.
-   
-2. "major_events": A list of strings describing key events, revelations, or actions that occurred. Focus on things that would impact a long-term relationship.
-
-Example Output:
-{
-  "aggregate_traits": {
-    "Extraversion": 0.8,
-    "Flirtation": 0.7,
-    "Neuroticism": 0.2
-  },
-  "major_events": [
-    "Player complimented the Character's outfit.",
-    "Player asked about Character's family."
-  ]
-}
-`;
 
 export async function AnalyzeScene(
     chatHistory: Message[],
@@ -46,18 +21,11 @@ export async function AnalyzeScene(
 
     const historyText = recentHistory.map(m => `${m.role}: ${m.content}`).join('\n');
 
-    const prompt = `
-${ANALYST_SYSTEM_PROMPT}
+    let prompt = PromptStore.getPrompt('analyst_system');
 
-Context:
-Character: ${character.basicInfo.name}
-Player: ${persona.basicInfo.name}
-
-Chat History:
-${historyText}
-
-Analyze the scene. Output JSON.
-`;
+    prompt = prompt.split('{{character}}').join(character.basicInfo.name);
+    prompt = prompt.split('{{persona}}').join(persona.basicInfo.name);
+    prompt = prompt.split('{{chatHistory}}').join(historyText);
 
     try {
         const result = await generateJSON(prompt, modelName);

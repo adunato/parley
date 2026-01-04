@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParleyStore } from "@/lib/store";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Combobox } from "@/components/ui/combobox";
+import { SettingsTabs } from "@/components/settings/SettingsTabs";
+import { PromptConfig } from "@/lib/store/promptStore";
 
 interface Model {
   id: string;
@@ -15,18 +12,12 @@ interface Model {
 
 export default function SettingsPage() {
   const [models, setModels] = useState<Model[]>([]);
-  const {
-    chatModel, setChatModel,
-    summarizationModel, setSummarizationModel,
-    generationModel, setGenerationModel,
-    avatarGenerationSettings, setAvatarGenerationSettings,
-    systemPromptTemplate, setSystemPromptTemplate
-  } = useParleyStore();
-
   const [comfyuiModels, setComfyuiModels] = useState<Model[]>([]);
+  const [prompts, setPrompts] = useState<Record<string, PromptConfig>>({});
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchModels() {
+  async function fetchModels() {
+    try {
       const response = await fetch("/api/models");
       const data = await response.json();
       setModels(data);
@@ -34,158 +25,71 @@ export default function SettingsPage() {
       const comfyResponse = await fetch("/api/models/comfyui");
       const comfyData = await comfyResponse.json();
       setComfyuiModels(comfyData.models.map((m: string) => ({ id: m, name: m, provider: 'ComfyUI' })));
+    } catch (error) {
+      console.error("Failed to fetch models", error);
     }
-    fetchModels();
+  }
+
+  async function fetchPrompts() {
+    try {
+      const response = await fetch("/api/settings/prompts");
+      const data = await response.json();
+      setPrompts(data);
+    } catch (error) {
+      console.error("Failed to fetch prompts", error);
+    }
+  }
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      await Promise.all([fetchModels(), fetchPrompts()]);
+      setLoading(false);
+    }
+    loadData();
   }, []);
+
+  const handleSavePrompt = async (id: string, template: string) => {
+    try {
+      await fetch("/api/settings/prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, template })
+      });
+      await fetchPrompts(); // Reload to ensure sync
+    } catch (error) {
+      console.error("Failed to save prompt", error);
+    }
+  };
+
+  const handleResetPrompt = async (id: string) => {
+    try {
+      await fetch("/api/settings/prompts/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      await fetchPrompts(); // Reload to get default
+    } catch (error) {
+      console.error("Failed to reset prompt", error);
+    }
+  };
+
+  if (loading) {
+    return <div className="container mx-auto p-4">Loading settings...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Chat Model</h2>
-        <Label htmlFor="chat-model-select" className="sr-only">Chat Model</Label>
-        <Combobox<Model>
-          items={models}
-          value={chatModel}
-          onValueChange={setChatModel}
-          placeholder="Select a chat model..."
-          filterFn={(item, query) =>
-            item.id.toLowerCase().includes(query.toLowerCase())
-          }
-          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
-        />
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Summarization Model</h2>
-        <Label htmlFor="summarization-model-select" className="sr-only">Summarization Model</Label>
-        <Combobox<Model>
-          items={models}
-          value={summarizationModel}
-          onValueChange={setSummarizationModel}
-          placeholder="Select a summarization model..."
-          filterFn={(item, query) =>
-            item.id.toLowerCase().includes(query.toLowerCase())
-          }
-          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
-        />
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Generation Model</h2>
-        <Label htmlFor="generation-model-select" className="sr-only">Generation Model</Label>
-        <Combobox<Model>
-          items={models}
-          value={generationModel}
-          onValueChange={setGenerationModel}
-          placeholder="Select a generation model..."
-          filterFn={(item, query) =>
-            item.id.toLowerCase().includes(query.toLowerCase())
-          }
-          itemToString={(item) => item.provider ? `${item.id} - ${item.name} (${item.provider})` : `${item.id} - ${item.name}`}
-        />
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">System Prompt Template</h2>
-        <div className="space-y-2">
-          <Label htmlFor="system-prompt-template">
-            Template
-            <span className="text-xs font-normal text-muted-foreground ml-2">
-              Available variables: {'{{character}}'}, {'{{persona}}'}, {'{{relationship}}'}, {'{{world}}'}, {'{{style}}'}, {'{{summaries}}'}, {'{{instructions}}'}
-            </span>
-          </Label>
-          <Textarea
-            id="system-prompt-template"
-            className="font-mono text-sm min-h-[300px]"
-            value={systemPromptTemplate}
-            onChange={(e) => setSystemPromptTemplate(e.target.value)}
-            placeholder="Enter system prompt template..."
-          />
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Avatar Generation</h2>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="width">Width</Label>
-              <Input
-                id="width"
-                type="number"
-                value={avatarGenerationSettings.width}
-                onChange={(e) => setAvatarGenerationSettings({ width: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="height">Height</Label>
-              <Input
-                id="height"
-                type="number"
-                value={avatarGenerationSettings.height}
-                onChange={(e) => setAvatarGenerationSettings({ height: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="steps">Steps</Label>
-              <Input
-                id="steps"
-                type="number"
-                value={avatarGenerationSettings.steps}
-                onChange={(e) => setAvatarGenerationSettings({ steps: parseInt(e.target.value) || 0 })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cfg">CFG Scale</Label>
-              <Input
-                id="cfg"
-                type="number"
-                step="0.1"
-                value={avatarGenerationSettings.cfg}
-                onChange={(e) => setAvatarGenerationSettings({ cfg: parseFloat(e.target.value) || 0 })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="seed">Seed (-1 for random)</Label>
-              <Input
-                id="seed"
-                type="number"
-                value={avatarGenerationSettings.seed}
-                onChange={(e) => setAvatarGenerationSettings({ seed: parseInt(e.target.value) })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="negative-prompt">Negative Prompt</Label>
-            <Textarea
-              id="negative-prompt"
-              value={avatarGenerationSettings.negativePrompt}
-              onChange={(e) => setAvatarGenerationSettings({ ...avatarGenerationSettings, negativePrompt: e.target.value })}
-              placeholder="Enter negative prompt..."
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="model">Model Checkpoint Name</Label>
-            <Combobox<Model>
-              items={comfyuiModels}
-              value={avatarGenerationSettings.model}
-              onValueChange={(value) => setAvatarGenerationSettings({ ...avatarGenerationSettings, model: value })}
-              placeholder="Select a checkpoint..."
-              filterFn={(item, query) =>
-                item.id.toLowerCase().includes(query.toLowerCase())
-              }
-              itemToString={(item) => item.id}
-            />
-          </div>
-        </div>
-      </section >
-    </div >
+      <SettingsTabs
+        models={models}
+        comfyuiModels={comfyuiModels}
+        prompts={prompts}
+        onSavePrompt={handleSavePrompt}
+        onResetPrompt={handleResetPrompt}
+      />
+    </div>
   );
 }

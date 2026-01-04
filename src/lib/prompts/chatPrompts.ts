@@ -1,5 +1,6 @@
 import { Character, ChatSummary, Persona as PlayerPersona, Relationship } from "../types";
 import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
+import { PromptStore } from "../store/promptStore";
 
 export const generateSystemPrompt = (
     character: Character,
@@ -31,8 +32,8 @@ export const generateSystemPrompt = (
         summariesSection = `--- PREVIOUS CONVERSATION SUMMARIES ---\nThis is a summary of your past conversations with ${playerPersona.basicInfo.name}. Use it to recall past events and maintain conversational continuity.\n${summariesText}\n-----------------------------------------`;
     }
 
-    // Default template fallback if empty (though caller should provide it)
-    let prompt = template || "";
+    // Default template fallback: Use provided template first, then the stored default
+    let prompt = template || PromptStore.getPrompt('chat_system');
 
     const substitutions: Record<string, string> = {
         '{{characterName}}': character.basicInfo.name,
@@ -54,5 +55,3 @@ export const generateSystemPrompt = (
 };
 
 export const getChatPrompt = (character: Character) => `Continue the conversation impersonating ${character.basicInfo.name}`;
-
-
