@@ -26,6 +26,10 @@ The project follows the standard Next.js App Router structure.
 
 When given a design document as input, you should always wait for user approval of the design before making any changes to the code.
 
+## Change Requests
+
+Each change should have a dedicated CR number (in change_requests) and associated branch. HLD should be used, even if just to capture the summary of the changes.
+
 ## Code Editing Steps
 
 1. Ask questions is you don't understand the user prompt. 
