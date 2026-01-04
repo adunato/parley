@@ -46,11 +46,11 @@ Generate a detailed character profile.`;
 };
 
 export const RELATIONSHIP_JSON_STRUCTURE = `{
-  "closeness": number,       // An integer between -100 (emotionally distant or hostile) and 100 (deeply bonded and emotionally close)
-  "sexual_attraction": number,      // An integer between -100 (strong aversion or repulsion) and 100 (strong romantic or physical sexual_attraction)
-  "respect": number,         // An integer between -100 (complete distrust or contempt) and 100 (deep respect, trust, and admiration)
-  "engagement": number,      // An integer between -100 (disinterest or boredom) and 100 (high curiosity and emotional investment)
-  "stability": number,        // An integer between -100 (chaotic, volatile, unreliable relationship) and 100 (stable, consistent, and secure connection)
+  "satisfaction": number,       // An integer between 0 (highly dissatisfied) and 100 (complete satisfaction)
+  "commitment": number,      // An integer between 0 (no commitment) and 100 (total devotion)
+  "intimacy": number,         // An integer between 0 (strangers) and 100 (deepest darkest secrets shared)
+  "trust": number,      // An integer between 0 (complete distrust) and 100 (blind faith)
+  "passion": number,        // An integer between 0 (platonic/repulsed) and 100 (intense attraction)
   "description": string        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
 }`;
 
@@ -183,8 +183,8 @@ ${chatHistoryJson}
 ${latestExchangeJson}
 ----------------------------
 
-Analyze the latest chat exchange in the context of the character, player persona, and their current relationship. Determine the delta (change) for each relationship metric (closeness, sexual_attraction, respect, engagement, stability) and provide a concise description of why these changes occurred. The description should focus on the impact of this specific exchange.
-sexual_attraction should change based on the character data - preferences - "attractedToTraits" and "dislikesTraits" which should drive the change in sexual_attraction depending on how the latest exchange relates to those traits.
+Analyze the latest chat exchange in the context of the character, player persona, and their current relationship. Determine the delta (change) for each relationship metric (satisfaction, commitment, intimacy, trust, passion) and provide a concise description of why these changes occurred. The description should focus on the impact of this specific exchange.
+passion should change based on the character data - preferences - "attractedToTraits" and "dislikesTraits" which should drive the change in passion depending on how the latest exchange relates to those traits.
 
 ${worldDescription ? `\n\n--- WORLD DESCRIPTION ---\n\n ${worldDescription}` : ''}
 

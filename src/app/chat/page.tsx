@@ -10,15 +10,17 @@ import ChatComponent from "@/components/chat-component";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
+import { SceneSummaryModal } from "@/components/scene-summary-modal";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
-import {useEntityStore} from "@/lib/entityStore";
+import { useEntityStore } from "@/lib/entityStore";
+import { PRQC } from "@/lib/types";
 
 
 export default function ChatPage() {
-    const { 
+    const {
         clearChat,
-        _hasHydrated, 
-        chatSessionId, 
+        _hasHydrated,
+        chatSessionId,
         chatMessages,
         worldDescription,
         aiStyle,
@@ -42,18 +44,18 @@ export default function ChatPage() {
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
-    const [latestDeltaDescription, setLatestDeltaDescription] = useState<string | undefined>(undefined);
 
-    useEffect(() => {
-        if (_hasHydrated && selectedChatCharacter && selectedChatPersona) {
-            const existingRelationship = selectedChatCharacter.relationships.find(rel => rel.personaId === selectedChatPersona.id);
-            if (existingRelationship) {
-                setCurrentRelationship(existingRelationship);
-            } else {
-                setCurrentRelationship(undefined);
-            }
-        }
-    }, [_hasHydrated, selectedChatCharacter, selectedChatPersona]);
+    // Phase 7: Scene Summary State
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+    const [sceneDelta, setSceneDelta] = useState<PRQC | null>(null);
+    const [sceneAnalysisDescription, setSceneAnalysisDescription] = useState<string | null>(null);
+    const [sceneAppliedTraits, setSceneAppliedTraits] = useState<string[]>([]);
+    const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
+
+    // ... (useEffect omitted)
+
+    // ... (useEffect omitted)
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
@@ -127,13 +129,41 @@ export default function ChatPage() {
 
     const handleEndChat = async () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-            // Summarize the chat
+
+            // 1. Open Modal and Start Loading
+            setIsSummaryModalOpen(true);
+            setIsLoadingSummary(true);
+
+            // 2. Run Analyst (Process Turn / Scene)
+            let analysisResult: { delta: PRQC, description: string } | null = null;
+            try {
+                const response = await fetch('/api/engine/process-scene', { // UPDATED ENDPOINT
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chatHistory: chatMessages,
+                        character: selectedChatCharacter,
+                        persona: selectedChatPersona,
+                        currentRelationship: currentRelationship,
+                        modelName: generationModel
+                    }),
+                });
+                const data = await response.json();
+                if (response.ok && data.delta) {
+                    analysisResult = { delta: data.delta, description: data.description };
+                    setSceneDelta(data.delta);
+                    setSceneAnalysisDescription(data.description);
+                    setSceneAppliedTraits(data.applied_traits || []); // Capture Traits
+                }
+            } catch (error) {
+                console.error("Error running Analyst:", error);
+            }
+
+            // 3. Generate Summary
             try {
                 const response = await fetch('/api/summarise', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chatHistory: chatMessages,
                         worldInfo: worldDescription,
@@ -145,59 +175,75 @@ export default function ChatPage() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    const newSummary = { summary: data.summary, timestamp: new Date() };
-                    
-                    const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                        if (rel.personaId === selectedChatPersona.id) {
-                            const existingSummaries = rel.chat_summaries || [];
-                            return {
-                                ...rel,
-                                chat_summaries: [...existingSummaries, newSummary],
-                            };
-                        }
-                        return rel;
-                    });
-                    
-                    // Apply both summary and relationship delta in a single update
-                    const updatedRelationshipsWithDelta = updatedRelationships.map(rel => {
-                        if (rel.personaId === selectedChatPersona.id && cumulativeRelationshipDelta) {
-                            return {
-                                ...rel,
-                                closeness: rel.closeness + cumulativeRelationshipDelta.closeness,
-                                sexual_attraction: rel.sexual_attraction + cumulativeRelationshipDelta.sexual_attraction,
-                                respect: rel.respect + cumulativeRelationshipDelta.respect,
-                                engagement: rel.engagement + cumulativeRelationshipDelta.engagement,
-                                stability: rel.stability + cumulativeRelationshipDelta.stability,
-                                description: rel.description,
-                                // Preserve the chat_summaries we just added
-                                chat_summaries: rel.chat_summaries 
-                            };
-                        }
-                        return rel;
-                    });
-
-                    const updatedCharacter = { 
-                        ...selectedChatCharacter, 
-                        relationships: updatedRelationshipsWithDelta 
-                    };
-                    updateCharacter(updatedCharacter);
-                } else {
-                    console.error('Failed to generate summary:', data.error);
+                    setSceneSummaryText(data.summary);
                 }
             } catch (error) {
-                console.error('Error generating summary:', error);
+                console.error("Error generating summary:", error);
             }
+
+            // 4. Finish Loading
+            setIsLoadingSummary(false);
         }
-        clearCumulativeRelationshipDelta();
-        setLatestDeltaDescription(undefined);
-        setIsChatActive(false);
+    };
+
+    const handleCloseSummary = () => {
+        if (selectedChatCharacter && selectedChatPersona && sceneSummaryText) {
+            const newSummary = { summary: sceneSummaryText, timestamp: new Date() };
+
+            const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
+                if (rel.personaId === selectedChatPersona.id) {
+                    // Add Summary
+                    const existingSummaries = rel.chat_summaries || [];
+                    const updatedSummaries = [...existingSummaries, newSummary];
+
+                    // Apply Delta (if exists)
+                    if (sceneDelta) {
+                        return {
+                            ...rel,
+                            satisfaction: Math.max(0, Math.min(100, rel.satisfaction + (sceneDelta.satisfaction || 0))),
+                            commitment: Math.max(0, Math.min(100, rel.commitment + (sceneDelta.commitment || 0))),
+                            intimacy: Math.max(0, Math.min(100, rel.intimacy + (sceneDelta.intimacy || 0))),
+                            trust: Math.max(0, Math.min(100, rel.trust + (sceneDelta.trust || 0))),
+                            passion: Math.max(0, Math.min(100, rel.passion + (sceneDelta.passion || 0))),
+                            chat_summaries: updatedSummaries
+                        };
+                    }
+
+                    return {
+                        ...rel,
+                        chat_summaries: updatedSummaries
+                    };
+                }
+                return rel;
+            });
+
+            const updatedCharacter = {
+                ...selectedChatCharacter,
+                relationships: updatedRelationships
+            };
+
+            updateCharacter(updatedCharacter);
+
+            // Update local state to reflect changes immediately if needed, though clearChat usually resets UI
+            const newRel = updatedRelationships.find(r => r.personaId === selectedChatPersona.id);
+            if (newRel) setCurrentRelationship(newRel);
+        }
+
+        setIsSummaryModalOpen(false);
+        setSceneDelta(null);
+        setSceneAnalysisDescription(null);
+        setSceneAppliedTraits([]);
+        setSceneSummaryText(null);
+
+        clearCumulativeRelationshipDelta(); // Just in case
         clearChat();
+        setIsChatActive(false);
     };
 
     const handleNewChat = () => {
         clearCumulativeRelationshipDelta();
+        clearCumulativeRelationshipDelta();
         clearChat();
-        setLatestDeltaDescription(undefined);
         setIsChatActive(false);
     };
 
@@ -281,62 +327,36 @@ export default function ChatPage() {
                             {selectedChatCharacter && (
                                 <CharacterTraitsDisplay
                                     personality={selectedChatCharacter.personality}
-                                    likes={selectedChatCharacter.preferences?.attractedToTraits || []}
-                                    dislikes={selectedChatCharacter.preferences?.dislikesTraits || []}
+                                    idealMatch={selectedChatCharacter.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }}
                                 />
                             )}
                             <ChatComponent
                                 chatSessionId={chatSessionId}
                                 className="flex-grow"
                                 relationship={currentRelationship}
-                                onMessageFinish={async (message, fullMessages) => {
-                                    if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
-                                        const latestExchange = {
-                                            userMessage: fullMessages[fullMessages.length - 2]?.content || "",
-                                            characterResponse: message.content,
-                                        };
-
-                                        try {
-                                            const response = await fetch('/api/generate/relationship-delta', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                    character: selectedChatCharacter,
-                                                    persona: selectedChatPersona,
-                                                    chatHistory: fullMessages,
-                                                    latestExchange,
-                                                    currentRelationship,
-                                                    worldDescription,
-                                                    aiStyle,
-                                                    generationModel
-                                                }),
-                                            });
-                                            const data = await response.json();
-                                            if (response.ok && data.relationshipDelta) {
-                                                updateCumulativeRelationshipDelta(data.relationshipDelta);
-                                                setLatestDeltaDescription(data.relationshipDelta.description);
-                                            } else {
-                                                console.error('Failed to generate relationship delta:', data.error);
-                                            }
-                                        } catch (error) {
-                                            console.error('Error generating relationship delta:', error);
-                                        }
-                                    }
-                                }}
                             />
                             {currentRelationship && selectedChatCharacter && (
                                 <RelationshipDisplay
                                     characterName={selectedChatCharacter.basicInfo.name}
                                     relationship={currentRelationship}
                                     cumulativeDeltaRelationship={cumulativeRelationshipDelta}
-                                    latestDeltaDescription={latestDeltaDescription}
-                                    
+
                                 />
                             )}
                         </div>
                     </div>
                 </div>
             )}
+
+            <SceneSummaryModal
+                isOpen={isSummaryModalOpen}
+                isLoading={isLoadingSummary}
+                onClose={handleCloseSummary}
+                relationshipDelta={sceneDelta}
+                analysisDescription={sceneAnalysisDescription}
+                sceneSummary={sceneSummaryText}
+                appliedTraits={sceneAppliedTraits}
+            />
         </div>
     );
 }

@@ -5,11 +5,10 @@ import { Personality } from "@/lib/types";
 
 interface CharacterTraitsDisplayProps {
   personality: Personality;
-  likes: string[];
-  dislikes: string[];
+  idealMatch: Personality;
 }
 
-export function CharacterTraitsDisplay({ personality, likes, dislikes }: CharacterTraitsDisplayProps) {
+export function CharacterTraitsDisplay({ personality, idealMatch }: CharacterTraitsDisplayProps) {
   return (
     <Card className="w-[500px]">
       <CardHeader>
@@ -33,26 +32,31 @@ export function CharacterTraitsDisplay({ personality, likes, dislikes }: Charact
                   }}
                 ></div>
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800">
-                  {value}
+                  {Math.round(value / 10)}
                 </div>
               </div>
             </div>
           ))}
         </div>
         <div className="grid gap-2">
-          <h3 className="text-lg font-semibold">Preferences</h3>
-          <div className="flex flex-wrap gap-2">
-            {likes.map((pref) => (
-              <Badge key={pref} className="bg-green-500 text-white">
-                {pref}
-              </Badge>
-            ))}
-            {dislikes.map((pref) => (
-              <Badge key={pref} className="bg-red-500 text-white">
-                {pref}
-              </Badge>
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold">Ideal Match</h3>
+          {idealMatch && Object.entries(idealMatch).map(([trait, value]) => (
+            <div key={trait} className="flex items-center gap-2">
+              <span className="w-32 text-sm font-medium">{trait}:</span>
+              <div className="relative flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="absolute h-full bg-blue-500"
+                  style={{
+                    width: `${Math.abs(value)}%`,
+                    left: '0',
+                  }}
+                ></div>
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800">
+                  {Math.round(value / 10)}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

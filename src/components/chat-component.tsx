@@ -1,8 +1,8 @@
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
-import { useParleyStore} from "@/lib/store";
+import { useParleyStore } from "@/lib/store";
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Send, Bot, User } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import {Relationship} from "@/lib/types";
+import { Relationship } from "@/lib/types";
 import { useEntityStore } from "@/lib/entityStore";
 
 interface ChatComponentProps {
@@ -18,14 +18,22 @@ interface ChatComponentProps {
   title?: string
   chatSessionId: number;
   relationship?: Relationship;
-  onMessageFinish?: (message: Message, fullMessages: Message[]) => void;
 }
 
-export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship, onMessageFinish }: ChatComponentProps) {
+export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel } = useParleyStore();
-  const { selectedChatCharacter, selectedChatPersona} = useEntityStore();
+  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore();
+  const { selectedChatCharacter, selectedChatPersona } = useEntityStore();
   const messagesRef = useRef<Message[]>([]);
+
+  // Local state for 'Actor' functionality
+  const [isAssessing, setIsAssessing] = useState(false);
+  const [internalRelationship, setInternalRelationship] = useState<Relationship | undefined>(relationship);
+
+  // Sync internal relationship when prop changes
+  useEffect(() => {
+    setInternalRelationship(relationship);
+  }, [relationship]);
 
   const debounceMessages = useDebouncedCallback(
     (messages: Message[]) => setChatMessages(messages),
@@ -44,25 +52,85 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     };
   }, [debounceMessages, debounceInput]);
 
-  const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput, stop } = useChat({
     id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
       persona: selectedChatPersona,
-      relationship: relationship,
+      relationship: internalRelationship,
       worldDescription: worldDescription,
       aiStyle: aiStyle,
       chatModel: chatModel,
+      systemPromptTemplate: systemPromptTemplate,
     },
     initialMessages: chatMessages,
     initialInput: chatInput,
-    onFinish: (message) => {
-      if (onMessageFinish) {
-        const fullHistory = [...messagesRef.current]; // Manual append
-        onMessageFinish(message, fullHistory);
-      }
-    },
   });
+
+  // Emergency Brake Monitoring
+  useEffect(() => {
+    // Check if the stream or message list has an assessment trigger
+    const monitorAssessment = () => {
+      // Only check the latest message from assistant
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage || lastMessage.role !== 'assistant') return;
+
+      const hasTrigger = lastMessage.content.includes('[EVENT: TRIGGER_ASSESSMENT]');
+
+      if (hasTrigger) {
+        if (status === 'streaming') {
+          stop(); // Stop generation immediately
+        }
+        // Trigger assessment if not already assessing
+        if (!isAssessing) {
+          handleEmergencyAssessment();
+        }
+      }
+    };
+
+    monitorAssessment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, status]);
+
+  const handleEmergencyAssessment = async () => {
+    // Double check to prevent multiple calls
+    if (isAssessing || !selectedChatCharacter || !selectedChatPersona || !internalRelationship) return;
+
+    setIsAssessing(true);
+
+    try {
+      const response = await fetch('/api/engine/process-scene', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chatHistory: messages,
+          character: selectedChatCharacter,
+          persona: selectedChatPersona,
+          currentRelationship: internalRelationship,
+          modelName: chatModel
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.delta) {
+          const newRel = {
+            ...internalRelationship,
+            satisfaction: Math.max(0, Math.min(100, internalRelationship.satisfaction + (data.delta.satisfaction || 0))),
+            commitment: Math.max(0, Math.min(100, internalRelationship.commitment + (data.delta.commitment || 0))),
+            intimacy: Math.max(0, Math.min(100, internalRelationship.intimacy + (data.delta.intimacy || 0))),
+            trust: Math.max(0, Math.min(100, internalRelationship.trust + (data.delta.trust || 0))),
+            passion: Math.max(0, Math.min(100, internalRelationship.passion + (data.delta.passion || 0))),
+          };
+          setInternalRelationship(newRel);
+        }
+      }
+    } catch (e) {
+      console.error("Emergency Assessment Failed", e);
+    } finally {
+      setIsAssessing(false);
+    }
+  };
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -73,7 +141,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     debounceInput(input);
   }, [input, debounceInput]);
 
-  const isLoading = status === "submitted" || status === "streaming"
+  const isLoading = status === "submitted" || status === "streaming" || isAssessing
 
   // Scroll to bottom whenever messages change
   const scrollToBottom = () => {
@@ -120,6 +188,11 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
             )}
             {selectedChatCharacter ? selectedChatCharacter.basicInfo.name : title}
           </CardTitle>
+          {isAssessing && (
+            <span className="text-sm text-amber-600 font-semibold animate-pulse flex items-center">
+              ⚠ Assessing Behavior...
+            </span>
+          )}
         </div>
       </CardHeader>
 
@@ -128,42 +201,42 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
           <div className="space-y-4 py-4">
             {messages.map((m) => {
               return (
-              <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                {m.role === "assistant" && selectedChatCharacter ? (
-                  <Avatar className="flex-shrink-0 h-8 w-8">
-                    <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
-                    <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                ) : m.role === "assistant" ? (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-blue-600" />
-                  </div>
-                ) : null}
+                <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {m.role === "assistant" && selectedChatCharacter ? (
+                    <Avatar className="flex-shrink-0 h-8 w-8">
+                      <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
+                      <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : m.role === "assistant" ? (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-blue-600" />
+                    </div>
+                  ) : null}
 
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    m.role === "user"
+                  <div
+                    className={`max-w-[80%] rounded-lg px-4 py-2 ${m.role === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-900 border"
-                  }`}
-                >
-                  <div className="text-sm whitespace-pre-wrap">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
-                </div>
-                </div>
-
-                {m.role === "user" && selectedChatPersona ? (
-                  <Avatar className="flex-shrink-0 h-8 w-8">
-                    <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
-                    <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                ) : m.role === "user" ? (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
+                      }`}
+                  >
+                    <div className="text-sm whitespace-pre-wrap">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                    </div>
                   </div>
-                ) : null}
-              </div>
-            )})}
+
+                  {m.role === "user" && selectedChatPersona ? (
+                    <Avatar className="flex-shrink-0 h-8 w-8">
+                      <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
+                      <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  ) : m.role === "user" ? (
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">

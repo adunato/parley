@@ -11,11 +11,12 @@ export async function POST(req: NextRequest) {
     const parsedResult = await generateJSON(prompt, generationModel);
 
     const character: Character = {
-        id: parsedResult.id,
-        basicInfo: parsedResult.basicInfo,
-        personality: parsedResult.personality,
-        preferences: parsedResult.preferences,
-        relationships: []
+      id: parsedResult.id,
+      basicInfo: parsedResult.basicInfo,
+      personality: parsedResult.personality,
+      idealMatch: parsedResult.idealMatch,
+      preferences: parsedResult.preferences,
+      relationships: []
     }
 
     return NextResponse.json({ character: character });

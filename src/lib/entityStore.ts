@@ -51,7 +51,7 @@ export const useEntityStore = create<EntityStore>()(
           characters: state.characters.filter((char) => char.id !== id),
         })),
       playerPersonas: [],
-      addPlayerPersona: (persona) => set((state) => ({playerPersonas: [...state.playerPersonas, persona]})),
+      addPlayerPersona: (persona) => set((state) => ({ playerPersonas: [...state.playerPersonas, persona] })),
       updatePlayerPersona: (updatedPersona) =>
         set((state) => ({
           playerPersonas: state.playerPersonas.map((p) =>
@@ -77,10 +77,10 @@ export const useEntityStore = create<EntityStore>()(
           characterGroups: state.characterGroups.filter((group) => group.id !== id),
         })),
       selectedChatCharacter: undefined,
-      setSelectedChatCharacter: (character) => set({selectedChatCharacter: character}),
+      setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
       selectedChatPersona: undefined,
-      setSelectedChatPersona: (persona) => set({selectedChatPersona: persona}),
-      clearCharacters: () => set({characters: []}),
+      setSelectedChatPersona: (persona) => set({ selectedChatPersona: persona }),
+      clearCharacters: () => set({ characters: [] }),
       cumulativeRelationshipDelta: undefined,
       updateCumulativeRelationshipDelta: (delta: Relationship) =>
         set((state) => {
@@ -89,19 +89,19 @@ export const useEntityStore = create<EntityStore>()(
             return {
               cumulativeRelationshipDelta: {
                 ...currentDelta,
-                closeness: currentDelta.closeness + delta.closeness,
-                sexual_attraction: currentDelta.sexual_attraction + delta.sexual_attraction,
-                respect: currentDelta.respect + delta.respect,
-                engagement: currentDelta.engagement + delta.engagement,
-                stability: currentDelta.stability + delta.stability,
+                satisfaction: currentDelta.satisfaction + delta.satisfaction,
+                commitment: currentDelta.commitment + delta.commitment,
+                intimacy: currentDelta.intimacy + delta.intimacy,
+                trust: currentDelta.trust + delta.trust,
+                passion: currentDelta.passion + delta.passion,
                 description: `${currentDelta.description}\n${delta.description}`,
               },
             };
           } else {
-            return {cumulativeRelationshipDelta: delta};
+            return { cumulativeRelationshipDelta: delta };
           }
         }),
-      clearCumulativeRelationshipDelta: () => set({cumulativeRelationshipDelta: undefined}),
+      clearCumulativeRelationshipDelta: () => set({ cumulativeRelationshipDelta: undefined }),
       clearAllData: () => {
         set({
           characters: [],
@@ -122,7 +122,15 @@ export const useEntityStore = create<EntityStore>()(
           if (state.characters) {
             state.characters = state.characters.map(character => ({
               ...character,
-              relationships: character.relationships || []
+              relationships: (character.relationships || []).map((rel: any) => ({
+                ...rel,
+                satisfaction: rel.satisfaction ?? 50,
+                commitment: rel.commitment ?? 50,
+                intimacy: rel.intimacy ?? 50,
+                trust: rel.trust ?? 50,
+                passion: rel.passion ?? 50
+              })),
+              idealMatch: character.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }
             }));
           }
           if (state.playerPersonas) {

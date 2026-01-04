@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import {Relationship} from "@/lib/types";
+import { Relationship } from "@/lib/types";
 
 interface RelationshipDisplayProps {
     characterName: string
@@ -32,11 +32,10 @@ function RelationshipBar({ label, value, delta = 0, max = 100 }: BarProps) {
                     </span>
                     {delta !== 0 && (
                         <span
-                            className={`text-xs font-mono px-2 py-1 rounded-full border ${
-                                deltaIsPositive
+                            className={`text-xs font-mono px-2 py-1 rounded-full border ${deltaIsPositive
                                     ? "text-green-700 bg-green-50 border-green-200"
                                     : "text-red-700 bg-red-50 border-red-200"
-                            }`}
+                                }`}
                         >
                             {deltaIsPositive ? "+" : ""}
                             {delta}
@@ -64,29 +63,29 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
             <CardContent className="space-y-6">
                 <div className="space-y-4">
                     <RelationshipBar
-                        label="closeness"
-                        value={relationship.closeness}
-                        delta={cumulativeDeltaRelationship?.closeness}
+                        label="satisfaction"
+                        value={relationship.satisfaction}
+                        delta={cumulativeDeltaRelationship?.satisfaction}
                     />
                     <RelationshipBar
-                        label="sexual_attraction"
-                        value={relationship.sexual_attraction}
-                        delta={cumulativeDeltaRelationship?.sexual_attraction}
+                        label="commitment"
+                        value={relationship.commitment}
+                        delta={cumulativeDeltaRelationship?.commitment}
                     />
                     <RelationshipBar
-                        label="respect"
-                        value={relationship.respect}
-                        delta={cumulativeDeltaRelationship?.respect}
+                        label="intimacy"
+                        value={relationship.intimacy}
+                        delta={cumulativeDeltaRelationship?.intimacy}
                     />
                     <RelationshipBar
-                        label="engagement"
-                        value={relationship.engagement}
-                        delta={cumulativeDeltaRelationship?.engagement}
+                        label="trust"
+                        value={relationship.trust}
+                        delta={cumulativeDeltaRelationship?.trust}
                     />
                     <RelationshipBar
-                        label="stability"
-                        value={relationship.stability}
-                        delta={cumulativeDeltaRelationship?.stability}
+                        label="passion"
+                        value={relationship.passion}
+                        delta={cumulativeDeltaRelationship?.passion}
                     />
                 </div>
 

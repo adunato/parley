@@ -14,11 +14,26 @@ export interface BasicInfo {
 }
 
 export interface Personality {
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   openness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   conscientiousness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   extraversion: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   agreeableness: number;
+  /** An integer between 0 (Very Low) and 100 (Very High) */
   neuroticism: number;
+}
+
+export type OCEAN = Personality;
+
+export interface PRQC {
+  satisfaction: number;
+  commitment: number;
+  intimacy: number;
+  trust: number;
+  passion: number;
 }
 
 export interface Character {
@@ -30,6 +45,7 @@ export interface Character {
     dislikesTraits: string[];
     gossipTendency: "low" | "medium" | "high";
   };
+  idealMatch: Personality;
   relationships: Relationship[];
 }
 
@@ -41,11 +57,11 @@ export interface Persona {
 export interface Relationship {
   characterId: string;
   personaId: string;
-  closeness: number;
-  sexual_attraction: number;
-  respect: number;
-  engagement: number;
-  stability: number;
+  satisfaction: number;
+  commitment: number;
+  intimacy: number;
+  trust: number;
+  passion: number;
   description: string;
   chat_summaries?: ChatSummary[]; // Made optional with ?
 }
