@@ -1,0 +1,36 @@
+[
+    {
+        "id": "ivy_league",
+        "slot": "EDUCATION",
+        "text": "Accepted into a prestigious Ivy League university.",
+        "provides": [
+            "DEGREE_ADVANCED",
+            "ALUMNI_NETWORK",
+            "DEBT"
+        ],
+        "requires": [
+            "GOOD_GRADES"
+        ],
+        "weights": {
+            "RICH": 50,
+            "STRESSED": 20,
+            "POOR": 1,
+            "DEFAULT": 5
+        }
+    },
+    {
+        "id": "trade_school",
+        "slot": "EDUCATION",
+        "text": "Opted for a trade school to start earning money quickly.",
+        "provides": [
+            "TRADESMAN_CERT",
+            "NO_DEBT"
+        ],
+        "weights": {
+            "STREET_SMART": 30,
+            "POOR": 20,
+            "RICH": 1,
+            "DEFAULT": 10
+        }
+    }
+]

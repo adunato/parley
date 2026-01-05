@@ -1,0 +1,28 @@
+[
+    {
+        "id": "severe_accident",
+        "text": "Suffered a debilitating injury at work.",
+        "provides": [
+            "CHRONIC_PAIN",
+            "MEDICAL_DEBT"
+        ],
+        "weights": {
+            "PHYSICAL_TOLL": 20,
+            "DANGEROUS_JOB": 50,
+            "DEFAULT": 1
+        }
+    },
+    {
+        "id": "white_collar_crime",
+        "text": "Investigated for insider trading.",
+        "provides": [
+            "CRIMINAL_RECORD_FINANCIAL"
+        ],
+        "weights": {
+            "WEALTHY": 10,
+            "BURNOUT": 15,
+            "POOR": 0,
+            "DEFAULT": 0
+        }
+    }
+]

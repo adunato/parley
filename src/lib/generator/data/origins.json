@@ -1,0 +1,27 @@
+[
+    {
+        "id": "working_class_urban",
+        "slot": "ORIGIN",
+        "text": "Born into a cramped apartment in an industrial district.",
+        "provides": [
+            "POOR",
+            "STREET_SMART"
+        ],
+        "weights": {
+            "DEFAULT": 50
+        }
+    },
+    {
+        "id": "old_money",
+        "slot": "ORIGIN",
+        "text": "Born into a family with generational wealth and high expectations.",
+        "provides": [
+            "RICH",
+            "CONNECTED",
+            "SNOB"
+        ],
+        "weights": {
+            "DEFAULT": 5
+        }
+    }
+]

@@ -1,0 +1,34 @@
+[
+    {
+        "id": "investment_banker",
+        "slot": "CAREER",
+        "text": "Secured a high-pressure job at an investment bank.",
+        "provides": [
+            "WEALTHY",
+            "BURNOUT",
+            "HIGH_STATUS"
+        ],
+        "requires": [
+            "DEGREE_ADVANCED"
+        ],
+        "weights": {
+            "ALUMNI_NETWORK": 100,
+            "DEFAULT": 10
+        }
+    },
+    {
+        "id": "electrician",
+        "slot": "CAREER",
+        "text": "Started a contracting business fixing residential wiring.",
+        "provides": [
+            "STABLE_INCOME",
+            "PHYSICAL_TOLL"
+        ],
+        "requires": [
+            "TRADESMAN_CERT"
+        ],
+        "weights": {
+            "DEFAULT": 50
+        }
+    }
+]
