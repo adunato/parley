@@ -44,12 +44,12 @@ ${Object.entries(existingContext).map(([key, value]) => `${key.charAt(0).toUpper
 };
 
 export const RELATIONSHIP_JSON_STRUCTURE = `{
-  "satisfaction": number,       // An integer between 0 (highly dissatisfied) and 100 (complete satisfaction)
-  "commitment": number,      // An integer between 0 (no commitment) and 100 (total devotion)
-  "intimacy": number,         // An integer between 0 (strangers) and 100 (deepest darkest secrets shared)
-  "trust": number,      // An integer between 0 (complete distrust) and 100 (blind faith)
-  "passion": number,        // An integer between 0 (platonic/repulsed) and 100 (intense attraction)
-  "description": string        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
+  "satisfaction": number,       // 0 (active animosity) to 100 (complete satisfaction). 50 is neutral.
+  "commitment": number,      // 0 (strangers/no obligation) to 100 (total devotion)
+  "intimacy": number,         // 0 (complete strangers) to 100 (deepest secrets shared)
+  "trust": number,      // 0 (active distrust/unknown) to 100 (blind faith)
+  "passion": number,        // 0 (indifferent/repulsed) to 100 (intense attraction)
+  "description": string        // Description of the relationship (e.g. "Strangers," "A powerful enemy," "Romantic partners")
 }`;
 
 import { Character, Persona as PlayerPersona, Relationship } from "../types";
