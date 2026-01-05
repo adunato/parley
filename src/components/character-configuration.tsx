@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2 } from "lucide-react"
+import { Users, User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -52,6 +52,12 @@ export default function CharacterConfiguration() {
 
     // Procedural Generator State
     const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
+
+    // Relationship Generator State
+    const [isGeneratingRelationship, setIsGeneratingRelationship] = useState(false);
+    const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
+    const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
+    const [relationshipContext, setRelationshipContext] = useState("");
 
     const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
         if (!editedCharacter && !selectedCharacter) return;
@@ -416,6 +422,62 @@ export default function CharacterConfiguration() {
             setIsGeneratingAvatar(false);
             setIsAvatarPromptDialogOpen(false);
             setDialogAvatarPrompt('');
+        }
+    };
+
+    const handleCreateRelationship = async () => {
+        if (!displayCharacter || !relationshipPersonaId) return;
+
+        setIsGeneratingRelationship(true);
+        try {
+            const persona = playerPersonas.find(p => p.id === relationshipPersonaId);
+            if (!persona) return;
+
+            const response = await fetch('/api/generate/relationship', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    character: displayCharacter,
+                    persona: persona,
+                    worldDescription: worldDescription,
+                    aiStyle: aiStyle,
+                    relationshipContext: relationshipContext
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newRelationship = {
+                    ...data.relationship,
+                    characterId: displayCharacter.id,
+                    personaId: persona.id,
+                    chat_summaries: []
+                };
+
+                // Add to character relationships
+                const updatedCharacter = {
+                    ...displayCharacter,
+                    relationships: [...displayCharacter.relationships, newRelationship]
+                };
+
+                if (editedCharacter) {
+                    setEditedCharacter(updatedCharacter);
+                } else {
+                    updateCharacter(updatedCharacter);
+                }
+
+                setIsRelationshipDialogOpen(false);
+                setRelationshipPersonaId("");
+                setRelationshipContext("");
+            } else {
+                console.error('Failed to generate relationship');
+                alert('Failed to generate relationship');
+            }
+        } catch (error) {
+            console.error('Error generating relationship:', error);
+            alert('Error generating relationship');
+        } finally {
+            setIsGeneratingRelationship(false);
         }
     };
 
@@ -850,9 +912,59 @@ export default function CharacterConfiguration() {
                                 {/* Relationship to Player Persona */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Heart className="w-5 h-5" />
-                                            Relationships
+                                        <CardTitle className="flex items-center gap-2 justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Heart className="w-5 h-5" />
+                                                Relationships
+                                            </div>
+                                            {isEditing && (
+                                                <Dialog open={isRelationshipDialogOpen} onOpenChange={setIsRelationshipDialogOpen}>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="outline" size="sm">
+                                                            <Plus className="w-4 h-4 mr-1" />
+                                                            Add Relationship
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>Create New Relationship</DialogTitle>
+                                                            <DialogDescription>
+                                                                Select a persona and describe the relationship context. The system will generate the initial dynamics.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <div className="grid gap-4 py-4">
+                                                            <div className="space-y-2">
+                                                                <Label>Persona</Label>
+                                                                <Select value={relationshipPersonaId} onValueChange={setRelationshipPersonaId}>
+                                                                    <SelectTrigger>
+                                                                        <SelectValue placeholder="Select a persona" />
+                                                                    </SelectTrigger>
+                                                                    <SelectContent>
+                                                                        {playerPersonas
+                                                                            .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
+                                                                            .map(p => (
+                                                                                <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
+                                                                            ))}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label>Relationship Context</Label>
+                                                                <Textarea
+                                                                    placeholder="e.g. Childhood friends, sworn enemies, met at a bar..."
+                                                                    value={relationshipContext}
+                                                                    onChange={(e) => setRelationshipContext(e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <DialogFooter>
+                                                            <Button onClick={handleCreateRelationship} disabled={!relationshipPersonaId || isGeneratingRelationship}>
+                                                                {isGeneratingRelationship ? "Generating..." : "Create Relationship"}
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </Dialog>
+                                            )}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">

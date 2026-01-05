@@ -140,7 +140,7 @@ JSON Output:
     relationship_gen: {
         id: 'relationship_gen',
         description: 'Generates the initial relationship state.',
-        variables: ['character', 'persona', 'worldDescription', 'aiStyle', 'jsonStructure'],
+        variables: ['character', 'persona', 'relationshipContext', 'worldDescription', 'aiStyle', 'jsonStructure'],
         template: `You are a relationship-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 {{jsonStructure}}
 
@@ -155,6 +155,10 @@ Generate a detailed relationship profile between the following character and pla
 ---------------------------
 
 Based on the provided character and player persona data, generate their relationship profile.
+
+Relationship Assessment Logic: Evaluate the metrics based strictly on current established history, avoiding projections of future chemistry or compatibility. If the characters are strangers, adversaries, or have no meaningful interaction history, values for Intimacy, Commitment, and Passion must be 0. Do not infer an emotional connection where none has been explicitly narrated.
+
+{{relationshipContext}}
 
 {{worldDescription}}
 

@@ -44,18 +44,18 @@ ${Object.entries(existingContext).map(([key, value]) => `${key.charAt(0).toUpper
 };
 
 export const RELATIONSHIP_JSON_STRUCTURE = `{
-  "satisfaction": number,       // An integer between 0 (highly dissatisfied) and 100 (complete satisfaction)
-  "commitment": number,      // An integer between 0 (no commitment) and 100 (total devotion)
-  "intimacy": number,         // An integer between 0 (strangers) and 100 (deepest darkest secrets shared)
-  "trust": number,      // An integer between 0 (complete distrust) and 100 (blind faith)
-  "passion": number,        // An integer between 0 (platonic/repulsed) and 100 (intense attraction)
-  "description": string        // Description of the relationship (e.g. "A close friend, a romantic relationship, a powerful enemy, etc.")
+  "satisfaction": number,       // 0 (active animosity) to 100 (complete satisfaction). 50 is neutral.
+  "commitment": number,      // 0 (strangers/no obligation) to 100 (total devotion)
+  "intimacy": number,         // 0 (complete strangers) to 100 (deepest secrets shared)
+  "trust": number,      // 0 (active distrust/unknown) to 100 (blind faith)
+  "passion": number,        // 0 (indifferent/repulsed) to 100 (intense attraction)
+  "description": string        // Description of the relationship (e.g. "Strangers," "A powerful enemy," "Romantic partners")
 }`;
 
 import { Character, Persona as PlayerPersona, Relationship } from "../types";
 import { generateCharacterJsonStructure, generatePersonaJsonStructure, generateCharacterJsonStructureWithoutRelationships } from '../schemaGenerator';
 
-export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
+export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string, relationshipContext?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
     const personaJson = JSON.stringify(persona, null, 2);
 
@@ -63,10 +63,12 @@ export const generateRelationshipPrompt = (character: Character, persona: Player
 
     const worldSection = worldDescription ? `World Description: ${worldDescription}` : '';
     const styleSection = aiStyle ? `AI Style: ${aiStyle}` : '';
+    const contextSection = relationshipContext ? `Relationship Context: ${relationshipContext}\nUses this context to determine the nature and initial stats of the relationship.` : 'No specific relationship context provided. Generate a plausible relationship based on their personalities.';
 
     prompt = prompt.split('{{jsonStructure}}').join(RELATIONSHIP_JSON_STRUCTURE);
     prompt = prompt.split('{{character}}').join(characterJson);
     prompt = prompt.split('{{persona}}').join(personaJson);
+    prompt = prompt.split('{{relationshipContext}}').join(contextSection);
     prompt = prompt.split('{{worldDescription}}').join(worldSection);
     prompt = prompt.split('{{aiStyle}}').join(styleSection);
 
