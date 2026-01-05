@@ -2,13 +2,14 @@ import { useParleyStore } from "@/lib/store"
 import { Character, Persona as PlayerPersona } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ProceduralGeneratorDialog } from "@/components/character/procedural-generator-dialog";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload } from "lucide-react"
+import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -48,6 +49,21 @@ export default function CharacterConfiguration() {
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
+
+    // Procedural Generator State
+    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
+
+    const handleApplyProceduralData = (data: { name: string; gender: string; background: string; origin: string; role: string }) => {
+        if (!editedCharacter && !selectedCharacter) return;
+
+        // Helper to update field even if nested
+        const update = (section: any, field: string, value: string) => handleInputChange(section, field, value);
+
+        update("basicInfo", "name", data.name);
+        // update("basicInfo", "gender", data.gender); // Optional
+        update("basicInfo", "background", data.background);
+        update("basicInfo", "role", data.role);
+    };
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !editedCharacter) return;
@@ -614,9 +630,22 @@ export default function CharacterConfiguration() {
                                 {/* Basic Information */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <User className="w-5 h-5" />
-                                            Basic Information
+                                        <CardTitle className="flex items-center gap-2 justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <User className="w-5 h-5" />
+                                                Basic Information
+                                            </div>
+                                            {isEditing && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6"
+                                                    onClick={() => setIsProceduralGeneratorOpen(true)}
+                                                    title="Procedural Generator"
+                                                >
+                                                    <Wand2 className="w-4 h-4 text-indigo-500" />
+                                                </Button>
+                                            )}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">

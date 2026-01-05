@@ -13,7 +13,8 @@ export type PromptId =
     | 'ai_style_gen'
     | 'chat_summary'
     | 'analyst_system'
-    | 'avatar_desc';
+    | 'avatar_desc'
+    | 'bio_writer';
 
 export interface PromptConfig {
     id: PromptId;
@@ -292,6 +293,21 @@ Be sure to include the name, age, role, and appearance of the character or perso
 
 JSON Output:
 `
+    },
+    bio_writer: {
+        id: 'bio_writer',
+        description: 'Generates a narrative biography from procedural data.',
+        variables: ['identity', 'spine', 'flesh', 'aiStyle'],
+        template: `You are writing a biography for a character in a {{aiStyle}} story.
+
+**Facts (Do NOT contradict these):**
+* Name: {{identity}}
+* Origin: {{spine}}
+* Education: {{spine}}
+* Career: {{spine}}
+* Life Events: {{flesh}}
+
+Write a 2-paragraph background story weaving these facts together naturally. Focus on their psychology and current state.`
     }
 };
 
