@@ -45,7 +45,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
     // Handlers
     const handleGenerateIdentity = () => {
-        const id = NameGenerator.generateIdentity(country);
+        const genderArg = selectedGender === 'random' ? undefined : selectedGender;
+        const id = NameGenerator.generateIdentity(country, genderArg);
         setIdentity(id);
     };
 

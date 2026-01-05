@@ -159,14 +159,19 @@ export class BioMachine {
 
     private simulateFlesh(tags: Set<string>, age: number): LifeEvent[] {
         const events: LifeEvent[] = [];
+        const selectedEventIds = new Set<string>();
 
         // Simulation Loop: iterate 5 year chunks from 18 to current age
         for (let i = 18; i < age; i += 5) {
             // Chance to trigger an event per chunk
             if (Math.random() > 0.3) { // 70% chance of event
-                const event = this.selectWeighted(this.lifeEvents, tags);
+                // Filter out already selected events
+                const availableEvents = this.lifeEvents.filter(e => !selectedEventIds.has(e.id));
+
+                const event = this.selectWeighted(availableEvents, tags);
                 if (event) {
                     events.push(event);
+                    selectedEventIds.add(event.id);
                     event.provides?.forEach(t => tags.add(t));
                 }
             }
