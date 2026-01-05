@@ -122,7 +122,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                     <div className="col-span-4 space-y-6 border-r pr-6 overflow-y-auto">
 
                         <div className="space-y-4">
-                            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-500">1. Identity Settings</h3>
+                            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">1. Identity Settings</h3>
                             <div className="space-y-2">
                                 <Label>Country of Origin</Label>
                                 <Select value={country} onValueChange={(v: any) => setCountry(v)}>
@@ -166,7 +166,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                         </div>
 
                         <div className="space-y-4 pt-4 border-t">
-                            <h3 className="font-semibold text-sm uppercase tracking-wide text-gray-500">2. Life Path Settings</h3>
+                            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">2. Life Path Settings</h3>
 
                             <RadioGroup value={mode} onValueChange={(v: any) => setMode(v)} className="flex gap-4">
                                 <div className="flex items-center space-x-2">
@@ -180,9 +180,9 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             </RadioGroup>
 
                             {mode === 'custom' && (
-                                <div className="space-y-3 pl-2 border-l-2 border-slate-100">
+                                <div className="space-y-3 pl-2 border-l-2 border-muted">
                                     <div className="space-y-1">
-                                        <Label className="text-xs">Target Origin</Label>
+                                        <Label className="text-xs text-muted-foreground">Target Origin</Label>
                                         <Select value={targetOrigin} onValueChange={setTargetOrigin}>
                                             <SelectTrigger className="h-8">
                                                 <SelectValue />
@@ -196,7 +196,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="text-xs">Target Career</Label>
+                                        <Label className="text-xs text-muted-foreground">Target Career</Label>
                                         <Select value={targetCareer} onValueChange={setTargetCareer}>
                                             <SelectTrigger className="h-8">
                                                 <SelectValue />
@@ -224,12 +224,12 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
                         {/* Identity Card */}
                         {identity && (
-                            <div className="bg-slate-50 p-4 rounded-lg border flex justify-between items-center">
+                            <div className="bg-muted p-4 rounded-lg border flex justify-between items-center">
                                 <div>
-                                    <div className="text-xl font-bold">{identity.firstName} {identity.lastName}</div>
-                                    <div className="text-sm text-gray-500">{identity.gender} • {identity.location}</div>
+                                    <div className="text-xl font-bold text-foreground">{identity.firstName} {identity.lastName}</div>
+                                    <div className="text-sm text-muted-foreground">{identity.gender} • {identity.location}</div>
                                 </div>
-                                <div className="text-right text-xs text-gray-400">
+                                <div className="text-right text-xs text-muted-foreground">
                                     ID: {Math.random().toString(36).substr(2, 9)}
                                 </div>
                             </div>
@@ -244,32 +244,32 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
                             <TabsContent value="history" className="flex-1 min-h-0 border rounded-md p-0 overflow-hidden relative">
                                 {!bioState ? (
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+                                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
                                         Run simulation to see life path
                                     </div>
                                 ) : (
                                     <ScrollArea className="h-full p-4">
                                         <div className="space-y-6">
                                             <div>
-                                                <h4 className="font-semibold mb-2 text-indigo-600">The Spine (Core Path)</h4>
+                                                <h4 className="font-semibold mb-2 text-primary">The Spine (Core Path)</h4>
                                                 <div className="flex flex-col gap-2">
                                                     {bioState.spine.map((node, i) => (
-                                                        <div key={i} className="flex items-center gap-2 p-2 bg-white border rounded shadow-sm">
-                                                            <span className="text-xs font-bold w-20 uppercase text-gray-400">{node.slot}</span>
-                                                            <span className="font-medium">{node.id.replace(/_/g, ' ')}</span>
+                                                        <div key={i} className="flex items-center gap-2 p-2 bg-card border rounded shadow-sm">
+                                                            <span className="text-xs font-bold w-20 uppercase text-muted-foreground">{node.slot}</span>
+                                                            <span className="font-medium text-card-foreground">{node.id.replace(/_/g, ' ')}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <h4 className="font-semibold mb-2 text-rose-600">The Flesh (Life Events)</h4>
+                                                <h4 className="font-semibold mb-2 text-primary">The Flesh (Life Events)</h4>
                                                 <div className="space-y-2">
                                                     {bioState.flesh.length === 0 ? (
-                                                        <p className="text-sm text-gray-400 italic">No significant events recorded.</p>
+                                                        <p className="text-sm text-muted-foreground italic">No significant events recorded.</p>
                                                     ) : (
                                                         bioState.flesh.map((event, i) => (
-                                                            <div key={i} className="text-sm p-2 bg-rose-50 border border-rose-100 rounded">
+                                                            <div key={i} className="text-sm p-2 bg-accent/20 border border-border rounded text-foreground">
                                                                 • {event.text}
                                                             </div>
                                                         ))
@@ -278,10 +278,10 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                             </div>
 
                                             <div>
-                                                <h4 className="font-semibold mb-2 text-slate-600">Tags</h4>
+                                                <h4 className="font-semibold mb-2 text-primary">Tags</h4>
                                                 <div className="flex flex-wrap gap-1">
                                                     {Array.from(bioState.tags).map(t => (
-                                                        <span key={t} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full border">{t}</span>
+                                                        <span key={t} className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full border">{t}</span>
                                                     ))}
                                                 </div>
                                             </div>
@@ -291,14 +291,14 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             </TabsContent>
 
                             <TabsContent value="narrative" className="flex-1 min-h-0 border rounded-md p-4 overflow-y-auto">
-                                <div className="prose prose-sm max-w-none">
+                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
                                     {generatedBioText.split('\n').map((cat, i) => <p key={i}>{cat}</p>)}
                                 </div>
                             </TabsContent>
                         </Tabs>
 
                         <div className="flex justify-between pt-4 border-t">
-                            <div className="text-xs text-gray-400 flex items-center">
+                            <div className="text-xs text-muted-foreground flex items-center">
                                 {isGeneratingBio && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                                 {isGeneratingBio ? 'Writing biography...' : ''}
                             </div>
