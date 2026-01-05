@@ -50,6 +50,11 @@ export default function RootLayout({
               </Link>
             </li>
             <li>
+              <Link href="/locations" className="text-white hover:text-gray-300">
+                Locations
+              </Link>
+            </li>
+            <li>
               <Link href="/settings" className="text-white hover:text-gray-300">
                 Settings
               </Link>

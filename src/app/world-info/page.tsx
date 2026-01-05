@@ -24,12 +24,11 @@ import {
 } from "@/components/ui/tooltip";
 
 import { ProjectManager } from '@/components/world/ProjectManager';
-import { LocationManager } from '@/components/location-manager/location-manager';
 import { ProjectService } from '@/lib/services/projectService';
 
 export default function WorldInfoPage() {
   const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData: clearParleyData } = useParleyStore();
-  const { clearAllData: clearEntityData, locations, addLocation, updateLocation, deleteLocation } = useEntityStore();
+  const { clearAllData: clearEntityData } = useEntityStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
   const [isAiStylePromptDialogOpen, setIsAiStylePromptDialogOpen] = useState(false);
@@ -295,14 +294,6 @@ export default function WorldInfoPage() {
                 rows={10}
               />
             </div>
-            <div className="pt-6">
-              <LocationManager
-                locations={locations || []}
-                onAdd={addLocation}
-                onUpdate={updateLocation}
-                onDelete={deleteLocation}
-              />
-            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
@@ -330,6 +321,6 @@ export default function WorldInfoPage() {
           </Dialog>
         </CardFooter>
       </Card>
-    </div>
+    </div >
   );
 }
