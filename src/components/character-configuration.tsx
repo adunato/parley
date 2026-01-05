@@ -2,13 +2,14 @@ import { useParleyStore } from "@/lib/store"
 import { Character, Persona as PlayerPersona } from "@/lib/types"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ProceduralGeneratorDialog } from "@/components/character/procedural-generator-dialog";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload } from "lucide-react"
+import { User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -48,6 +49,22 @@ export default function CharacterConfiguration() {
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
+
+    // Procedural Generator State
+    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
+
+    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
+        if (!editedCharacter && !selectedCharacter) return;
+
+        // Helper to update field even if nested
+        const update = (section: any, field: string, value: any) => handleInputChange(section, field, value);
+
+        update("basicInfo", "name", data.name);
+        update("basicInfo", "age", data.age);
+        update("basicInfo", "gender", data.gender);
+        update("basicInfo", "background", data.background);
+        update("basicInfo", "role", data.role);
+    };
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !editedCharacter) return;
@@ -222,7 +239,24 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any } = {};
+
+            // Context-Awareness: Inject existing data if available
+            if (displayCharacter) {
+                const context: any = {};
+                const info = displayCharacter.basicInfo;
+
+                if (info.name && info.name !== "New Character") context.name = info.name;
+                if (info.role) context.role = info.role;
+                if (info.background) context.background = info.background;
+                if (info.gender) context.gender = info.gender;
+                if (info.age && info.age > 0) context.age = info.age;
+
+                if (Object.keys(context).length > 0) {
+                    body.existingContext = context;
+                }
+            }
+
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
             }
@@ -614,9 +648,22 @@ export default function CharacterConfiguration() {
                                 {/* Basic Information */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <User className="w-5 h-5" />
-                                            Basic Information
+                                        <CardTitle className="flex items-center gap-2 justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <User className="w-5 h-5" />
+                                                Basic Information
+                                            </div>
+                                            {isEditing && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6"
+                                                    onClick={() => setIsProceduralGeneratorOpen(true)}
+                                                    title="Procedural Generator"
+                                                >
+                                                    <Wand2 className="w-4 h-4 text-indigo-500" />
+                                                </Button>
+                                            )}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -898,6 +945,13 @@ export default function CharacterConfiguration() {
                     </div>
                 )}
             </div>
+
+            <ProceduralGeneratorDialog
+                open={isProceduralGeneratorOpen}
+                onOpenChange={setIsProceduralGeneratorOpen}
+                onApply={handleApplyProceduralData}
+                characterId={displayCharacter?.id || ''}
+            />
         </div >
     )
 }

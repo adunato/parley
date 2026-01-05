@@ -17,17 +17,28 @@ export const generateWorldPrompt = (worldDescription: string, aiStyle?: string) 
 
 export const CHARACTER_JSON_STRUCTURE = generateCharacterJsonStructureWithoutRelationships();
 
-export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string) => {
+export const generateCharacterPrompt = (characterDescription: string, worldDescription: string, aiStyle: string, existingContext?: any) => {
     let prompt = PromptStore.getPrompt('character_gen');
 
     const worldSection = worldDescription ? `World Description: ${worldDescription}` : '';
     const styleSection = aiStyle ? `AI Style: ${aiStyle}` : '';
     const charSection = characterDescription ? `Input Character Description: ${characterDescription}` : '';
 
+    let contextSection = '';
+    if (existingContext && Object.keys(existingContext).length > 0) {
+        contextSection = `
+--- EXISTING CONTEXT ---
+The user has already defined the following attributes. Use them as the immutable foundation for the character and generate the remaining JSON fields to match/complement them.
+${Object.entries(existingContext).map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`).join('\n')}
+------------------------
+`;
+    }
+
     prompt = prompt.split('{{jsonStructure}}').join(CHARACTER_JSON_STRUCTURE);
     prompt = prompt.split('{{characterDescription}}').join(charSection);
     prompt = prompt.split('{{worldDescription}}').join(worldSection);
     prompt = prompt.split('{{aiStyle}}').join(styleSection);
+    prompt = prompt.split('{{existingContext}}').join(contextSection);
 
     return prompt;
 };

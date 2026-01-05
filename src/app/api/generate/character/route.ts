@@ -5,9 +5,9 @@ import { Character } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { characterDescription, worldDescription, aiStyle, generationModel } = await req.json();
+    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext } = await req.json();
 
-    const prompt = generateCharacterPrompt(characterDescription, worldDescription, aiStyle);
+    const prompt = generateCharacterPrompt(characterDescription, worldDescription, aiStyle, existingContext);
     const parsedResult = await generateJSON(prompt, generationModel);
 
     const character: Character = {

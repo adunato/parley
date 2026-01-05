@@ -18,7 +18,8 @@ const TEXT_PROMPT_IDS = [
     'relationship_delta',
     'ai_style_gen',
     'chat_summary',
-    'analyst_system'
+    'analyst_system',
+    'bio_writer'
 ];
 
 export function TextGenerationSettings({ prompts, onSave, onReset }: TextGenerationSettingsProps) {
