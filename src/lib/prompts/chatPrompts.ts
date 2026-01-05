@@ -12,7 +12,8 @@ export const generateSystemPrompt = (
     worldDescription?: string,
     aiStyle?: string,
     chatSummaries?: ChatSummary[],
-    actingInstructions?: string
+    actingInstructions?: string,
+    locationDescription?: string
 ) => {
     const characterJson = JSON.stringify(character, null, 2);
 
@@ -55,6 +56,11 @@ export const generateSystemPrompt = (
         worldSection = `--- WORLD DESCRIPTION ---\n${worldDescription}\n-------------------------`;
     }
 
+    let locationSection = '';
+    if (locationDescription) {
+        locationSection = `--- LOCATION DESCRIPTION ---\n${locationDescription}\n----------------------------`;
+    }
+
     let styleSection = '';
     if (aiStyle) {
         styleSection = `--- AI STYLE ---\n${aiStyle}\n----------------`;
@@ -80,6 +86,7 @@ export const generateSystemPrompt = (
         '{{personaBasicInfo}}': personaBasicInfoJson,
         '{{relationship}}': relationshipJson,
         '{{world}}': worldSection,
+        '{{locationDescription}}': locationSection,
         '{{style}}': styleSection,
         '{{summaries}}': summariesSection,
         '{{instructions}}': actingInstructions || ""

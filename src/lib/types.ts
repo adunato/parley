@@ -41,6 +41,7 @@ export interface Character {
   basicInfo: BasicInfo;
   personality: Personality;
 
+  locationId?: string;
   idealMatch: Personality;
   relationships: Relationship[];
 }
@@ -65,6 +66,12 @@ export interface Relationship {
 export interface ChatSummary {
   summary: string;
   timestamp: Date;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  description: string;
 }
 
 export interface CharacterGroup {

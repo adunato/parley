@@ -40,6 +40,9 @@ export default function ChatPage() {
         cumulativeRelationshipDelta,
         updateCumulativeRelationshipDelta,
         clearCumulativeRelationshipDelta,
+        locations,
+        selectedChatLocation,
+        setSelectedChatLocation
     } = useEntityStore();
 
     const [isChatActive, setIsChatActive] = useState(false);
@@ -56,6 +59,33 @@ export default function ChatPage() {
     // ... (useEffect omitted)
 
     // ... (useEffect omitted)
+
+    const handleLocationSelect = (locationId: string) => {
+        if (locationId === "unassigned") {
+            setSelectedChatLocation(undefined);
+        } else {
+            const location = locations.find(l => l.id === locationId);
+            setSelectedChatLocation(location);
+        }
+        // Create a synthetic event or just clear selected character when location changes
+        setSelectedChatCharacter(undefined);
+    };
+
+    const filteredCharacters = characters.filter(c => {
+        if (!selectedChatLocation) {
+            // Requirement: "Location should be provided... select a location first... then available characters".
+            // However, legacy characters have no location.
+            // If explicit "Unassigned" is selected (represented by undefined/null selectedChatLocation but triggered by user?), 
+            // OR if we treat "Select Location" as mandatory.
+            // Let's implement: Default view shows 'Unassigned' or we force selection?
+            // HLD says: "must now select a location first". 
+            // So if no location selected (or "Unassigned" selected), show characters with no location.
+            // But usually "Unassigned" is a specific choice.
+            // Let's assume if selectedChatLocation is undefined, we show characters with no location ID.
+            return !c.locationId;
+        }
+        return c.locationId === selectedChatLocation.id;
+    });
 
     const handleCharacterSelect = (characterId: string) => {
         const character = characters.find(c => c.id === characterId);
@@ -99,7 +129,8 @@ export default function ChatPage() {
                             persona: selectedChatPersona,
                             worldDescription,
                             aiStyle,
-                            generationModel
+                            generationModel,
+                            locationDescription: selectedChatLocation?.description
                         }),
                     });
                     const data = await response.json();
@@ -266,6 +297,24 @@ export default function ChatPage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div>
+                                <label htmlFor="location-select" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Select Location
+                                </label>
+                                <Select onValueChange={handleLocationSelect} value={selectedChatLocation?.id || "unassigned"}>
+                                    <SelectTrigger id="location-select">
+                                        <SelectValue placeholder="Choose a location" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="unassigned">Unassigned / No Location</SelectItem>
+                                        {locations.map((loc) => (
+                                            <SelectItem key={loc.id} value={loc.id}>
+                                                {loc.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
                                 <label htmlFor="character-select" className="block text-sm font-medium text-gray-700 mb-2">
                                     Select Character
                                 </label>
@@ -274,11 +323,15 @@ export default function ChatPage() {
                                         <SelectValue placeholder="Choose a character" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {characters.map((character) => (
-                                            <SelectItem key={character.id} value={character.id}>
-                                                {character.basicInfo.name}
-                                            </SelectItem>
-                                        ))}
+                                        {filteredCharacters.length === 0 ? (
+                                            <div className="p-2 text-sm text-gray-500">No characters in this location</div>
+                                        ) : (
+                                            filteredCharacters.map((character) => (
+                                                <SelectItem key={character.id} value={character.id}>
+                                                    {character.basicInfo.name}
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
