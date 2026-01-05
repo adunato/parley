@@ -55,7 +55,7 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
 import { Character, Persona as PlayerPersona, Relationship } from "../types";
 import { generateCharacterJsonStructure, generatePersonaJsonStructure, generateCharacterJsonStructureWithoutRelationships } from '../schemaGenerator';
 
-export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string) => {
+export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string, relationshipContext?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
     const personaJson = JSON.stringify(persona, null, 2);
 
@@ -63,10 +63,12 @@ export const generateRelationshipPrompt = (character: Character, persona: Player
 
     const worldSection = worldDescription ? `World Description: ${worldDescription}` : '';
     const styleSection = aiStyle ? `AI Style: ${aiStyle}` : '';
+    const contextSection = relationshipContext ? `Relationship Context: ${relationshipContext}\nUses this context to determine the nature and initial stats of the relationship.` : 'No specific relationship context provided. Generate a plausible relationship based on their personalities.';
 
     prompt = prompt.split('{{jsonStructure}}').join(RELATIONSHIP_JSON_STRUCTURE);
     prompt = prompt.split('{{character}}').join(characterJson);
     prompt = prompt.split('{{persona}}').join(personaJson);
+    prompt = prompt.split('{{relationshipContext}}').join(contextSection);
     prompt = prompt.split('{{worldDescription}}').join(worldSection);
     prompt = prompt.split('{{aiStyle}}').join(styleSection);
 

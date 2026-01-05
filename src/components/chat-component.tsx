@@ -30,10 +30,47 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
   const [isAssessing, setIsAssessing] = useState(false);
   const [internalRelationship, setInternalRelationship] = useState<Relationship | undefined>(relationship);
 
-  // Sync internal relationship when prop changes
+  // Sync internal relationship when prop changes or auto-initialize if missing
   useEffect(() => {
-    setInternalRelationship(relationship);
-  }, [relationship]);
+    if (relationship) {
+      setInternalRelationship(relationship);
+    } else if (selectedChatCharacter && selectedChatPersona) {
+      // Check if relationship exists in the character object (it might have been updated elsewhere)
+      const existingRel = selectedChatCharacter.relationships.find(
+        r => r.characterId === selectedChatCharacter.id && r.personaId === selectedChatPersona.id
+      );
+
+      if (existingRel) {
+        setInternalRelationship(existingRel);
+      } else {
+        // Auto-create default relationship
+        console.log("Relationship missing - creating default 'Unknown' relationship");
+        const defaultRelationship: Relationship = {
+          characterId: selectedChatCharacter.id,
+          personaId: selectedChatPersona.id,
+          satisfaction: 50,
+          commitment: 50,
+          intimacy: 50,
+          trust: 50,
+          passion: 50,
+          description: `The Character does not know the Persona.`,
+          chat_summaries: []
+        };
+
+        setInternalRelationship(defaultRelationship);
+
+        // Update the character in the global store to persist this new relationship
+        // We need to fetch the fresh character to avoid overwriting other changes
+        // But for this component's scope, we dispatch the update.
+        // NOTE: In a real app we might want an API call here, but store update works for client-side persistence in session
+        const updatedCharacter = {
+          ...selectedChatCharacter,
+          relationships: [...selectedChatCharacter.relationships, defaultRelationship]
+        };
+        useEntityStore.getState().updateCharacter(updatedCharacter);
+      }
+    }
+  }, [relationship, selectedChatCharacter, selectedChatPersona]);
 
   const debounceMessages = useDebouncedCallback(
     (messages: Message[]) => setChatMessages(messages),
