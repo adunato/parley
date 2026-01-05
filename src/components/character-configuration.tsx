@@ -927,6 +927,13 @@ export default function CharacterConfiguration() {
                     </div>
                 )}
             </div>
+            
+            <ProceduralGeneratorDialog 
+               open={isProceduralGeneratorOpen} 
+               onOpenChange={setIsProceduralGeneratorOpen}
+               onApply={handleApplyProceduralData}
+               characterId={displayCharacter?.id || ''}
+            />
         </div >
     )
 }

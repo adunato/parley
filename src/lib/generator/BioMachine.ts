@@ -102,7 +102,11 @@ export class BioMachine {
         }
 
         // C. Forward Propagation (Origin -> Education)
-        // If Education requires tags (rare in V1 data but possible), Origin must provide them.
+        // BLOCKED: The logic below incorrectly aggregates requirements. If ONE education node requires a tag 
+        // that no origin provides, it filters out ALL origins, causing a crash.
+        // We will rely on Step D (Selection) to filter Education nodes based on the *selected* Origin instead.
+
+        /*
         const requiredTagsFromEdu = new Set<string>();
         validEducation.forEach(e => e.requires?.forEach(t => requiredTagsFromEdu.add(t)));
 
@@ -112,6 +116,7 @@ export class BioMachine {
                 return origin.provides.some(tag => requiredTagsFromEdu.has(tag));
             });
         }
+        */
 
         // Re-Verify Forward (Origin -> Education)
         // If we filtered Origins, we must ensure remaining Education still works with remaining Origins?
