@@ -8,7 +8,6 @@ import {
     fakerES,
     fakerRU,
     fakerZH_CN,
-    Date as FakerDate, // Type collision avoidance if needed
     Faker
 } from '@faker-js/faker';
 
@@ -17,9 +16,11 @@ export interface Identity {
     lastName: string;
     location: string;
     country: string;
+    gender: string;
 }
 
 export type SupportedCountry = 'USA' | 'UK' | 'Japan' | 'France' | 'Germany' | 'Italy' | 'Spain' | 'Russia' | 'China';
+export type GenderOption = 'male' | 'female';
 
 export const COUNTRY_OPTIONS: SupportedCountry[] = [
     'USA', 'UK', 'Japan', 'France', 'Germany', 'Italy', 'Spain', 'Russia', 'China'
@@ -39,10 +40,10 @@ const LOCALE_MAP: Record<SupportedCountry, Faker> = {
 
 export class NameGenerator {
 
-    public static generateIdentity(country: SupportedCountry = 'USA'): Identity {
+    public static generateIdentity(country: SupportedCountry = 'USA', gender?: GenderOption): Identity {
         const fakerInstance = LOCALE_MAP[country] || fakerEN_US;
 
-        const sex = fakerInstance.person.sexType();
+        const sex = gender || fakerInstance.person.sexType();
         const firstName = fakerInstance.person.firstName(sex);
         const lastName = fakerInstance.person.lastName();
         const city = fakerInstance.location.city();
@@ -64,7 +65,8 @@ export class NameGenerator {
             firstName,
             lastName,
             location: locationString,
-            country
+            country,
+            gender: sex.charAt(0).toUpperCase() + sex.slice(1) // 'Male' or 'Female'
         };
     }
 

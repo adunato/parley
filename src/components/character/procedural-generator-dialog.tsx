@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Wand2, User, BookOpen, Loader2 } from "lucide-react";
 
-import { NameGenerator, SupportedCountry } from '@/lib/generator/NameGenerator';
+import { NameGenerator, SupportedCountry, GenderOption, Identity } from '@/lib/generator/NameGenerator';
 import { BioMachine, BioState, BioGenerationRequest, EventNode } from '@/lib/generator/BioMachine';
 import originsData from '@/lib/generator/data/origins.json';
 import careersData from '@/lib/generator/data/careers.json';
@@ -17,20 +17,21 @@ import careersData from '@/lib/generator/data/careers.json';
 interface ProceduralGeneratorDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onApply: (data: { name: string; gender: string; background: string; origin: string; role: string; avatar?: string }) => void;
+    onApply: (data: { name: string; age: number; gender: string; background: string; origin: string; role: string; avatar?: string }) => void;
     characterId: string;
 }
 
 export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
+    const [selectedGender, setSelectedGender] = useState<'random' | GenderOption>('random');
     const [age, setAge] = useState<number>(30);
     const [mode, setMode] = useState<'random' | 'custom'>('random');
     const [targetOrigin, setTargetOrigin] = useState<string>('random');
     const [targetCareer, setTargetCareer] = useState<string>('random');
 
     // Generated Data State
-    const [identity, setIdentity] = useState<{ firstName: string; lastName: string; location: string } | null>(null);
+    const [identity, setIdentity] = useState<Identity | null>(null);
     const [bioState, setBioState] = useState<BioState | null>(null);
     const [generatedBioText, setGeneratedBioText] = useState<string>('');
 
@@ -94,7 +95,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
         onApply({
             name: `${identity.firstName} ${identity.lastName}`,
-            gender: 'Unknown',
+            gender: identity.gender,
             age: age,
             background: generatedBioText,
             origin: origin,
@@ -134,6 +135,24 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Gender</Label>
+                                <RadioGroup value={selectedGender} onValueChange={(v: any) => setSelectedGender(v)} className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="random" id="g-random" />
+                                        <Label htmlFor="g-random">Random</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="male" id="g-male" />
+                                        <Label htmlFor="g-male">Male</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="female" id="g-female" />
+                                        <Label htmlFor="g-female">Female</Label>
+                                    </div>
+                                </RadioGroup>
                             </div>
 
                             <div className="space-y-2">
@@ -208,7 +227,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             <div className="bg-slate-50 p-4 rounded-lg border flex justify-between items-center">
                                 <div>
                                     <div className="text-xl font-bold">{identity.firstName} {identity.lastName}</div>
-                                    <div className="text-sm text-gray-500">{identity.location}</div>
+                                    <div className="text-sm text-gray-500">{identity.gender} • {identity.location}</div>
                                 </div>
                                 <div className="text-right text-xs text-gray-400">
                                     ID: {Math.random().toString(36).substr(2, 9)}

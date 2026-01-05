@@ -15,6 +15,8 @@ A standalone TypeScript service implementing the 3-layer architecture defined in
 
 ### 2.2 The Data Generator (Faker Wrapper)
 A lightweight utility service wrapping `faker` to provide locale-specific data.
+*   **Inputs**: Country, Gender (optional)
+*   **Outputs**: Identity object (Name, Location, Country, Gender).
 
 ## 3. Data Structures
 
