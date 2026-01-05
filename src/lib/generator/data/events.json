@@ -1,18 +1,5 @@
 [
     {
-        "id": "severe_accident",
-        "text": "Suffered a debilitating injury at work.",
-        "provides": [
-            "CHRONIC_PAIN",
-            "MEDICAL_DEBT"
-        ],
-        "weights": {
-            "PHYSICAL_TOLL": 20,
-            "DANGEROUS_JOB": 50,
-            "DEFAULT": 1
-        }
-    },
-    {
         "id": "white_collar_crime",
         "text": "Investigated for insider trading.",
         "provides": [
@@ -23,6 +10,90 @@
             "BURNOUT": 15,
             "POOR": 0,
             "DEFAULT": 0
+        }
+    },
+    {
+        "id": "workplace_injury",
+        "text": "Suffered a debilitating injury at work.",
+        "provides": [
+            "CHRONIC_PAIN",
+            "MEDICAL_DEBT"
+        ],
+        "weights": {
+            "PHYSICAL_TOLL": 20,
+            "DEFAULT": 1
+        }
+    },
+    {
+        "id": "promotion",
+        "text": "Earned a significant promotion after years of hard work.",
+        "provides": [
+            "AMBITIOUS",
+            "STABLE_INCOME"
+        ],
+        "weights": {
+            "BURNOUT": 0.5,
+            "DEFAULT": 5
+        }
+    },
+    {
+        "id": "layoff",
+        "text": "Laid off during a corporate merger.",
+        "provides": [
+            "CYNICAL",
+            "UNEMPLOYED"
+        ],
+        "weights": {
+            "STABLE_INCOME": 1,
+            "DEFAULT": 5
+        }
+    },
+    {
+        "id": "travel_gap_year",
+        "text": "Took a year off to travel the world.",
+        "provides": [
+            "WORLDLY",
+            "BROKE"
+        ],
+        "weights": {
+            "RICH": 5,
+            "POOR": 0.1,
+            "DEFAULT": 2
+        }
+    },
+    {
+        "id": "night_classes",
+        "text": "Took night classes to learn a new skill.",
+        "provides": [
+            "SKILLED",
+            "TIRED"
+        ],
+        "weights": {
+            "AMBITIOUS": 5,
+            "DEFAULT": 3
+        }
+    },
+    {
+        "id": "volunteer_work",
+        "text": "Spent weekends volunteering at a local shelter.",
+        "provides": [
+            "KIND",
+            "COMMUNITY_TIES"
+        ],
+        "weights": {
+            "DEFAULT": 3
+        }
+    },
+    {
+        "id": "bad_investment",
+        "text": "Lost savings in a crypto scam.",
+        "provides": [
+            "SKEPTICAL",
+            "DEBT"
+        ],
+        "weights": {
+            "RISK_TAKER": 5,
+            "DEFAULT": 2
         }
     }
 ]

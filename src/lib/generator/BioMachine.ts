@@ -126,18 +126,20 @@ export class BioMachine {
 
         // 1. Pick Origin
         const selectedOrigin = this.selectWeighted(validOrigins, new Set());
+        if (!selectedOrigin) throw new Error("BioMachine: No valid Origin found.");
+
         const currentTags = new Set<string>(selectedOrigin.provides || []);
 
-        // 2. Pick Education (filtered by what is valid given our now concrete Origin tags?)
-        // Let's do a quick filter: Does this education node require something we don't have?
+        // 2. Pick Education
         const feasibleEducation = validEducation.filter(edu => {
             if (!edu.requires) return true;
             return edu.requires.every(req => currentTags.has(req));
         });
 
-        // Fallback: If no education fits, pick 'Trade School' or generic if available, or just random
         const eduPool = feasibleEducation.length > 0 ? feasibleEducation : validEducation;
         const selectedEducation = this.selectWeighted(eduPool, currentTags);
+        // Fallback or Error? Education usually has defaults.
+        if (!selectedEducation) throw new Error("BioMachine: No valid Education found.");
         selectedEducation.provides?.forEach(t => currentTags.add(t));
 
         // 3. Pick Career
@@ -145,6 +147,10 @@ export class BioMachine {
             if (!car.requires) return true;
             return car.requires.every(req => currentTags.has(req));
         });
+
+        const careerPool = feasibleCareers.length > 0 ? feasibleCareers : validCareers;
+        const selectedCareer = this.selectWeighted(careerPool, currentTags);
+        if (!selectedCareer) throw new Error("BioMachine: No valid Career found.");
 
         const careerPool = feasibleCareers.length > 0 ? feasibleCareers : validCareers;
         const selectedCareer = this.selectWeighted(careerPool, currentTags);
@@ -162,8 +168,10 @@ export class BioMachine {
             // Chance to trigger an event per chunk
             if (Math.random() > 0.3) { // 70% chance of event
                 const event = this.selectWeighted(this.lifeEvents, tags);
-                events.push(event);
-                event.provides?.forEach(t => tags.add(t));
+                if (event) {
+                    events.push(event);
+                    event.provides?.forEach(t => tags.add(t));
+                }
             }
         }
         return events;
@@ -171,25 +179,27 @@ export class BioMachine {
 
     // --- Utilities ---
 
-    private selectWeighted<T extends { weights: { [key: string]: number; "DEFAULT": number } }>(options: T[], currentTags: Set<string>): T {
-        if (options.length === 0) throw new Error("BioMachine: No options available for selection.");
-        if (options.length === 1) return options[0];
+    private selectWeighted<T extends { weights: { [key: string]: number; "DEFAULT": number } }>(options: T[], currentTags: Set<string>): T | null {
+        if (options.length === 0) return null;
 
         // Calculate total weight
         let totalWeight = 0;
         const weightedOptions = options.map(opt => {
-            let weight = opt.weights["DEFAULT"] || 1;
+            // Fix: Check strictly for undefined, allowing 0 to be a valid weight
+            let weight = opt.weights["DEFAULT"] !== undefined ? opt.weights["DEFAULT"] : 1;
 
             // Apply modifiers from tags
             currentTags.forEach(tag => {
-                if (opt.weights[tag]) {
-                    weight *= opt.weights[tag]; // or add? Design says dynamic context. Multiplicative usually works best for "Luck".
+                if (opt.weights[tag] !== undefined) {
+                    weight *= opt.weights[tag];
                 }
             });
 
             totalWeight += weight;
             return { option: opt, weight };
         });
+
+        if (totalWeight <= 0) return null;
 
         // Random Selection
         let random = Math.random() * totalWeight;
@@ -198,6 +208,6 @@ export class BioMachine {
             if (random <= 0) return item.option;
         }
 
-        return options[0]; // Fallback
+        return weightedOptions[0].option; // Should not reach here
     }
 }
