@@ -152,9 +152,6 @@ export class BioMachine {
         const selectedCareer = this.selectWeighted(careerPool, currentTags);
         if (!selectedCareer) throw new Error("BioMachine: No valid Career found.");
 
-        const careerPool = feasibleCareers.length > 0 ? feasibleCareers : validCareers;
-        const selectedCareer = this.selectWeighted(careerPool, currentTags);
-
         return [selectedOrigin, selectedEducation, selectedCareer];
     }
 
