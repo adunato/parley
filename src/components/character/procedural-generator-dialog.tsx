@@ -94,9 +94,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
         onApply({
             name: `${identity.firstName} ${identity.lastName}`,
-            gender: 'Unknown', // Faker doesn't explicitly return gender string in the Identity interface currently, might need update or inference. 
-            // Note: The UI has a gender input. Faker internal `sex` var was local. 
-            // For now let's leave it blank or user can fill.
+            gender: 'Unknown',
+            age: age,
             background: generatedBioText,
             origin: origin,
             role: role.charAt(0).toUpperCase() + role.slice(1)

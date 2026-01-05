@@ -53,14 +53,15 @@ export default function CharacterConfiguration() {
     // Procedural Generator State
     const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
 
-    const handleApplyProceduralData = (data: { name: string; gender: string; background: string; origin: string; role: string }) => {
+    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
         if (!editedCharacter && !selectedCharacter) return;
 
         // Helper to update field even if nested
-        const update = (section: any, field: string, value: string) => handleInputChange(section, field, value);
+        const update = (section: any, field: string, value: any) => handleInputChange(section, field, value);
 
         update("basicInfo", "name", data.name);
-        // update("basicInfo", "gender", data.gender); // Optional
+        update("basicInfo", "age", data.age);
+        update("basicInfo", "gender", data.gender);
         update("basicInfo", "background", data.background);
         update("basicInfo", "role", data.role);
     };
@@ -927,12 +928,12 @@ export default function CharacterConfiguration() {
                     </div>
                 )}
             </div>
-            
-            <ProceduralGeneratorDialog 
-               open={isProceduralGeneratorOpen} 
-               onOpenChange={setIsProceduralGeneratorOpen}
-               onApply={handleApplyProceduralData}
-               characterId={displayCharacter?.id || ''}
+
+            <ProceduralGeneratorDialog
+                open={isProceduralGeneratorOpen}
+                onOpenChange={setIsProceduralGeneratorOpen}
+                onApply={handleApplyProceduralData}
+                characterId={displayCharacter?.id || ''}
             />
         </div >
     )
