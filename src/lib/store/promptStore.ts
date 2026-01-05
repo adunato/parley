@@ -102,11 +102,13 @@ JSON Output:
     character_gen: {
         id: 'character_gen',
         description: 'Generates a full character profile (JSON).',
-        variables: ['characterDescription', 'worldDescription', 'aiStyle', 'jsonStructure'],
+        variables: ['characterDescription', 'worldDescription', 'aiStyle', 'jsonStructure', 'existingContext'],
         template: `You are a character-building AI for a text adventure game. Your responses MUST be a JSON object conforming to the following structure. Ensure all property names and string values are double-quoted and special characters are properly escaped:
 {{jsonStructure}}
 
 Generate a detailed character profile.
+
+{{existingContext}}
 
 {{characterDescription}}
 

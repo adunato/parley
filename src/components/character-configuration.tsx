@@ -239,7 +239,24 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any } = {};
+
+            // Context-Awareness: Inject existing data if available
+            if (displayCharacter) {
+                const context: any = {};
+                const info = displayCharacter.basicInfo;
+
+                if (info.name && info.name !== "New Character") context.name = info.name;
+                if (info.role) context.role = info.role;
+                if (info.background) context.background = info.background;
+                if (info.gender) context.gender = info.gender;
+                if (info.age && info.age > 0) context.age = info.age;
+
+                if (Object.keys(context).length > 0) {
+                    body.existingContext = context;
+                }
+            }
+
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
             }
