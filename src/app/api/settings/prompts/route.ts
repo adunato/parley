@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PromptStore, PromptId } from '@/lib/store/promptStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const configs = PromptStore.getAllConfigs();
