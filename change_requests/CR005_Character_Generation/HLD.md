@@ -61,8 +61,8 @@ interface EventNode {
 
 // Bi-Directional Request
 interface BioGenerationRequest {
-  targetCareer?: string; // Pinning constraint
-  targetOrigin?: string; // Pinning constraint
+  targetCareerId?: string; // Pinning constraint
+  targetOriginId?: string; // Pinning constraint
   age?: number;
 }
 ```
@@ -100,3 +100,59 @@ interface BioGenerationRequest {
 ### Phase 5: Verification
 1.  Unit tests for `BioMachine` logic (ensure "Surgeon" always has "Medical Degree").
 2.  End-to-end test of UI generation flow.
+
+## 5. Detailed Integration & UI Workflow (Phase 4 Refinement)
+
+### 5.1 UI Placement
+The integration will take place in `src/components/character-configuration.tsx`.
+
+*   **Trigger**: A new "Magic Wand" icon button next to the existing **Basic Information** header, or a dedicated "Procedural Generation" tab/accordion.
+*   **Dialog**: Clicking the button opens a `ProceduralGeneratorDialog`.
+
+### 5.2 The Procedural Generator Dialog
+This modal will serve as the control center for the new feature.
+
+**Controls:**
+1.  **Country of Origin**: Dropdown (`USA`, `Japan`, `France`...). Defaults to `USA`.
+2.  **Age**: Number input (Influences bio length).
+3.  **Background Mode**: Toggle `Random` vs `Custom`.
+    *   **Custom Mode**: Reveals "Pinning" dropdowns:
+        *   `Target Career` (e.g., "Investment Banker") - Filtered list from `careers.json`.
+        *   `Target Origin` (e.g., "Working Class") - Filtered list from `origins.json`.
+
+**Actions:**
+*   **"Generate Identity" Button**: Calls `NameGenerator`. Updates `Name` and `Gender` inputs in the dialog preview.
+*   **"Generate Backend History" Button**: Calls `BioMachine`. Displays the "Spine" (e.g., "Urban Poor -> Trade School -> Electrician") and "Flesh" (e.g., "Work Accident") as a bulleted list for user preview.
+*   **"Write Biography (LLM)" Button**: (Primary Action).
+    *   Combines Identity + Backend History.
+    *   Calls API to generate text.
+    *   Fills the `Background` field.
+
+### 5.3 LLM Interface ("The Skin")
+
+**API Endpoint**: `POST /api/generate/bio`
+
+**Request Payload:**
+```json
+{
+  "identity": { "name": "John", "country": "USA", "location": "New York" },
+  "spine": [ ...eventNodes ],
+  "flesh": [ ...lifeEvents ],
+  "style": "Noir" // Optional style override
+}
+```
+
+**Prompt Structure:**
+> You are writing a biography for a character in a {STYLE} story.
+>
+> **Facts (Do NOT contradict these):**
+> * Name: {identity.name} from {identity.location}
+> * Origin: {spine.origin.text}
+> * Education: {spine.education.text}
+> * Career: {spine.career.text}
+> * Life Events: {flesh.events.text}
+>
+> Write a 2-paragraph background story weaving these facts together naturally. Focus on their psychology and current state.
+
+**Output:**
+Returns the text string to be inserted into the `Background` field of the character.
