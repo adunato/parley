@@ -35,7 +35,12 @@ This Change Request addresses the need for better relationship management betwee
 - **Update Prompt**: Modify `generateRelationshipPrompt` in `src/lib/prompts/generatorPrompts.ts` to include the `relationshipContext` if provided.
     - This allows the LLM to generate stats (Love/Hate/etc.) based on the user's description.
 
-### 3.3 Frontend: `ChatComponent.tsx`
+### 3.3 Backend: `PromptStore`
+- **Update Template**:
+    - The `relationship_gen` prompt template in `PromptStore` (`src/lib/store/promptStore.ts`) must be updated to include the `{{relationshipContext}}` variable placeholder.
+    - Defaults to "No specific relationship context provided" if not supplied.
+
+### 3.4 Frontend: `ChatComponent.tsx`
 - **Initialization Check**: When mounting or switching characters:
     - Check if `selectedChatCharacter` has a relationship with `selectedChatPersona`.
 - **Auto-Creation**:
