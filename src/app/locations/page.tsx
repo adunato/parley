@@ -4,7 +4,7 @@ import { LocationManager } from '@/components/location-manager/location-manager'
 import { useEntityStore } from '@/lib/entityStore';
 
 export default function LocationsPage() {
-    const { locations, addLocation, updateLocation, deleteLocation } = useEntityStore();
+    const { locations, addLocation, updateLocation, deleteLocation, characters } = useEntityStore();
 
     return (
         <div className="container mx-auto p-4">
@@ -14,6 +14,7 @@ export default function LocationsPage() {
                 onAdd={addLocation}
                 onUpdate={updateLocation}
                 onDelete={deleteLocation}
+                characters={characters}
             />
         </div>
     );

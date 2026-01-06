@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Location } from '@/lib/types'; // Assuming Location is in types.ts
+import { Location, Character } from '@/lib/types'; // Assuming Location is in types.ts
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
@@ -10,12 +10,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface LocationManagerProps {
     locations: Location[];
+    characters: Character[];
     onAdd: (location: Location) => void;
     onUpdate: (location: Location) => void;
     onDelete: (id: string) => void;
 }
 
-export function LocationManager({ locations, onAdd, onUpdate, onDelete }: LocationManagerProps) {
+export function LocationManager({ locations, characters, onAdd, onUpdate, onDelete }: LocationManagerProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Location>>({});
     const [isCreating, setIsCreating] = useState(false);
@@ -145,7 +146,21 @@ export function LocationManager({ locations, onAdd, onUpdate, onDelete }: Locati
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-600 line-clamp-3">{location.description}</p>
+                                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">{location.description}</p>
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Characters Here</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {characters.filter(c => c.locationId === location.id).length > 0 ? (
+                                                characters.filter(c => c.locationId === location.id).map(char => (
+                                                    <span key={char.id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary text-secondary-foreground">
+                                                        {char.basicInfo.name}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-xs text-gray-400 italic">No characters assigned</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </>
                         )}
