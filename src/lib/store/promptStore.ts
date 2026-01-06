@@ -14,7 +14,8 @@ export type PromptId =
     | 'chat_summary'
     | 'analyst_system'
     | 'avatar_desc'
-    | 'bio_writer';
+    | 'bio_writer'
+    | 'relationship_context_fallback';
 
 export interface PromptConfig {
     id: PromptId;
@@ -316,6 +317,12 @@ JSON Output:
 * Life Events: {{flesh}}
 
 Write a 2-paragraph background story weaving these facts together naturally. Focus on their psychology and current state.`
+    },
+    relationship_context_fallback: {
+        id: 'relationship_context_fallback',
+        description: 'Default context when generating a relationship without specific input.',
+        variables: [],
+        template: `No specific relationship context provided. Generate a plausible relationship based on their personalities.`
     }
 };
 
