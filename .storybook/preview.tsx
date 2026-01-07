@@ -1,10 +1,11 @@
 import type { Preview } from '@storybook/nextjs';
 import { useEffect } from 'react';
-import { Inter, Cinzel } from 'next/font/google';
+import { Inter, Cinzel, Oswald } from 'next/font/google';
 import '../src/app/globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald' });
 
 const preview: Preview = {
   parameters: {
@@ -61,7 +62,7 @@ const preview: Preview = {
       }
 
       return (
-        <div className={`${getThemeClass(theme)} ${inter.variable} ${cinzel.variable} bg-background text-foreground min-h-screen p-4 font-sans`}>
+        <div className={`${getThemeClass(theme)} ${inter.variable} ${cinzel.variable} ${oswald.variable} bg-background text-foreground min-h-screen p-4 font-sans`}>
           <Story />
         </div>
       );

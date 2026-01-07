@@ -1,10 +1,11 @@
 import './globals.css';
-import { Inter, Cinzel } from 'next/font/google';
+import { Inter, Cinzel, Oswald } from 'next/font/google';
 import Link from 'next/link';
 import { cn } from './lib/utils';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald' });
 
 export const metadata = {
   title: 'Parley',
@@ -21,7 +22,8 @@ export default function RootLayout({
       <body className={cn(
         "min-h-screen bg-background font-sans antialiased flex flex-col",
         inter.variable,
-        cinzel.variable
+        cinzel.variable,
+        oswald.variable
       )}>
         <nav className="bg-gray-800 p-4 fixed w-full z-10 top-0">
           <ul className="flex space-x-4">

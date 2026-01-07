@@ -20,6 +20,7 @@ module.exports = {
       fontFamily: {
         sans: ["var(--font-primary)", "sans-serif"],
         serif: ["var(--font-cinzel)", "serif"],
+        display: ["var(--font-display)", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
