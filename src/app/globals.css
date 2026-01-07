@@ -148,8 +148,6 @@
 @layer base {
   * {
     @apply border-border;
-    border-width: var(--border-width);
-    /* Apply variable border width */
   }
 
   body {

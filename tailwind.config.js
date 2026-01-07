@@ -61,6 +61,9 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      borderWidth: {
+        DEFAULT: "var(--border-width)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
