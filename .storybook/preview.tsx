@@ -28,8 +28,8 @@ const preview: Preview = {
         items: [
           { value: 'light', icon: 'circlehollow', title: 'Light' },
           { value: 'dark', icon: 'circle', title: 'Dark' },
-          { value: 'demiplane_light', icon: 'starhollow', title: 'Demiplane Light' },
-          { value: 'demiplane_dark', icon: 'star', title: 'Demiplane Dark' },
+          { value: 'demiplane-light', icon: 'starhollow', title: 'Demiplane Light' },
+          { value: 'demiplane-dark', icon: 'star', title: 'Demiplane Dark' },
         ],
         showName: true,
       },
@@ -47,14 +47,14 @@ const preview: Preview = {
 
         htmlTag.setAttribute('data-mode', theme);
 
-        if (theme === 'dark' || theme === 'demiplane_dark') {
+        if (theme === 'dark' || theme === 'demiplane-dark') {
           htmlTag.classList.add('dark');
         }
       }, [theme]);
 
       // Determine wrapper class based on theme
       const getThemeClass = (themeName: string) => {
-        if (themeName === 'dark' || themeName === 'demiplane_dark') {
+        if (themeName === 'dark' || themeName === 'demiplane-dark') {
           return 'dark';
         }
         return '';
