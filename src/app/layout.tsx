@@ -1,8 +1,10 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, Cinzel } from 'next/font/google';
 import Link from 'next/link';
+import { cn } from './lib/utils';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
 
 export const metadata = {
   title: 'Parley',
@@ -16,7 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
+      <body className={cn(
+        "min-h-screen bg-background font-sans antialiased flex flex-col",
+        inter.variable,
+        cinzel.variable
+      )}>
         <nav className="bg-gray-800 p-4 fixed w-full z-10 top-0">
           <ul className="flex space-x-4">
             <li>

@@ -20,10 +20,12 @@ const preview: Preview = {
       description: 'Global theme for components',
       defaultValue: 'light',
       toolbar: {
-        icon: 'circlehollow',
+        icon: 'paintbrush',
         items: [
           { value: 'light', icon: 'circlehollow', title: 'Light' },
           { value: 'dark', icon: 'circle', title: 'Dark' },
+          { value: 'demiplane_light', icon: 'starhollow', title: 'Demiplane Light' },
+          { value: 'demiplane_dark', icon: 'star', title: 'Demiplane Dark' },
         ],
         showName: true,
       },
@@ -35,21 +37,36 @@ const preview: Preview = {
 
       useEffect(() => {
         const htmlTag = document.documentElement;
+
+        // Reset classes
+        htmlTag.classList.remove('dark', 'demiplane-light', 'demiplane-dark');
+
         if (theme === 'dark') {
           htmlTag.classList.add('dark');
           htmlTag.setAttribute('data-mode', 'dark');
+        } else if (theme === 'demiplane_light') {
+          htmlTag.classList.add('demiplane-light');
+          htmlTag.setAttribute('data-mode', 'demiplane-light');
+        } else if (theme === 'demiplane_dark') {
+          htmlTag.classList.add('demiplane-dark', 'dark'); // Assuming dark mode utilities might still be useful, or we can just use the class
+          htmlTag.setAttribute('data-mode', 'demiplane-dark');
         } else {
-          htmlTag.classList.remove('dark');
           htmlTag.setAttribute('data-mode', 'light');
         }
       }, [theme]);
 
-      // We render the story within a provider-like div if needed, 
-      // but since we modify documentElement, the class propagates.
-      // However, we also want to set the background of the story container 
-      // to match the theme immediately for better visualization.
+      // Determine wrapper class based on theme
+      const getThemeClass = (themeName: string) => {
+        switch (themeName) {
+          case 'dark': return 'dark';
+          case 'demiplane_light': return 'demiplane-light';
+          case 'demiplane_dark': return 'demiplane-dark dark'; // Append dark to piggyback on some dark utilities if needed
+          default: return '';
+        }
+      }
+
       return (
-        <div className={theme === 'dark' ? 'dark bg-background text-foreground min-h-screen p-4' : 'bg-background text-foreground min-h-screen p-4'}>
+        <div className={`${getThemeClass(theme)} bg-background text-foreground min-h-screen p-4 font-sans`}>
           <Story />
         </div>
       );
