@@ -38,7 +38,7 @@ import { useEntityStore } from "@/lib/entityStore";
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations } = useEntityStore()
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
@@ -172,6 +172,13 @@ export default function CharacterConfiguration() {
             }
             return newCharacter
         })
+    }
+
+    const handleLocationChange = (locationId: string) => {
+        setEditedCharacter((prev) => {
+            if (!prev) return null;
+            return { ...prev, locationId: locationId === "unassigned" ? undefined : locationId };
+        });
     }
 
     const handleAddCharacter = () => {
@@ -774,6 +781,26 @@ export default function CharacterConfiguration() {
                                                 onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
                                                 disabled={!isEditing}
                                             />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="location">Location</Label>
+                                            <Select
+                                                disabled={!isEditing}
+                                                value={displayCharacter.locationId || "unassigned"}
+                                                onValueChange={handleLocationChange}
+                                            >
+                                                <SelectTrigger id="location">
+                                                    <SelectValue placeholder="Select a location" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                                                    {locations.map((loc) => (
+                                                        <SelectItem key={loc.id} value={loc.id}>
+                                                            {loc.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="reputation">Reputation</Label>

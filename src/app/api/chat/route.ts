@@ -6,7 +6,7 @@ import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages
 import { GenerateSystemPrompt } from '@/lib/engine/director';
 
 export async function POST(req: Request) {
-  const { messages, character, persona, worldDescription, aiStyle, chatModel, systemPromptTemplate } = await req.json();
+  const { messages, character, persona, worldDescription, aiStyle, chatModel, systemPromptTemplate, locationDescription } = await req.json();
   const llm = getLlm(chatModel);
   const relationship = character.relationships.find((rel: any) => rel.personaId === persona.id);
 
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const chatSummaries = relationship?.chat_summaries;
 
   const actingInstructions = relationship ? GenerateSystemPrompt(character, relationship) : "";
-  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, systemPromptTemplate, worldDescription, aiStyle, chatSummaries, actingInstructions);
+  const finalSystemPrompt = generateSystemPrompt(character, persona, relationship, systemPromptTemplate, worldDescription, aiStyle, chatSummaries, actingInstructions, locationDescription);
 
   console.log("--- GENERATED SYSTEM PROMPT ---");
   console.log(finalSystemPrompt);

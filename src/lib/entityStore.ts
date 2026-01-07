@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Character, Persona, Relationship, CharacterGroup } from './types';
+import { Character, Persona, Relationship, CharacterGroup, Location } from './types';
 
 type EntityStore = {
   characters: Character[];
@@ -15,6 +15,12 @@ type EntityStore = {
   addCharacterGroup: (characterGroup: CharacterGroup) => void;
   updateCharacterGroup: (characterGroup: CharacterGroup) => void;
   deleteCharacterGroup: (id: string) => void;
+  locations: Location[];
+  addLocation: (location: Location) => void;
+  updateLocation: (location: Location) => void;
+  deleteLocation: (id: string) => void;
+  selectedChatLocation?: Location;
+  setSelectedChatLocation: (location: Location | undefined) => void;
   selectedChatCharacter?: Character;
   setSelectedChatCharacter: (character: Character | undefined) => void;
   selectedChatPersona?: Persona;
@@ -76,6 +82,22 @@ export const useEntityStore = create<EntityStore>()(
         set((state) => ({
           characterGroups: state.characterGroups.filter((group) => group.id !== id),
         })),
+      locations: [],
+      addLocation: (location) => set((state) => ({
+        locations: [...(state.locations || []), location] // Safety for existing state
+      })),
+      updateLocation: (updatedLocation) =>
+        set((state) => ({
+          locations: (state.locations || []).map((loc) =>
+            loc.id === updatedLocation.id ? updatedLocation : loc
+          ),
+        })),
+      deleteLocation: (id) =>
+        set((state) => ({
+          locations: (state.locations || []).filter((loc) => loc.id !== id),
+        })),
+      selectedChatLocation: undefined,
+      setSelectedChatLocation: (location) => set({ selectedChatLocation: location }),
       selectedChatCharacter: undefined,
       setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
       selectedChatPersona: undefined,
@@ -110,6 +132,8 @@ export const useEntityStore = create<EntityStore>()(
           selectedChatPersona: undefined,
           cumulativeRelationshipDelta: undefined,
           characterGroups: [],
+          locations: [],
+          selectedChatLocation: undefined,
         });
         useEntityStore.persist.clearStorage();
       },

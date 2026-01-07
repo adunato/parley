@@ -23,7 +23,7 @@ interface ChatComponentProps {
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore();
-  const { selectedChatCharacter, selectedChatPersona } = useEntityStore();
+  const { selectedChatCharacter, selectedChatPersona, selectedChatLocation } = useEntityStore();
   const messagesRef = useRef<Message[]>([]);
 
   // Local state for 'Actor' functionality
@@ -99,6 +99,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
       aiStyle: aiStyle,
       chatModel: chatModel,
       systemPromptTemplate: systemPromptTemplate,
+      locationDescription: selectedChatLocation?.description
     },
     initialMessages: chatMessages,
     initialInput: chatInput,

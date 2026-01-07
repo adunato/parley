@@ -321,6 +321,6 @@ export default function WorldInfoPage() {
           </Dialog>
         </CardFooter>
       </Card>
-    </div>
+    </div >
   );
 }
