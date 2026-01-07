@@ -42,31 +42,22 @@ const preview: Preview = {
       useEffect(() => {
         const htmlTag = document.documentElement;
 
-        // Reset classes
+        // Remove older classes if any
         htmlTag.classList.remove('dark', 'demiplane-light', 'demiplane-dark');
 
-        if (theme === 'dark') {
+        htmlTag.setAttribute('data-mode', theme);
+
+        if (theme === 'dark' || theme === 'demiplane_dark') {
           htmlTag.classList.add('dark');
-          htmlTag.setAttribute('data-mode', 'dark');
-        } else if (theme === 'demiplane_light') {
-          htmlTag.classList.add('demiplane-light');
-          htmlTag.setAttribute('data-mode', 'demiplane-light');
-        } else if (theme === 'demiplane_dark') {
-          htmlTag.classList.add('demiplane-dark', 'dark'); // Assuming dark mode utilities might still be useful, or we can just use the class
-          htmlTag.setAttribute('data-mode', 'demiplane-dark');
-        } else {
-          htmlTag.setAttribute('data-mode', 'light');
         }
       }, [theme]);
 
       // Determine wrapper class based on theme
       const getThemeClass = (themeName: string) => {
-        switch (themeName) {
-          case 'dark': return 'dark';
-          case 'demiplane_light': return 'demiplane-light';
-          case 'demiplane_dark': return 'demiplane-dark dark'; // Append dark to piggyback on some dark utilities if needed
-          default: return '';
+        if (themeName === 'dark' || themeName === 'demiplane_dark') {
+          return 'dark';
         }
+        return '';
       }
 
       return (

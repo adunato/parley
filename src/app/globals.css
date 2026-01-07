@@ -72,7 +72,7 @@
     --ring: 212.7 26.8% 83.9%;
   }
 
-  .demiplane-light {
+  [data-mode="demiplane-light"] {
     --font-primary: var(--font-cinzel);
     --radius: 0rem;
     --border-width: 2px;
@@ -108,7 +108,7 @@
     --ring: 160 50% 30%;
   }
 
-  .demiplane-dark {
+  [data-mode="demiplane-dark"] {
     --font-primary: var(--font-cinzel);
     --radius: 0.25rem;
     --border-width: 2px;
