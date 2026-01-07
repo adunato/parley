@@ -1,47 +1,22 @@
-# Storybook Implementation Plan
+# Storybook Dark Mode Implementation Plan
 
 ## Goal
-Establish a comprehensive Storybook design system for the Parley project, enabling isolated development and documentation of UI components.
-
-## User Review Required
-None. This is a task to improve developer experience and documentation.
+Enable toggling between Light and Dark modes in Storybook to match the project's theming capabilities.
 
 ## Proposed Changes
 
-### Storybook Configuration
-- [x] Verify `.storybook/preview.ts` loads global styles.
-- [ ] Ensure `tailwind.config.js` content paths include storybook files (usually not needed if just using classes, but good to check).
+### Configuration Updates
+- [ ] **`tailwind.config.js`**: Add `darkMode: ["class"]` to enable class-based dark mode logic in Tailwind.
 
-### Component Stories
-I will create `.stories.tsx` files for the following components in `src/components/ui`:
+### Storybook Preview Updates
+- [ ] **`.storybook/preview.ts`**:
+    -   Define a `globalType` named `theme` to add a toolbar switcher (Light/Dark).
+    -   Add a `decorator` function that:
+        1.  Reads the current `theme` from globals.
+        2.  Adds/Removes the `dark` class on the `document.documentElement` (<html> tag).
+        3.  Returns the story component.
 
-#### Primitives
-- [ ] `button.stories.tsx`: Variants (default, destructive, outline, secondary, ghost, link), Sizes (default, sm, lg, icon).
-- [ ] `card.stories.tsx`: Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter.
-- [ ] `input.stories.tsx`: Default, File, Disabled.
-- [ ] `textarea.stories.tsx`: Default, Disabled.
-- [ ] `label.stories.tsx`: Default.
-- [ ] `badge.stories.tsx`: Default, Secondary, Destructive, Outline.
-
-#### Layout & Interactive
-- [ ] `tabs.stories.tsx`: Example usage.
-- [ ] `accordion.stories.tsx`: Single and Multiple examples.
-- [ ] `scroll-area.stories.tsx`: Example with content.
-
-#### Form Elements
-- [ ] `select.stories.tsx`: Example usage.
-- [ ] `radio-group.stories.tsx`: Example usage.
-- [ ] `combobox.stories.tsx` (if present): Example usage.
-- [ ] `checkbox.stories.tsx` (if present): Example usage.
-
-#### Overlays (Mocked/Interactive)
-- [ ] `dialog.stories.tsx`: Open dialog example.
-- [ ] `popover.stories.tsx`: Example usage.
-- [ ] `tooltip.stories.tsx`: Example usage.
-
-### Complex Components (If time permits)
-- [ ] `ChatComponent` story (mocked props).
-
-## Verification Plan
-1.  Run `npm run storybook`.
-2.  Manually verify each story renders correctly in the browser.
+## Verification
+-   Run `npm run storybook`.
+-   Use the new toolbar icon to switch between Light and Dark.
+-   Verify components (like Card or Button) change colors according to `globals.css` variables.
