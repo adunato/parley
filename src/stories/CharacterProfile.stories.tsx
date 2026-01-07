@@ -32,7 +32,7 @@ const StatBox = ({ filled }: { filled: boolean }) => (
 
 const StatRow = ({ label, value, max = 5 }: { label: string; value: number; max?: number }) => (
     <div className="flex items-center justify-between py-1">
-        <span className="text-sm font-semibold uppercase tracking-tight text-foreground/80">{label}</span>
+        <span className="text-sm font-semibold font-display uppercase tracking-tight text-foreground/80">{label}</span>
         <div className="flex gap-1">
             {Array.from({ length: max }).map((_, i) => (
                 <StatBox key={i} filled={i < value} />
@@ -43,11 +43,11 @@ const StatRow = ({ label, value, max = 5 }: { label: string; value: number; max?
 
 // Moved headers outside of Card and updated styling
 const SectionHeader = ({ title }: { title: string }) => (
-    <div className="relative flex items-center justify-center mb-2 mt-4">
+    <div className="relative flex items-center justify-center mb-4 mt-6">
         <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border/60" />
         </div>
-        <div className="relative bg-background px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <div className="relative bg-[#f3f4f6] dark:bg-background px-4 text-xl font-display font-medium uppercase tracking-widest text-muted-foreground/80">
             {title}
         </div>
     </div>
@@ -57,7 +57,7 @@ const SkillList = ({ skills }: { skills: Record<string, number | null> }) => (
     <div className="space-y-1">
         {Object.entries(skills).map(([skill, value]) => (
             <div key={skill} className="flex justify-between text-sm py-1 border-b border-border/40 last:border-0 hover:bg-muted/50 px-2 rounded-sm cursor-default">
-                <span className="font-medium text-foreground/90">{skill}</span>
+                <span className="font-medium font-display tracking-tight text-foreground/90 uppercase">{skill}</span>
                 <span className="text-muted-foreground">{value === null ? "–" : "•".repeat(value)}</span>
             </div>
         ))}
@@ -158,7 +158,7 @@ export const ProfilePage: Story = {
                             <div className="text-muted-foreground uppercase text-xs font-bold tracking-wider">Bane: <span className="text-foreground font-normal normal-case">{character.bane}</span></div>
                             <div className="text-muted-foreground uppercase text-xs font-bold tracking-wider">Compulsion: <span className="text-foreground font-normal normal-case">{character.compulsion}</span></div>
                         </div>
-                        <Button className="bg-[#336699] hover:bg-[#254e75] text-white font-bold px-8 py-6 rounded-sm shadow-sm uppercase tracking-wider text-sm">
+                        <Button className="bg-[#336699] hover:bg-[#254e75] text-white font-bold px-8 py-6 rounded-sm shadow-sm uppercase tracking-wider text-sm font-display">
                             Perform<br />Action
                         </Button>
                         <div className="text-center">
@@ -174,7 +174,7 @@ export const ProfilePage: Story = {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Physical */}
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">Physical</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Physical</div>
                             <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
                                 <CardContent className="pt-4 space-y-3">
                                     {character.attributes.physical.map(attr => <StatRow key={attr.label} {...attr} />)}
@@ -183,7 +183,7 @@ export const ProfilePage: Story = {
                         </div>
                         {/* Social */}
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">Social</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Social</div>
                             <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
                                 <CardContent className="pt-4 space-y-3">
                                     {character.attributes.social.map(attr => <StatRow key={attr.label} {...attr} />)}
@@ -192,7 +192,7 @@ export const ProfilePage: Story = {
                         </div>
                         {/* Mental */}
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">Mental</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Mental</div>
                             <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
                                 <CardContent className="pt-4 space-y-3">
                                     {character.attributes.mental.map(attr => <StatRow key={attr.label} {...attr} />)}
@@ -208,7 +208,7 @@ export const ProfilePage: Story = {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Physical</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
                                     <SkillList skills={{ "Athletics": null, "Craft": null, "Firearms": null, "Melee": null, "Survival": null }} />
@@ -218,7 +218,7 @@ export const ProfilePage: Story = {
                         </div>
 
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Social</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Social</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
                                     <SkillList skills={{ "Animal Ken": null, "Insight": null, "Leadership": null, "Persuasion": null, "Subterfuge": null }} />
@@ -228,7 +228,7 @@ export const ProfilePage: Story = {
                         </div>
 
                         <div>
-                            <div className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Mental</div>
+                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Mental</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
                                     <SkillList skills={{ "Finance": null, "Technology": null, "Medicine": null, "Politics": null }} />
