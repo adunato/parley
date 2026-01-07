@@ -5,6 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SectionHeader } from '@/components/ui/section-header';
+import { ScoredStatCard } from '@/components/ui/scored-stat-card';
+import { ScoredStatGroup } from '@/components/ui/scored-stat-group';
+import { StatBox } from '@/components/ui/stat-box';
 import { cn } from '@/lib/utils';
 import { Menu } from 'lucide-react';
 
@@ -20,45 +24,20 @@ type Story = StoryObj<typeof meta>;
 
 // --- Components ---
 
-// Updated to use a custom blue color for stats to match reference
-const StatBox = ({ filled }: { filled: boolean }) => (
-    <div className={cn(
-        "h-4 w-6 rounded-sm border transition-colors",
-        filled
-            ? "bg-[#336699] border-[#336699]"
-            : "bg-transparent border-muted-foreground/30"
-    )} />
-);
-
-const StatRow = ({ label, value, max = 5 }: { label: string; value: number; max?: number }) => (
-    <div className="flex items-center justify-between py-1">
-        <span className="text-sm font-semibold font-display uppercase tracking-tight text-foreground/80">{label}</span>
-        <div className="flex gap-1">
-            {Array.from({ length: max }).map((_, i) => (
-                <StatBox key={i} filled={i < value} />
-            ))}
-        </div>
-    </div>
-);
-
-// Moved headers outside of Card and updated styling
-const SectionHeader = ({ title }: { title: string }) => (
-    <div className="relative flex items-center justify-center mb-4 mt-6">
-        <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/60" />
-        </div>
-        <div className="relative bg-[#f3f4f6] dark:bg-background px-4 text-xl font-display font-medium uppercase tracking-widest text-muted-foreground/80">
-            {title}
-        </div>
-    </div>
-);
-
+// This remains local for now as it's specific to the skill list layout
+// but reuses the base StatBox
 const SkillList = ({ skills }: { skills: Record<string, number | null> }) => (
     <div className="space-y-1">
         {Object.entries(skills).map(([skill, value]) => (
             <div key={skill} className="flex justify-between text-sm py-1 border-b border-border/40 last:border-0 hover:bg-muted/50 px-2 rounded-sm cursor-default">
                 <span className="font-medium font-display tracking-tight text-foreground/90 uppercase">{skill}</span>
-                <span className="text-muted-foreground">{value === null ? "–" : "•".repeat(value)}</span>
+                <span className="text-muted-foreground">{value === null ? "–" :
+                    <div className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <StatBox key={i} filled={i < value} />
+                        ))}
+                    </div>
+                }</span>
             </div>
         ))}
     </div>
@@ -89,35 +68,35 @@ const character = {
     },
     skills: {
         physical: {
-            "Athletics": null,
+            "Athletics": 1,
             "Craft": null,
-            "Firearms": null,
-            "Melee": null,
+            "Firearms": 2,
+            "Melee": 3,
             "Survival": null,
-            "Brawl": null,
-            "Drive": null,
+            "Brawl": 2,
+            "Drive": 1,
             "Larceny": null,
             "Stealth": null,
         },
         social: {
             "Animal Ken": null,
-            "Insight": null,
-            "Leadership": null,
-            "Persuasion": null,
-            "Subterfuge": null,
-            "Etiquette": null,
+            "Insight": 3,
+            "Leadership": 2,
+            "Persuasion": 4,
+            "Subterfuge": 1,
+            "Etiquette": 2,
             "Intimidation": null,
             "Performance": null,
-            "Streetwise": null,
+            "Streetwise": 1,
         },
         mental: {
-            "Finance": null,
-            "Technology": null,
+            "Finance": 2,
+            "Technology": 3,
             "Medicine": null,
-            "Politics": null,
-            "Awareness": null,
-            "Investigation": null,
-            "Occult": null,
+            "Politics": 1,
+            "Awareness": 2,
+            "Investigation": 3,
+            "Occult": 4,
             "Science": null,
         }
     },
@@ -141,7 +120,7 @@ export const ProfilePage: Story = {
             <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-gray-300 dark:border-border">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-4 border-b border-gray-300 dark:border-border">
                     <div className="flex items-center gap-6">
                         <Avatar className="w-24 h-24 border-4 border-white shadow-sm">
                             <AvatarImage src="https://github.com/shadcn.png" />
@@ -161,7 +140,7 @@ export const ProfilePage: Story = {
                         <Button className="bg-[#336699] hover:bg-[#254e75] text-white font-bold px-8 py-6 rounded-sm shadow-sm uppercase tracking-wider text-sm font-display">
                             Perform<br />Action
                         </Button>
-                        <div className="text-center">
+                        <div className="text-center font-display">
                             <div className="text-4xl font-light text-gray-800 dark:text-foreground">0</div>
                             <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Experience</div>
                         </div>
@@ -172,33 +151,21 @@ export const ProfilePage: Story = {
                 <div className="space-y-2">
                     <SectionHeader title="Attributes" />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Physical */}
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Physical</div>
-                            <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
-                                <CardContent className="pt-4 space-y-3">
-                                    {character.attributes.physical.map(attr => <StatRow key={attr.label} {...attr} />)}
-                                </CardContent>
-                            </Card>
-                        </div>
-                        {/* Social */}
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Social</div>
-                            <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
-                                <CardContent className="pt-4 space-y-3">
-                                    {character.attributes.social.map(attr => <StatRow key={attr.label} {...attr} />)}
-                                </CardContent>
-                            </Card>
-                        </div>
-                        {/* Mental */}
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground border-b pb-1">Mental</div>
-                            <Card className="rounded-sm shadow-sm border-0 border-t-4 border-t-gray-300 dark:border-t-muted bg-white dark:bg-card">
-                                <CardContent className="pt-4 space-y-3">
-                                    {character.attributes.mental.map(attr => <StatRow key={attr.label} {...attr} />)}
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <ScoredStatGroup title="Physical">
+                            {character.attributes.physical.map(attr => (
+                                <ScoredStatCard key={attr.label} {...attr} />
+                            ))}
+                        </ScoredStatGroup>
+                        <ScoredStatGroup title="Social">
+                            {character.attributes.social.map(attr => (
+                                <ScoredStatCard key={attr.label} {...attr} />
+                            ))}
+                        </ScoredStatGroup>
+                        <ScoredStatGroup title="Mental">
+                            {character.attributes.mental.map(attr => (
+                                <ScoredStatCard key={attr.label} {...attr} />
+                            ))}
+                        </ScoredStatGroup>
                     </div>
                 </div>
 
@@ -211,8 +178,7 @@ export const ProfilePage: Story = {
                             <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Physical</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={{ "Athletics": null, "Craft": null, "Firearms": null, "Melee": null, "Survival": null }} />
-                                    <SkillList skills={{ "Brawl": null, "Drive": null, "Larceny": null, "Stealth": null }} />
+                                    <SkillList skills={character.skills.physical} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -221,8 +187,7 @@ export const ProfilePage: Story = {
                             <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Social</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={{ "Animal Ken": null, "Insight": null, "Leadership": null, "Persuasion": null, "Subterfuge": null }} />
-                                    <SkillList skills={{ "Etiquette": null, "Intimidation": null, "Performance": null, "Streetwise": null }} />
+                                    <SkillList skills={character.skills.social} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -231,8 +196,7 @@ export const ProfilePage: Story = {
                             <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Mental</div>
                             <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
                                 <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={{ "Finance": null, "Technology": null, "Medicine": null, "Politics": null }} />
-                                    <SkillList skills={{ "Awareness": null, "Investigation": null, "Occult": null, "Science": null }} />
+                                    <SkillList skills={character.skills.mental} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -246,9 +210,10 @@ export const ProfilePage: Story = {
 
                 {/* Personality Profile */}
                 <div className="space-y-2">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Personality Profile (OCEAN)</h3>
-                    <div className="w-full md:w-1/3 space-y-2">
-                        {character.ocean.map(stat => <StatRow key={stat.label} {...stat} />)}
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-foreground font-display">Personality Profile (OCEAN)</h3>
+                    <div className="w-full md:w-1/3 space-y-3">
+                        {/* Reusing ScoredStatCard for personality profile too since it matches the look */}
+                        {character.ocean.map(stat => <ScoredStatCard key={stat.label} {...stat} className="border-l-0 border-t-0 bg-transparent shadow-none px-0" />)}
                     </div>
                 </div>
 
