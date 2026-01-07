@@ -9,6 +9,8 @@ import { SectionHeader } from '@/components/ui/section-header';
 import { ScoredStatCard } from '@/components/ui/scored-stat-card';
 import { ScoredStatGroup } from '@/components/ui/scored-stat-group';
 import { StatBox } from '@/components/ui/stat-box';
+import { SkillList } from '@/components/ui/skill-list';
+import { SkillGroup } from '@/components/ui/skill-group';
 import { cn } from '@/lib/utils';
 import { Menu } from 'lucide-react';
 
@@ -23,19 +25,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // --- Components ---
-
-// This remains local for now as it's specific to the skill list layout
-// but reuses the base StatBox
-const SkillList = ({ skills }: { skills: Record<string, number | null> }) => (
-    <div className="space-y-1">
-        {Object.entries(skills).map(([skill, value]) => (
-            <div key={skill} className="flex justify-between text-sm py-1 border-b border-border/40 last:border-0 hover:bg-muted/50 px-2 rounded-sm cursor-default">
-                <span className="font-medium font-display tracking-tight text-foreground/90 uppercase">{skill}</span>
-                <span className="text-muted-foreground">{value === null ? "–" : "•".repeat(value)}</span>
-            </div>
-        ))}
-    </div>
-);
+// All local components have been moved to @/components/ui/
 
 // --- Data ---
 const character = {
@@ -168,32 +158,20 @@ export const ProfilePage: Story = {
                     <SectionHeader title="Skills" />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Physical</div>
-                            <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
-                                <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={character.skills.physical} />
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <SkillGroup title="Physical">
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.physical).slice(0, 5))} />
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.physical).slice(5))} />
+                        </SkillGroup>
 
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Social</div>
-                            <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
-                                <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={character.skills.social} />
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <SkillGroup title="Social">
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.social).slice(0, 5))} />
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.social).slice(5))} />
+                        </SkillGroup>
 
-                        <div>
-                            <div className="mb-2 px-1 text-lg font-display font-medium uppercase tracking-wider text-muted-foreground">Mental</div>
-                            <Card className="rounded-sm shadow-sm border-0 bg-white dark:bg-card">
-                                <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
-                                    <SkillList skills={character.skills.mental} />
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <SkillGroup title="Mental">
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.mental).slice(0, 4))} />
+                            <SkillList skills={Object.fromEntries(Object.entries(character.skills.mental).slice(4))} />
+                        </SkillGroup>
                     </div>
                     <div className="flex justify-center">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-foreground/80 transition-colors">

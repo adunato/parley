@@ -1,7 +1,7 @@
 import './globals.css';
 import { Inter, Cinzel, Oswald } from 'next/font/google';
 import Link from 'next/link';
-import { cn } from './lib/utils';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const cinzel = Cinzel({ subsets: ['latin'], variable: '--font-cinzel' });
