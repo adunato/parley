@@ -1,13 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { Menu } from 'lucide-react';
 
 const meta = {
     title: 'Templates/Character Profile',
@@ -19,201 +18,282 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Mock Data
+// --- Components ---
+
+const StatBox = ({ filled }: { filled: boolean }) => (
+    <div className={cn(
+        "h-4 w-6 rounded-sm border transition-colors",
+        filled
+            ? "bg-primary border-primary"
+            : "bg-transparent border-muted-foreground/30"
+    )} />
+);
+
+const StatRow = ({ label, value, max = 5 }: { label: string; value: number; max?: number }) => (
+    <div className="flex items-center justify-between py-1">
+        <span className="text-sm font-semibold uppercase tracking-tight">{label}</span>
+        <div className="flex gap-1">
+            {Array.from({ length: max }).map((_, i) => (
+                <StatBox key={i} filled={i < value} />
+            ))}
+        </div>
+    </div>
+);
+
+const SectionHeader = ({ title }: { title: string }) => (
+    <div className="relative flex items-center justify-center my-4">
+        <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative bg-background px-4 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            {title}
+        </div>
+    </div>
+);
+
+const SkillList = ({ skills }: { skills: Record<string, number | null> }) => (
+    <div className="space-y-1">
+        {Object.entries(skills).map(([skill, value]) => (
+            <div key={skill} className="flex justify-between text-sm py-1 border-b border-border/40 last:border-0 hover:bg-muted/50 px-2 rounded-sm cursor-default">
+                <span className="font-medium">{skill}</span>
+                <span className="text-muted-foreground">{value === null ? "–" : "•".repeat(value)}</span>
+            </div>
+        ))}
+    </div>
+);
+
+// --- Data ---
+
 const character = {
-    name: "Kaelthas Sunstrider",
-    race: "Elf",
-    class: "Mage",
-    level: 12,
-    avatar: "https://github.com/shadcn.png", // Using a placeholder that works
-    stats: [
-        { label: "STR", value: 8, mod: -1 },
-        { label: "DEX", value: 14, mod: +2 },
-        { label: "CON", value: 12, mod: +1 },
-        { label: "INT", value: 20, mod: +5 },
-        { label: "WIS", value: 16, mod: +3 },
-        { label: "CHA", value: 18, mod: +4 },
+    name: "ALEX CHEN",
+    bane: "Unknown",
+    compulsion: "Unknown",
+    xp: 0,
+    attributes: {
+        physical: [
+            { label: "Strength", value: 3 },
+            { label: "Dexterity", value: 2 },
+            { label: "Stamina", value: 2 },
+        ],
+        social: [
+            { label: "Charisma", value: 4 },
+            { label: "Manipulation", value: 3 },
+            { label: "Composure", value: 3 },
+        ],
+        mental: [
+            { label: "Intelligence", value: 3 },
+            { label: "Wits", value: 2 },
+            { label: "Resolve", value: 2 },
+        ]
+    },
+    skills: {
+        physical: {
+            "Athletics": null,
+            "Craft": null,
+            "Firearms": null,
+            "Melee": null,
+            "Survival": null,
+            "Brawl": null,
+            "Drive": null,
+            "Larceny": null,
+            "Stealth": null,
+        },
+        social: {
+            "Animal Ken": null,
+            "Insight": null,
+            "Leadership": null,
+            "Persuasion": null,
+            "Subterfuge": null,
+            "Etiquette": null,
+            "Intimidation": null,
+            "Performance": null,
+            "Streetwise": null,
+        },
+        mental: {
+            "Finance": null,
+            "Technology": null,
+            "Medicine": null,
+            "Politics": null,
+            "Awareness": null,
+            "Investigation": null,
+            "Occult": null,
+            "Science": null,
+        }
+    },
+    ocean: [
+        { label: "Openness", value: 4 },
+        { label: "Conscientiousness", value: 3 },
+        { label: "Extraversion", value: 3 },
+        { label: "Agreeableness", value: 3 },
+        { label: "Neuroticism", value: 4 },
     ],
-    skills: ["Arcana", "History", "Persuasion"],
-    inventory: [
-        { name: "Staff of the Magi", type: "Weapon", rarity: "Legendary" },
-        { name: "Robes of the Archmage", type: "Armor", rarity: "Legendary" },
-        { name: "Potion of Healing", type: "Consumable", rarity: "Common" },
-    ],
-    backstory: `Kael'thas Sunstrider was the Prince of Quel'Thalas, the last of the Sunstrider dynasty. After the fall of Silvermoon, he led the remnants of his people, the Blood Elves, in search of a new source of magic to satisfy their addiction.`,
+    bio: `Former political strategist, now a freelance data broker. Born into a noble family, educated in economics, career derailed by a scandal.
+
+Traits: Analytical, Charming, Opportunist.
+
+Life Events: 'Political Scandal', 'Career Pivot'.`
 };
 
 export const ProfilePage: Story = {
     render: () => (
-        <div className="min-h-screen bg-background p-4 md:p-8">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans select-none">
+            <div className="max-w-7xl mx-auto space-y-8">
 
-                {/* Sidebar: Character Summary & Stats */}
-                <div className="md:col-span-4 space-y-6">
-                    <Card className="border-2">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto mb-4 relative w-32 h-32">
-                                <Avatar className="w-32 h-32 border-4 border-muted">
-                                    <AvatarImage src={character.avatar} alt={character.name} />
-                                    <AvatarFallback>{character.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <Badge className="absolute bottom-0 right-0 px-3 py-1 text-base">Lvl {character.level}</Badge>
-                            </div>
-                            <CardTitle className="text-2xl font-serif">{character.name}</CardTitle>
-                            <CardDescription className="text-lg">{character.race} {character.class}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-muted p-3 rounded-md text-center">
-                                    <div className="text-xs uppercase text-muted-foreground font-bold">HP</div>
-                                    <div className="text-xl font-bold text-green-600">84/84</div>
-                                </div>
-                                <div className="bg-muted text-center p-3 rounded-md">
-                                    <div className="text-xs uppercase text-muted-foreground font-bold">AC</div>
-                                    <div className="text-xl font-bold">15</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <Button variant="outline" className="w-full mr-2">Edit</Button>
-                            <Button className="w-full ml-2">Sheet</Button>
-                        </CardFooter>
-                    </Card>
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b">
+                    <div className="flex items-center gap-6">
+                        <Avatar className="w-20 h-20 border-2">
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarFallback>AC</AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-4xl font-light tracking-wide uppercase">{character.name}</h1>
+                            <Menu className="w-6 h-6 text-muted-foreground cursor-pointer hover:text-foreground" />
+                        </div>
+                    </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Ability Scores</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {character.stats.map((stat) => (
-                                <div key={stat.label} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Badge variant="outline" className="w-10 h-10 flex items-center justify-center font-bold bg-muted">{stat.label}</Badge>
-                                        <span className="font-medium text-lg">{stat.value}</span>
-                                    </div>
-                                    <span className="text-sm font-bold bg-primary text-primary-foreground px-2 py-1 rounded">
-                                        {stat.mod > 0 ? `+${stat.mod}` : stat.mod}
-                                    </span>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
+                    <div className="flex items-center gap-6 text-sm">
+                        <div className="text-right space-y-1">
+                            <div className="text-muted-foreground"><span className="font-bold text-foreground">BANE:</span> {character.bane.toUpperCase()}</div>
+                            <div className="text-muted-foreground"><span className="font-bold text-foreground">COMPULSION:</span> {character.compulsion.toUpperCase()}</div>
+                        </div>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-6 rounded-sm shadow-md uppercase tracking-wider">
+                            Perform<br />Action
+                        </Button>
+                        <div className="text-center">
+                            <div className="text-3xl font-light">0</div>
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Experience</div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="md:col-span-8 space-y-6">
-                    {/* Top Stats/Status */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Proficiency</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">+4</div>
+                {/* Attributes Section */}
+                <div className="space-y-4">
+                    <SectionHeader title="Attributes" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Physical */}
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical</div>
+                            <CardContent className="pt-4 space-y-3">
+                                {character.attributes.physical.map(attr => <StatRow key={attr.label} {...attr} />)}
                             </CardContent>
                         </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Speed</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">30 ft.</div>
+                        {/* Social */}
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Social</div>
+                            <CardContent className="pt-4 space-y-3">
+                                {character.attributes.social.map(attr => <StatRow key={attr.label} {...attr} />)}
                             </CardContent>
                         </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Initiative</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">+2</div>
+                        {/* Mental */}
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Mental</div>
+                            <CardContent className="pt-4 space-y-3">
+                                {character.attributes.mental.map(attr => <StatRow key={attr.label} {...attr} />)}
                             </CardContent>
                         </Card>
                     </div>
+                </div>
 
-                    {/* Tabs for Bio, Inventory, Spells */}
+                {/* Skills Section */}
+                <div className="space-y-4">
+                    <SectionHeader title="Skills" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical</div>
+                            <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
+                                <SkillList skills={{ "Athletics": null, "Craft": null, "Firearms": null, "Melee": null, "Survival": null }} />
+                                <SkillList skills={{ "Brawl": null, "Drive": null, "Larceny": null, "Stealth": null }} />
+                            </CardContent>
+                        </Card>
+
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Social</div>
+                            <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
+                                <SkillList skills={{ "Animal Ken": null, "Insight": null, "Leadership": null, "Persuasion": null, "Subterfuge": null }} />
+                                <SkillList skills={{ "Etiquette": null, "Intimidation": null, "Performance": null, "Streetwise": null }} />
+                            </CardContent>
+                        </Card>
+
+                        <Card className="rounded-sm shadow-sm border bg-card/50">
+                            <div className="bg-muted/30 px-4 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Mental</div>
+                            <CardContent className="pt-4 grid grid-cols-2 gap-x-6">
+                                <SkillList skills={{ "Finance": null, "Technology": null, "Medicine": null, "Politics": null }} />
+                                <SkillList skills={{ "Awareness": null, "Investigation": null, "Occult": null, "Science": null }} />
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div className="flex justify-center">
+                        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1 cursor-pointer hover:text-foreground">
+                            Expand ▼
+                        </span>
+                    </div>
+                </div>
+
+                {/* Personality Profile */}
+                <div className="space-y-2">
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Personality Profile (OCEAN)</h3>
+                    <div className="w-full md:w-1/3 space-y-2">
+                        {character.ocean.map(stat => <StatRow key={stat.label} {...stat} />)}
+                    </div>
+                </div>
+
+                {/* Bottom Tabs */}
+                <div className="pt-8">
                     <Tabs defaultValue="bio" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="bio">Biography</TabsTrigger>
-                            <TabsTrigger value="inventory">Inventory</TabsTrigger>
-                            <TabsTrigger value="spells">Spells</TabsTrigger>
+                        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
+                            {['Relationships (PRQC)', 'Traits & Tags', 'Social Network', 'Biography (BioMachine)', 'Inventory', 'Notes'].map(tab => {
+                                const val = tab.split(' ')[0].toLowerCase();
+                                return (
+                                    <TabsTrigger
+                                        key={val}
+                                        value={val}
+                                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3 uppercase tracking-wide text-xs font-bold text-muted-foreground data-[state=active]:text-foreground"
+                                    >
+                                        {tab}
+                                    </TabsTrigger>
+                                )
+                            })}
                         </TabsList>
 
-                        <TabsContent value="bio">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>About {character.name}</CardTitle>
-                                    <CardDescription>History and Personality</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <p className="leading-relaxed">{character.backstory}</p>
-
-                                    <div className="mt-4">
-                                        <Label className="text-base font-semibold">Traits & Ideals</Label>
-                                        <ul className="list-disc list-inside text-muted-foreground mt-2 space-y-1">
-                                            <li>Determined to save his people.</li>
-                                            <li>Arrogant but charismatic.</li>
-                                            <li>Willing to do whatever it takes.</li>
-                                        </ul>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="inventory">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Equipment</CardTitle>
-                                    <CardDescription>Carried items and wealth</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ScrollArea className="h-[300px] pr-4">
-                                        <div className="space-y-4">
-                                            {character.inventory.map((item, i) => (
-                                                <div key={i} className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold">{item.name}</span>
-                                                        <span className="text-xs text-muted-foreground">{item.type}</span>
-                                                    </div>
-                                                    <Badge variant={item.rarity === 'Legendary' ? 'destructive' : 'secondary'}>{item.rarity}</Badge>
-                                                </div>
-                                            ))}
-                                            {/* Fillers for scroll */}
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <div key={`fill-${i}`} className="flex items-center justify-between p-3 border rounded-lg opacity-50">
-                                                    <span className="text-muted-foreground">Empty Slot</span>
-                                                </div>
-                                            ))}
+                        <TabsContent value="biography" className="mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <Card className="md:col-span-2 rounded-sm border shadow-sm">
+                                    <CardContent className="p-6">
+                                        <p className="text-lg leading-relaxed text-foreground">
+                                            {character.bio.split('\n\n')[0]}
+                                        </p>
+                                        <div className="mt-6 space-y-4">
+                                            <div>
+                                                <span className="font-bold">Traits:</span> Analytical, Charming, Opportunist.
+                                            </div>
+                                            <div>
+                                                <span className="font-bold">Life Events:</span> 'Political Scandal', 'Career Pivot'.
+                                            </div>
                                         </div>
-                                    </ScrollArea>
-                                </CardContent>
-                                <CardFooter className="justify-between border-t pt-4">
-                                    <div className="flex gap-4 text-sm font-medium">
-                                        <span><span className="text-yellow-600">GP</span> 1,240</span>
-                                        <span><span className="text-gray-400">SP</span> 45</span>
-                                        <span><span className="text-orange-700">CP</span> 12</span>
-                                    </div>
-                                    <Button size="sm">Add Item</Button>
-                                </CardFooter>
-                            </Card>
-                        </TabsContent>
+                                    </CardContent>
+                                </Card>
 
-                        <TabsContent value="spells">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Spellbook</CardTitle>
-                                    <CardDescription>Prepared Spells (DC 17)</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {['Fireball', 'Counterspell', 'Misty Step', 'Shield', 'Magic Missile', 'Detect Magic'].map((spell) => (
-                                            <div key={spell} className="p-3 border rounded-md flex justify-between items-center">
-                                                <span>{spell}</span>
-                                                <Badge variant="outline">Lvl 3</Badge>
+                                <Card className="rounded-sm border bg-muted/20 shadow-sm">
+                                    <CardContent className="p-6 space-y-4">
+                                        <h4 className="font-bold uppercase tracking-wide text-sm mb-4">Relationship Snapshot</h4>
+                                        {[
+                                            { label: "Satisfaction", value: 80 },
+                                            { label: "Commitment", value: 65 },
+                                            { label: "Intimacy", value: 40 },
+                                            { label: "Trust", value: 50 },
+                                            { label: "Passion", value: 70 },
+                                        ].map(stat => (
+                                            <div key={stat.label} className="space-y-1">
+                                                <span className="text-xs font-semibold uppercase">{stat.label}</span>
+                                                <div className="h-3 w-full bg-muted rounded-full overflow-hidden border">
+                                                    <div className="h-full bg-blue-600" style={{ width: `${stat.value}%` }} />
+                                                </div>
                                             </div>
                                         ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>
