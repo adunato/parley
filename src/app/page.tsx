@@ -1,38 +1,50 @@
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
-export default function LandingPage() {
+export default function MainMenu() {
   return (
-    <main className="flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-8">
-      <div className="w-full max-w-4xl p-8 space-y-8">
-        <h1 className="text-5xl font-extrabold text-center text-gray-900 dark:text-white">
-          Welcome to Parley
-        </h1>
-        <p className="text-lg text-center text-gray-600 dark:text-gray-300">
-          Your text-based adventure awaits.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/character-config" className="w-full sm:w-auto">
-            <button className="w-full px-8 py-3 text-lg font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Create Character
-            </button>
-          </Link>
-          <Link href="/persona-config" className="w-full sm:w-auto">
-            <button className="w-full px-8 py-3 text-lg font-semibold text-gray-900 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-              Define Persona
-            </button>
-          </Link>
-          <Link href="/world-info" className="w-full sm:w-auto">
-            <button className="w-full px-8 py-3 text-lg font-semibold text-gray-900 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-              World Information
-            </button>
-          </Link>
-          <Link href="/chat" className="w-full sm:w-auto">
-            <button className="w-full px-8 py-3 text-lg font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-              Start Chat
-            </button>
-          </Link>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+      <div className="w-full max-w-md text-center space-y-12">
+        <div className="space-y-4">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+            PARLEY
+          </h1>
+          <p className="text-lg text-gray-400 font-oswald tracking-widest uppercase">
+            Interactive Fiction Engine
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 w-64 mx-auto">
+          {/* Main Menu Buttons */}
+          <Button
+            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all opacity-50 cursor-not-allowed"
+            disabled
+          >
+            New Game
+          </Button>
+
+          <Button
+            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all opacity-50 cursor-not-allowed"
+            disabled
+          >
+            Continue
+          </Button>
+
+          <Button
+            asChild
+            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-white text-black hover:bg-gray-200 border-0 transition-all"
+          >
+            <Link href="/character-config">
+              Configuration
+            </Link>
+          </Button>
+        </div>
+
+        <div className="pt-12 text-xs text-gray-600 font-mono">
+          v0.1.0 • Pre-Alpha Build
         </div>
       </div>
-    </main>
+    </div>
   );
 }
