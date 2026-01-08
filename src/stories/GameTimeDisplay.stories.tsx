@@ -10,9 +10,13 @@ const meta = {
     tags: ['autodocs'],
     argTypes: {
         day: { control: 'number' },
+        timeOfDay: {
+            control: 'select',
+            options: ['Morning', 'Afternoon', 'Evening', 'Night'],
+        },
         weather: {
             control: 'select',
-            options: ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Stormy', 'Clear Night'],
+            options: ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Stormy', 'Clear'],
         },
     },
 } satisfies Meta<typeof GameTimeDisplay>;
@@ -20,16 +24,42 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const Morning: Story = {
     args: {
         day: 1,
+        timeOfDay: 'Morning',
         weather: 'Sunny',
+    },
+};
+
+export const Afternoon: Story = {
+    args: {
+        day: 1,
+        timeOfDay: 'Afternoon',
+        weather: 'Sunny',
+    },
+};
+
+export const Evening: Story = {
+    args: {
+        day: 1,
+        timeOfDay: 'Evening',
+        weather: 'Sunny',
+    },
+};
+
+export const Night: Story = {
+    args: {
+        day: 1,
+        timeOfDay: 'Night',
+        weather: 'Clear',
     },
 };
 
 export const Cloudy: Story = {
     args: {
         day: 2,
+        timeOfDay: 'Afternoon',
         weather: 'Cloudy',
     },
 };
@@ -37,6 +67,7 @@ export const Cloudy: Story = {
 export const Rainy: Story = {
     args: {
         day: 3,
+        timeOfDay: 'Afternoon',
         weather: 'Rainy',
     },
 };
@@ -44,6 +75,7 @@ export const Rainy: Story = {
 export const Stormy: Story = {
     args: {
         day: 4,
+        timeOfDay: 'Night',
         weather: 'Stormy',
     },
 };
@@ -51,13 +83,7 @@ export const Stormy: Story = {
 export const Snowy: Story = {
     args: {
         day: 5,
+        timeOfDay: 'Morning',
         weather: 'Snowy',
-    },
-};
-
-export const Night: Story = {
-    args: {
-        day: 1,
-        weather: 'Clear Night',
     },
 };
