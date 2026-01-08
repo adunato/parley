@@ -3,6 +3,13 @@
 import { useParleyStore } from "@/lib/store";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { SettingsManager } from "./SettingsManager";
 
 interface Model {
@@ -20,10 +27,29 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
         chatModel, setChatModel,
         summarizationModel, setSummarizationModel,
         generationModel, setGenerationModel,
+        theme, setTheme
     } = useParleyStore();
 
     return (
         <div className="space-y-8 pt-6">
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Appearance</h2>
+                </div>
+                <Label htmlFor="theme-select" className="sr-only">Theme</Label>
+                <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger id="theme-select" className="w-full">
+                        <SelectValue placeholder="Select a theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="demiplane-light">Demiplane Light (Parchment)</SelectItem>
+                        <SelectItem value="demiplane-dark">Demiplane Dark (Void)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </section>
+
             <section className="space-y-4">
                 <div className="border-b border-border pb-2">
                     <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Chat Model</h2>

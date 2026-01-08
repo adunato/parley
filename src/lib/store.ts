@@ -43,7 +43,11 @@ interface ParleyStore {
     setAvatarGenerationSettings: (settings: Partial<AvatarGenerationSettings>) => void;
     systemPromptTemplate: string;
     setSystemPromptTemplate: (template: string) => void;
+    theme: string;
+    setTheme: (theme: string) => void;
 }
+
+export type Theme = 'light' | 'dark' | 'demiplane-light' | 'demiplane-dark';
 
 export const useParleyStore = create<ParleyStore>()(
     devtools(
@@ -164,6 +168,8 @@ Your job is to embody the character consistently. Stay **in-character**, do **no
 
 If {{personaName}} acts in a way that aligns with your character’s personality, or their persona is favorable to your character, respond positively. If they act in opposition (e.g. their persona is unfavorable), respond accordingly. You can shift your attitude over time if justified.`,
                 setSystemPromptTemplate: (template) => set({ systemPromptTemplate: template }),
+                theme: 'dark',
+                setTheme: (theme) => set({ theme }),
             }),
             {
                 name: 'parley-storage',

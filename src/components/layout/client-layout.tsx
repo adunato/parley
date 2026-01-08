@@ -1,23 +1,32 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
+import { useParleyStore } from "@/lib/store";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { theme } = useParleyStore();
 
-    // Sidebar is hidden on Main Menu ("/") and Chat ("/chat")? 
-    // User Requirement: "Left sidebar should be hidden and only visible when we are in 'Configuration' mode"
-    // "For now only 'Configuration' works and will display the sidebar to the left."
-    // So I'll hide it on "/" and show it everywhere else for now?
-    // Let's assume "/" is the Main Menu.
+    useEffect(() => {
+        const root = window.document.documentElement;
 
+        // Reset classes and attributes
+        root.classList.remove("dark");
+        root.removeAttribute("data-mode");
+
+        if (theme === "dark") {
+            root.classList.add("dark");
+        } else if (theme === "demiplane-light") {
+            root.setAttribute("data-mode", "demiplane-light");
+        } else if (theme === "demiplane-dark") {
+            root.setAttribute("data-mode", "demiplane-dark");
+        }
+    }, [theme]);
+
+    // Sidebar logic
     const isMainMenu = pathname === "/";
-    // const isChat = pathname === "/chat"; 
-    // Should chat have sidebar? Usually no, it needs full screen. 
-    // But for now, "Configuration" links to /settings etc.
-
-    // Let's say we hide on Main Menu. 
     const showSidebar = !isMainMenu;
 
     return (
