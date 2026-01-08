@@ -2,49 +2,51 @@
 
 This project is a web-based text adventure game built with Next.js and TypeScript. The application presents a story with choices to the user.
 
-## MCP Servers
-
-### Serena
-
-- Activate project "parley" in Serena at the start
-- Use Serena to understand the codebase and its relationships between objects - use find_symbol and find_referencing_symbols when trying to understand how a symbol is used
-
-### Context7
-
-- Always use the context7 to verify code and design assumptions
-
 ## Project Structure
 
 The project follows the standard Next.js App Router structure.
 
--   The frontend is located in `src/app/page.tsx`.
--   The backend logic for the chat component is in an API route at `src/app/api/chat/route.ts`.
+```
+src/
+├── app/                  # Next.js App Router root
+│   ├── api/              # API Routes
+│   ├── chat/             # Chat page
+│   ├── character-config/ # Character configuration
+│   ├── settings/         # Settings page
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Landing page
+│   └── globals.css       # Global styles
+├── components/           # React components
+│   ├── ui/               # Reusable UI components
+│   └── [feature]/        # Feature-specific components
+├── lib/                  # Core application logic
+│   ├── engine/           # Game engine logic (Analyst, Judge, etc.)
+│   ├── generator/        # Procedural generation (LLM based)
+│   ├── store/            # State management (Zustand)
+│   └── llm.ts            # LLM integration
+└── stories/              # Storybook stories
+```
+
+-   The frontend is located in `src/app/page.tsx` and other route directories.
+-   The backend logic for the chat component is in `src/app/api/chat/route.ts`.
 -   Static assets and global styles are in `src/app/`.
--   TypeScript types are defined within the relevant components or imported from external libraries.
+-   TypeScript types are defined within the relevant components or imported from `src/lib/types.ts`.
 
-## Code Design
+## Code Editing Process
 
-When given a design document as input, you should always wait for user approval of the design before making any changes to the code.
+**For EVERY change, you MUST follow these steps:**
+1. Assign a dedicated CR number (in `change_requests`) and create an associated branch, using an HLD to capture even just a summary of changes. 
+2. Ask clarifying questions if you don't understand the user prompt. 
+3. Assess the changes and plan implementation steps *before* editing code. 
+4. After changes are completed, build the project by running `npm run build`. 
+5. Always commit after any code changes.
 
-## Change Requests
+## React Components Design
 
-Each change should have a dedicated CR number (in change_requests) and associated branch. HLD should be used, even if just to capture the summary of the changes.
-
-## Code Editing Steps
-
-1. Ask questions is you don't understand the user prompt. 
-2. Assess the changes and plan the implementation steps before editing the code.
-3. After the changes have been completed, build the project
-
-## Build Project
-To compile the project and prepare it for deployment, run:
-    ```bash
-    npm run build
-    ```
-
-## Git commit rules
-
-Always commit after any code changes.
+ When working with React components, follow these guidelines:
+ 1. **Reuse First**: Always check `src/components/ui` for existing components before creating a new one.
+ 2. **Design for Reusability**: If a new component is needed, ensure it is designed in a generic, reusable way rather than being tightly coupled to a specific feature.
+ 3. **Storybook Documentation**: After creating a new component, you MUST create a corresponding Storybook story in `src/stories/` to document its usage and variations.
 
 ---
 
