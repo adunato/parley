@@ -28,11 +28,13 @@ export function TextGenerationSettings({ prompts, onSave, onReset }: TextGenerat
     );
 
     return (
-        <div className="space-y-4 pt-4">
-            <h3 className="text-lg font-medium">Text Generation Prompts</h3>
-            <p className="text-sm text-muted-foreground">
-                Configure the templates used for generating text, characters, relationships, and analysis.
-            </p>
+        <div className="space-y-6 pt-6">
+            <div className="border-b border-border pb-4">
+                <h3 className="text-lg font-display uppercase tracking-wider font-bold text-foreground">Text Generation Prompts</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Configure the templates used for generating text, characters, relationships, and analysis.
+                </p>
+            </div>
             <PromptEditor prompts={textPrompts} onSave={onSave} onReset={onReset} />
         </div>
     );

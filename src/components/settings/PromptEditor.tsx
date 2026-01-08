@@ -74,18 +74,18 @@ export function PromptEditor({ prompts, onSave, onReset }: PromptEditorProps) {
 
     const currentConfig = prompts[selectedPromptId];
 
-    if (!currentConfig) return <div>Loading prompts...</div>;
+    if (!currentConfig) return <div className="text-sm text-muted-foreground animate-pulse">Loading prompts...</div>;
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="w-1/2">
-                    <Label htmlFor="prompt-select">Select Prompt to Edit</Label>
+        <div className="space-y-6">
+            <div className="flex items-end justify-between gap-4">
+                <div className="w-1/2 space-y-2">
+                    <Label htmlFor="prompt-select" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Prompt to Edit</Label>
                     <Select value={selectedPromptId} onValueChange={handlePromptChange}>
-                        <SelectTrigger id="prompt-select">
+                        <SelectTrigger id="prompt-select" className="h-10">
                             <SelectValue placeholder="Select a prompt" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[300px]">
                             {Object.values(prompts).map((p) => (
                                 <SelectItem key={p.id} value={p.id}>
                                     {p.id}
@@ -94,20 +94,21 @@ export function PromptEditor({ prompts, onSave, onReset }: PromptEditorProps) {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-x-2">
-                    <Button variant="outline" onClick={handleReset} disabled={!selectedPromptId}>
+                <div className="space-x-2 pb-0.5">
+                    <Button variant="outline" onClick={handleReset} disabled={!selectedPromptId} className="uppercase tracking-wider font-bold text-xs">
                         Reset Default
                     </Button>
-                    <Button onClick={handleSave} disabled={!isDirty}>
+                    <Button onClick={handleSave} disabled={!isDirty} className="uppercase tracking-wider font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90">
                         Save Changes
                     </Button>
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <Label>{currentConfig.description}</Label>
-                <div className="text-xs text-muted-foreground p-2 bg-muted rounded-md overflow-x-auto whitespace-normal break-words">
-                    <strong>Variables:</strong> {currentConfig.variables.map(v => `{{${v}}}`).join(", ")}
+            <div className="space-y-2 bg-muted/20 p-4 rounded-md border border-border">
+                <Label className="text-sm font-semibold text-foreground">{currentConfig.description}</Label>
+                <div className="text-xs text-muted-foreground pt-1">
+                    <span className="font-bold uppercase tracking-wider text-[10px] text-muted-foreground/70 mr-2">Variables:</span>
+                    <span className="font-mono bg-muted px-1 py-0.5 rounded">{currentConfig.variables.map(v => `{{${v}}}`).join(", ")}</span>
                 </div>
             </div>
 

@@ -23,9 +23,11 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
     } = useParleyStore();
 
     return (
-        <div className="space-y-8 pt-4">
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Chat Model</h2>
+        <div className="space-y-8 pt-6">
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Chat Model</h2>
+                </div>
                 <Label htmlFor="chat-model-select" className="sr-only">Chat Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -39,8 +41,10 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Summarization Model</h2>
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Summarization Model</h2>
+                </div>
                 <Label htmlFor="summarization-model-select" className="sr-only">Summarization Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -54,8 +58,10 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Generation Model</h2>
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Generation Model</h2>
+                </div>
                 <Label htmlFor="generation-model-select" className="sr-only">Generation Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -69,8 +75,8 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section className="pt-4 border-t">
-                <h2 className="text-xl font-semibold mb-2">Data Management</h2>
+            <section className="pt-8 border-t border-border space-y-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Data Management</h2>
                 <div className="flex gap-4">
                     <SettingsManager />
                 </div>
