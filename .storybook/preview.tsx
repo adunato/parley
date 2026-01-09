@@ -51,6 +51,15 @@ const preview: Preview = {
         if (theme === 'dark' || theme === 'demiplane-dark') {
           htmlTag.classList.add('dark');
         }
+
+        // Apply font variables to root to ensure visibility for :root variables in globals.css
+        htmlTag.classList.add(inter.variable, cinzel.variable, oswald.variable);
+
+        return () => {
+          // Clean up on unmount or theme change if necessary, strictly speaking only necessary if distinct fonts per theme which is not the case here
+          // but good practice to keep the DOM clean if we were switching. 
+          // For now, adding is idempotent enough for this context as these are constant.
+        };
       }, [theme]);
 
       // Determine wrapper class based on theme
@@ -62,7 +71,7 @@ const preview: Preview = {
       }
 
       return (
-        <div className={`${getThemeClass(theme)} ${inter.variable} ${cinzel.variable} ${oswald.variable} bg-background text-foreground min-h-screen p-4 font-sans`}>
+        <div className={`${getThemeClass(theme)} bg-background text-foreground min-h-screen p-4 font-sans`}>
           <Story />
         </div>
       );
