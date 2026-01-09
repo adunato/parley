@@ -6,7 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { useParleyStore } from '@/lib/store';
 import { useEntityStore } from '@/lib/entityStore';
 import { useEffect, useState } from 'react';
-import { Sparkles, Type, Trash2 } from 'lucide-react';
+import { Trash2, Type, Sparkles } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +29,12 @@ import { ProjectManager } from '@/components/world/ProjectManager';
 import { ProjectService } from '@/lib/services/projectService';
 
 export default function WorldInfoPage() {
-  const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData: clearParleyData } = useParleyStore();
+  const {
+    worldDescription, setWorldDescription,
+    aiStyle, setAiStyle,
+    clearAllData: clearParleyData,
+    worldMapImage, setWorldMapImage
+  } = useParleyStore();
   const { clearAllData: clearEntityData } = useEntityStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
@@ -131,6 +138,10 @@ export default function WorldInfoPage() {
     setIsClearDataDialogOpen(false);
   };
 
+  const handleMapRemove = () => {
+    setWorldMapImage('');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="type-h2 mb-4">World Information</h1>
@@ -215,7 +226,29 @@ export default function WorldInfoPage() {
                 rows={10}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
+
+            {/* World Map Section */}
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4 border-t pt-4">
+              <div className="flex flex-col gap-2 md:col-span-1 md:items-end">
+                <label className="type-ui-label text-muted-foreground">
+                  World Map
+                </label>
+                <div className="text-xs text-muted-foreground text-right">
+                  Recommended: 2560x1440
+                </div>
+              </div>
+
+              <div className="col-span-3">
+                <ImageUpload
+                  value={worldMapImage}
+                  onChange={setWorldMapImage}
+                  onRemove={handleMapRemove}
+                  label="Upload World Map"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4 border-t pt-4">
               <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
                 <label htmlFor="aiStyle" className="type-ui-label text-muted-foreground">
                   AI Style

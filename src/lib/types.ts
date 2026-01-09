@@ -72,6 +72,11 @@ export interface Location {
   id: string;
   name: string;
   description: string;
+  image?: string;
+  coordinates?: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface CharacterGroup {
