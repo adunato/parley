@@ -19,11 +19,11 @@ export default function MainMenu() {
       locations,
       characterGroups
     });
-    router.push('/chat');
+    router.push('/world_map');
   };
 
   const handleContinue = () => {
-    router.push('/chat');
+    router.push('/world_map');
   };
 
   return (

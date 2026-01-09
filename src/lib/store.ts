@@ -45,6 +45,8 @@ interface ParleyStore {
     setSystemPromptTemplate: (template: string) => void;
     theme: string;
     setTheme: (theme: string) => void;
+    worldMapImage?: string;
+    setWorldMapImage: (image: string) => void;
 }
 
 export type Theme = 'light' | 'dark' | 'demiplane-light' | 'demiplane-dark';
@@ -170,6 +172,8 @@ If {{personaName}} acts in a way that aligns with your character’s personality
                 setSystemPromptTemplate: (template) => set({ systemPromptTemplate: template }),
                 theme: 'dark',
                 setTheme: (theme) => set({ theme }),
+                worldMapImage: '',
+                setWorldMapImage: (image) => set({ worldMapImage: image }),
             }),
             {
                 name: 'parley-storage',

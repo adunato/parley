@@ -6,7 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { useParleyStore } from '@/lib/store';
 import { useEntityStore } from '@/lib/entityStore';
 import { useEffect, useState } from 'react';
-import { Sparkles, Type, Trash2 } from 'lucide-react';
+import { Trash2, Type, Sparkles, Upload, ImageIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,12 @@ import { ProjectManager } from '@/components/world/ProjectManager';
 import { ProjectService } from '@/lib/services/projectService';
 
 export default function WorldInfoPage() {
-  const { worldDescription, setWorldDescription, aiStyle, setAiStyle, clearAllData: clearParleyData } = useParleyStore();
+  const {
+    worldDescription, setWorldDescription,
+    aiStyle, setAiStyle,
+    clearAllData: clearParleyData,
+    worldMapImage, setWorldMapImage
+  } = useParleyStore();
   const { clearAllData: clearEntityData } = useEntityStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isWorldPromptDialogOpen, setIsWorldPromptDialogOpen] = useState(false);
@@ -131,6 +137,21 @@ export default function WorldInfoPage() {
     setIsClearDataDialogOpen(false);
   };
 
+  const handleMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setWorldMapImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeWorldMap = () => {
+    setWorldMapImage('');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="type-h2 mb-4">World Information</h1>
@@ -215,110 +236,168 @@ export default function WorldInfoPage() {
                 rows={10}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
-              <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
-                <label htmlFor="aiStyle" className="type-ui-label text-muted-foreground">
-                  AI Style
-                </label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={handleGenerateAIStyle}
-                        disabled={isLoading}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        <span className="sr-only">Generate AI Style</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Generate AI Style (no prompt)</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <Dialog open={isAiStylePromptDialogOpen} onOpenChange={setIsAiStylePromptDialogOpen}>
-                      <TooltipTrigger asChild>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <Type className="h-4 w-4" />
-                            <span className="sr-only">Generate with Prompt</span>
-                          </Button>
-                        </DialogTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Generate AI Style with Custom Prompt</p>
-                      </TooltipContent>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Generate AI Style with Custom Prompt</DialogTitle>
-                          <DialogDescription>
-                            Enter your desired prompt for AI style creation here.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <Textarea
-                            id="aiStyleCustomPrompt"
-                            value={aiStyleDialogPrompt}
-                            onChange={(e) => setAiStyleDialogPrompt(e.target.value)}
-                            className="min-h-[150px]"
-                            rows={6}
-                            placeholder="e.g., 'A formal and verbose style, like a Victorian novel.'"
-                          />
-                        </div>
-                        <DialogFooter>
-                          <Button onClick={handleGenerateAIStyleWithPrompt} disabled={isLoading}>
-                            {isLoading ? 'Generating...' : 'Generate'}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </Tooltip>
-                </TooltipProvider>
+          </div>
+
+          {/* World Map Section */}
+          <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4 border-t pt-4">
+            <div className="flex flex-col gap-2 md:col-span-1 md:items-end">
+              <label className="type-ui-label text-muted-foreground">
+                World Map
+              </label>
+              <div className="text-xs text-muted-foreground text-right">
+                Recommended: 2560x1440
               </div>
-              <Textarea
-                id="aiStyle"
-                value={aiStyle}
-                onChange={(e) => setAiStyle(e.target.value)}
-                className="col-span-3 min-h-[200px]"
-                rows={10}
-              />
+            </div>
+
+            <div className="col-span-3">
+              {!worldMapImage ? (
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 flex flex-col items-center justify-center gap-4 hover:bg-muted/10 transition-colors">
+                  <div className="p-4 bg-muted rounded-full">
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium">Upload World Map</p>
+                    <p className="text-sm text-muted-foreground">Click to browse or drag and drop</p>
+                  </div>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="max-w-xs"
+                    onChange={handleMapUpload}
+                  />
+                </div>
+              ) : (
+                <div className="relative group rounded-lg overflow-hidden border bg-background">
+                  <img
+                    src={worldMapImage}
+                    alt="World Map"
+                    className="w-full h-auto max-h-[400px] object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button variant="destructive" size="sm" onClick={removeWorldMap}>
+                      <Trash2 className="h-4 w-4 mr-2" /> Remove Map
+                    </Button>
+                    <div className="relative">
+                      <Button variant="secondary" size="sm" className="relative">
+                        <Upload className="h-4 w-4 mr-2" /> Replace
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={handleMapUpload}
+                        />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <Dialog open={isClearDataDialogOpen} onOpenChange={setIsClearDataDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Clear All Data
+
+          <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4 border-t pt-4">
+            <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
+              <label htmlFor="aiStyle" className="type-ui-label text-muted-foreground">
+                AI Style
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleGenerateAIStyle}
+                      disabled={isLoading}
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      <span className="sr-only">Generate AI Style</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Generate AI Style (no prompt)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <Dialog open={isAiStylePromptDialogOpen} onOpenChange={setIsAiStylePromptDialogOpen}>
+                    <TooltipTrigger asChild>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <Type className="h-4 w-4" />
+                          <span className="sr-only">Generate with Prompt</span>
+                        </Button>
+                      </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Generate AI Style with Custom Prompt</p>
+                    </TooltipContent>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Generate AI Style with Custom Prompt</DialogTitle>
+                        <DialogDescription>
+                          Enter your desired prompt for AI style creation here.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <Textarea
+                          id="aiStyleCustomPrompt"
+                          value={aiStyleDialogPrompt}
+                          onChange={(e) => setAiStyleDialogPrompt(e.target.value)}
+                          className="min-h-[150px]"
+                          rows={6}
+                          placeholder="e.g., 'A formal and verbose style, like a Victorian novel.'"
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button onClick={handleGenerateAIStyleWithPrompt} disabled={isLoading}>
+                          {isLoading ? 'Generating...' : 'Generate'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Textarea
+              id="aiStyle"
+              value={aiStyle}
+              onChange={(e) => setAiStyle(e.target.value)}
+              className="col-span-3 min-h-[200px]"
+              rows={10}
+            />
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Dialog open={isClearDataDialogOpen} onOpenChange={setIsClearDataDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear All Data
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you absolutely sure?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete all your data from the application.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsClearDataDialogOpen(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={handleClearAllData}>
+                Yes, delete everything
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone. This will permanently delete all your data from the application.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsClearDataDialogOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleClearAllData}>
-                  Yes, delete everything
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardFooter>
-      </Card>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardFooter>
+    </Card>
     </div >
   );
 }
