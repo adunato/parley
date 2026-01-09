@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import { Location, Character } from '@/lib/types'; // Assuming Location is in types.ts
 import { Button } from "@/components/ui/button";

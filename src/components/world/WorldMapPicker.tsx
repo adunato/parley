@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
