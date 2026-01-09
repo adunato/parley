@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useParleyStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -26,13 +27,18 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     }, [theme]);
 
     // Sidebar logic
+    // Sidebar logic
     const isMainMenu = pathname === "/";
-    const showSidebar = !isMainMenu;
+    const isWorldMap = pathname === "/world_map";
+    const showSidebar = !isMainMenu && !isWorldMap;
 
     return (
         <div className="flex min-h-screen">
             {showSidebar && <Sidebar />}
-            <main className="flex-1 overflow-auto bg-background p-6">
+            <main className={cn(
+                "flex-1 overflow-auto bg-background",
+                !isWorldMap && "p-6" // Only add padding if NOT world map
+            )}>
                 {children}
             </main>
         </div>

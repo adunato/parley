@@ -28,7 +28,37 @@ export function ImageUpload({
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                onChange(reader.result as string);
+                const img = new Image();
+                img.src = reader.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Max dimensions (e.g., 800px width/height to save space)
+                    const MAX_SIZE = 800; // Reduced from original size to fit localStorage
+
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG with 0.7 quality
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    onChange(compressedBase64);
+                };
             };
             reader.readAsDataURL(file);
         }

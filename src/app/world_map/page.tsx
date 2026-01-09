@@ -2,6 +2,7 @@
 
 import { useParleyStore } from '@/lib/store';
 import { useGameStore } from '@/lib/store/gameStore';
+import { useEntityStore } from '@/lib/entityStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
@@ -11,7 +12,13 @@ import { WorldMapDisplay } from '@/components/world/WorldMapDisplay';
 export default function WorldMapPage() {
     const router = useRouter();
     const { worldMapImage } = useParleyStore();
-    const { locations } = useGameStore();
+    const gameStore = useGameStore();
+    const entityStore = useEntityStore();
+
+    // Fallback to configuration locations if game state is not populated (e.g. dev/building mode)
+    const displayLocations = (gameStore.locations && gameStore.locations.length > 0)
+        ? gameStore.locations
+        : entityStore.locations;
 
     const handleBack = () => {
         router.push('/');
@@ -29,7 +36,7 @@ export default function WorldMapPage() {
                 <div className="absolute inset-0 flex items-center justify-center p-4">
                     <WorldMapDisplay
                         mapImage={worldMapImage}
-                        locations={locations}
+                        locations={displayLocations}
                         onLocationClick={handleEnterChat}
                         className="w-full h-full bg-transparent border-0"
                     />
