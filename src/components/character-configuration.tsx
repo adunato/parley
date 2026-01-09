@@ -1,7 +1,7 @@
 import { useParleyStore } from "@/lib/store"
-import { Character, Persona as PlayerPersona } from "@/lib/types"
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Character, Persona as PlayerPersona, Relationship } from "@/lib/types"
+import { useEffect, useState, useRef } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { ProceduralGeneratorDialog } from "@/components/character/procedural-generator-dialog";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, User, Save, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2 } from "lucide-react"
+import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -37,121 +37,82 @@ import { Menu } from "lucide-react";
 
 import RelationshipDisplay from "@/components/relationship-display";
 import { useEntityStore } from "@/lib/entityStore";
+import { useDebouncedCallback } from "use-debounce";
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations } = useEntityStore()
+
+    // Selection state
     const [selectedId, setSelectedId] = useState<string | null>(null)
-    const [editedCharacter, setEditedCharacter] = useState<Character | null>(null)
+
+    // Local buffer state (for instant/debounced save)
+    const [localCharacter, setLocalCharacter] = useState<Character | null>(null);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const isDirtyRef = useRef(false);
+
+    // Dialog & UI states
     const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
     const [isCharacterPromptDialogOpen, setIsCharacterPromptDialogOpen] = useState(false);
     const [dialogCharacterPrompt, setDialogCharacterPrompt] = useState('');
     const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
     const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
     const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
-
-    // Procedural Generator State
-    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
-
-    // Relationship Generator State
-    const [isGeneratingRelationship, setIsGeneratingRelationship] = useState(false);
+    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false); // Procedural Generator State
+    const [isGeneratingRelationship, setIsGeneratingRelationship] = useState(false); // Relationship Generator State
     const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
     const [relationshipContext, setRelationshipContext] = useState("");
 
-    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
-        if (!editedCharacter && !selectedCharacter) return;
-
-        // Helper to update field even if nested
-        const update = (section: any, field: string, value: any) => handleInputChange(section, field, value);
-
-        update("basicInfo", "name", data.name);
-        update("basicInfo", "age", data.age);
-        update("basicInfo", "gender", data.gender);
-        update("basicInfo", "background", data.background);
-        update("basicInfo", "role", data.role);
-    };
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !editedCharacter) return;
-
-        const formData = new FormData();
-        formData.append('avatar', file);
-
+    // Debounced save function
+    const debouncedSave = useDebouncedCallback((character: Character) => {
+        setSaveStatus('saving');
         try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                handleInputChange("basicInfo", "avatar", data.url);
-            } else {
-                console.error('Failed to upload image', await res.text());
-                alert('Failed to upload image.');
-            }
+            updateCharacter(character);
+            setSaveStatus('saved');
+            isDirtyRef.current = false;
+            setTimeout(() => setSaveStatus(prev => prev === 'saved' ? 'idle' : prev), 2000);
         } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('An unexpected error occurred during image upload.');
+            console.error("Failed to save character", error);
+            setSaveStatus('error');
         }
-    };
+    }, 1000);
 
+    // Sync selectedId with localCharacter
     const selectedCharacter = characters.find((c) => c.id === selectedId)
 
     useEffect(() => {
-        const character = characters.find((c) => c.id === selectedId);
-        if (character) {
-            setEditedCharacter({ ...character });
-            // Initialize characterGroupMemberships based on which groups this character belongs to
-            const currentGroupIds = characterGroups
-                .filter(group => group.characters.includes(character.id))
-                .map(group => group.id);
-            setCharacterGroupMemberships(currentGroupIds);
+        // This effect is mainly for ensuring we load the character into local state when selected
+        if (selectedCharacter) {
+            // Only update local from store if NOT dirty or if ID changed.
+            // If ID matches and we are dirty, we rely on local state.
+            // If ID matches and Not dirty, we sync (in case of background updates?)
+            if (!isDirtyRef.current || (localCharacter?.id !== selectedCharacter.id)) {
+                setLocalCharacter({ ...selectedCharacter });
+
+                // Initialize characterGroupMemberships based on which groups this character belongs to
+                const currentGroupIds = characterGroups
+                    .filter(group => group.characters.includes(selectedCharacter.id))
+                    .map(group => group.id);
+                setCharacterGroupMemberships(currentGroupIds);
+            }
         } else {
-            setEditedCharacter(null);
-            setCharacterGroupMemberships([]);
+            // Only clear if we really don't have a selected character (e.g. deleted or empty list)
+            if (!selectedId) {
+                setLocalCharacter(null);
+                setCharacterGroupMemberships([]);
+            }
         }
-    }, [selectedId, characters, characterGroups]);
+    }, [selectedId, selectedCharacter, characterGroups]);
 
     const handleSelect = (character: Character) => {
-        setSelectedId(character.id)
-        setIsEditing(false);
-    }
-
-    const handleSave = () => {
-        if (editedCharacter) {
-            if (characters.some(c => c.id === editedCharacter.id)) {
-                updateCharacter(editedCharacter)
-            } else {
-                addCharacter({ ...editedCharacter, id: editedCharacter.id || (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString() })
-            }
-
-            // Update character group memberships
-            characterGroups.forEach(group => {
-                const isMember = characterGroupMemberships.includes(group.id);
-                const alreadyInGroup = group.characters.includes(editedCharacter.id);
-
-                if (isMember && !alreadyInGroup) {
-                    // Add character to group
-                    updateCharacterGroup({ ...group, characters: [...group.characters, editedCharacter.id] });
-                } else if (!isMember && alreadyInGroup) {
-                    // Remove character from group
-                    updateCharacterGroup({ ...group, characters: group.characters.filter(charId => charId !== editedCharacter.id) });
-                }
-            });
-
-            setEditedCharacter(null)
-            setIsEditing(false);
-            setCharacterGroupMemberships([]); // Clear memberships after saving
+        if (localCharacter && isDirtyRef.current) {
+            debouncedSave.flush();
         }
-    }
-
-    const handleCancel = () => {
-        setEditedCharacter(null)
-        setIsEditing(false);
+        setSelectedId(character.id)
     }
 
     const handleInputChange = (
@@ -159,7 +120,7 @@ export default function CharacterConfiguration() {
         field: string,
         value: string | number | string[] | undefined
     ) => {
-        setEditedCharacter((prev) => {
+        setLocalCharacter((prev) => {
             if (!prev) return null
 
             const newCharacter = { ...prev }
@@ -172,18 +133,79 @@ export default function CharacterConfiguration() {
             } else {
                 (newCharacter as any)[field] = value // For top-level fields if any
             }
+
+            isDirtyRef.current = true;
+            setSaveStatus('saving');
+            debouncedSave(newCharacter);
             return newCharacter
         })
     }
 
-    const handleLocationChange = (locationId: string) => {
-        setEditedCharacter((prev) => {
+    // Helper to update field even if nested
+    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
+        if (!localCharacter) return;
+
+        // We need to batch these updates or handle them sequentially
+        // For simplicity, let's just make a new object and set it once
+        setLocalCharacter((prev) => {
             if (!prev) return null;
-            return { ...prev, locationId: locationId === "unassigned" ? undefined : locationId };
+            const newChar = {
+                ...prev,
+                basicInfo: {
+                    ...prev.basicInfo,
+                    name: data.name,
+                    age: data.age,
+                    gender: data.gender,
+                    background: data.background,
+                    role: data.role
+                }
+            };
+            isDirtyRef.current = true;
+            setSaveStatus('saving');
+            debouncedSave(newChar);
+            return newChar;
+        });
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !localCharacter) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        setSaveStatus('saving');
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            if (res.ok) {
+                const data = await res.json();
+                handleInputChange("basicInfo", "avatar", data.url);
+            } else {
+                console.error('Failed to upload image', await res.text());
+                setSaveStatus('error');
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setSaveStatus('error');
+        }
+    };
+
+    const handleLocationChange = (locationId: string) => {
+        setLocalCharacter((prev) => {
+            if (!prev) return null;
+            const updated = { ...prev, locationId: locationId === "unassigned" ? undefined : locationId };
+            isDirtyRef.current = true;
+            setSaveStatus('saving');
+            debouncedSave(updated);
+            return updated;
         });
     }
 
     const handleAddCharacter = () => {
+        if (localCharacter && isDirtyRef.current) {
+            debouncedSave.flush();
+        }
+
         const newId = (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString()
         const newCharacter: Character = {
             id: newId,
@@ -200,50 +222,142 @@ export default function CharacterConfiguration() {
             },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
             idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
-            // preferences removed
             relationships: [],
         }
         addCharacter(newCharacter)
         setSelectedId(newId)
-        setEditedCharacter(newCharacter)
-        setIsEditing(true);
+        // Set local character immediately to avoid flicker/race condition
+        setLocalCharacter(newCharacter)
+        isDirtyRef.current = false;
     }
 
     const handleDeleteCharacter = () => {
-        if (editedCharacter && editedCharacter.id) {
-            deleteCharacter(editedCharacter.id)
-            setEditedCharacter(null)
-            setSelectedId(characters[0]?.id || null)
-            setIsEditing(false);
+        if (localCharacter && localCharacter.id) {
+            const idToDelete = localCharacter.id;
+            deleteCharacter(idToDelete)
+            // Just clear local state, the effect will pick up the new selectedId (or lack thereof)
+            setLocalCharacter(null)
+
+            // Safety: Select another character if available
+            const remaining = characters.filter(c => c.id !== idToDelete);
+            if (remaining.length > 0) {
+                setSelectedId(remaining[0].id);
+            } else {
+                setSelectedId(null);
+            }
         }
     }
 
     const handleDeleteRelationship = (characterId: string, personaId: string) => {
-        if (editedCharacter) {
-            const updatedRelationships = editedCharacter.relationships.filter(
-                (rel) => !(rel.characterId === characterId && rel.personaId === personaId)
-            );
-            setEditedCharacter({ ...editedCharacter, relationships: updatedRelationships });
+        if (localCharacter) {
+            setLocalCharacter(prev => {
+                if (!prev) return null;
+                const updatedRelationships = prev.relationships.filter(
+                    (rel) => !(rel.characterId === characterId && rel.personaId === personaId)
+                );
+                const updated = { ...prev, relationships: updatedRelationships };
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedSave(updated);
+                return updated;
+            });
         }
     };
 
-    const displayCharacter = editedCharacter || selectedCharacter
+    const handleCreateRelationship = async () => {
+        if (!localCharacter || !relationshipPersonaId) return;
+
+        setIsGeneratingRelationship(true);
+        try {
+            const persona = playerPersonas.find(p => p.id === relationshipPersonaId);
+            if (!persona) return;
+
+            const response = await fetch('/api/generate/relationship', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    character: localCharacter,
+                    persona: persona,
+                    worldDescription: worldDescription,
+                    aiStyle: aiStyle,
+                    relationshipContext: relationshipContext
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newRelationship = {
+                    ...data.relationship,
+                    characterId: localCharacter.id,
+                    personaId: persona.id,
+                    chat_summaries: []
+                };
+
+                // Add to character relationships
+                setLocalCharacter(prev => {
+                    if (!prev) return null;
+                    const updated = { ...prev, relationships: [...prev.relationships, newRelationship] };
+                    // Force immediate save for critical structural changes
+                    updateCharacter(updated);
+                    return updated;
+                });
+
+                setIsRelationshipDialogOpen(false);
+                setRelationshipPersonaId("");
+                setRelationshipContext("");
+                setSaveStatus('saved');
+                setTimeout(() => setSaveStatus('idle'), 2000);
+            } else {
+                console.error('Failed to generate relationship');
+                alert('Failed to generate relationship');
+            }
+        } catch (error) {
+            console.error('Error generating relationship:', error);
+            alert('Error generating relationship');
+        } finally {
+            setIsGeneratingRelationship(false);
+        }
+    };
+
+    // Group Memberships Handling
+    const handleGroupToggle = (groupId: string) => {
+        if (!localCharacter) return;
+
+        const isMember = characterGroupMemberships.includes(groupId);
+        const newMemberships = isMember
+            ? characterGroupMemberships.filter(id => id !== groupId)
+            : [...characterGroupMemberships, groupId];
+
+        setCharacterGroupMemberships(newMemberships);
+
+        // Immediate Store Update for Groups (since they are separate entities)
+        const group = characterGroups.find(g => g.id === groupId);
+        if (group) {
+            const updatedGroup = {
+                ...group,
+                characters: isMember
+                    ? group.characters.filter(cid => cid !== localCharacter.id)
+                    : [...group.characters, localCharacter.id]
+            };
+            updateCharacterGroup(updatedGroup);
+        }
+    };
 
     const handleConvertToPersona = () => {
-        if (displayCharacter) {
+        if (localCharacter) {
             const newPersona: PlayerPersona = {
-                id: displayCharacter.id,
+                id: localCharacter.id,
                 basicInfo: {
-                    name: displayCharacter.basicInfo.name,
-                    age: displayCharacter.basicInfo.age,
-                    gender: displayCharacter.basicInfo.gender,
-                    role: displayCharacter.basicInfo.role,
-                    faction: displayCharacter.basicInfo.faction,
-                    reputation: displayCharacter.basicInfo.reputation,
-                    background: displayCharacter.basicInfo.background,
-                    firstImpression: displayCharacter.basicInfo.firstImpression,
-                    appearance: displayCharacter.basicInfo.appearance,
-                    avatar: displayCharacter.basicInfo.avatar,
+                    name: localCharacter.basicInfo.name,
+                    age: localCharacter.basicInfo.age,
+                    gender: localCharacter.basicInfo.gender,
+                    role: localCharacter.basicInfo.role,
+                    faction: localCharacter.basicInfo.faction,
+                    reputation: localCharacter.basicInfo.reputation,
+                    background: localCharacter.basicInfo.background,
+                    firstImpression: localCharacter.basicInfo.firstImpression,
+                    appearance: localCharacter.basicInfo.appearance,
+                    avatar: localCharacter.basicInfo.avatar,
                 },
             };
             addPlayerPersona(newPersona);
@@ -251,15 +365,16 @@ export default function CharacterConfiguration() {
         }
     };
 
+    // Generation Handlers (Character & Avatar)
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
             const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any } = {};
 
             // Context-Awareness: Inject existing data if available
-            if (displayCharacter) {
+            if (localCharacter) {
                 const context: any = {};
-                const info = displayCharacter.basicInfo;
+                const info = localCharacter.basicInfo;
 
                 if (info.name && info.name !== "New Character") context.name = info.name;
                 if (info.role) context.role = info.role;
@@ -299,23 +414,19 @@ export default function CharacterConfiguration() {
                         agreeableness: data.character.personality.agreeableness || 0,
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
-
-
                 };
 
-                if (selectedId && selectedCharacter) {
-                    // Overwrite the currently selected character
-                    const updatedCharacter = { ...selectedCharacter, ...generatedCharacterData, id: selectedId };
-                    updateCharacter(updatedCharacter);
-                    setSelectedId(updatedCharacter.id);
-                    setEditedCharacter(updatedCharacter);
+                if (localCharacter && localCharacter.id) {
+                    // Update existing
+                    setLocalCharacter(prev => {
+                        if (!prev) return null;
+                        const updated = { ...prev, ...generatedCharacterData, id: prev.id };
+                        updateCharacter(updated);
+                        return updated;
+                    });
                 } else {
-                    // Add as a new character
-                    const newId = (characters.length > 0 ? (parseInt(characters[characters.length - 1].id) + 1) : 1).toString();
-                    const newCharacter = { id: newId, ...generatedCharacterData };
-                    addCharacter(newCharacter);
-                    setSelectedId(newCharacter.id);
-                    setEditedCharacter(newCharacter);
+                    // This branch shouldn't really be hit if we always create a blank char first
+                    console.warn("Generated character but no local character selected");
                 }
             } else {
                 console.error('Failed to generate character:', data.error);
@@ -331,35 +442,26 @@ export default function CharacterConfiguration() {
         }
     };
 
-    const handleGenerateCharacter = () => {
-        generateCharacter("");
-    };
-
-    const handleGenerateCharacterWithPrompt = () => {
-        generateCharacter(dialogCharacterPrompt);
-    };
+    const handleGenerateCharacter = () => generateCharacter("");
+    const handleGenerateCharacterWithPrompt = () => generateCharacter(dialogCharacterPrompt);
 
     const handleGenerateAvatarDescription = async () => {
-        if (!displayCharacter) return;
+        if (!localCharacter) return;
         setIsGeneratingAvatar(true);
         try {
             const response = await fetch('/api/generate/avatar-description', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ characterOrPersonaData: displayCharacter }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ characterOrPersonaData: localCharacter }),
             });
             const data = await response.json();
             if (response.ok) {
                 setDialogAvatarPrompt(data.imageDescription);
                 setIsAvatarPromptDialogOpen(true);
             } else {
-                console.error('Failed to generate avatar description:', data.error);
                 alert('Error generating avatar description: ' + data.error);
             }
         } catch (error) {
-            console.error('Error generating avatar description:', error);
             alert('An unexpected error occurred while generating the avatar description.');
         } finally {
             setIsGeneratingAvatar(false);
@@ -367,14 +469,12 @@ export default function CharacterConfiguration() {
     };
 
     const handleGenerateAvatar = async () => {
-        if (!displayCharacter || !dialogAvatarPrompt) return;
+        if (!localCharacter || !dialogAvatarPrompt) return;
         setIsGeneratingAvatar(true);
         try {
             const imageResponse = await fetch('/api/generate/avatar-image', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageDescription: dialogAvatarPrompt,
                     overrides: avatarGenerationSettings
@@ -383,14 +483,13 @@ export default function CharacterConfiguration() {
             const imageData = await imageResponse.json();
 
             if (imageResponse.ok && imageData.imageData) {
-                // Convert base64 to Blob and then to File object for upload
                 const byteCharacters = atob(imageData.imageData);
                 const byteNumbers = new Array(byteCharacters.length);
                 for (let i = 0; i < byteCharacters.length; i++) {
                     byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
                 const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: 'image/png' }); // Assuming PNG for now
+                const blob = new Blob([byteArray], { type: 'image/png' });
                 const imageFile = new File([blob], `avatar_${Date.now()}.png`, { type: 'image/png' });
 
                 const formData = new FormData();
@@ -404,28 +503,14 @@ export default function CharacterConfiguration() {
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
                     const avatarUrl = `${uploadData.url}?t=${Date.now()}`;
-                    console.log('Setting avatar URL:', avatarUrl);
-
-                    if (editedCharacter) {
-                        handleInputChange("basicInfo", "avatar", avatarUrl);
-                    } else if (selectedCharacter) {
-                        // Directly update the store if we are not in edit mode
-                        const updatedCharacter = {
-                            ...selectedCharacter,
-                            basicInfo: { ...selectedCharacter.basicInfo, avatar: avatarUrl }
-                        };
-                        updateCharacter(updatedCharacter);
-                    }
+                    handleInputChange("basicInfo", "avatar", avatarUrl);
                 } else {
-                    console.error('Failed to upload generated image', await uploadResponse.text());
                     alert('Failed to upload generated image.');
                 }
             } else {
-                console.error('Failed to generate image:', imageData.error);
                 alert('Error generating image: ' + imageData.error);
             }
         } catch (error) {
-            console.error('Error generating avatar:', error);
             alert('An unexpected error occurred while generating the avatar.');
         } finally {
             setIsGeneratingAvatar(false);
@@ -434,61 +519,8 @@ export default function CharacterConfiguration() {
         }
     };
 
-    const handleCreateRelationship = async () => {
-        if (!displayCharacter || !relationshipPersonaId) return;
-
-        setIsGeneratingRelationship(true);
-        try {
-            const persona = playerPersonas.find(p => p.id === relationshipPersonaId);
-            if (!persona) return;
-
-            const response = await fetch('/api/generate/relationship', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    character: displayCharacter,
-                    persona: persona,
-                    worldDescription: worldDescription,
-                    aiStyle: aiStyle,
-                    relationshipContext: relationshipContext
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const newRelationship = {
-                    ...data.relationship,
-                    characterId: displayCharacter.id,
-                    personaId: persona.id,
-                    chat_summaries: []
-                };
-
-                // Add to character relationships
-                const updatedCharacter = {
-                    ...displayCharacter,
-                    relationships: [...displayCharacter.relationships, newRelationship]
-                };
-
-                if (editedCharacter) {
-                    setEditedCharacter(updatedCharacter);
-                } else {
-                    updateCharacter(updatedCharacter);
-                }
-
-                setIsRelationshipDialogOpen(false);
-                setRelationshipPersonaId("");
-                setRelationshipContext("");
-            } else {
-                console.error('Failed to generate relationship');
-                alert('Failed to generate relationship');
-            }
-        } catch (error) {
-            console.error('Error generating relationship:', error);
-            alert('Error generating relationship');
-        } finally {
-            setIsGeneratingRelationship(false);
-        }
-    };
+    // Display variable (always consistent with local buffer or null)
+    const displayCharacter = localCharacter;
 
     return (
         <div className="flex h-screen bg-muted/10">
@@ -545,168 +577,173 @@ export default function CharacterConfiguration() {
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
                                             <h1 className="type-h2 text-foreground">{displayCharacter.basicInfo.name}</h1>
-                                            {isEditing && (
-                                                <label className="cursor-pointer">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleImageUpload}
-                                                        className="hidden"
-                                                    />
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="w-6 h-6 hover:bg-transparent text-muted-foreground hover:text-foreground"
-                                                        asChild
-                                                    >
-                                                        <div>
-                                                            <Upload className="w-4 h-4" />
-                                                        </div>
-                                                    </Button>
-                                                </label>
-                                            )}
+
+                                            {/* Always allow image upload */}
+                                            <label className="cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageUpload}
+                                                    className="hidden"
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-6 h-6 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                                                    asChild
+                                                >
+                                                    <div>
+                                                        <Upload className="w-4 h-4" />
+                                                    </div>
+                                                </Button>
+                                            </label>
                                         </div>
                                         <p className="type-ui-label text-muted-foreground">
                                             {displayCharacter.basicInfo.role || "NO ROLE"} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    {isEditing ? (
-                                        <>
-                                            <Button variant="ghost" onClick={handleCancel} className="type-ui-label text-muted-foreground hover:text-foreground">
-                                                Cancel
-                                            </Button>
-                                            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 type-ui-label shadow-sm rounded-sm">
-                                                Save Changes
-                                            </Button>
-                                            <Button variant="destructive" size="icon" onClick={handleDeleteCharacter} title="Delete" className="rounded-sm">
-                                                <div className="sr-only">Delete</div>
-                                                <span className="text-lg">×</span>
-                                            </Button>
+                                <div className="flex gap-2 items-center">
+                                    {/* Status Indicator */}
+                                    <div className="flex items-center text-xs font-medium uppercase tracking-wider mr-4">
+                                        {saveStatus === 'saving' && (
+                                            <span className="text-muted-foreground flex items-center gap-1.5 animate-pulse">
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                Saving...
+                                            </span>
+                                        )}
+                                        {saveStatus === 'saved' && (
+                                            <span className="text-green-500 flex items-center gap-1.5 transition-opacity duration-500">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Saved
+                                            </span>
+                                        )}
+                                        {saveStatus === 'error' && (
+                                            <span className="text-destructive flex items-center gap-1.5">
+                                                <AlertCircle className="w-3 h-3" />
+                                                Save Failed
+                                            </span>
+                                        )}
+                                    </div>
 
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
+                                    {/* Actions */}
+                                    <Button variant="ghost" onClick={handleConvertToPersona} className="type-ui-label text-muted-foreground hover:text-foreground">
+                                        Convert to Persona
+                                    </Button>
+                                    <Button variant="destructive" size="icon" onClick={handleDeleteCharacter} title="Delete" className="rounded-sm">
+                                        <div className="sr-only">Delete</div>
+                                        <span className="text-lg">×</span>
+                                    </Button>
+
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    onClick={handleGenerateCharacter}
+                                                    disabled={isGeneratingCharacter}
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
+                                                >
+                                                    <Sparkles className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Auto-Generate Details</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <Dialog open={isCharacterPromptDialogOpen} onOpenChange={setIsCharacterPromptDialogOpen}>
+                                                <TooltipTrigger asChild>
+                                                    <DialogTrigger asChild>
                                                         <Button
-                                                            onClick={handleGenerateCharacter}
-                                                            disabled={isGeneratingCharacter}
                                                             variant="outline"
                                                             size="icon"
                                                             className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
                                                         >
-                                                            <Sparkles className="h-4 w-4" />
+                                                            <Type className="h-4 w-4" />
                                                         </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Auto-Generate Details</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <Dialog open={isCharacterPromptDialogOpen} onOpenChange={setIsCharacterPromptDialogOpen}>
-                                                        <TooltipTrigger asChild>
-                                                            <DialogTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="icon"
-                                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
-                                                                >
-                                                                    <Type className="h-4 w-4" />
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate with Prompt</p>
-                                                        </TooltipContent>
-                                                        <DialogContent className="sm:max-w-[425px]">
-                                                            <DialogHeader>
-                                                                <DialogTitle>Generate Character with Custom Prompt</DialogTitle>
-                                                                <DialogDescription>
-                                                                    Enter your desired prompt for character creation here.
-                                                                </DialogDescription>
-                                                            </DialogHeader>
-                                                            <div className="grid gap-4 py-4">
-                                                                <Textarea
-                                                                    id="customCharacterPrompt"
-                                                                    value={dialogCharacterPrompt}
-                                                                    onChange={(e) => setDialogCharacterPrompt(e.target.value)}
-                                                                    className="min-h-[150px]"
-                                                                    rows={6}
-                                                                    placeholder="e.g., 'A wise old wizard with a long beard and a penchant for riddles.'"
-                                                                />
-                                                            </div>
-                                                            <DialogFooter>
-                                                                <Button onClick={handleGenerateCharacterWithPrompt} disabled={isGeneratingCharacter}>
-                                                                    {isGeneratingCharacter ? 'Generating...' : 'Generate'}
-                                                                </Button>
-                                                            </DialogFooter>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
-                                                        <TooltipTrigger asChild>
-                                                            <DialogTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="icon"
-                                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
-                                                                    onClick={handleGenerateAvatarDescription}
-                                                                    disabled={isGeneratingAvatar}
-                                                                >
-                                                                    <Upload className="h-4 w-4" />
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Avatar</p>
-                                                        </TooltipContent>
-                                                        <DialogContent className="sm:max-w-[425px]">
-                                                            <DialogHeader>
-                                                                <DialogTitle>Tweak Avatar Description</DialogTitle>
-                                                                <DialogDescription>
-                                                                    Review and edit the generated image description before generating the avatar.
-                                                                </DialogDescription>
-                                                            </DialogHeader>
-                                                            <div className="grid gap-4 py-4">
-                                                                <Textarea
-                                                                    id="avatarPrompt"
-                                                                    value={dialogAvatarPrompt}
-                                                                    onChange={(e) => setDialogAvatarPrompt(e.target.value)}
-                                                                    className="min-h-[150px]"
-                                                                    rows={6}
-                                                                    placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
-                                                                />
-                                                            </div>
-                                                            <DialogFooter>
-                                                                <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
-                                                                    {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
-                                                                </Button>
-                                                            </DialogFooter>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button onClick={() => setIsEditing(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 type-ui-label shadow-sm rounded-sm">Edit</Button>
-                                            <Button variant="ghost" onClick={handleConvertToPersona} className="type-ui-label text-muted-foreground hover:text-foreground">
-                                                Convert to Persona
-                                            </Button>
-                                        </>
-                                    )}
+                                                    </DialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Generate with Prompt</p>
+                                                </TooltipContent>
+                                                <DialogContent className="sm:max-w-[425px]">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Generate Character with Custom Prompt</DialogTitle>
+                                                        <DialogDescription>
+                                                            Enter your desired prompt for character creation here.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <Textarea
+                                                            id="customCharacterPrompt"
+                                                            value={dialogCharacterPrompt}
+                                                            onChange={(e) => setDialogCharacterPrompt(e.target.value)}
+                                                            className="min-h-[150px]"
+                                                            rows={6}
+                                                            placeholder="e.g., 'A wise old wizard with a long beard and a penchant for riddles.'"
+                                                        />
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button onClick={handleGenerateCharacterWithPrompt} disabled={isGeneratingCharacter}>
+                                                            {isGeneratingCharacter ? 'Generating...' : 'Generate'}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
+                                                <TooltipTrigger asChild>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
+                                                            onClick={handleGenerateAvatarDescription}
+                                                            disabled={isGeneratingAvatar}
+                                                        >
+                                                            <Upload className="h-4 w-4" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Generate Avatar</p>
+                                                </TooltipContent>
+                                                <DialogContent className="sm:max-w-[425px]">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Tweak Avatar Description</DialogTitle>
+                                                        <DialogDescription>
+                                                            Review and edit the generated image description before generating the avatar.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <Textarea
+                                                            id="avatarPrompt"
+                                                            value={dialogAvatarPrompt}
+                                                            onChange={(e) => setDialogAvatarPrompt(e.target.value)}
+                                                            className="min-h-[150px]"
+                                                            rows={6}
+                                                            placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
+                                                        />
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
+                                                            {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Content */}
-
-
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6">
@@ -723,7 +760,6 @@ export default function CharacterConfiguration() {
                                                 id="name"
                                                 value={displayCharacter.basicInfo.name}
                                                 onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -733,7 +769,6 @@ export default function CharacterConfiguration() {
                                                 type="number"
                                                 value={displayCharacter.basicInfo.age || 0}
                                                 onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -742,7 +777,6 @@ export default function CharacterConfiguration() {
                                                 id="gender"
                                                 value={displayCharacter.basicInfo.gender || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -751,7 +785,6 @@ export default function CharacterConfiguration() {
                                                 id="role"
                                                 value={displayCharacter.basicInfo.role || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -760,13 +793,11 @@ export default function CharacterConfiguration() {
                                                 id="faction"
                                                 value={displayCharacter.basicInfo.faction || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="location" className="type-ui-label text-muted-foreground">Location</Label>
                                             <Select
-                                                disabled={!isEditing}
                                                 value={displayCharacter.locationId || "unassigned"}
                                                 onValueChange={handleLocationChange}
                                             >
@@ -789,7 +820,6 @@ export default function CharacterConfiguration() {
                                                 id="reputation"
                                                 value={displayCharacter.basicInfo.reputation || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "reputation", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -799,7 +829,6 @@ export default function CharacterConfiguration() {
                                                 id="background"
                                                 value={displayCharacter.basicInfo.background || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "background", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -809,7 +838,6 @@ export default function CharacterConfiguration() {
                                                 id="firstImpression"
                                                 value={displayCharacter.basicInfo.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -819,7 +847,6 @@ export default function CharacterConfiguration() {
                                                 id="appearance"
                                                 value={displayCharacter.basicInfo.appearance || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "appearance", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -846,7 +873,6 @@ export default function CharacterConfiguration() {
                                                                 handleInputChange("personality", trait, Math.min(100, Math.max(0, val * 10)));
                                                             }
                                                         }}
-                                                        disabled={!isEditing}
                                                         min={1}
                                                         max={10}
                                                         className="w-20"
@@ -857,7 +883,6 @@ export default function CharacterConfiguration() {
                                                         max="10"
                                                         value={Math.round((value as number) / 10)}
                                                         onChange={(e) => handleInputChange("personality", trait, parseInt(e.target.value) * 10)}
-                                                        disabled={!isEditing}
                                                         className="flex-1"
                                                     />
                                                 </div>
@@ -889,7 +914,6 @@ export default function CharacterConfiguration() {
                                                                 handleInputChange("idealMatch", trait, Math.min(100, Math.max(0, val * 10)));
                                                             }
                                                         }}
-                                                        disabled={!isEditing}
                                                         min={1}
                                                         max={10}
                                                         className="w-20"
@@ -900,7 +924,6 @@ export default function CharacterConfiguration() {
                                                         max="10"
                                                         value={Math.round((value as number) / 10)}
                                                         onChange={(e) => handleInputChange("idealMatch", trait, parseInt(e.target.value) * 10)}
-                                                        disabled={!isEditing}
                                                         className="flex-1"
                                                     />
                                                 </div>
@@ -909,60 +932,56 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
 
-
-
                                 {/* Relationship to Player Persona */}
                                 <Card className="border-border shadow-sm">
                                     <div className="pt-6 flex justify-between items-center px-4">
                                         <SectionHeader title="Relationships" className="flex-1 mb-0 mt-0" />
-                                        {isEditing && (
-                                            <Dialog open={isRelationshipDialogOpen} onOpenChange={setIsRelationshipDialogOpen}>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm">
-                                                        <Plus className="w-4 h-4 mr-1" />
-                                                        Add
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogHeader>
-                                                        <DialogTitle>Create New Relationship</DialogTitle>
-                                                        <DialogDescription>
-                                                            Select a persona and describe the relationship context. The system will generate the initial dynamics.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="grid gap-4 py-4">
-                                                        <div className="space-y-2">
-                                                            <Label>Persona</Label>
-                                                            <Select value={relationshipPersonaId} onValueChange={setRelationshipPersonaId}>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select a persona" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {playerPersonas
-                                                                        .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
-                                                                        .map(p => (
-                                                                            <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
-                                                                        ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <Label>Relationship Context</Label>
-                                                            <Textarea
-                                                                placeholder="e.g. Childhood friends, sworn enemies, met at a bar..."
-                                                                value={relationshipContext}
-                                                                onChange={(e) => setRelationshipContext(e.target.value)}
-                                                            />
-                                                        </div>
+                                        <Dialog open={isRelationshipDialogOpen} onOpenChange={setIsRelationshipDialogOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm">
+                                                    <Plus className="w-4 h-4 mr-1" />
+                                                    Add
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Create New Relationship</DialogTitle>
+                                                    <DialogDescription>
+                                                        Select a persona and describe the relationship context. The system will generate the initial dynamics.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Persona</Label>
+                                                        <Select value={relationshipPersonaId} onValueChange={setRelationshipPersonaId}>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a persona" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {playerPersonas
+                                                                    .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
+                                                                    .map(p => (
+                                                                        <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
+                                                                    ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
-                                                    <DialogFooter>
-                                                        <Button onClick={handleCreateRelationship} disabled={!relationshipPersonaId || isGeneratingRelationship}>
-                                                            {isGeneratingRelationship ? "Generating..." : "Create Relationship"}
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
-                                        )}
+                                                    <div className="space-y-2">
+                                                        <Label>Relationship Context</Label>
+                                                        <Textarea
+                                                            placeholder="e.g. Childhood friends, sworn enemies, met at a bar..."
+                                                            value={relationshipContext}
+                                                            onChange={(e) => setRelationshipContext(e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button onClick={handleCreateRelationship} disabled={!relationshipPersonaId || isGeneratingRelationship}>
+                                                        {isGeneratingRelationship ? "Generating..." : "Create Relationship"}
+                                                    </Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
                                     </div>
                                     <CardContent className="space-y-4">
                                         {displayCharacter.relationships.length > 0 ? (
@@ -974,18 +993,16 @@ export default function CharacterConfiguration() {
                                                             <AccordionTrigger>
                                                                 <div className="flex items-center justify-between w-full pr-4">
                                                                     <span>{persona?.basicInfo.name || "Unknown Persona"}</span>
-                                                                    {isEditing && (
-                                                                        <Button
-                                                                            variant="destructive"
-                                                                            size="sm"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation(); // Prevent the accordion from toggling
-                                                                                handleDeleteRelationship(displayCharacter.id, relationship.personaId);
-                                                                            }}
-                                                                        >
-                                                                            Delete
-                                                                        </Button>
-                                                                    )}
+                                                                    <Button
+                                                                        variant="destructive"
+                                                                        size="sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation(); // Prevent the accordion from toggling
+                                                                            handleDeleteRelationship(displayCharacter.id, relationship.personaId);
+                                                                        }}
+                                                                    >
+                                                                        Delete
+                                                                    </Button>
                                                                 </div>
                                                             </AccordionTrigger>
                                                             <AccordionContent>
@@ -1015,16 +1032,7 @@ export default function CharacterConfiguration() {
                                                             type="checkbox"
                                                             id={`group-${group.id}`}
                                                             checked={characterGroupMemberships.includes(group.id)}
-                                                            onChange={() => {
-                                                                if (isEditing) {
-                                                                    setCharacterGroupMemberships((prev) =>
-                                                                        prev.includes(group.id)
-                                                                            ? prev.filter((id) => id !== group.id)
-                                                                            : [...prev, group.id]
-                                                                    );
-                                                                }
-                                                            }}
-                                                            disabled={!isEditing}
+                                                            onChange={() => handleGroupToggle(group.id)}
                                                         />
                                                         <Label htmlFor={`group-${group.id}`}>{group.name}</Label>
                                                     </div>
@@ -1035,9 +1043,6 @@ export default function CharacterConfiguration() {
                                         )}
                                     </CardContent>
                                 </Card>
-
-                                {/* Preferences */}
-
                             </div>
                         </div>
                     </>
