@@ -34,7 +34,7 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
         <div className="space-y-8 pt-6">
             <section className="space-y-4">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Appearance</h2>
+                    <h2 className="type-ui-label text-muted-foreground">Appearance</h2>
                 </div>
                 <Label htmlFor="theme-select" className="sr-only">Theme</Label>
                 <Select value={theme} onValueChange={setTheme}>
@@ -52,7 +52,7 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
 
             <section className="space-y-4">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Chat Model</h2>
+                    <h2 className="type-ui-label text-muted-foreground">Chat Model</h2>
                 </div>
                 <Label htmlFor="chat-model-select" className="sr-only">Chat Model</Label>
                 <Combobox<Model>
@@ -69,7 +69,7 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
 
             <section className="space-y-4">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Summarization Model</h2>
+                    <h2 className="type-ui-label text-muted-foreground">Summarization Model</h2>
                 </div>
                 <Label htmlFor="summarization-model-select" className="sr-only">Summarization Model</Label>
                 <Combobox<Model>
@@ -86,7 +86,7 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
 
             <section className="space-y-4">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Generation Model</h2>
+                    <h2 className="type-ui-label text-muted-foreground">Generation Model</h2>
                 </div>
                 <Label htmlFor="generation-model-select" className="sr-only">Generation Model</Label>
                 <Combobox<Model>
@@ -102,7 +102,7 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
             </section>
 
             <section className="pt-8 border-t border-border space-y-4">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Data Management</h2>
+                <h2 className="type-ui-label text-muted-foreground">Data Management</h2>
                 <div className="flex gap-4">
                     <SettingsManager />
                 </div>

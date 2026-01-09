@@ -144,6 +144,61 @@
   }
 }
 
+@layer components {
+
+  /* Display Headings */
+  .type-h1 {
+    @apply font-display text-6xl uppercase tracking-tighter;
+  }
+
+  .type-h2 {
+    @apply font-display text-5xl uppercase tracking-tight;
+  }
+
+  .type-h3 {
+    @apply font-display text-4xl uppercase tracking-wide;
+  }
+
+  .type-h4 {
+    @apply font-display text-2xl uppercase tracking-wider;
+  }
+
+  /* Section Headers */
+  .type-section-header {
+    @apply font-display text-xl font-medium uppercase tracking-widest;
+  }
+
+  /* Body Text */
+  .type-body-lg {
+    @apply font-sans text-lg leading-7;
+  }
+
+  .type-body-base {
+    @apply font-sans text-base leading-7;
+  }
+
+  .type-body-sm {
+    @apply font-sans text-sm leading-6;
+  }
+
+  .type-body-xs {
+    @apply font-sans text-xs leading-5;
+  }
+
+  /* UI Patterns */
+  .type-ui-label {
+    @apply font-sans text-xs font-medium uppercase tracking-wider;
+  }
+
+  .type-ui-subhead {
+    @apply font-sans text-lg font-bold uppercase tracking-wide;
+  }
+
+  .type-ui-muted {
+    @apply text-muted-foreground;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

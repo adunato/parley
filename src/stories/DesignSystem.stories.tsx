@@ -82,30 +82,157 @@ export const Showcase: Story = {
             {/* Design Tokens: Typography */}
             <section className="space-y-8">
                 <SectionHeader title="02. Typography" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <div className="space-y-6">
-                        <div className="border-b pb-2 mb-4">
-                            <h3 className="font-display text-2xl uppercase text-muted-foreground">Display Font (Oswald)</h3>
-                            <code className="text-xs text-muted-foreground">font-display</code>
+
+                <div className="grid gap-12">
+                    {/* Font Families */}
+                    <div className="space-y-4">
+                        <h3 className="type-ui-subhead text-muted-foreground border-b pb-2">Font Families</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Oswald */}
+                            <div className="space-y-2">
+                                <div className="p-6 border rounded-md bg-card flex items-center justify-center min-h-[120px]">
+                                    <p className="font-display text-6xl">Aa</p>
+                                </div>
+                                <div>
+                                    <div className="flex items-baseline justify-between">
+                                        <p className="font-semibold">Oswald</p>
+                                        <code className="text-xs text-muted-foreground">font-display</code>
+                                    </div>
+                                    <p className="type-body-sm text-muted-foreground mt-1">Primary headings and emphatic text.</p>
+                                </div>
+                            </div>
+                            {/* Inter */}
+                            <div className="space-y-2">
+                                <div className="p-6 border rounded-md bg-card flex items-center justify-center min-h-[120px]">
+                                    <p className="font-sans text-6xl">Aa</p>
+                                </div>
+                                <div>
+                                    <div className="flex items-baseline justify-between">
+                                        <p className="font-semibold">Inter</p>
+                                        <code className="text-xs text-muted-foreground">font-sans</code>
+                                    </div>
+                                    <p className="type-body-sm text-muted-foreground mt-1">Default body copy and UI elements.</p>
+                                </div>
+                            </div>
+                            {/* Cinzel */}
+                            <div className="space-y-2">
+                                <div className="p-6 border rounded-md bg-card flex items-center justify-center min-h-[120px]">
+                                    <p className="font-serif text-6xl">Aa</p>
+                                </div>
+                                <div>
+                                    <div className="flex items-baseline justify-between">
+                                        <p className="font-semibold">Cinzel</p>
+                                        <code className="text-xs text-muted-foreground">font-serif</code>
+                                    </div>
+                                    <p className="type-body-sm text-muted-foreground mt-1">Decorative accents and special occasions.</p>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="font-display text-6xl uppercase tracking-tighter">Heading 1</h1>
-                        <h2 className="font-display text-5xl uppercase tracking-tight">Heading 2</h2>
-                        <h3 className="font-display text-4xl uppercase tracking-wide">Heading 3</h3>
-                        <h4 className="font-display text-2xl uppercase tracking-wider">Heading 4</h4>
                     </div>
-                    <div className="space-y-6">
-                        <div className="border-b pb-2 mb-4">
-                            <h3 className="font-sans text-2xl font-bold text-muted-foreground">Body Font (Inter)</h3>
-                            <code className="text-xs text-muted-foreground">font-sans</code>
+
+                    {/* Headings */}
+                    <div className="space-y-4">
+                        <h3 className="type-ui-subhead text-muted-foreground border-b pb-2">Headings & Section Headers</h3>
+                        <div className="space-y-8">
+                            <div className="grid gap-2">
+                                <h1 className="type-h1">Heading 1</h1>
+                                <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                    <span>.type-h1</span>
+                                    <span>(60px/3.75rem)</span>
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <h2 className="type-h2">Heading 2</h2>
+                                <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                    <span>.type-h2</span>
+                                    <span>(48px/3rem)</span>
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <h3 className="type-h3">Heading 3</h3>
+                                <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                    <span>.type-h3</span>
+                                    <span>(36px/2.25rem)</span>
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <h4 className="type-h4">Heading 4</h4>
+                                <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                    <span>.type-h4</span>
+                                    <span>(24px/1.5rem)</span>
+                                </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <div className="type-section-header text-muted-foreground">Section Header</div>
+                                <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                    <span>.type-section-header</span>
+                                    <span>(20px/1.25rem)</span>
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-3xl font-bold tracking-tight">The quick brown fox jumps over the lazy dog.</p>
-                        <p className="text-xl leading-7">
-                            "The essence of strategy is choosing what not to do." - Michael Porter
-                        </p>
-                        <p className="text-base leading-7 text-muted-foreground">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                        <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Label / Overline Text</div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        {/* Body Text */}
+                        <div className="space-y-4">
+                            <h3 className="type-ui-subhead text-muted-foreground border-b pb-2">Body Text</h3>
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="type-body-lg">
+                                        <span className="font-semibold block mb-1">Body Large</span>
+                                        The quick brown fox jumps over the lazy dog. Used for intro paragraphs.
+                                    </p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-body-lg</code>
+                                </div>
+                                <div>
+                                    <p className="type-body-base">
+                                        <span className="font-semibold block mb-1">Body Base</span>
+                                        The quick brown fox jumps over the lazy dog. Standard size for reading.
+                                    </p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-body-base</code>
+                                </div>
+                                <div>
+                                    <p className="type-body-sm">
+                                        <span className="font-semibold block mb-1">Body Small</span>
+                                        The quick brown fox jumps over the lazy dog. Used for dense interfaces.
+                                    </p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-body-sm</code>
+                                </div>
+                                <div>
+                                    <p className="type-body-xs">
+                                        <span className="font-semibold block mb-1">Body XS</span>
+                                        The quick brown fox jumps over the lazy dog. Metadata and captains.
+                                    </p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-body-xs</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* UI Patterns */}
+                        <div className="space-y-4">
+                            <h3 className="type-ui-subhead text-muted-foreground border-b pb-2">UI Patterns</h3>
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="type-ui-subhead text-muted-foreground mt-1 mb-2">UI Subheading</p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-ui-subhead</code>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground mb-1">UI Label</p>
+                                    <div className="type-ui-label text-muted-foreground">Category Label</div>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-ui-label</code>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground mb-1">Muted Text</p>
+                                    <p className="type-ui-muted">Content that is present but secondary.</p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">.type-ui-muted</code>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground mb-1">Monospace</p>
+                                    <p className="font-mono text-sm">const value = "code";</p>
+                                    <code className="text-xs text-muted-foreground mt-1 block">font-mono</code>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

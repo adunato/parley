@@ -91,7 +91,7 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto p-8 max-w-5xl">
-      <h1 className="text-4xl font-display uppercase tracking-wider font-bold mb-8 text-foreground">Settings</h1>
+      <h1 className="type-h2 mb-8 text-foreground">Settings</h1>
 
       <SettingsTabs
         models={models}

@@ -37,12 +37,12 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
             {/* ComfyUI Settings Section */}
             <section className="space-y-6">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-lg font-display uppercase tracking-wider font-bold text-foreground">ComfyUI Settings</h2>
+                    <h2 className="type-h4 text-foreground">ComfyUI Settings</h2>
                 </div>
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="width" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Width</Label>
+                            <Label htmlFor="width" className="type-ui-label text-muted-foreground">Width</Label>
                             <Input
                                 id="width"
                                 type="number"
@@ -52,7 +52,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="height" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Height</Label>
+                            <Label htmlFor="height" className="type-ui-label text-muted-foreground">Height</Label>
                             <Input
                                 id="height"
                                 type="number"
@@ -65,7 +65,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="steps" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Steps</Label>
+                            <Label htmlFor="steps" className="type-ui-label text-muted-foreground">Steps</Label>
                             <Input
                                 id="steps"
                                 type="number"
@@ -75,7 +75,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="cfg" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CFG Scale</Label>
+                            <Label htmlFor="cfg" className="type-ui-label text-muted-foreground">CFG Scale</Label>
                             <Input
                                 id="cfg"
                                 type="number"
@@ -86,7 +86,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="seed" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seed (-1 for random)</Label>
+                            <Label htmlFor="seed" className="type-ui-label text-muted-foreground">Seed (-1 for random)</Label>
                             <Input
                                 id="seed"
                                 type="number"
@@ -98,7 +98,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="negative-prompt" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Negative Prompt</Label>
+                        <Label htmlFor="negative-prompt" className="type-ui-label text-muted-foreground">Negative Prompt</Label>
                         <Textarea
                             id="negative-prompt"
                             value={avatarGenerationSettings.negativePrompt}
@@ -108,7 +108,7 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="model" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Model Checkpoint Name</Label>
+                        <Label htmlFor="model" className="type-ui-label text-muted-foreground">Model Checkpoint Name</Label>
                         <Combobox<Model>
                             items={comfyuiModels}
                             value={avatarGenerationSettings.model}
@@ -128,8 +128,8 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
             {/* Prompt Config Section */}
             <section className="space-y-6">
                 <div className="border-b border-border pb-2">
-                    <h2 className="text-lg font-display uppercase tracking-wider font-bold text-foreground">Prompt Configuration</h2>
-                    <p className="text-sm text-muted-foreground mt-1 font-normal normal-case tracking-normal">
+                    <h2 className="type-h4 text-foreground">Prompt Configuration</h2>
+                    <p className="type-body-sm text-muted-foreground mt-1">
                         Configure the templates used for generating descriptions for image generation.
                     </p>
                 </div>
