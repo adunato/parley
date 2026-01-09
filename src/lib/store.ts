@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
+import { persist, devtools, createJSONStorage } from 'zustand/middleware';
+import { DexieStorageAdapter } from './storage-adapter';
 import { Message } from '@ai-sdk/react';
 
 interface ChatSummary {
@@ -177,18 +178,7 @@ If {{personaName}} acts in a way that aligns with your character’s personality
             }),
             {
                 name: 'parley-storage',
-                storage: {
-                    getItem: (name) => {
-                        const item = localStorage.getItem(name);
-                        return item ? JSON.parse(item) : null;
-                    },
-                    setItem: (name, value) => {
-                        localStorage.setItem(name, JSON.stringify(value));
-                    },
-                    removeItem: (name) => {
-                        localStorage.removeItem(name);
-                    },
-                },
+                storage: createJSONStorage(() => DexieStorageAdapter),
             }),
         {
             serialize: {

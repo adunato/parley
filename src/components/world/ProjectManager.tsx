@@ -35,23 +35,26 @@ export function ProjectManager() {
 
     // --- Handlers ---
 
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProjectName.trim()) return;
-        ProjectService.createNewProject(newProjectName);
-        setNewProjectName('');
-        setIsNewProjectDialogOpen(false);
+        try {
+            await ProjectService.createNewProject(newProjectName);
+            setNewProjectName('');
+            setIsNewProjectDialogOpen(false);
+        } catch (e) {
+            alert("Failed to create project: " + (e as Error).message);
+        }
     };
 
-    const handleSelectProject = (id: string) => {
+    const handleSelectProject = async (id: string) => {
         // Save current before switching? 
-        // Ideally we save on every change or debounced, but let's ensure we save current state before unloading it.
         if (currentProjectId) {
-            ProjectService.saveProject(currentProjectId);
+            await ProjectService.saveProject(currentProjectId);
         }
 
         // Load new
         try {
-            ProjectService.loadProject(id);
+            await ProjectService.loadProject(id);
         } catch (e) {
             alert("Failed to load project: " + (e as Error).message);
         }
@@ -60,26 +63,27 @@ export function ProjectManager() {
     const handleRenameProject = () => {
         if (!projectToRename || !renameProjectName.trim()) return;
         updateProject(projectToRename, { name: renameProjectName });
+        // Optionally trigger a save to ensure DB name matches, but metadata is updated in library store immediately.
         setIsRenameDialogOpen(false);
         setProjectToRename(null);
     };
 
-    const handleDeleteProject = (id: string) => {
+    const handleDeleteProject = async (id: string) => {
         if (confirm("Are you sure you want to delete this project? This cannot be undone.")) {
-            ProjectService.deleteProject(id);
-            if (currentProjectId === id) {
-                // If we deleted the active project, clear the store
-                // Or switch to another one?
-                // Let's just reload the page or clear stores.
-                // ProjectService.createNewProject("New World"); // Auto create?
+            try {
+                await ProjectService.deleteProject(id);
+                // logic to handle if current project was deleted is inside logic of store usually, 
+                // but deleteProject also clears currentProjectId if it matches.
+            } catch (e) {
+                alert("Failed to delete project: " + (e as Error).message);
             }
         }
     };
 
-    const handleExportProject = () => {
+    const handleExportProject = async () => {
         if (!currentProjectId) return;
         try {
-            const json = ProjectService.exportProjectToJSON(currentProjectId);
+            const json = await ProjectService.exportProjectToJSON(currentProjectId);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -105,10 +109,10 @@ export function ProjectManager() {
 
         try {
             if (currentProjectId) {
-                ProjectService.saveProject(currentProjectId);
+                await ProjectService.saveProject(currentProjectId);
             }
             const newId = await ProjectService.importProjectFromJSON(file);
-            ProjectService.loadProject(newId);
+            await ProjectService.loadProject(newId);
             alert("Project imported successfully!");
         } catch (e) {
             alert("Import failed: " + (e as Error).message);
@@ -117,37 +121,17 @@ export function ProjectManager() {
         }
     };
 
-    const handleSaveAsClient = () => {
+    const handleSaveAsClient = async () => {
         if (!currentProjectId) return;
         const project = projects.find(p => p.id === currentProjectId);
         const newName = prompt("Enter new name for copy:", `${project?.name} (Copy)`);
         if (newName) {
-            // Save current state first
-            ProjectService.saveProject(currentProjectId);
-
-            // Just creating a new project from current state is effectively 'Save As'
-            // But ProjectService.createNewProject clears state.
-            // We need a clone logic. 
-            // Workaround: Export then Import? Or direct clone standard function.
-            // Let's implement a 'clone' helper here quickly or update service.
-            // Updating service is cleaner but for now let's just:
-            const json = ProjectService.exportProjectToJSON(currentProjectId);
-            // Parse it back as if importing, but change name
-            // Actually 'importProject' does generate new ID.
-            // So we can mock a file or just duplicate the logic.
-            const data = JSON.parse(json);
-            data.metadata.name = newName;
-
-            // Manually injecting into storage
-            const newId = crypto.randomUUID();
-            localStorage.setItem(`parley_project_${newId}`, JSON.stringify(data));
-            useProjectLibraryStore.getState().addProject({
-                id: newId,
-                name: newName,
-                description: data.metadata.description,
-                lastModified: Date.now()
-            });
-            ProjectService.loadProject(newId);
+            try {
+                const newId = await ProjectService.cloneProject(currentProjectId, newName);
+                await ProjectService.loadProject(newId);
+            } catch (e) {
+                alert("Failed to copy project: " + (e as Error).message);
+            }
         }
     };
 

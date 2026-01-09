@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { DexieStorageAdapter } from '../storage-adapter';
 import { Character, Location, Persona, Relationship, CharacterGroup } from '../types';
 import { Message } from '@ai-sdk/react';
 
@@ -143,7 +144,7 @@ export const useGameStore = create<GameState>()(
         }),
         {
             name: 'parley-game-state',
-            // storage defaults to localStorage
+            storage: createJSONStorage(() => DexieStorageAdapter),
         }
     )
 );

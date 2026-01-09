@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { DexieStorageAdapter } from '../storage-adapter';
 
 export interface ProjectMetadata {
     id: string;
@@ -46,6 +47,7 @@ export const useProjectLibraryStore = create<ProjectLibraryStore>()(
         }),
         {
             name: 'parley-project-library',
+            storage: createJSONStorage(() => DexieStorageAdapter),
         }
     )
 );
