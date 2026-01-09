@@ -1,67 +1,102 @@
 # CR010 Style Harmonisation HLD
 
 ## 1. Overview
-This Change Request aims to harmonise the visual style of the Parley application, bringing all pages and components in line with the reference design established in `src/stories/CharacterProfile.stories.tsx`. This includes updating the sidebar, settings, configuration pages, and chat interface to use a consistent color palette, typography, and component library.
+This Change Request aims to harmonise the visual style of the Parley application, bringing all pages and components in line with the new design system. The target state is visually documented in `src/stories/DesignSystem.stories.tsx` (to be updated), which serves as the source of truth for all UI elements.
 
-## 2. Reference Style & Tokens
-The reference style will be centralized in `globals.css` using CSS variables. We will **reject** hard-coded hex values in components.
+## 2. Design System Specification
 
-### 2.1 Color Token Updates (`globals.css`)
--   **Primary Brand Color:** The `#336699` blue used in the reference will be defined as the **Primary** color.
-    -   Value: `hsl(210 50% 40%)`
--   **Typography:**
-    -   `font-display`: Already mapped to `Oswald`.
-    -   `font-sans`: Already mapped to `Inter` (via `var(--font-primary)`).
+### 2.1 Color Palette
+The application uses a semantic color system defined in `globals.css` via CSS variables. All new development MUST use these semantic tokens, not raw hex values.
 
-## 3. Component-Level Action List
+| Token | Variable | Description |
+| :--- | :--- | :--- |
+| **Primary** | `--primary` | Main brand color (`hsl(210 50% 40%)` Blue). Used for headers, primary actions, active states. |
+| **Secondary** | `--secondary` | Less prominent elements (`hsl(210 40% 96.1%)`). formatting. |
+| **Background** | `--background` | Page background (`hsl(0 0% 100%)` / Dark: `hsl(222.2 84% 4.9%)`). |
+| **Foreground** | `--foreground` | Main text color. |
+| **Muted** | `--muted` | Subdued backgrounds. |
+| **Muted FG** | `--muted-foreground` | Subdued text (`hsl(215.4 16.3% 46.9%)`). |
+| **Border** | `--border` | Default border color. |
+| **Destructive** | `--destructive` | Error states and destructive actions. |
 
-### 3.1 Global Navigation (`src/components/layout/sidebar.tsx`)
--   **Current:** Dark theme (`bg-gray-900`), `font-cinzel`.
--   **Action:**
-    -   [ ] Change background to `bg-background` (or `bg-card`) with a right border `border-border`.
-    -   [ ] Update "PARLEY" header to use `text-primary` and `font-display`.
-    -   [ ] Update links to use `text-muted-foreground`, `hover:text-foreground`, `hover:bg-accent`.
-    -   [ ] Active state: `bg-primary/10`, `text-primary`, `border-r-2 border-primary`.
+### 2.2 Typography
+Fonts are managed via Tailwind utility classes mapped to CSS variables.
 
-### 3.2 Main Menu (`src/app/page.tsx`)
--   **Current:** Dark "Cinematic" theme.
--   **Action:**
-    -   [ ] Retain the "Cover Page" feel but update Buttons to remove hard-coded grays.
-    -   [ ] Use `bg-primary` for the main call-to-action button.
-    -   [ ] Use `font-display` for headers.
+| Role | Class | Font Family | Usage |
+| :--- | :--- | :--- | :--- |
+| **Body** | `font-sans` | `Inter` (via `var(--font-primary)`) | Default text, inputs, long-form content. |
+| **Display** | `font-display` | `Oswald` | Headers (`h1`-`h3`), statistics, decorative labels. |
 
-### 3.3 Character Configuration (`src/components/character-configuration.tsx`)
--   **Current:** Standard/Default Shadcn styling.
--   **Action:**
-    -   [ ] **Master List (Left):**
-        -   Background: `bg-background` (or `bg-secondary/20` for contrast).
-        -   Selection: `bg-primary/5` with `border-l-2 border-primary`.
-        -   Text: `text-primary` for selected item name.
-    -   [ ] **Detail View (Right):**
-        -   Background: `bg-background`.
-        -   Header Background: `bg-muted/30` (instead of `#f3f4f6`).
-        -   Refactor Header to match `CharacterProfile` header (Avatar layout, Name typography).
-        -   Replace generic `CardTitle` with `SectionHeader` component for "Basic Information", "Personality", etc.
-        -   Update Input labels to match the "Uppercase, Bold, Tiny" style (`text-muted-foreground`, `text-xs`, `font-bold`, `tracking-wider`).
+**Typography Rules:**
+-   **Section Headers:** Use `font-display`, Uppercase, tracking-wide.
+-   **Labels:** `text-xs`, `font-bold`, `uppercase`, `tracking-wider`, `text-muted-foreground`.
+-   **Body Text:** `text-sm` or `text-base` for readability.
 
-### 3.4 Chat Interface (`src/components/chat-component.tsx` & `src/app/chat/page.tsx`)
--   **Current:** Functional `Card` based layout.
--   **Action:**
-    -   [ ] **Page Layout:** background `bg-muted/30`.
-    -   [ ] **Chat Component:**
-        -   Style the container `Card` to match `CharacterProfile` cards (shadow-sm, `border-border`).
-        -   Update Message Bubbles:
-            -   User: `bg-primary` text-white (ensure `primary-foreground` is readable).
-            -   Assistant: `bg-card` (with border).
-    -   [ ] **Relationship Display (`src/components/relationship-display.tsx`):**
-        -   Refactor to match the "Relationship Snapshot" style in `CharacterProfile`.
-    -   [ ] **Traits Display (`src/components/character-traits-display.tsx`):**
-        -   Align with `ScoredStatGroup` style.
+### 2.3 UI Component Library
+All components are located in `src/components/ui`. Developers must strictly use these components instead of building custom UI elements.
 
-### 3.5 Settings (`src/components/settings/SettingsTabs.tsx`)
--   **Current:** Default Tabs.
--   **Action:**
-    -   [ ] Update `TabsList` and `TabsTrigger` to match the custom tab style in `CharacterProfile` (Underline, Uppercase).
+#### Generic Components
+-   **Layout:** `Card`, `ScrollArea`, `Tabs`, `Accordion`, `SectionHeader`.
+-   **Inputs:** `Button`, `Input`, `Textarea`, `Select`, `Checkbox` (if avail), `RadioGroup`, `Combobox`, `Command`.
+-   **Feedback:** `Badge`, `Dialog`, `Popover`, `Tooltip`.
+-   **Display:** `Avatar`, `Label`.
 
-## 4. Shared Components
--   **Action:** Ensure `SectionHeader`, `ScoredStatCard`, etc., use `text-muted-foreground`, `bg-card`, etc., and no hard-coded colors.
+#### Domain-Specific Components
+-   **`GameTimeDisplay`**: Shows in-game time/date.
+-   **`ScoredStatCard`**: Display a single attribute/stat with a 1-5 dot rating.
+-   **`ScoredStatGroup`**: Grouping wrapper for multiple `ScoredStatCard`s.
+-   **`SkillList`**: List of skills with values.
+-   **`SkillGroup`**: Grouping wrapper for `SkillList`s.
+-   **`StatBox`**: Simple box for numerical stats (like XP).
+
+## 3. Required Changes (Work Plan)
+
+This section details the specific code changes required to bring the application into compliance with the Design System.
+
+### 3.1 Global & Configuration
+-   **Tailwind Config:** Ensure `font-display` and `font-sans` correctly map to the variables in `globals.css`.
+-   **Globals.css:** Verify the `primary` color is updated to the new Blue (`hsl(210 50% 40%)`) and `radius` is set to `0.5rem` (or desired value).
+
+### 3.2 Layout Refactors
+#### [Sidebar](file:///c%3A/Users/danie/projects/parley/src/components/layout/sidebar.tsx)
+-   **Background:** Change from `bg-gray-900` to `bg-background` or `bg-card` with `border-r`.
+-   **Typography:** Update "PARLEY" logo to `text-primary`, `font-display`.
+-   **Links:**
+    -   Inactive: `text-muted-foreground`, `hover:text-foreground`, `hover:bg-accent`.
+    -   Active: `bg-primary/10`, `text-primary`, `border-r-2 border-primary`.
+
+### 3.3 Page Harmonisation
+
+#### [Main Menu / Landing](file:///c%3A/Users/danie/projects/parley/src/app/page.tsx)
+-   **Actions:** Update all buttons to use `Button` component with correct variants (`default`, `secondary`, `outline`). Remove hardcoded hex styles.
+-   **Typography:** Ensure headers use `font-display`.
+
+#### [Character Configuration](file:///c%3A/Users/danie/projects/parley/src/components/character-configuration.tsx)
+-   **Master List:**
+    -   Use `bg-muted/10` or `bg-background` for the list container.
+    -   Selected item: `bg-primary/5`, `border-l-2 border-primary`.
+-   **Detail View:**
+    -   **Header:** Refactor to match `CharacterProfile` header style (Avatar + Name + Meta).
+    -   **Sections:** Replace `CardTitle` with `SectionHeader`.
+    -   **Inputs:** Update all labels to match "Uppercase, Bold, Tiny" style.
+
+#### [Chat Interface](file:///c%3A/Users/danie/projects/parley/src/app/chat/page.tsx)
+-   **Container:** `bg-muted/30` page background.
+-   **Chat Window:**
+    -   Wrapper: `Card` with `shadow-sm`.
+    -   **Bubbles:**
+        -   User: `bg-primary` text `primary-foreground`.
+        -   AI: `bg-card` border `border-border`.
+-   **Side Panel:**
+    -   **Relationship:** Refactor to use `ScoredStatCard` or similar "Relationship Snapshot" style.
+    -   **Traits:** Use `ScoredStatGroup` style.
+
+#### [Settings](file:///c%3A/Users/danie/projects/parley/src/components/settings/SettingsTabs.tsx)
+-   **Tabs:** Update `TabsTrigger` to use the "Underline & Uppercase" style seen in `CharacterProfile`.
+
+#### [Locations](file:///c%3A/Users/danie/projects/parley/src/components/location-manager/location-manager.tsx)
+-   **Cards:** Ensure location cards use the standard `Card` component.
+-   **Headers:** Update to `font-display`.
+
+### 3.4 Component Clean-up
+-   **Audit:** Search codebase for `bg-[#...]` and `text-[#...]` and replace with semantic tokens where possible.

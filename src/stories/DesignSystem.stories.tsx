@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
-
-// Components
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,9 +14,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Combobox } from '@/components/ui/combobox';
+
+// Domain Components
+import { SectionHeader } from '@/components/ui/section-header';
+import { ScoredStatCard } from '@/components/ui/scored-stat-card';
+import { ScoredStatGroup } from '@/components/ui/scored-stat-group';
+import { SkillList } from '@/components/ui/skill-list';
+import { SkillGroup } from '@/components/ui/skill-group';
+import { GameTimeDisplay } from '@/components/ui/game-time-display';
+import { StatBox } from '@/components/ui/stat-box';
 
 const meta = {
-    title: 'Design System/Showcase',
+    title: 'Design System Showcase',
     parameters: {
         layout: 'fullscreen',
     },
@@ -27,152 +37,109 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const ColorSwatch = ({ name, variable, className }: { name: string, variable: string, className?: string }) => (
+    <div className="flex flex-col gap-2">
+        <div className={`h-24 w-full rounded-md shadow-sm border ${className}`} style={{ backgroundColor: `hsl(var(${variable}))` }} />
+        <div className="space-y-1">
+            <p className="font-semibold text-sm">{name}</p>
+            <p className="text-xs text-muted-foreground font-mono">{variable}</p>
+        </div>
+    </div>
+);
+
 export const Showcase: Story = {
     render: () => (
-        <div className="min-h-screen bg-background text-foreground p-8 md:p-12 space-y-12 max-w-7xl mx-auto">
+        <div className="min-h-screen bg-background text-foreground p-8 md:p-12 space-y-16 max-w-[1400px] mx-auto font-sans">
 
             {/* Header */}
             <div className="space-y-4">
-                <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">Design System</h1>
+                <h1 className="text-5xl font-display uppercase tracking-tight text-primary">Design System Showcase</h1>
                 <p className="text-xl text-muted-foreground max-w-2xl">
-                    A comprehensive guide to the components, typography, and styles used in the Parley application.
+                    The visual language of Parley. This document serves as the source of truth for all UI elements, tokens, and components.
                 </p>
-                <div className="flex gap-4 pt-4">
-                    <Badge>v1.0.0</Badge>
-                    <Badge variant="secondary">Dark Mode Ready</Badge>
-                    <Badge variant="outline">Accessibility First</Badge>
+                <div className="flex gap-4 pt-2">
+                    <Badge className="text-xs uppercase tracking-wider">v2.0 Harmonisation</Badge>
                 </div>
             </div>
 
             <hr className="border-border" />
 
-            {/* Typography Section */}
+            {/* Design Tokens: Colors */}
             <section className="space-y-8">
-                <h2 className="text-3xl font-semibold tracking-tight border-b pb-2">Typography</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Heading 1</span>
-                            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                                The Joke Tax Chronicles
-                            </h1>
+                <SectionHeader title="01. Color Palette" />
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+                    <ColorSwatch name="Primary" variable="--primary" className="bg-primary" />
+                    <ColorSwatch name="Secondary" variable="--secondary" className="bg-secondary" />
+                    <ColorSwatch name="Background" variable="--background" className="bg-background" />
+                    <ColorSwatch name="Foreground" variable="--foreground" className="bg-foreground" />
+                    <ColorSwatch name="Muted" variable="--muted" className="bg-muted" />
+                    <ColorSwatch name="Muted Foreground" variable="--muted-foreground" className="bg-muted-foreground" />
+                    <ColorSwatch name="Destructive" variable="--destructive" className="bg-destructive" />
+                    <ColorSwatch name="Border" variable="--border" className="bg-border" />
+                </div>
+            </section>
+
+            {/* Design Tokens: Typography */}
+            <section className="space-y-8">
+                <SectionHeader title="02. Typography" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                        <div className="border-b pb-2 mb-4">
+                            <h3 className="font-display text-2xl uppercase text-muted-foreground">Display Font (Oswald)</h3>
+                            <code className="text-xs text-muted-foreground">font-display</code>
                         </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Heading 2</span>
-                            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-                                The People of the Kingdom
-                            </h2>
-                        </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Heading 3</span>
-                            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-                                The Joke Tax
-                            </h3>
-                        </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Heading 4</span>
-                            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                                People stopped telling jokes
-                            </h4>
-                        </div>
+                        <h1 className="font-display text-6xl uppercase tracking-tighter">Heading 1</h1>
+                        <h2 className="font-display text-5xl uppercase tracking-tight">Heading 2</h2>
+                        <h3 className="font-display text-4xl uppercase tracking-wide">Heading 3</h3>
+                        <h4 className="font-display text-2xl uppercase tracking-wider">Heading 4</h4>
                     </div>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Paragraph</span>
-                            <p className="leading-7 [&:not(:first-child)]:mt-6">
-                                The king, seeing how happy his people were, realized that he had been worrying about the wrong things.
-                                He realized that the most important thing wasn't power, or wealth, or status. It was happiness.
-                            </p>
+                    <div className="space-y-6">
+                        <div className="border-b pb-2 mb-4">
+                            <h3 className="font-sans text-2xl font-bold text-muted-foreground">Body Font (Inter)</h3>
+                            <code className="text-xs text-muted-foreground">font-sans</code>
                         </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Blockquote</span>
-                            <blockquote className="mt-6 border-l-2 pl-6 italic">
-                                "After all," he said, "everyone enjoys a good joke, so it's only fair that they should pay for the privilege."
-                            </blockquote>
-                        </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Inline Code</span>
-                            <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
-                                @radix-ui/react-alert-dialog
-                            </code>
-                        </div>
-                        <div className="space-y-2">
-                            <span className="text-sm text-muted-foreground">Lead</span>
-                            <p className="text-xl text-muted-foreground">
-                                A modal dialog that interrupts the user with important content and expects a response.
-                            </p>
-                        </div>
+                        <p className="text-3xl font-bold tracking-tight">The quick brown fox jumps over the lazy dog.</p>
+                        <p className="text-xl leading-7">
+                            "The essence of strategy is choosing what not to do." - Michael Porter
+                        </p>
+                        <p className="text-base leading-7 text-muted-foreground">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        </p>
+                        <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Label / Overline Text</div>
                     </div>
                 </div>
             </section>
 
-            {/* Buttons & Badges */}
-            <section className="space-y-8">
-                <h2 className="text-3xl font-semibold tracking-tight border-b pb-2">Primitives</h2>
+            {/* Primitive Components */}
+            <section className="space-y-12">
+                <SectionHeader title="03. Interface Primitives" />
 
                 {/* Buttons */}
                 <div className="space-y-4">
-                    <h3 className="text-xl font-medium">Buttons</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Buttons</h3>
                     <div className="flex flex-wrap gap-4 items-center">
-                        <Button variant="default">Default</Button>
+                        <Button variant="default">Primary Action</Button>
                         <Button variant="secondary">Secondary</Button>
                         <Button variant="destructive">Destructive</Button>
                         <Button variant="outline">Outline</Button>
                         <Button variant="ghost">Ghost</Button>
                         <Button variant="link">Link</Button>
-                    </div>
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <Button size="lg">Large</Button>
-                        <Button size="default">Default</Button>
-                        <Button size="sm">Small</Button>
-                        <Button size="icon">🔔</Button>
-                    </div>
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <Button disabled>Disabled</Button>
-                        <Button variant="secondary" disabled>Disabled</Button>
+                        <Button size="sm" variant="default" className="uppercase tracking-wider font-bold text-xs">Small Caps</Button>
                     </div>
                 </div>
 
-                {/* Badges */}
-                <div className="space-y-4">
-                    <h3 className="text-xl font-medium">Badges</h3>
-                    <div className="flex gap-4">
-                        <Badge variant="default">Default</Badge>
-                        <Badge variant="secondary">Secondary</Badge>
-                        <Badge variant="destructive">Destructive</Badge>
-                        <Badge variant="outline">Outline</Badge>
-                    </div>
-                </div>
-            </section>
-
-            {/* Forms */}
-            <section className="space-y-8">
-                <h2 className="text-3xl font-semibold tracking-tight border-b pb-2">Form Elements</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Inputs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     <div className="space-y-6">
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="email">Email</Label>
-                            <Input type="email" id="email" placeholder="Email" />
+                        <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Form Inputs</h3>
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input type="email" id="email" placeholder="name@example.com" />
                         </div>
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="file">File Input</Label>
-                            <Input type="file" id="file" />
-                        </div>
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="disabled-input">Disabled Input</Label>
-                            <Input disabled type="email" id="disabled-input" placeholder="Disabled" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="grid w-full gap-1.5">
-                            <Label htmlFor="message">Message</Label>
-                            <Textarea placeholder="Type your message here." id="message" />
-                        </div>
-
-                        <div className="flex items-center gap-8">
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label>Select Option</Label>
                             <Select>
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Select a timezone" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -180,207 +147,168 @@ export const Showcase: Story = {
                                         <SelectLabel>North America</SelectLabel>
                                         <SelectItem value="est">Eastern Standard Time (EST)</SelectItem>
                                         <SelectItem value="cst">Central Standard Time (CST)</SelectItem>
-                                        <SelectItem value="mst">Mountain Standard Time (MST)</SelectItem>
-                                        <SelectItem value="pst">Pacific Standard Time (PST)</SelectItem>
-                                        <SelectItem value="akst">Alaska Standard Time (AKST)</SelectItem>
-                                        <SelectItem value="hst">Hawaii Standard Time (HST)</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-
-                            <RadioGroup defaultValue="comfortable">
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="default" id="r1" />
-                                    <Label htmlFor="r1">Default</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="comfortable" id="r2" />
-                                    <Label htmlFor="r2">Comfortable</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="compact" id="r3" />
-                                    <Label htmlFor="r3">Compact</Label>
-                                </div>
-                            </RadioGroup>
                         </div>
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label>Searchable Combobox</Label>
+                            <Combobox
+                                items={[{ id: 'React' }, { id: 'Vue' }, { id: 'Angular' }, { id: 'Svelte' }]}
+                                value=""
+                                onValueChange={() => { }}
+                                placeholder="Select framework..."
+                            />
+                        </div>
+                        <div className="grid w-full max-w-sm items-center gap-2">
+                            <Label>Text Area</Label>
+                            <Textarea placeholder="Type your message here." />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Selection & Toggles</h3>
+                        <RadioGroup defaultValue="comfortable">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="default" id="r1" />
+                                <Label htmlFor="r1">Default View</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="comfortable" id="r2" />
+                                <Label htmlFor="r2">Comfortable View</Label>
+                            </div>
+                        </RadioGroup>
+                        <div className="pt-4 flex gap-4">
+                            <Badge>Default Badge</Badge>
+                            <Badge variant="secondary">Secondary</Badge>
+                            <Badge variant="destructive">Destructive</Badge>
+                            <Badge variant="outline">Outline</Badge>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Feedback & Overlays */}
+                <div className="space-y-4">
+                    <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Overlays</h3>
+                    <div className="flex gap-4">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline">Open Dialog</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Confirmation Required</DialogTitle>
+                                    <DialogDescription>
+                                        This action creates a significant event in the story.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4">Content goes here...</div>
+                                <DialogFooter>
+                                    <Button variant="outline">Cancel</Button>
+                                    <Button>Confirm</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline">Open Popover</Button>
+                            </PopoverTrigger>
+                            <PopoverContent>Place content for the popover here.</PopoverContent>
+                        </Popover>
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon">?</Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Helpful tooltip information</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 </div>
             </section>
 
-            {/* Components & Layout */}
-            <section className="space-y-8">
-                <h2 className="text-3xl font-semibold tracking-tight border-b pb-2">Components</h2>
+            {/* Domain Components */}
+            <section className="space-y-12">
+                <SectionHeader title="04. Game Components" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Notifications</CardTitle>
-                            <CardDescription>You have 3 unread messages.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <div className="flex items-center justify-between p-2 border rounded-md">
-                                <div className="space-y-0.5">
-                                    <p className="text-sm font-medium">Friend Request</p>
-                                    <p className="text-xs text-muted-foreground">2 mins ago</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Character Stats</h3>
+                        <div className="bg-card border p-6 rounded-md shadow-sm space-y-6">
+                            <ScoredStatGroup title="Physical Attributes">
+                                <ScoredStatCard label="Strength" value={4} />
+                                <ScoredStatCard label="Dexterity" value={2} />
+                                <ScoredStatCard label="Stamina" value={3} />
+                            </ScoredStatGroup>
+
+                            <SkillGroup title="Top Skills">
+                                <SkillList skills={{ "Athletics": 3, "Brawl": 4, "Stealth": 2 }} />
+                            </SkillGroup>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold uppercase tracking-wide text-muted-foreground">Game State & Display</h3>
+                        <div className="space-y-8">
+                            <div>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Time Display</h4>
+                                <div className="flex flex-wrap gap-4">
+                                    <GameTimeDisplay day={1} timeOfDay="Morning" weather="Sunny" />
+                                    <GameTimeDisplay day={4} timeOfDay="Evening" weather="Rainy" />
+                                    <GameTimeDisplay day={12} timeOfDay="Night" weather="Clear" />
                                 </div>
-                                <Button size="sm" variant="outline">Accept</Button>
                             </div>
-                            <div className="flex items-center justify-between p-2 border rounded-md">
-                                <div className="space-y-0.5">
-                                    <p className="text-sm font-medium">New Comment</p>
-                                    <p className="text-xs text-muted-foreground">1 hour ago</p>
+
+                            <div>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Avatars</h4>
+                                <div className="flex gap-4">
+                                    <Avatar className="h-16 w-16 border-2 border-primary">
+                                        <AvatarImage src="https://github.com/shadcn.png" />
+                                        <AvatarFallback>CN</AvatarFallback>
+                                    </Avatar>
+                                    <Avatar className="h-12 w-12 text-sm">
+                                        <AvatarFallback>JD</AvatarFallback>
+                                    </Avatar>
                                 </div>
-                                <Button size="sm" variant="ghost">View</Button>
                             </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button className="w-full">Mark all as read</Button>
-                        </CardFooter>
-                    </Card>
 
-                    {/* Tabs */}
-                    <Card className="col-span-1 lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle>Settings</CardTitle>
-                            <CardDescription>Manage your account settings and preferences.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Tabs defaultValue="account" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="account">Account</TabsTrigger>
-                                    <TabsTrigger value="password">Password</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="account">
-                                    <div className="space-y-4 py-4">
-                                        <div className="space-y-2">
-                                            <Label>Username</Label>
-                                            <Input defaultValue="@johndoe" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Email</Label>
-                                            <Input defaultValue="john@example.com" />
-                                        </div>
-                                    </div>
-                                </TabsContent>
-                                <TabsContent value="password">
-                                    <div className="space-y-4 py-4">
-                                        <div className="space-y-2">
-                                            <Label>Current Password</Label>
-                                            <Input type="password" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>New Password</Label>
-                                            <Input type="password" />
-                                        </div>
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Accordion & Scroll Area */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>FAQ</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Accordion type="single" collapsible className="w-full">
-                                <AccordionItem value="item-1">
-                                    <AccordionTrigger>Is it accessible?</AccordionTrigger>
-                                    <AccordionContent>
-                                        Yes. It adheres to the WAI-ARIA design pattern.
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-2">
-                                    <AccordionTrigger>Is it styled?</AccordionTrigger>
-                                    <AccordionContent>
-                                        Yes. It comes with default styles that matches the other components' aesthetic.
-                                    </AccordionContent>
-                                </AccordionItem>
-                                <AccordionItem value="item-3">
-                                    <AccordionTrigger>Is it animated?</AccordionTrigger>
-                                    <AccordionContent>
-                                        Yes. It's animated by default, but you can disable it if you prefer.
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>License Policy</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[200px] w-full rounded-md border p-4 text-sm">
-                                <h4 className="mb-4 font-medium leading-none">MIT License</h4>
-                                <p className="mb-4">
-                                    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-                                </p>
-                                <p className="mb-4">
-                                    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-                                </p>
-                                <p>
-                                    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-                                </p>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
+                            <div>
+                                <h4 className="text-sm font-medium mb-2 text-muted-foreground">Tabs Navigation</h4>
+                                <Tabs defaultValue="account" className="w-[400px]">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="account">Account</TabsTrigger>
+                                        <TabsTrigger value="password">Password</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="account">
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Account</CardTitle>
+                                                <CardDescription>
+                                                    Make changes to your account here.
+                                                </CardDescription>
+                                            </CardHeader>
+                                        </Card>
+                                    </TabsContent>
+                                    <TabsContent value="password">
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Password</CardTitle>
+                                                <CardDescription>
+                                                    Change your password here.
+                                                </CardDescription>
+                                            </CardHeader>
+                                        </Card>
+                                    </TabsContent>
+                                </Tabs>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
-
-            {/* Overlays */}
-            <section className="space-y-8 pb-12">
-                <h2 className="text-3xl font-semibold tracking-tight border-b pb-2">Overlays</h2>
-                <div className="flex flex-wrap gap-8">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline">Hover for Tooltip</Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>This is a tooltip text!</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline">Open Popover</Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80">
-                            <div className="grid gap-4">
-                                <div className="space-y-2">
-                                    <h4 className="font-medium leading-none">Dimensions</h4>
-                                    <p className="text-sm text-muted-foreground">Set the dimensions for the layer.</p>
-                                </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline">Open Dialog</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Are you sure?</DialogTitle>
-                                <DialogDescription>
-                                    This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <Button variant="outline">Cancel</Button>
-                                <Button variant="destructive">Confirm</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </section>
-
         </div>
     ),
 };

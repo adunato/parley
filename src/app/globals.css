@@ -6,7 +6,7 @@
   :root {
     /* Fonts */
     --font-primary: var(--font-inter);
-    --font-display: 'Oswald', sans-serif;
+    --font-display: var(--font-oswald), sans-serif;
 
     /* Structure */
     --border-width: 1px;
