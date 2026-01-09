@@ -12,15 +12,15 @@ interface CharacterTraitsDisplayProps {
 export function CharacterTraitsDisplay({ personality, idealMatch }: CharacterTraitsDisplayProps) {
   return (
     <Card className="w-[500px] border-border shadow-sm">
-      <div className="pt-6">
-        <SectionHeader title="Character Traits" />
-      </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="type-h4">Character Traits</CardTitle>
+      </CardHeader>
       <CardContent className="grid gap-6">
         <div className="grid gap-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">Personality</h3>
+          <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2">Personality</h3>
           {Object.entries(personality).map(([trait, value]) => (
             <div key={trait} className="flex items-center gap-2">
-              <span className="w-32 text-sm font-medium text-foreground capitalize">{trait}:</span>
+              <span className="w-32 type-ui-label text-foreground">{trait}:</span>
               <div className="relative flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border/50">
                 <div
                   className={`absolute h-full ${value >= 0 ? 'bg-green-600' : 'bg-destructive'}`}
@@ -40,10 +40,10 @@ export function CharacterTraitsDisplay({ personality, idealMatch }: CharacterTra
           ))}
         </div>
         <div className="grid gap-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">Ideal Match</h3>
+          <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2">Ideal Match</h3>
           {idealMatch && Object.entries(idealMatch).map(([trait, value]) => (
             <div key={trait} className="flex items-center gap-2">
-              <span className="w-32 text-sm font-medium text-foreground capitalize">{trait}:</span>
+              <span className="w-32 type-ui-label text-foreground">{trait}:</span>
               <div className="relative flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border/50">
                 <div
                   className="absolute h-full bg-primary"

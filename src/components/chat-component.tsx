@@ -215,7 +215,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     <Card className={`flex flex-col h-[600px] w-full ${className}`}>
       <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 font-display uppercase tracking-wider text-xl">
+          <CardTitle className="flex items-center gap-2 type-h4">
             {selectedChatCharacter ? (
               <Avatar className="h-10 w-10 border border-border shadow-sm">
                 <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
@@ -229,7 +229,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
             {selectedChatCharacter ? selectedChatCharacter.basicInfo.name : title}
           </CardTitle>
           {isAssessing && (
-            <span className="text-sm text-amber-600 font-semibold animate-pulse flex items-center">
+            <span className="type-ui-label text-amber-600 animate-pulse flex items-center">
               ⚠ Assessing Behavior...
             </span>
           )}
@@ -259,7 +259,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                       : "bg-muted/50 text-foreground border border-border"
                       }`}
                   >
-                    <div className="text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                    <div className="type-body-base whitespace-pre-wrap">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                     </div>
                   </div>

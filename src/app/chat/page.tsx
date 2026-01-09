@@ -293,11 +293,11 @@ export default function ChatPage() {
                 <div className="flex-1 flex items-center justify-center p-4">
                     <Card className="w-full max-w-md border-border shadow-lg">
                         <CardHeader className="border-b border-border mb-4">
-                            <CardTitle className="text-2xl font-display uppercase tracking-wider text-foreground">Start a New Chat</CardTitle>
+                            <CardTitle className="type-h3">Start a New Chat</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div>
-                                <label htmlFor="location-select" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                                <label htmlFor="location-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Location
                                 </label>
                                 <Select onValueChange={handleLocationSelect} value={selectedChatLocation?.id || "unassigned"}>
@@ -315,7 +315,7 @@ export default function ChatPage() {
                                 </Select>
                             </div>
                             <div>
-                                <label htmlFor="character-select" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                                <label htmlFor="character-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Character
                                 </label>
                                 <Select onValueChange={handleCharacterSelect} value={selectedChatCharacter?.id || ""}>
@@ -336,7 +336,7 @@ export default function ChatPage() {
                                 </Select>
                             </div>
                             <div>
-                                <label htmlFor="persona-select" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                                <label htmlFor="persona-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Persona
                                 </label>
                                 <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
@@ -354,7 +354,7 @@ export default function ChatPage() {
                             </div>
                             <Button
                                 onClick={handleStartChat}
-                                className="w-full py-2 px-4 shadow-md uppercase tracking-wider font-bold"
+                                className="w-full py-2 px-4 shadow-md type-ui-label"
                                 disabled={!selectedChatCharacter || !selectedChatPersona}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />

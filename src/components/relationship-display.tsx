@@ -25,7 +25,7 @@ function RelationshipBar({ label, value, delta = 0, max = 100 }: BarProps) {
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-center">
-                <span className="text-sm font-medium capitalize text-foreground tracking-wide">{label.replace("_", " ")}</span>
+                <span className="type-ui-label text-foreground">{label.replace("_", " ")}</span>
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground font-mono">
                         {value > 0 ? "+" : ""}
@@ -57,11 +57,11 @@ function RelationshipBar({ label, value, delta = 0, max = 100 }: BarProps) {
 export default function RelationshipDisplay({ characterName, relationship, cumulativeDeltaRelationship, latestDeltaDescription }: RelationshipDisplayProps) {
     return (
         <Card className="w-[550px] h-fit max-h-[80vh] overflow-y-auto border-border shadow-sm">
-            <div className="pt-6">
-                <SectionHeader title={`Relationship with ${characterName}`} />
-            </div>
+            <CardHeader className="pb-2">
+                <CardTitle className="type-h4">Relationship with {characterName}</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-6">
-                <p className="text-sm text-muted-foreground -mt-4 mb-4">Emotional and interpersonal dynamics overview</p>
+                <p className="type-body-sm text-muted-foreground mb-4">Emotional and interpersonal dynamics overview</p>
 
                 <div className="space-y-4">
                     <RelationshipBar
@@ -93,26 +93,26 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
 
                 {latestDeltaDescription && (
                     <div className="pt-4 border-t border-border">
-                        <h4 className="text-sm font-medium mb-2 uppercase tracking-wider text-muted-foreground">Latest Change</h4>
-                        <p className="text-sm text-foreground leading-relaxed">{latestDeltaDescription}</p>
+                        <h4 className="type-ui-label text-muted-foreground mb-2">Latest Change</h4>
+                        <p className="type-body-sm text-foreground">{latestDeltaDescription}</p>
                     </div>
                 )}
 
                 <div className="pt-4 border-t border-border">
-                    <h4 className="text-sm font-medium mb-2 uppercase tracking-wider text-muted-foreground">Base Description</h4>
-                    <p className="text-sm text-foreground leading-relaxed">{relationship.description}</p>
+                    <h4 className="type-ui-label text-muted-foreground mb-2">Base Description</h4>
+                    <p className="type-body-sm text-foreground">{relationship.description}</p>
                 </div>
 
                 {relationship.chat_summaries?.length > 0 && (
                     <div className="pt-4 border-t border-border">
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="item-1" className="border-border">
-                                <AccordionTrigger className="uppercase tracking-wider text-xs font-bold text-muted-foreground hover:text-foreground">Chat Summaries</AccordionTrigger>
+                                <AccordionTrigger className="type-ui-label text-muted-foreground hover:text-foreground">Chat Summaries</AccordionTrigger>
                                 <AccordionContent>
                                     {relationship.chat_summaries.map((summary, index) => (
                                         <div key={index} className="border-t border-border pt-2 mt-2">
-                                            <p className="text-xs font-semibold text-muted-foreground">{new Date(summary.timestamp).toLocaleString()}</p>
-                                            <p className="text-sm text-foreground">{summary.summary}</p>
+                                            <p className="type-ui-label text-muted-foreground">{new Date(summary.timestamp).toLocaleString()}</p>
+                                            <p className="type-body-sm text-foreground">{summary.summary}</p>
                                         </div>
                                     ))}
                                 </AccordionContent>
