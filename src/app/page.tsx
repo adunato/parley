@@ -1,8 +1,31 @@
+"use client";
+
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useEntityStore } from '@/lib/entityStore';
+import { useGameStore } from '@/lib/store/gameStore';
+import { useRouter } from 'next/navigation';
 
 export default function MainMenu() {
+  const router = useRouter();
+  const { characters, playerPersonas, locations, characterGroups } = useEntityStore();
+  const { startGame, isGameActive } = useGameStore();
+
+  const handleNewGame = () => {
+    startGame({
+      characters,
+      playerPersonas,
+      locations,
+      characterGroups
+    });
+    router.push('/chat');
+  };
+
+  const handleContinue = () => {
+    router.push('/chat');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-md text-center space-y-12">
@@ -18,15 +41,19 @@ export default function MainMenu() {
         <div className="flex flex-col gap-4 w-64 mx-auto">
           {/* Main Menu Buttons */}
           <Button
-            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all opacity-50 cursor-not-allowed rounded-sm text-foreground"
-            disabled
+            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all rounded-sm text-foreground"
+            onClick={handleNewGame}
           >
             New Game
           </Button>
 
           <Button
-            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all opacity-50 cursor-not-allowed rounded-sm text-foreground"
-            disabled
+            className={cn(
+              "w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all rounded-sm text-foreground",
+              !isGameActive && "opacity-50 cursor-not-allowed"
+            )}
+            disabled={!isGameActive}
+            onClick={handleContinue}
           >
             Continue
           </Button>

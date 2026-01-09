@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Relationship } from "@/lib/types";
 import { useParleyStore } from "@/lib/store";
+import { useGameStore } from "@/lib/store/gameStore"; // New import
 import { Loader2 } from "lucide-react"; // Import Loader2 icon
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -12,16 +13,16 @@ import RelationshipDisplay from "@/components/relationship-display";
 import { CharacterTraitsDisplay } from "@/components/character-traits-display";
 import { SceneSummaryModal } from "@/components/scene-summary-modal";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
-import { useEntityStore } from "@/lib/entityStore";
+// import { useEntityStore } from "@/lib/entityStore"; // REMOVED
 import { PRQC } from "@/lib/types";
 
 
 export default function ChatPage() {
     const {
-        clearChat,
+        // clearChat, // Moving clearChat to gameStore
         _hasHydrated,
         chatSessionId,
-        chatMessages,
+        // chatMessages, // Moving to gameStore
         worldDescription,
         aiStyle,
         chatModel,
@@ -32,18 +33,39 @@ export default function ChatPage() {
     const {
         characters,
         playerPersonas,
-        setSelectedChatCharacter,
-        setSelectedChatPersona,
-        selectedChatCharacter,
-        selectedChatPersona,
+        locations,
+
+        currentCharacterId,
+        setCurrentCharacterId,
+
+        currentPersonaId,
+        setCurrentPersonaId,
+
+        currentLocationId,
+        setCurrentLocationId,
+
         updateCharacter,
+
+        chatMessages,
+        setChatMessages,
+        clearChat,
+
         cumulativeRelationshipDelta,
         updateCumulativeRelationshipDelta,
         clearCumulativeRelationshipDelta,
-        locations,
-        selectedChatLocation,
-        setSelectedChatLocation
-    } = useEntityStore();
+    } = useGameStore();
+
+    // Derived selection objects
+    // Note: If IDs are null, finds will return undefined, which matches previous behavior
+    const selectedChatCharacter = characters.find(c => c.id === currentCharacterId);
+    const selectedChatPersona = playerPersonas.find(p => p.id === currentPersonaId);
+    const selectedChatLocation = locations.find(l => l.id === currentLocationId);
+
+    // Wrapper setters to match previous API logic if strictly needed, or update usage below.
+    // Ideally update usage.
+    const setSelectedChatLocation = (loc: any) => setCurrentLocationId(loc?.id || null);
+    const setSelectedChatCharacter = (char: any) => setCurrentCharacterId(char?.id || null);
+    const setSelectedChatPersona = (p: any) => setCurrentPersonaId(p?.id || null);
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -384,9 +406,11 @@ export default function ChatPage() {
                                 />
                             )}
                             <ChatComponent
-                                chatSessionId={chatSessionId}
+                                chatSessionId={chatSessionId} // Keeps relying on global session ID for now? Or switch to gameStore ID? Keeping for now to minimize diff.
                                 className="flex-grow"
                                 relationship={currentRelationship}
+                            // Need to pass messages and setMessages to ChatComponent if it relies on store or props?
+                            // ChatComponent likely uses useParleyStore internally. We need to check ChatComponent.
                             />
                             {currentRelationship && selectedChatCharacter && (
                                 <RelationshipDisplay
