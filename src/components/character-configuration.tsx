@@ -496,7 +496,7 @@ export default function CharacterConfiguration() {
             <div className="w-80 bg-background border-r border-border flex flex-col">
                 <div className="p-4 border-b border-border">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Characters</h2>
+                        <h2 className="type-ui-label text-muted-foreground">Characters</h2>
                         <Button size="sm" variant="ghost" onClick={handleAddCharacter} className="h-8 w-8 p-0 hover:bg-accent hover:text-foreground">
                             <Plus className="w-4 h-4" />
                         </Button>
@@ -522,7 +522,7 @@ export default function CharacterConfiguration() {
                                         </Avatar>
                                         <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
                                     </div>
-                                    <p className="text-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
+                                    <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
                                 </div>
                             </div>
                         </div>
@@ -544,7 +544,7 @@ export default function CharacterConfiguration() {
                                     </Avatar>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
-                                            <h1 className="text-5xl font-display font-medium tracking-tight text-foreground uppercase">{displayCharacter.basicInfo.name}</h1>
+                                            <h1 className="type-h2 text-foreground">{displayCharacter.basicInfo.name}</h1>
                                             {isEditing && (
                                                 <label className="cursor-pointer">
                                                     <input
@@ -566,7 +566,7 @@ export default function CharacterConfiguration() {
                                                 </label>
                                             )}
                                         </div>
-                                        <p className="text-sm font-sans text-muted-foreground uppercase tracking-wider font-bold">
+                                        <p className="type-ui-label text-muted-foreground">
                                             {displayCharacter.basicInfo.role || "NO ROLE"} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
                                         </p>
                                     </div>
@@ -574,10 +574,10 @@ export default function CharacterConfiguration() {
                                 <div className="flex gap-2">
                                     {isEditing ? (
                                         <>
-                                            <Button variant="ghost" onClick={handleCancel} className="uppercase tracking-wider text-xs font-bold text-muted-foreground hover:text-foreground">
+                                            <Button variant="ghost" onClick={handleCancel} className="type-ui-label text-muted-foreground hover:text-foreground">
                                                 Cancel
                                             </Button>
-                                            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 uppercase tracking-wider text-xs font-display shadow-sm rounded-sm">
+                                            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 type-ui-label shadow-sm rounded-sm">
                                                 Save Changes
                                             </Button>
                                             <Button variant="destructive" size="icon" onClick={handleDeleteCharacter} title="Delete" className="rounded-sm">
@@ -694,8 +694,8 @@ export default function CharacterConfiguration() {
                                         </>
                                     ) : (
                                         <>
-                                            <Button onClick={() => setIsEditing(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wider font-bold text-xs shadow-sm rounded-sm">Edit</Button>
-                                            <Button variant="ghost" onClick={handleConvertToPersona} className="uppercase tracking-wider font-bold text-xs text-muted-foreground hover:text-foreground">
+                                            <Button onClick={() => setIsEditing(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 type-ui-label shadow-sm rounded-sm">Edit</Button>
+                                            <Button variant="ghost" onClick={handleConvertToPersona} className="type-ui-label text-muted-foreground hover:text-foreground">
                                                 Convert to Persona
                                             </Button>
                                         </>
@@ -718,7 +718,7 @@ export default function CharacterConfiguration() {
                                     </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Name</Label>
+                                            <Label htmlFor="name" className="type-ui-label text-muted-foreground">Name</Label>
                                             <Input
                                                 id="name"
                                                 value={displayCharacter.basicInfo.name}
@@ -727,7 +727,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="age" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Age</Label>
+                                            <Label htmlFor="age" className="type-ui-label text-muted-foreground">Age</Label>
                                             <Input
                                                 id="age"
                                                 type="number"
@@ -737,7 +737,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="gender" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Gender</Label>
+                                            <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
                                             <Input
                                                 id="gender"
                                                 value={displayCharacter.basicInfo.gender || ""}
@@ -746,7 +746,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="role" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Role</Label>
+                                            <Label htmlFor="role" className="type-ui-label text-muted-foreground">Role</Label>
                                             <Input
                                                 id="role"
                                                 value={displayCharacter.basicInfo.role || ""}
@@ -755,7 +755,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="faction" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Faction</Label>
+                                            <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
                                             <Input
                                                 id="faction"
                                                 value={displayCharacter.basicInfo.faction || ""}
@@ -764,7 +764,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="location" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Location</Label>
+                                            <Label htmlFor="location" className="type-ui-label text-muted-foreground">Location</Label>
                                             <Select
                                                 disabled={!isEditing}
                                                 value={displayCharacter.locationId || "unassigned"}
@@ -784,7 +784,7 @@ export default function CharacterConfiguration() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="reputation" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Reputation</Label>
+                                            <Label htmlFor="reputation" className="type-ui-label text-muted-foreground">Reputation</Label>
                                             <Textarea
                                                 id="reputation"
                                                 value={displayCharacter.basicInfo.reputation || ""}
@@ -794,7 +794,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="background" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Background</Label>
+                                            <Label htmlFor="background" className="type-ui-label text-muted-foreground">Background</Label>
                                             <Textarea
                                                 id="background"
                                                 value={displayCharacter.basicInfo.background || ""}
@@ -804,7 +804,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="firstImpression" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">First Impression</Label>
+                                            <Label htmlFor="firstImpression" className="type-ui-label text-muted-foreground">First Impression</Label>
                                             <Textarea
                                                 id="firstImpression"
                                                 value={displayCharacter.basicInfo.firstImpression || ""}
@@ -814,7 +814,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="appearance" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Appearance</Label>
+                                            <Label htmlFor="appearance" className="type-ui-label text-muted-foreground">Appearance</Label>
                                             <Textarea
                                                 id="appearance"
                                                 value={displayCharacter.basicInfo.appearance || ""}
@@ -834,7 +834,7 @@ export default function CharacterConfiguration() {
                                     <CardContent className="space-y-4">
                                         {Object.entries(displayCharacter.personality).map(([trait, value]) => (
                                             <div key={trait} className="space-y-2">
-                                                <Label htmlFor={trait} className="text-xs uppercase font-bold tracking-wider text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <Label htmlFor={trait} className="type-ui-label text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                 <div className="flex items-center gap-4">
                                                     <Input
                                                         id={trait}
@@ -872,12 +872,12 @@ export default function CharacterConfiguration() {
                                         <SectionHeader title="Match Preferences" />
                                     </div>
                                     <CardContent className="space-y-4">
-                                        <div className="text-sm text-gray-500 mb-4">
+                                        <div className="type-body-sm text-muted-foreground mb-4">
                                             Define the personality traits this character finds most attractive in a partner.
                                         </div>
                                         {displayCharacter.idealMatch && Object.entries(displayCharacter.idealMatch).map(([trait, value]) => (
                                             <div key={trait} className="space-y-2">
-                                                <Label htmlFor={`ideal-${trait}`} className="text-xs uppercase font-bold tracking-wider text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <Label htmlFor={`ideal-${trait}`} className="type-ui-label text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                 <div className="flex items-center gap-4">
                                                     <Input
                                                         id={`ideal-${trait}`}
@@ -996,7 +996,7 @@ export default function CharacterConfiguration() {
                                                 })}
                                             </Accordion>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No relationships yet.</p>
+                                            <p className="type-body-sm text-muted-foreground">No relationships yet.</p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1031,7 +1031,7 @@ export default function CharacterConfiguration() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No character groups defined. Create them in the Character Group Configuration page.</p>
+                                            <p className="type-body-sm text-muted-foreground">No character groups defined. Create them in the Character Group Configuration page.</p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1045,8 +1045,8 @@ export default function CharacterConfiguration() {
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
                             <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-foreground mb-2">No Character Selected</h3>
-                            <p className="text-muted-foreground">Select a character from the list or add a new one</p>
+                            <h3 className="type-ui-subhead text-foreground mb-2">No Character Selected</h3>
+                            <p className="type-body-sm text-muted-foreground">Select a character from the list or add a new one</p>
                         </div>
                     </div>
                 )}
