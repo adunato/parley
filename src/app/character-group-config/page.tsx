@@ -61,16 +61,16 @@ export default function CharacterGroupConfigPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Character Group Configuration</h1>
+      <h1 className="type-h2 mb-6">Character Group Configuration</h1>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>{editingGroup ? "Edit Character Group" : "Create New Character Group"}</CardTitle>
+          <CardTitle className="type-h4">{editingGroup ? "Edit Character Group" : "Create New Character Group"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div>
-              <Label htmlFor="groupName">Group Name</Label>
+              <Label htmlFor="groupName" className="type-ui-label text-muted-foreground">Group Name</Label>
               <Input
                 id="groupName"
                 value={newGroupName}
@@ -79,7 +79,7 @@ export default function CharacterGroupConfigPage() {
               />
             </div>
             <div>
-              <Label htmlFor="groupDescription">Description</Label>
+              <Label htmlFor="groupDescription" className="type-ui-label text-muted-foreground">Description</Label>
               <Textarea
                 id="groupDescription"
                 value={newGroupDescription}
@@ -88,7 +88,7 @@ export default function CharacterGroupConfigPage() {
               />
             </div>
             <div>
-              <Label>Characters in Group</Label>
+              <Label className="type-ui-label text-muted-foreground">Characters in Group</Label>
               <div className="grid grid-cols-2 gap-2">
                 {characters.map((character) => (
                   <div key={character.id} className="flex items-center space-x-2">
@@ -98,7 +98,7 @@ export default function CharacterGroupConfigPage() {
                       checked={selectedCharacters.includes(character.id)}
                       onChange={() => handleCharacterSelection(character.id)}
                     />
-                    <Label htmlFor={`char-${character.id}`}>{character.basicInfo.name}</Label>
+                    <Label htmlFor={`char-${character.id}`} className="type-body-sm align-middle">{character.basicInfo.name}</Label>
                   </div>
                 ))}
               </div>
@@ -120,17 +120,17 @@ export default function CharacterGroupConfigPage() {
         </CardContent>
       </Card>
 
-      <h2 className="text-2xl font-bold mb-4">Existing Character Groups</h2>
+      <h2 className="type-h3 mb-4">Existing Character Groups</h2>
       <div className="grid gap-4">
         {characterGroups.map((group) => (
           <Card key={group.id}>
             <CardHeader>
-              <CardTitle>{group.name}</CardTitle>
+              <CardTitle className="type-h4">{group.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-2">{group.description}</p>
-              <p className="text-sm font-medium">Characters:</p>
-              <ul className="list-disc list-inside">
+              <p className="type-body-sm text-muted-foreground mb-2">{group.description}</p>
+              <p className="type-ui-label text-muted-foreground mb-1">Characters:</p>
+              <ul className="list-disc list-inside type-body-sm">
                 {group.characters.map((charId) => {
                   const character = characters.find((c) => c.id === charId);
                   return <li key={charId}>{character ? character.basicInfo.name : "Unknown Character"}</li>;
