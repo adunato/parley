@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState, useRef } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Save, Plus, Sparkles, Type, Upload } from "lucide-react"
+import { User, Plus, Sparkles, Type, Upload, Loader2, CheckCircle, AlertCircle, Trash2 } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useParleyStore } from "@/lib/store"
 import { Persona } from "@/lib/types";
@@ -26,80 +26,67 @@ import {
 } from "@/components/ui/tooltip";
 import { useEntityStore } from "@/lib/entityStore";
 import { SectionHeader } from "@/components/ui/section-header";
+import { useDebouncedCallback } from "use-debounce";
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function PersonaConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
     const { playerPersonas, addPlayerPersona, updatePlayerPersona, deletePlayerPersona } = useEntityStore()
+
+    // Selection State
     const [selectedId, setSelectedId] = useState<string | null>(null)
-    const [editedPersona, setEditedPersona] = useState<Persona | null>(null)
+
+    // Local Buffer State
+    const [localPersona, setLocalPersona] = useState<Persona | null>(null);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const isDirtyRef = useRef(false);
+
+    // Dialog States
     const [isGeneratingPersona, setIsGeneratingPersona] = useState(false);
     const [isPersonaPromptDialogOpen, setIsPersonaPromptDialogOpen] = useState(false);
     const [dialogPersonaPrompt, setDialogPersonaPrompt] = useState('');
     const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
     const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !editedPersona) return;
 
-        const formData = new FormData();
-        formData.append('avatar', file);
-
+    // Debounced Save
+    const debouncedSave = useDebouncedCallback((persona: Persona) => {
+        setSaveStatus('saving');
         try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                handleInputChange("basicInfo", "avatar", data.url);
-            } else {
-                console.error('Failed to upload image', await res.text());
-                alert('Failed to upload image.');
-            }
+            updatePlayerPersona(persona);
+            setSaveStatus('saved');
+            isDirtyRef.current = false;
+            setTimeout(() => setSaveStatus(prev => prev === 'saved' ? 'idle' : prev), 2000);
         } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('An unexpected error occurred during image upload.');
+            console.error("Failed to save persona", error);
+            setSaveStatus('error');
         }
-    };
+    }, 1000);
 
-    const selectedPersona = playerPersonas.find((p) => p.id === selectedId)
+    // Sync selected logic
+    const selectedPersonaStore = playerPersonas.find((p) => p.id === selectedId)
 
     useEffect(() => {
-        if (selectedPersona) {
-            setEditedPersona({ ...selectedPersona })
-        } else if (playerPersonas.length > 0) {
-            setSelectedId(playerPersonas[0].id)
-            setEditedPersona({ ...playerPersonas[0] })
+        if (selectedPersonaStore) {
+            if (!isDirtyRef.current || localPersona?.id !== selectedPersonaStore.id) {
+                setLocalPersona({ ...selectedPersonaStore });
+            }
         } else {
-            setEditedPersona(null)
+            if (!selectedId) {
+                setLocalPersona(null);
+                if (playerPersonas.length > 0) {
+                    setSelectedId(playerPersonas[0].id);
+                }
+            }
         }
-        setIsEditing(false);
-    }, [selectedPersona, playerPersonas])
+    }, [selectedPersonaStore, playerPersonas, selectedId]);
 
     const handleSelect = (persona: Persona) => {
-        setSelectedId(persona.id)
-        setEditedPersona({ ...persona })
-        setIsEditing(false);
-    }
-
-    const handleSave = () => {
-        if (editedPersona) {
-            if (playerPersonas.some(p => p.id === editedPersona.id)) {
-                updatePlayerPersona(editedPersona)
-            } else {
-                addPlayerPersona(editedPersona)
-            }
-            setEditedPersona(null)
-            setIsEditing(false);
+        if (localPersona && isDirtyRef.current) {
+            debouncedSave.flush();
         }
-    }
-
-    const handleCancel = () => {
-        setEditedPersona(null)
-        setIsEditing(false);
+        setSelectedId(persona.id)
     }
 
     const handleInputChange = (
@@ -107,7 +94,7 @@ export default function PersonaConfiguration() {
         field: string,
         value: string | number | string[] | undefined
     ) => {
-        setEditedPersona((prev) => {
+        setLocalPersona((prev) => {
             if (!prev) return null
 
             const newPersona = { ...prev }
@@ -116,15 +103,45 @@ export default function PersonaConfiguration() {
                 newPersona[section] = {
                     ...newPersona[section],
                     [field]: value,
-                } as any // Type assertion for nested objects
+                } as any
             } else {
-                (newPersona as any)[field] = value // For top-level fields if any
+                (newPersona as any)[field] = value
             }
+            isDirtyRef.current = true;
+            setSaveStatus('saving');
+            debouncedSave(newPersona);
             return newPersona
         })
     }
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !localPersona) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        setSaveStatus('saving');
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            if (res.ok) {
+                const data = await res.json();
+                handleInputChange("basicInfo", "avatar", data.url);
+            } else {
+                console.error('Failed to upload image', await res.text());
+                setSaveStatus('error');
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setSaveStatus('error');
+        }
+    };
+
     const handleAddPersona = () => {
+        if (localPersona && isDirtyRef.current) {
+            debouncedSave.flush();
+        }
+
         const newId = `Persona-${playerPersonas.length + 1}`
         const newPersona: Persona = {
             id: newId,
@@ -142,20 +159,20 @@ export default function PersonaConfiguration() {
         }
         addPlayerPersona(newPersona)
         setSelectedId(newId)
-        setEditedPersona(newPersona)
-        setIsEditing(true);
+        setLocalPersona(newPersona)
+        isDirtyRef.current = false;
     }
 
     const handleDeletePersona = () => {
-        if (editedPersona && editedPersona.id) {
-            deletePlayerPersona(editedPersona.id)
-            setEditedPersona(null)
-            setSelectedId(playerPersonas[0]?.id || null)
-            setIsEditing(false);
+        if (localPersona && localPersona.id) {
+            deletePlayerPersona(localPersona.id)
+            setLocalPersona(null)
+            if (selectedId === localPersona.id) {
+                // Try to check next available or trigger useEffect to pick first
+                setSelectedId(null)
+            }
         }
     }
-
-    const displayPersona = editedPersona || selectedPersona
 
     const generatePersona = async (prompt: string) => {
         setIsGeneratingPersona(true);
@@ -172,38 +189,32 @@ export default function PersonaConfiguration() {
             }
             const response = await fetch('/api/generate/persona', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
             const data = await response.json();
             if (response.ok) {
-                const generatedPersona: Persona = {
-                    id: data.persona.id || `Persona-${playerPersonas.length + 1}`,
-                    basicInfo: {
-                        name: data.persona.basicInfo.name || "",
-                        age: data.persona.basicInfo.age || 0,
-                        gender: data.persona.basicInfo.gender || "",
-                        role: data.persona.basicInfo.role || "",
-                        faction: data.persona.basicInfo.faction || "",
-                        reputation: data.persona.basicInfo.reputation || "",
-                        background: data.persona.basicInfo.background || "",
-                        firstImpression: data.persona.basicInfo.firstImpression || "",
-                        appearance: data.persona.basicInfo.appearance || "",
-                    }
-                };
-
-                if (selectedId && selectedPersona) {
-                    // Overwrite the currently selected persona
-                    updatePlayerPersona({ ...selectedPersona, ...generatedPersona, id: selectedPersona.id });
-                    setSelectedId(selectedPersona.id);
-                    setEditedPersona({ ...selectedPersona, ...generatedPersona, id: selectedPersona.id });
-                } else {
-                    // Add as a new persona
-                    addPlayerPersona(generatedPersona);
-                    setSelectedId(generatedPersona.id);
-                    setEditedPersona(generatedPersona);
+                // If we have a local selected, update it. If not, create new?
+                // Logic: If on a "New Persona" or editing one, generate INTO it.
+                // The original code either updated selected OR added new.
+                // Here, let's assume we always generate INTO the currently selected persona if it exists (which it should if we are seeing the button).
+                if (localPersona) {
+                    const generatedData = data.persona;
+                    // Merge generated data
+                    setLocalPersona(prev => {
+                        if (!prev) return null;
+                        const updated = {
+                            ...prev,
+                            basicInfo: {
+                                ...prev.basicInfo,
+                                ...generatedData.basicInfo
+                            }
+                        };
+                        isDirtyRef.current = true;
+                        setSaveStatus('saving');
+                        debouncedSave(updated);
+                        return updated;
+                    });
                 }
             } else {
                 console.error('Failed to generate persona:', data.error);
@@ -219,35 +230,26 @@ export default function PersonaConfiguration() {
         }
     };
 
-    const handleGeneratePersona = () => {
-        generatePersona("");
-    };
-
-    const handleGeneratePersonaWithPrompt = () => {
-        generatePersona(dialogPersonaPrompt);
-    };
+    const handleGeneratePersona = () => generatePersona("");
+    const handleGeneratePersonaWithPrompt = () => generatePersona(dialogPersonaPrompt);
 
     const handleGenerateAvatarDescription = async () => {
-        if (!displayPersona) return;
+        if (!localPersona) return;
         setIsGeneratingAvatar(true);
         try {
             const response = await fetch('/api/generate/avatar-description', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ characterOrPersonaData: displayPersona }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ characterOrPersonaData: localPersona }),
             });
             const data = await response.json();
             if (response.ok) {
                 setDialogAvatarPrompt(data.imageDescription);
                 setIsAvatarPromptDialogOpen(true);
             } else {
-                console.error('Failed to generate avatar description:', data.error);
                 alert('Error generating avatar description: ' + data.error);
             }
         } catch (error) {
-            console.error('Error generating avatar description:', error);
             alert('An unexpected error occurred while generating the avatar description.');
         } finally {
             setIsGeneratingAvatar(false);
@@ -255,14 +257,12 @@ export default function PersonaConfiguration() {
     };
 
     const handleGenerateAvatar = async () => {
-        if (!displayPersona || !dialogAvatarPrompt) return;
+        if (!localPersona || !dialogAvatarPrompt) return;
         setIsGeneratingAvatar(true);
         try {
             const imageResponse = await fetch('/api/generate/avatar-image', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageDescription: dialogAvatarPrompt,
                     overrides: avatarGenerationSettings
@@ -271,48 +271,30 @@ export default function PersonaConfiguration() {
             const imageData = await imageResponse.json();
 
             if (imageResponse.ok && imageData.imageData) {
-                // Convert base64 to Blob and then to File object for upload
                 const byteCharacters = atob(imageData.imageData);
                 const byteNumbers = new Array(byteCharacters.length);
                 for (let i = 0; i < byteCharacters.length; i++) {
                     byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
                 const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: 'image/png' }); // Assuming PNG for now
+                const blob = new Blob([byteArray], { type: 'image/png' });
                 const imageFile = new File([blob], `avatar_${Date.now()}.png`, { type: 'image/png' });
 
                 const formData = new FormData();
                 formData.append('avatar', imageFile);
 
-                const uploadResponse = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
+                const uploadResponse = await fetch('/api/upload', { method: 'POST', body: formData });
                 if (uploadResponse.ok) {
                     const uploadData = await uploadResponse.json();
                     const avatarUrl = `${uploadData.url}?t=${Date.now()}`;
-
-                    if (editedPersona) {
-                        handleInputChange("basicInfo", "avatar", avatarUrl);
-                    } else if (selectedPersona) {
-                        // Directly update the store if we are not in edit mode
-                        const updatedPersona = {
-                            ...selectedPersona,
-                            basicInfo: { ...selectedPersona.basicInfo, avatar: avatarUrl }
-                        };
-                        updatePlayerPersona(updatedPersona);
-                    }
+                    handleInputChange("basicInfo", "avatar", avatarUrl);
                 } else {
-                    console.error('Failed to upload generated image', await uploadResponse.text());
                     alert('Failed to upload generated image.');
                 }
             } else {
-                console.error('Failed to generate image:', imageData.error);
                 alert('Error generating image: ' + imageData.error);
             }
         } catch (error) {
-            console.error('Error generating avatar:', error);
             alert('An unexpected error occurred while generating the avatar.');
         } finally {
             setIsGeneratingAvatar(false);
@@ -320,6 +302,8 @@ export default function PersonaConfiguration() {
             setDialogAvatarPrompt('');
         }
     };
+
+    const displayPersona = localPersona;
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -378,160 +362,166 @@ export default function PersonaConfiguration() {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h1 className="type-h2 text-foreground">{displayPersona.basicInfo.name}</h1>
-                                            {isEditing && (
-                                                <label className="cursor-pointer">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleImageUpload}
-                                                        className="hidden"
-                                                    />
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="w-6 h-6"
-                                                        asChild
-                                                    >
-                                                        <div>
-                                                            <Upload className="w-4 h-4" />
-                                                        </div>
-                                                    </Button>
-                                                </label>
-                                            )}
+                                            <label className="cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageUpload}
+                                                    className="hidden"
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-6 h-6"
+                                                    asChild
+                                                >
+                                                    <div>
+                                                        <Upload className="w-4 h-4" />
+                                                    </div>
+                                                </Button>
+                                            </label>
                                         </div>
                                         <p className="type-ui-label text-muted-foreground">
                                             {displayPersona.id} {displayPersona.basicInfo.role && `• ${displayPersona.basicInfo.role}`}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    {isEditing ? (
-                                        <>
-                                            <Button variant="outline" onClick={handleCancel}>
-                                                Cancel
-                                            </Button>
-                                            <Button onClick={handleSave}>
-                                                <Save className="w-4 h-4 mr-2" />
-                                                Save Changes
-                                            </Button>
-                                            <Button variant="destructive" onClick={handleDeletePersona}>
-                                                Delete
-                                            </Button>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
+                                <div className="flex items-center gap-2">
+                                    {/* Status Indicator */}
+                                    <div className="flex items-center text-xs font-medium uppercase tracking-wider mr-4">
+                                        {saveStatus === 'saving' && (
+                                            <span className="text-muted-foreground flex items-center gap-1.5 animate-pulse">
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                Saving...
+                                            </span>
+                                        )}
+                                        {saveStatus === 'saved' && (
+                                            <span className="text-green-500 flex items-center gap-1.5 transition-opacity duration-500">
+                                                <CheckCircle className="w-3 h-3" />
+                                                Saved
+                                            </span>
+                                        )}
+                                        {saveStatus === 'error' && (
+                                            <span className="text-destructive flex items-center gap-1.5">
+                                                <AlertCircle className="w-3 h-3" />
+                                                Error
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <Button variant="destructive" size="icon" onClick={handleDeletePersona}>
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    onClick={handleGeneratePersona}
+                                                    disabled={isGeneratingPersona}
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Sparkles className="h-4 w-4" />
+                                                    <span className="sr-only">Generate Persona</span>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Generate Persona (no prompt)</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <Dialog open={isPersonaPromptDialogOpen} onOpenChange={setIsPersonaPromptDialogOpen}>
+                                                <TooltipTrigger asChild>
+                                                    <DialogTrigger asChild>
                                                         <Button
-                                                            onClick={handleGeneratePersona}
-                                                            disabled={isGeneratingPersona}
                                                             variant="outline"
                                                             size="icon"
                                                             className="h-8 w-8"
                                                         >
-                                                            <Sparkles className="h-4 w-4" />
-                                                            <span className="sr-only">Generate Persona</span>
+                                                            <Type className="h-4 w-4" />
+                                                            <span className="sr-only">Generate with Prompt</span>
                                                         </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Generate Persona (no prompt)</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <Dialog open={isPersonaPromptDialogOpen} onOpenChange={setIsPersonaPromptDialogOpen}>
-                                                        <TooltipTrigger asChild>
-                                                            <DialogTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="icon"
-                                                                    className="h-8 w-8"
-                                                                >
-                                                                    <Type className="h-4 w-4" />
-                                                                    <span className="sr-only">Generate with Prompt</span>
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Persona with Custom Prompt</p>
-                                                        </TooltipContent>
-                                                        <DialogContent className="sm:max-w-[425px]">
-                                                            <DialogHeader>
-                                                                <DialogTitle>Generate Persona with Custom Prompt</DialogTitle>
-                                                                <DialogDescription>
-                                                                    Enter your desired prompt for persona creation here.
-                                                                </DialogDescription>
-                                                            </DialogHeader>
-                                                            <div className="grid gap-4 py-4">
-                                                                <Textarea
-                                                                    id="customPersonaPrompt"
-                                                                    value={dialogPersonaPrompt}
-                                                                    onChange={(e) => setDialogPersonaPrompt(e.target.value)}
-                                                                    className="min-h-[150px]"
-                                                                    rows={6}
-                                                                    placeholder="e.g., 'A stealthy rogue with a mysterious past and a knack for getting into trouble.'"
-                                                                />
-                                                            </div>
-                                                            <DialogFooter>
-                                                                <Button onClick={handleGeneratePersonaWithPrompt} disabled={isGeneratingPersona}>
-                                                                    {isGeneratingPersona ? 'Generating...' : 'Generate'}
-                                                                </Button>
-                                                            </DialogFooter>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
-                                                        <TooltipTrigger asChild>
-                                                            <DialogTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="icon"
-                                                                    className="h-8 w-8"
-                                                                    onClick={handleGenerateAvatarDescription}
-                                                                    disabled={isGeneratingAvatar}
-                                                                >
-                                                                    <Upload className="h-4 w-4" />
-                                                                    <span className="sr-only">Generate Avatar</span>
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Avatar</p>
-                                                        </TooltipContent>
-                                                        <DialogContent className="sm:max-w-[425px]">
-                                                            <DialogHeader>
-                                                                <DialogTitle>Tweak Avatar Description</DialogTitle>
-                                                                <DialogDescription>
-                                                                    Review and edit the generated image description before generating the avatar.
-                                                                </DialogDescription>
-                                                            </DialogHeader>
-                                                            <div className="grid gap-4 py-4">
-                                                                <Textarea
-                                                                    id="avatarPrompt"
-                                                                    value={dialogAvatarPrompt}
-                                                                    onChange={(e) => setDialogAvatarPrompt(e.target.value)}
-                                                                    className="min-h-[150px]"
-                                                                    rows={6}
-                                                                    placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
-                                                                />
-                                                            </div>
-                                                            <DialogFooter>
-                                                                <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
-                                                                    {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
-                                                                </Button>
-                                                            </DialogFooter>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                                        </>
-                                    )}
+                                                    </DialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Generate Persona with Custom Prompt</p>
+                                                </TooltipContent>
+                                                <DialogContent className="sm:max-w-[425px]">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Generate Persona with Custom Prompt</DialogTitle>
+                                                        <DialogDescription>
+                                                            Enter your desired prompt for persona creation here.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <Textarea
+                                                            id="customPersonaPrompt"
+                                                            value={dialogPersonaPrompt}
+                                                            onChange={(e) => setDialogPersonaPrompt(e.target.value)}
+                                                            className="min-h-[150px]"
+                                                            rows={6}
+                                                            placeholder="e.g., 'A stealthy rogue with a mysterious past and a knack for getting into trouble.'"
+                                                        />
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button onClick={handleGeneratePersonaWithPrompt} disabled={isGeneratingPersona}>
+                                                            {isGeneratingPersona ? 'Generating...' : 'Generate'}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
+                                                <TooltipTrigger asChild>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={handleGenerateAvatarDescription}
+                                                            disabled={isGeneratingAvatar}
+                                                        >
+                                                            <Upload className="h-4 w-4" />
+                                                            <span className="sr-only">Generate Avatar</span>
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Generate Avatar</p>
+                                                </TooltipContent>
+                                                <DialogContent className="sm:max-w-[425px]">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Tweak Avatar Description</DialogTitle>
+                                                        <DialogDescription>
+                                                            Review and edit the generated image description before generating the avatar.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <Textarea
+                                                            id="avatarPrompt"
+                                                            value={dialogAvatarPrompt}
+                                                            onChange={(e) => setDialogAvatarPrompt(e.target.value)}
+                                                            className="min-h-[150px]"
+                                                            rows={6}
+                                                            placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
+                                                        />
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
+                                                            {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             </div>
                         </div>
@@ -551,7 +541,6 @@ export default function PersonaConfiguration() {
                                                 id="name"
                                                 value={displayPersona.basicInfo.name}
                                                 onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -560,7 +549,6 @@ export default function PersonaConfiguration() {
                                                 id="alias"
                                                 value={displayPersona.id}
                                                 onChange={(e) => handleInputChange("id", "id", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -568,9 +556,8 @@ export default function PersonaConfiguration() {
                                             <Input
                                                 id="age"
                                                 type="number"
-                                                value={displayPersona.basicInfo.age || ""}
+                                                value={displayPersona.basicInfo.age || 0}
                                                 onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -579,7 +566,6 @@ export default function PersonaConfiguration() {
                                                 id="gender"
                                                 value={displayPersona.basicInfo.gender || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -588,7 +574,6 @@ export default function PersonaConfiguration() {
                                                 id="role"
                                                 value={displayPersona.basicInfo.role || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -597,7 +582,6 @@ export default function PersonaConfiguration() {
                                                 id="faction"
                                                 value={displayPersona.basicInfo.faction || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -606,7 +590,6 @@ export default function PersonaConfiguration() {
                                                 id="avatar"
                                                 value={displayPersona.basicInfo.avatar || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "avatar", e.target.value)}
-                                                disabled={!isEditing}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -615,14 +598,12 @@ export default function PersonaConfiguration() {
                                                 id="appearance"
                                                 value={displayPersona.basicInfo.appearance || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "appearance", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
                                     </CardContent>
                                 </Card>
 
-                                {/* Additional Details */}
                                 {/* Additional Details */}
                                 <Card>
                                     <div className="pt-6">
@@ -635,7 +616,6 @@ export default function PersonaConfiguration() {
                                                 id="reputation"
                                                 value={displayPersona.basicInfo.reputation || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "reputation", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -645,7 +625,6 @@ export default function PersonaConfiguration() {
                                                 id="background"
                                                 value={displayPersona.basicInfo.background || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "background", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>
@@ -655,7 +634,6 @@ export default function PersonaConfiguration() {
                                                 id="firstImpression"
                                                 value={displayPersona.basicInfo.firstImpression || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "firstImpression", e.target.value)}
-                                                disabled={!isEditing}
                                                 rows={3}
                                             />
                                         </div>

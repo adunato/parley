@@ -90,18 +90,19 @@ export function ImageUpload({
                         className="w-full h-auto max-h-[400px] object-cover"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Button variant="destructive" size="sm" onClick={onRemove}>
-                            <Trash2 className="h-4 w-4 mr-2" /> Remove
+                        <Button variant="destructive" size="icon" onClick={onRemove} title="Remove Image">
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                         <div className="relative">
-                            <Button variant="secondary" size="sm" className="pointer-events-none">
-                                <Upload className="h-4 w-4 mr-2" /> Replace
+                            <Button variant="secondary" size="icon" className="pointer-events-none" title="Replace Image">
+                                <Upload className="h-4 w-4" />
                             </Button>
                             <Input
                                 type="file"
                                 accept="image/*"
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 onChange={handleUpload}
+                                title="Replace Image"
                             />
                         </div>
                     </div>

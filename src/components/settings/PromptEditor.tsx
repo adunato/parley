@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { PromptConfig } from "@/lib/store/promptStore";
+import { useDebouncedCallback } from "use-debounce";
+import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 interface PromptEditorProps {
     prompts: Record<string, PromptConfig>;
@@ -19,12 +21,18 @@ interface PromptEditorProps {
     onReset: (id: string) => Promise<void>;
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
 export function PromptEditor({ prompts, onSave, onReset }: PromptEditorProps) {
     const [selectedPromptId, setSelectedPromptId] = useState<string>("");
     const [currentTemplate, setCurrentTemplate] = useState<string>("");
-    const [isDirty, setIsDirty] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
-    // Set initial selection
+    // Track if the current template has modifications that haven't been flushed yet
+    // This helps us avoid saving when switching IF no changes were made
+    const isDirtyRef = useRef(false);
+
+    // Initial Load
     useEffect(() => {
         if (!selectedPromptId && Object.keys(prompts).length > 0) {
             const firstId = Object.keys(prompts)[0];
@@ -33,44 +41,69 @@ export function PromptEditor({ prompts, onSave, onReset }: PromptEditorProps) {
         }
     }, [prompts, selectedPromptId]);
 
-    // Update template when selection changes (if not dirty? or force switch?)
-    // Basic logic: switch immediately, maybe warn if dirty later. For now, simple switch.
+    // Debounced Save
+    const debouncedSave = useDebouncedCallback(async (id: string, template: string) => {
+        if (!id) return;
+        setSaveStatus('saving');
+        try {
+            await onSave(id, template);
+            setSaveStatus('saved');
+            isDirtyRef.current = false;
+
+            // Reset "saved" status after a delay
+            setTimeout(() => {
+                setSaveStatus(prev => prev === 'saved' ? 'idle' : prev);
+            }, 2000);
+        } catch (error) {
+            console.error("Auto-save failed", error);
+            setSaveStatus('error');
+        }
+    }, 1000);
+
     const handlePromptChange = (value: string) => {
+        // FLUSH any pending saves for the OLD prompt before switching
+        if (selectedPromptId && isDirtyRef.current) {
+            debouncedSave.flush();
+        }
+
         if (prompts[value]) {
             setSelectedPromptId(value);
             setCurrentTemplate(prompts[value].template);
-            setIsDirty(false);
+            setSaveStatus('idle');
+            isDirtyRef.current = false;
         }
     };
 
     const handleTemplateChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setCurrentTemplate(e.target.value);
-        setIsDirty(true);
-    };
-
-    const handleSave = async () => {
-        if (selectedPromptId) {
-            await onSave(selectedPromptId, currentTemplate);
-            setIsDirty(false);
-        }
+        const newValue = e.target.value;
+        setCurrentTemplate(newValue);
+        isDirtyRef.current = true;
+        setSaveStatus('saving'); // UI feedback immediately
+        debouncedSave(selectedPromptId, newValue);
     };
 
     const handleReset = async () => {
         if (selectedPromptId) {
+            // Cancel any pending saves
+            debouncedSave.cancel();
+
             await onReset(selectedPromptId);
-            // After reset, we need to update the local state with the new (default) template.
-            // But the parent will likely re-fetch prompts.
-            // We'll rely on the parent updating the `prompts` prop.
+            setSaveStatus('idle');
+            isDirtyRef.current = false;
         }
     };
 
-    // React to props update for the CURRENTLY selected prompt
+    // React to props update for the CURRENTLY selected prompt (external updates)
     useEffect(() => {
-        if (selectedPromptId && prompts[selectedPromptId] && !isDirty) {
-            setCurrentTemplate(prompts[selectedPromptId].template);
+        // Only update if we are NOT currently editing (dirty) to avoid overwriting user while they type
+        // and only if the external value is different
+        if (selectedPromptId && prompts[selectedPromptId] && !isDirtyRef.current) {
+            // We check strictly to avoid unnecessary re-renders or loops
+            if (prompts[selectedPromptId].template !== currentTemplate) {
+                setCurrentTemplate(prompts[selectedPromptId].template);
+            }
         }
-    }, [prompts, selectedPromptId, isDirty]);
-
+    }, [prompts, selectedPromptId, currentTemplate]);
 
     const currentConfig = prompts[selectedPromptId];
 
@@ -94,12 +127,31 @@ export function PromptEditor({ prompts, onSave, onReset }: PromptEditorProps) {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="space-x-2 pb-0.5">
-                    <Button variant="outline" onClick={handleReset} disabled={!selectedPromptId} className="uppercase tracking-wider font-bold text-xs">
+                <div className="flex items-center gap-4">
+                    {/* Status Indicator */}
+                    <div className="flex items-center text-xs font-medium uppercase tracking-wider">
+                        {saveStatus === 'saving' && (
+                            <span className="text-muted-foreground flex items-center gap-1.5 animate-pulse">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Saving...
+                            </span>
+                        )}
+                        {saveStatus === 'saved' && (
+                            <span className="text-green-500 flex items-center gap-1.5 transition-opacity duration-500">
+                                <CheckCircle className="w-3 h-3" />
+                                Saved
+                            </span>
+                        )}
+                        {saveStatus === 'error' && (
+                            <span className="text-destructive flex items-center gap-1.5">
+                                <AlertCircle className="w-3 h-3" />
+                                Save Failed
+                            </span>
+                        )}
+                    </div>
+
+                    <Button variant="outline" onClick={handleReset} disabled={!selectedPromptId || saveStatus === 'saving'} className="uppercase tracking-wider font-bold text-xs">
                         Reset Default
-                    </Button>
-                    <Button onClick={handleSave} disabled={!isDirty} className="uppercase tracking-wider font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90">
-                        Save Changes
                     </Button>
                 </div>
             </div>
