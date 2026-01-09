@@ -32,6 +32,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SectionHeader } from "@/components/ui/section-header";
+import { Menu } from "lucide-react";
 
 import RelationshipDisplay from "@/components/relationship-display";
 import { useEntityStore } from "@/lib/entityStore";
@@ -489,18 +491,16 @@ export default function CharacterConfiguration() {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-muted/10">
             {/* Left Sidebar - Master List */}
-            <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-                <div className="p-4 border-b border-gray-200">
+            <div className="w-80 bg-background border-r border-border flex flex-col">
+                <div className="p-4 border-b border-border">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900">Characters</h2>
-                        <Button size="sm" variant="outline" onClick={handleAddCharacter}>
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add
+                        <h2 className="type-ui-label text-muted-foreground">Characters</h2>
+                        <Button size="sm" variant="ghost" onClick={handleAddCharacter} className="h-8 w-8 p-0 hover:bg-accent hover:text-foreground">
+                            <Plus className="w-4 h-4" />
                         </Button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">{characters.length} characters</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
@@ -508,22 +508,22 @@ export default function CharacterConfiguration() {
                         <div
                             key={character.id}
                             onClick={() => handleSelect(character)}
-                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedId === character.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                            className={`p-4 border-b border-border/50 cursor-pointer transition-all duration-200 ${selectedId === character.id
+                                ? "bg-primary/5 border-l-2 border-l-primary"
+                                : "hover:bg-accent/50 border-l-2 border-l-transparent"
                                 }`}
                         >
                             <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 pointer-events-none">
                                     <div className="flex items-center gap-3 mb-1">
-                                        <Avatar className="w-8 h-8 border-2 border-white">
+                                        <Avatar className="w-8 h-8 border border-border shadow-sm">
                                             <AvatarImage src={character.basicInfo.avatar} alt={character.basicInfo.name} />
-                                            <AvatarFallback>{character.basicInfo.name.charAt(0)}</AvatarFallback>
+                                            <AvatarFallback className="bg-muted text-muted-foreground">{character.basicInfo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className="font-medium text-gray-900 truncate">{character.basicInfo.name}</h3>
+                                        <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
                                     </div>
-                                    <p className="text-sm text-gray-600 truncate">{character.basicInfo.role}</p>
-                                    <p className="text-xs text-gray-500 truncate">{character.basicInfo.faction}</p>
+                                    <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
                                 </div>
-                                <Badge className="text-xs bg-gray-100 text-gray-800">ID: {character.id}</Badge>
                             </div>
                         </div>
                     ))}
@@ -535,16 +535,16 @@ export default function CharacterConfiguration() {
                 {displayCharacter ? (
                     <>
                         {/* Header */}
-                        <div className="bg-white border-b border-gray-200 p-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="w-20 h-20 border-4 border-white">
+                        <div className="bg-muted/30 border-b border-border p-6 md:p-12 pb-6">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                <div className="flex items-center gap-6">
+                                    <Avatar className="w-24 h-24 border-4 border-background shadow-sm">
                                         <AvatarImage src={displayCharacter.basicInfo.avatar} alt={displayCharacter.basicInfo.name} />
-                                        <AvatarFallback>{displayCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-2xl">{displayCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h1 className="text-2xl font-bold text-gray-900">{displayCharacter.basicInfo.name}</h1>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-3">
+                                            <h1 className="type-h2 text-foreground">{displayCharacter.basicInfo.name}</h1>
                                             {isEditing && (
                                                 <label className="cursor-pointer">
                                                     <input
@@ -556,7 +556,7 @@ export default function CharacterConfiguration() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="w-6 h-6"
+                                                        className="w-6 h-6 hover:bg-transparent text-muted-foreground hover:text-foreground"
                                                         asChild
                                                     >
                                                         <div>
@@ -566,23 +566,23 @@ export default function CharacterConfiguration() {
                                                 </label>
                                             )}
                                         </div>
-                                        <p className="text-gray-600">
-                                            {displayCharacter.basicInfo.role} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
+                                        <p className="type-ui-label text-muted-foreground">
+                                            {displayCharacter.basicInfo.role || "NO ROLE"} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
                                     {isEditing ? (
                                         <>
-                                            <Button variant="outline" onClick={handleCancel}>
+                                            <Button variant="ghost" onClick={handleCancel} className="type-ui-label text-muted-foreground hover:text-foreground">
                                                 Cancel
                                             </Button>
-                                            <Button onClick={handleSave}>
-                                                <Save className="w-4 h-4 mr-2" />
+                                            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 type-ui-label shadow-sm rounded-sm">
                                                 Save Changes
                                             </Button>
-                                            <Button variant="destructive" onClick={handleDeleteCharacter}>
-                                                Delete
+                                            <Button variant="destructive" size="icon" onClick={handleDeleteCharacter} title="Delete" className="rounded-sm">
+                                                <div className="sr-only">Delete</div>
+                                                <span className="text-lg">×</span>
                                             </Button>
 
                                             <TooltipProvider>
@@ -593,14 +593,13 @@ export default function CharacterConfiguration() {
                                                             disabled={isGeneratingCharacter}
                                                             variant="outline"
                                                             size="icon"
-                                                            className="h-8 w-8"
+                                                            className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
                                                         >
                                                             <Sparkles className="h-4 w-4" />
-                                                            <span className="sr-only">Generate Character</span>
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>Generate Character (no prompt)</p>
+                                                        <p>Auto-Generate Details</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
@@ -612,15 +611,14 @@ export default function CharacterConfiguration() {
                                                                 <Button
                                                                     variant="outline"
                                                                     size="icon"
-                                                                    className="h-8 w-8"
+                                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
                                                                 >
                                                                     <Type className="h-4 w-4" />
-                                                                    <span className="sr-only">Generate with Prompt</span>
                                                                 </Button>
                                                             </DialogTrigger>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Generate Character with Custom Prompt</p>
+                                                            <p>Generate with Prompt</p>
                                                         </TooltipContent>
                                                         <DialogContent className="sm:max-w-[425px]">
                                                             <DialogHeader>
@@ -656,12 +654,11 @@ export default function CharacterConfiguration() {
                                                                 <Button
                                                                     variant="outline"
                                                                     size="icon"
-                                                                    className="h-8 w-8"
+                                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
                                                                     onClick={handleGenerateAvatarDescription}
                                                                     disabled={isGeneratingAvatar}
                                                                 >
                                                                     <Upload className="h-4 w-4" />
-                                                                    <span className="sr-only">Generate Avatar</span>
                                                                 </Button>
                                                             </DialogTrigger>
                                                         </TooltipTrigger>
@@ -697,8 +694,8 @@ export default function CharacterConfiguration() {
                                         </>
                                     ) : (
                                         <>
-                                            <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                                            <Button variant="outline" onClick={handleConvertToPersona}>
+                                            <Button onClick={() => setIsEditing(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 type-ui-label shadow-sm rounded-sm">Edit</Button>
+                                            <Button variant="ghost" onClick={handleConvertToPersona} className="type-ui-label text-muted-foreground hover:text-foreground">
                                                 Convert to Persona
                                             </Button>
                                         </>
@@ -715,29 +712,13 @@ export default function CharacterConfiguration() {
                         <div className="flex-1 overflow-y-auto p-6">
                             <div className="max-w-2xl space-y-6">
                                 {/* Basic Information */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-5 h-5" />
-                                                Basic Information
-                                            </div>
-                                            {isEditing && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-6 w-6"
-                                                    onClick={() => setIsProceduralGeneratorOpen(true)}
-                                                    title="Procedural Generator"
-                                                >
-                                                    <Wand2 className="w-4 h-4 text-indigo-500" />
-                                                </Button>
-                                            )}
-                                        </CardTitle>
-                                    </CardHeader>
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6">
+                                        <SectionHeader title="Basic Information" />
+                                    </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name">Name</Label>
+                                            <Label htmlFor="name" className="type-ui-label text-muted-foreground">Name</Label>
                                             <Input
                                                 id="name"
                                                 value={displayCharacter.basicInfo.name}
@@ -746,7 +727,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="age">Age</Label>
+                                            <Label htmlFor="age" className="type-ui-label text-muted-foreground">Age</Label>
                                             <Input
                                                 id="age"
                                                 type="number"
@@ -756,7 +737,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="gender">Gender</Label>
+                                            <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
                                             <Input
                                                 id="gender"
                                                 value={displayCharacter.basicInfo.gender || ""}
@@ -765,7 +746,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="role">Role</Label>
+                                            <Label htmlFor="role" className="type-ui-label text-muted-foreground">Role</Label>
                                             <Input
                                                 id="role"
                                                 value={displayCharacter.basicInfo.role || ""}
@@ -774,7 +755,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="faction">Faction</Label>
+                                            <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
                                             <Input
                                                 id="faction"
                                                 value={displayCharacter.basicInfo.faction || ""}
@@ -783,7 +764,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="location">Location</Label>
+                                            <Label htmlFor="location" className="type-ui-label text-muted-foreground">Location</Label>
                                             <Select
                                                 disabled={!isEditing}
                                                 value={displayCharacter.locationId || "unassigned"}
@@ -803,7 +784,7 @@ export default function CharacterConfiguration() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="reputation">Reputation</Label>
+                                            <Label htmlFor="reputation" className="type-ui-label text-muted-foreground">Reputation</Label>
                                             <Textarea
                                                 id="reputation"
                                                 value={displayCharacter.basicInfo.reputation || ""}
@@ -813,7 +794,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="background">Background</Label>
+                                            <Label htmlFor="background" className="type-ui-label text-muted-foreground">Background</Label>
                                             <Textarea
                                                 id="background"
                                                 value={displayCharacter.basicInfo.background || ""}
@@ -823,7 +804,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="firstImpression">First Impression</Label>
+                                            <Label htmlFor="firstImpression" className="type-ui-label text-muted-foreground">First Impression</Label>
                                             <Textarea
                                                 id="firstImpression"
                                                 value={displayCharacter.basicInfo.firstImpression || ""}
@@ -833,7 +814,7 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="appearance">Appearance</Label>
+                                            <Label htmlFor="appearance" className="type-ui-label text-muted-foreground">Appearance</Label>
                                             <Textarea
                                                 id="appearance"
                                                 value={displayCharacter.basicInfo.appearance || ""}
@@ -846,17 +827,14 @@ export default function CharacterConfiguration() {
                                 </Card>
 
                                 {/* Personality (OCEAN) */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Brain className="w-5 h-5" />
-                                            Personality (OCEAN Traits)
-                                        </CardTitle>
-                                    </CardHeader>
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6">
+                                        <SectionHeader title="Personality (OCEAN)" />
+                                    </div>
                                     <CardContent className="space-y-4">
                                         {Object.entries(displayCharacter.personality).map(([trait, value]) => (
                                             <div key={trait} className="space-y-2">
-                                                <Label htmlFor={trait}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <Label htmlFor={trait} className="type-ui-label text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                 <div className="flex items-center gap-4">
                                                     <Input
                                                         id={trait}
@@ -889,20 +867,17 @@ export default function CharacterConfiguration() {
                                 </Card>
 
                                 {/* Ideal Match (OCEAN Preferences) */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Heart className="w-5 h-5" />
-                                            Ideal Match (Partner Preferences)
-                                        </CardTitle>
-                                    </CardHeader>
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6">
+                                        <SectionHeader title="Match Preferences" />
+                                    </div>
                                     <CardContent className="space-y-4">
-                                        <div className="text-sm text-gray-500 mb-4">
+                                        <div className="type-body-sm text-muted-foreground mb-4">
                                             Define the personality traits this character finds most attractive in a partner.
                                         </div>
                                         {displayCharacter.idealMatch && Object.entries(displayCharacter.idealMatch).map(([trait, value]) => (
                                             <div key={trait} className="space-y-2">
-                                                <Label htmlFor={`ideal-${trait}`}>{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
+                                                <Label htmlFor={`ideal-${trait}`} className="type-ui-label text-muted-foreground">{trait.charAt(0).toUpperCase() + trait.slice(1)}</Label>
                                                 <div className="flex items-center gap-4">
                                                     <Input
                                                         id={`ideal-${trait}`}
@@ -937,63 +912,58 @@ export default function CharacterConfiguration() {
 
 
                                 {/* Relationship to Player Persona */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Heart className="w-5 h-5" />
-                                                Relationships
-                                            </div>
-                                            {isEditing && (
-                                                <Dialog open={isRelationshipDialogOpen} onOpenChange={setIsRelationshipDialogOpen}>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="outline" size="sm">
-                                                            <Plus className="w-4 h-4 mr-1" />
-                                                            Add Relationship
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogHeader>
-                                                            <DialogTitle>Create New Relationship</DialogTitle>
-                                                            <DialogDescription>
-                                                                Select a persona and describe the relationship context. The system will generate the initial dynamics.
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <div className="grid gap-4 py-4">
-                                                            <div className="space-y-2">
-                                                                <Label>Persona</Label>
-                                                                <Select value={relationshipPersonaId} onValueChange={setRelationshipPersonaId}>
-                                                                    <SelectTrigger>
-                                                                        <SelectValue placeholder="Select a persona" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        {playerPersonas
-                                                                            .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
-                                                                            .map(p => (
-                                                                                <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
-                                                                            ))}
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <Label>Relationship Context</Label>
-                                                                <Textarea
-                                                                    placeholder="e.g. Childhood friends, sworn enemies, met at a bar..."
-                                                                    value={relationshipContext}
-                                                                    onChange={(e) => setRelationshipContext(e.target.value)}
-                                                                />
-                                                            </div>
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6 flex justify-between items-center px-4">
+                                        <SectionHeader title="Relationships" className="flex-1 mb-0 mt-0" />
+                                        {isEditing && (
+                                            <Dialog open={isRelationshipDialogOpen} onOpenChange={setIsRelationshipDialogOpen}>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm">
+                                                        <Plus className="w-4 h-4 mr-1" />
+                                                        Add
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Create New Relationship</DialogTitle>
+                                                        <DialogDescription>
+                                                            Select a persona and describe the relationship context. The system will generate the initial dynamics.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="grid gap-4 py-4">
+                                                        <div className="space-y-2">
+                                                            <Label>Persona</Label>
+                                                            <Select value={relationshipPersonaId} onValueChange={setRelationshipPersonaId}>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select a persona" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {playerPersonas
+                                                                        .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
+                                                                        .map(p => (
+                                                                            <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
+                                                                        ))}
+                                                                </SelectContent>
+                                                            </Select>
                                                         </div>
-                                                        <DialogFooter>
-                                                            <Button onClick={handleCreateRelationship} disabled={!relationshipPersonaId || isGeneratingRelationship}>
-                                                                {isGeneratingRelationship ? "Generating..." : "Create Relationship"}
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-                                            )}
-                                        </CardTitle>
-                                    </CardHeader>
+                                                        <div className="space-y-2">
+                                                            <Label>Relationship Context</Label>
+                                                            <Textarea
+                                                                placeholder="e.g. Childhood friends, sworn enemies, met at a bar..."
+                                                                value={relationshipContext}
+                                                                onChange={(e) => setRelationshipContext(e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button onClick={handleCreateRelationship} disabled={!relationshipPersonaId || isGeneratingRelationship}>
+                                                            {isGeneratingRelationship ? "Generating..." : "Create Relationship"}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
+                                        )}
+                                    </div>
                                     <CardContent className="space-y-4">
                                         {displayCharacter.relationships.length > 0 ? (
                                             <Accordion type="single" collapsible className="w-full">
@@ -1026,19 +996,16 @@ export default function CharacterConfiguration() {
                                                 })}
                                             </Accordion>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No relationships yet.</p>
+                                            <p className="type-body-sm text-muted-foreground">No relationships yet.</p>
                                         )}
                                     </CardContent>
                                 </Card>
 
                                 {/* Character Groups */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Book className="w-5 h-5" />
-                                            Character Groups
-                                        </CardTitle>
-                                    </CardHeader>
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6">
+                                        <SectionHeader title="Character Groups" />
+                                    </div>
                                     <CardContent className="space-y-4">
                                         {characterGroups.length > 0 ? (
                                             <div className="grid grid-cols-2 gap-2">
@@ -1064,7 +1031,7 @@ export default function CharacterConfiguration() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No character groups defined. Create them in the Character Group Configuration page.</p>
+                                            <p className="type-body-sm text-muted-foreground">No character groups defined. Create them in the Character Group Configuration page.</p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1077,9 +1044,9 @@ export default function CharacterConfiguration() {
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
-                            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No Character Selected</h3>
-                            <p className="text-gray-500">Select a character from the list or add a new one</p>
+                            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="type-ui-subhead text-foreground mb-2">No Character Selected</h3>
+                            <p className="type-body-sm text-muted-foreground">Select a character from the list or add a new one</p>
                         </div>
                     </div>
                 )}

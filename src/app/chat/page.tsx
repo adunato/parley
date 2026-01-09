@@ -280,24 +280,24 @@ export default function ChatPage() {
 
     if (!_hasHydrated) {
         return (
-            <div className="flex flex-col h-screen bg-gray-50 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                <p className="mt-2 text-gray-600">Loading chat...</p>
+            <div className="flex flex-col h-screen bg-background items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="mt-2 text-muted-foreground">Loading chat...</p>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50">
+        <div className="flex flex-col h-screen bg-background">
             {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader>
-                            <CardTitle className="text-2xl font-bold text-gray-900">Start a New Chat</CardTitle>
+                    <Card className="w-full max-w-md border-border shadow-lg">
+                        <CardHeader className="border-b border-border mb-4">
+                            <CardTitle className="type-h3">Start a New Chat</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div>
-                                <label htmlFor="location-select" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="location-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Location
                                 </label>
                                 <Select onValueChange={handleLocationSelect} value={selectedChatLocation?.id || "unassigned"}>
@@ -315,7 +315,7 @@ export default function ChatPage() {
                                 </Select>
                             </div>
                             <div>
-                                <label htmlFor="character-select" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="character-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Character
                                 </label>
                                 <Select onValueChange={handleCharacterSelect} value={selectedChatCharacter?.id || ""}>
@@ -324,7 +324,7 @@ export default function ChatPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {filteredCharacters.length === 0 ? (
-                                            <div className="p-2 text-sm text-gray-500">No characters in this location</div>
+                                            <div className="p-2 text-sm text-muted-foreground">No characters in this location</div>
                                         ) : (
                                             filteredCharacters.map((character) => (
                                                 <SelectItem key={character.id} value={character.id}>
@@ -336,7 +336,7 @@ export default function ChatPage() {
                                 </Select>
                             </div>
                             <div>
-                                <label htmlFor="persona-select" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="persona-select" className="type-ui-label text-muted-foreground mb-2 block">
                                     Select Persona
                                 </label>
                                 <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
@@ -354,7 +354,7 @@ export default function ChatPage() {
                             </div>
                             <Button
                                 onClick={handleStartChat}
-                                className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                className="w-full py-2 px-4 shadow-md type-ui-label"
                                 disabled={!selectedChatCharacter || !selectedChatPersona}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />

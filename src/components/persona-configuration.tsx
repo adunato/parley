@@ -25,6 +25,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEntityStore } from "@/lib/entityStore";
+import { SectionHeader } from "@/components/ui/section-header";
 
 export default function PersonaConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
@@ -326,13 +327,13 @@ export default function PersonaConfiguration() {
             <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
                 <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900">Player Personas</h2>
+                        <h2 className="type-ui-label text-foreground">Player Personas</h2>
                         <Button size="sm" variant="outline" onClick={handleAddPersona}>
                             <Plus className="w-4 h-4 mr-1" />
                             Add
                         </Button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">{playerPersonas.length} personas</p>
+                    <p className="type-body-sm text-muted-foreground mt-1">{playerPersonas.length} personas</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
@@ -350,10 +351,10 @@ export default function PersonaConfiguration() {
                                             <AvatarImage src={persona.basicInfo.avatar} alt={persona.basicInfo.name} />
                                             <AvatarFallback>{persona.basicInfo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className="font-medium text-gray-900 truncate">{persona.basicInfo.name}</h3>
+                                        <h3 className="type-body-base font-medium text-foreground truncate">{persona.basicInfo.name}</h3>
                                     </div>
-                                    <p className="text-sm text-gray-600 truncate">{persona.id}</p>
-                                    <p className="text-xs text-gray-500 truncate">{persona.basicInfo.role}</p>
+                                    <p className="type-body-xs text-muted-foreground truncate">{persona.id}</p>
+                                    <p className="type-body-xs text-muted-foreground truncate">{persona.basicInfo.role}</p>
                                 </div>
                                 <Badge className="text-xs bg-gray-100 text-gray-800">{persona.basicInfo.faction}</Badge>
                             </div>
@@ -376,7 +377,7 @@ export default function PersonaConfiguration() {
                                     </Avatar>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h1 className="text-2xl font-bold text-gray-900">{displayPersona.basicInfo.name}</h1>
+                                            <h1 className="type-h2 text-foreground">{displayPersona.basicInfo.name}</h1>
                                             {isEditing && (
                                                 <label className="cursor-pointer">
                                                     <input
@@ -398,7 +399,7 @@ export default function PersonaConfiguration() {
                                                 </label>
                                             )}
                                         </div>
-                                        <p className="text-gray-600">
+                                        <p className="type-ui-label text-muted-foreground">
                                             {displayPersona.id} {displayPersona.basicInfo.role && `• ${displayPersona.basicInfo.role}`}
                                         </p>
                                     </div>
@@ -540,15 +541,12 @@ export default function PersonaConfiguration() {
                             <div className="max-w-2xl space-y-6">
                                 {/* Basic Information */}
                                 <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <User className="w-5 h-5" />
-                                            Basic Information
-                                        </CardTitle>
-                                    </CardHeader>
+                                    <div className="pt-6">
+                                        <SectionHeader title="Basic Information" />
+                                    </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name">Name</Label>
+                                            <Label htmlFor="name" className="type-ui-label text-muted-foreground">Name</Label>
                                             <Input
                                                 id="name"
                                                 value={displayPersona.basicInfo.name}
@@ -557,7 +555,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="alias">Alias</Label>
+                                            <Label htmlFor="alias" className="type-ui-label text-muted-foreground">Alias</Label>
                                             <Input
                                                 id="alias"
                                                 value={displayPersona.id}
@@ -566,7 +564,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="age">Age</Label>
+                                            <Label htmlFor="age" className="type-ui-label text-muted-foreground">Age</Label>
                                             <Input
                                                 id="age"
                                                 type="number"
@@ -576,7 +574,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="gender">Gender</Label>
+                                            <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
                                             <Input
                                                 id="gender"
                                                 value={displayPersona.basicInfo.gender || ""}
@@ -585,7 +583,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="role">Role</Label>
+                                            <Label htmlFor="role" className="type-ui-label text-muted-foreground">Role</Label>
                                             <Input
                                                 id="role"
                                                 value={displayPersona.basicInfo.role || ""}
@@ -594,7 +592,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="faction">Faction</Label>
+                                            <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
                                             <Input
                                                 id="faction"
                                                 value={displayPersona.basicInfo.faction || ""}
@@ -603,7 +601,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="avatar">Avatar URL</Label>
+                                            <Label htmlFor="avatar" className="type-ui-label text-muted-foreground">Avatar URL</Label>
                                             <Input
                                                 id="avatar"
                                                 value={displayPersona.basicInfo.avatar || ""}
@@ -612,7 +610,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="appearance">Appearance</Label>
+                                            <Label htmlFor="appearance" className="type-ui-label text-muted-foreground">Appearance</Label>
                                             <Textarea
                                                 id="appearance"
                                                 value={displayPersona.basicInfo.appearance || ""}
@@ -625,16 +623,14 @@ export default function PersonaConfiguration() {
                                 </Card>
 
                                 {/* Additional Details */}
+                                {/* Additional Details */}
                                 <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <User className="w-5 h-5" />
-                                            Additional Details
-                                        </CardTitle>
-                                    </CardHeader>
+                                    <div className="pt-6">
+                                        <SectionHeader title="Additional Details" />
+                                    </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="reputation">Reputation</Label>
+                                            <Label htmlFor="reputation" className="type-ui-label text-muted-foreground">Reputation</Label>
                                             <Textarea
                                                 id="reputation"
                                                 value={displayPersona.basicInfo.reputation || ""}
@@ -644,7 +640,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="background">Background</Label>
+                                            <Label htmlFor="background" className="type-ui-label text-muted-foreground">Background</Label>
                                             <Textarea
                                                 id="background"
                                                 value={displayPersona.basicInfo.background || ""}
@@ -654,7 +650,7 @@ export default function PersonaConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="firstImpression">First Impression</Label>
+                                            <Label htmlFor="firstImpression" className="type-ui-label text-muted-foreground">First Impression</Label>
                                             <Textarea
                                                 id="firstImpression"
                                                 value={displayPersona.basicInfo.firstImpression || ""}
@@ -671,9 +667,9 @@ export default function PersonaConfiguration() {
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
-                            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No Persona Selected</h3>
-                            <p className="text-gray-500">Select a persona from the list or add a new one</p>
+                            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="type-ui-subhead text-foreground mb-2">No Persona Selected</h3>
+                            <p className="type-body-sm text-muted-foreground">Select a persona from the list or add a new one</p>
                         </div>
                     </div>
                 )}

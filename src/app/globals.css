@@ -6,7 +6,7 @@
   :root {
     /* Fonts */
     --font-primary: var(--font-inter);
-    --font-display: 'Oswald', sans-serif;
+    --font-display: var(--font-oswald), sans-serif;
 
     /* Structure */
     --border-width: 1px;
@@ -22,7 +22,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 210 50% 40%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -53,7 +53,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 210 50% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -74,7 +74,6 @@
   }
 
   [data-mode="demiplane-light"] {
-    --font-primary: var(--font-cinzel);
     --radius: 0rem;
     --border-width: 2px;
 
@@ -110,8 +109,7 @@
   }
 
   [data-mode="demiplane-dark"] {
-    --font-primary: var(--font-cinzel);
-    --radius: 0.25rem;
+    --radius: 0rem;
     --border-width: 2px;
 
     /* Demiplane Dark (Void) */
@@ -143,6 +141,61 @@
     --border: 260 30% 30%;
     --input: 260 30% 30%;
     --ring: 270 50% 60%;
+  }
+}
+
+@layer components {
+
+  /* Display Headings */
+  .type-h1 {
+    @apply font-display text-6xl uppercase tracking-tighter;
+  }
+
+  .type-h2 {
+    @apply font-display text-5xl uppercase tracking-tight;
+  }
+
+  .type-h3 {
+    @apply font-display text-4xl uppercase tracking-wide;
+  }
+
+  .type-h4 {
+    @apply font-display text-2xl uppercase tracking-wider;
+  }
+
+  /* Section Headers */
+  .type-section-header {
+    @apply font-display text-xl font-medium uppercase tracking-widest;
+  }
+
+  /* Body Text */
+  .type-body-lg {
+    @apply font-sans text-lg leading-7;
+  }
+
+  .type-body-base {
+    @apply font-sans text-base leading-7;
+  }
+
+  .type-body-sm {
+    @apply font-sans text-sm leading-6;
+  }
+
+  .type-body-xs {
+    @apply font-sans text-xs leading-5;
+  }
+
+  /* UI Patterns */
+  .type-ui-label {
+    @apply font-sans text-xs font-medium uppercase tracking-wider;
+  }
+
+  .type-ui-subhead {
+    @apply font-sans text-lg font-bold uppercase tracking-wide;
+  }
+
+  .type-ui-muted {
+    @apply text-muted-foreground;
   }
 }
 

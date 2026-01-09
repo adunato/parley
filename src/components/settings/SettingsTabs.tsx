@@ -28,11 +28,11 @@ export function SettingsTabs({
     onResetPrompt
 }: SettingsTabsProps) {
     return (
-        <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="text">Text Generation</TabsTrigger>
-                <TabsTrigger value="image">Image Generation</TabsTrigger>
+        <Tabs defaultValue="general" className="w-full space-y-8">
+            <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/30 border border-border p-1 rounded-lg">
+                <TabsTrigger value="general" className="data-[state=active]:bg-background data-[state=active]:shadow-sm type-ui-subhead text-sm">General</TabsTrigger>
+                <TabsTrigger value="text" className="data-[state=active]:bg-background data-[state=active]:shadow-sm type-ui-subhead text-sm">Text Generation</TabsTrigger>
+                <TabsTrigger value="image" className="data-[state=active]:bg-background data-[state=active]:shadow-sm type-ui-subhead text-sm">Image Generation</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general">

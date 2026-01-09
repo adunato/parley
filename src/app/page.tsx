@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button';
 
 export default function MainMenu() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <div className="w-full max-w-md text-center space-y-12">
         <div className="space-y-4">
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+          <h1 className="text-6xl md:text-8xl font-medium tracking-tighter font-display text-transparent bg-clip-text bg-gradient-to-b from-foreground to-muted-foreground uppercase">
             PARLEY
           </h1>
-          <p className="text-lg text-gray-400 font-oswald tracking-widest uppercase">
+          <p className="text-sm text-muted-foreground font-sans tracking-[0.2em] uppercase font-bold">
             Interactive Fiction Engine
           </p>
         </div>
@@ -18,14 +18,14 @@ export default function MainMenu() {
         <div className="flex flex-col gap-4 w-64 mx-auto">
           {/* Main Menu Buttons */}
           <Button
-            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all opacity-50 cursor-not-allowed"
+            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all opacity-50 cursor-not-allowed rounded-sm text-foreground"
             disabled
           >
             New Game
           </Button>
 
           <Button
-            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 transition-all opacity-50 cursor-not-allowed"
+            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-secondary/50 hover:bg-secondary border border-border hover:border-foreground/20 transition-all opacity-50 cursor-not-allowed rounded-sm text-foreground"
             disabled
           >
             Continue
@@ -33,7 +33,7 @@ export default function MainMenu() {
 
           <Button
             asChild
-            className="w-full h-12 text-lg uppercase tracking-widest font-semibold bg-white text-black hover:bg-gray-200 border-0 transition-all"
+            className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-primary text-primary-foreground hover:bg-primary/90 border-0 transition-all rounded-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             <Link href="/character-config">
               Configuration

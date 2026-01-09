@@ -133,16 +133,14 @@ export default function WorldInfoPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">World Information</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <h1 className="type-h2 mb-4">World Information</h1>
+      <Card className="w-full max-w-2xl mx-0">
+        <CardContent className="pt-6">
           <ProjectManager />
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
               <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
-                <label htmlFor="worldDescription" className="font-medium">
+                <label htmlFor="worldDescription" className="type-ui-label text-muted-foreground">
                   World Description
                 </label>
                 <TooltipProvider>
@@ -219,7 +217,7 @@ export default function WorldInfoPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-4">
               <div className="flex items-center gap-2 md:col-span-1 md:justify-end">
-                <label htmlFor="aiStyle" className="font-medium">
+                <label htmlFor="aiStyle" className="type-ui-label text-muted-foreground">
                   AI Style
                 </label>
                 <TooltipProvider>

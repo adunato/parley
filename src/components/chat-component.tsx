@@ -213,63 +213,65 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
   return (
     <Card className={`flex flex-col h-[600px] w-full ${className}`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 border-b border-border">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 type-h4">
             {selectedChatCharacter ? (
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-10 w-10 border border-border shadow-sm">
                 <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
-                <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="bg-muted text-muted-foreground">{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
               </Avatar>
             ) : (
-              <Bot className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-primary" />
+              </div>
             )}
             {selectedChatCharacter ? selectedChatCharacter.basicInfo.name : title}
           </CardTitle>
           {isAssessing && (
-            <span className="text-sm text-amber-600 font-semibold animate-pulse flex items-center">
+            <span className="type-ui-label text-amber-600 animate-pulse flex items-center">
               ⚠ Assessing Behavior...
             </span>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0 overflow-hidden">
+      <CardContent className="flex-1 p-0 overflow-hidden bg-background/50">
         <div className="h-full overflow-y-auto px-4">
           <div className="space-y-4 py-4">
             {messages.map((m) => {
               return (
                 <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && selectedChatCharacter ? (
-                    <Avatar className="flex-shrink-0 h-8 w-8">
+                    <Avatar className="flex-shrink-0 h-8 w-8 border border-border shadow-sm">
                       <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
-                      <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-muted text-muted-foreground">{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                   ) : m.role === "assistant" ? (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Bot className="h-4 w-4 text-blue-600" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-primary" />
                     </div>
                   ) : null}
 
                   <div
-                    className={`max-w-[80%] rounded-lg px-4 py-2 ${m.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-900 border"
+                    className={`max-w-[80%] rounded-lg px-4 py-2 shadow-sm ${m.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-foreground border border-border"
                       }`}
                   >
-                    <div className="text-sm whitespace-pre-wrap">
+                    <div className="type-body-base whitespace-pre-wrap">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                     </div>
                   </div>
 
                   {m.role === "user" && selectedChatPersona ? (
-                    <Avatar className="flex-shrink-0 h-8 w-8">
+                    <Avatar className="flex-shrink-0 h-8 w-8 border border-border shadow-sm">
                       <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
-                      <AvatarFallback>{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-muted text-muted-foreground">{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                   ) : m.role === "user" ? (
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
                     </div>
                   ) : null}
                 </div>
@@ -279,24 +281,24 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
             {isLoading && (
               <div className="flex gap-3 justify-start">
                 {selectedChatCharacter ? (
-                  <Avatar className="flex-shrink-0 h-8 w-8">
+                  <Avatar className="flex-shrink-0 h-8 w-8 border border-border shadow-sm">
                     <AvatarImage src={selectedChatCharacter.basicInfo.avatar} alt={selectedChatCharacter.basicInfo.name} />
-                    <AvatarFallback>{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-muted text-muted-foreground">{selectedChatCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 ) : (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-blue-600" />
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                <div className="bg-gray-100 text-gray-900 border rounded-lg px-4 py-2">
+                <div className="bg-muted/50 text-foreground border border-border rounded-lg px-4 py-2">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"
                       style={{ animationDelay: "0.1s" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-primary/50 rounded-full animate-bounce"
                       style={{ animationDelay: "0.2s" }}
                     ></div>
                   </div>

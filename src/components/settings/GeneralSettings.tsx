@@ -3,6 +3,13 @@
 import { useParleyStore } from "@/lib/store";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { SettingsManager } from "./SettingsManager";
 
 interface Model {
@@ -20,12 +27,33 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
         chatModel, setChatModel,
         summarizationModel, setSummarizationModel,
         generationModel, setGenerationModel,
+        theme, setTheme
     } = useParleyStore();
 
     return (
-        <div className="space-y-8 pt-4">
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Chat Model</h2>
+        <div className="space-y-8 pt-6">
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="type-ui-label text-muted-foreground">Appearance</h2>
+                </div>
+                <Label htmlFor="theme-select" className="sr-only">Theme</Label>
+                <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger id="theme-select" className="w-full">
+                        <SelectValue placeholder="Select a theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="demiplane-light">Demiplane Light (Parchment)</SelectItem>
+                        <SelectItem value="demiplane-dark">Demiplane Dark (Void)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </section>
+
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="type-ui-label text-muted-foreground">Chat Model</h2>
+                </div>
                 <Label htmlFor="chat-model-select" className="sr-only">Chat Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -39,8 +67,10 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Summarization Model</h2>
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="type-ui-label text-muted-foreground">Summarization Model</h2>
+                </div>
                 <Label htmlFor="summarization-model-select" className="sr-only">Summarization Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -54,8 +84,10 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section>
-                <h2 className="text-xl font-semibold mb-2">Generation Model</h2>
+            <section className="space-y-4">
+                <div className="border-b border-border pb-2">
+                    <h2 className="type-ui-label text-muted-foreground">Generation Model</h2>
+                </div>
                 <Label htmlFor="generation-model-select" className="sr-only">Generation Model</Label>
                 <Combobox<Model>
                     items={models}
@@ -69,8 +101,8 @@ export function GeneralSettings({ models }: GeneralSettingsProps) {
                 />
             </section>
 
-            <section className="pt-4 border-t">
-                <h2 className="text-xl font-semibold mb-2">Data Management</h2>
+            <section className="pt-8 border-t border-border space-y-4">
+                <h2 className="type-ui-label text-muted-foreground">Data Management</h2>
                 <div className="flex gap-4">
                     <SettingsManager />
                 </div>
