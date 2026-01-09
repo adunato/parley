@@ -6,8 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { useParleyStore } from '@/lib/store';
 import { useEntityStore } from '@/lib/entityStore';
 import { useEffect, useState } from 'react';
-import { Trash2, Type, Sparkles, Upload, ImageIcon } from 'lucide-react';
+import { Trash2, Type, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Dialog,
   DialogContent,
@@ -137,18 +138,7 @@ export default function WorldInfoPage() {
     setIsClearDataDialogOpen(false);
   };
 
-  const handleMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setWorldMapImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeWorldMap = () => {
+  const handleMapRemove = () => {
     setWorldMapImage('');
   };
 
@@ -249,47 +239,12 @@ export default function WorldInfoPage() {
               </div>
 
               <div className="col-span-3">
-                {!worldMapImage ? (
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 flex flex-col items-center justify-center gap-4 hover:bg-muted/10 transition-colors">
-                    <div className="p-4 bg-muted rounded-full">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-medium">Upload World Map</p>
-                      <p className="text-sm text-muted-foreground">Click to browse or drag and drop</p>
-                    </div>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="max-w-xs"
-                      onChange={handleMapUpload}
-                    />
-                  </div>
-                ) : (
-                  <div className="relative group rounded-lg overflow-hidden border bg-background">
-                    <img
-                      src={worldMapImage}
-                      alt="World Map"
-                      className="w-full h-auto max-h-[400px] object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button variant="destructive" size="sm" onClick={removeWorldMap}>
-                        <Trash2 className="h-4 w-4 mr-2" /> Remove Map
-                      </Button>
-                      <div className="relative">
-                        <Button variant="secondary" size="sm" className="relative">
-                          <Upload className="h-4 w-4 mr-2" /> Replace
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="absolute inset-0 opacity-0 cursor-pointer"
-                            onChange={handleMapUpload}
-                          />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <ImageUpload
+                  value={worldMapImage}
+                  onChange={setWorldMapImage}
+                  onRemove={handleMapRemove}
+                  label="Upload World Map"
+                />
               </div>
             </div>
 

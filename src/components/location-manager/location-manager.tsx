@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Trash2, Edit2, Plus, Save, X, ImageIcon, Upload, Map as MapIcon } from 'lucide-react'; // Added MapIcon as alias to avoid conflict if needed, though not strictly necessary
+import { Trash2, Edit2, Plus, Save, X, ImageIcon, Upload, Map as MapIcon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useParleyStore } from '@/lib/store';
 import { WorldMapPicker } from '@/components/world/WorldMapPicker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface LocationManagerProps {
     locations: Location[];
@@ -67,15 +68,8 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
         cancelEdit();
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setEditForm(prev => ({ ...prev, image: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleImageRemove = () => {
+        setEditForm(prev => ({ ...prev, image: undefined }));
     };
 
     // Logic for rendering the Edit Form content (reused for both Create and Edit modes)
@@ -110,27 +104,12 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label className="type-ui-label text-muted-foreground">Location Image</Label>
-                        <div className="border border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 relative bg-muted/20 min-h-[150px]">
-                            {editForm.image ? (
-                                <>
-                                    <img src={editForm.image} alt="Preview" className="w-full h-32 object-contain rounded" />
-                                    <Button variant="ghost" size="sm" className="absolute top-1 right-1 h-6 w-6 p-0" onClick={() => setEditForm(prev => ({ ...prev, image: undefined }))}>
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                </>
-                            ) : (
-                                <div className="text-center text-muted-foreground">
-                                    <ImageIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                    <span className="text-xs">Upload Image</span>
-                                </div>
-                            )}
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                onChange={handleImageUpload}
-                            />
-                        </div>
+                        <ImageUpload
+                            value={editForm.image}
+                            onChange={(val) => setEditForm(prev => ({ ...prev, image: val }))}
+                            onRemove={handleImageRemove}
+                            label="Upload Location Image"
+                        />
                     </div>
 
                     <div className="space-y-2">
