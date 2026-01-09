@@ -58,8 +58,7 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Locations</h2>
+            <div className="flex justify-end items-center">
                 {!isCreating && (
                     <Button onClick={startCreating} size="sm">
                         <Plus className="w-4 h-4 mr-2" /> Add Location
@@ -70,11 +69,11 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
             {isCreating && (
                 <Card className="mb-4 bg-muted/20 border-dashed">
                     <CardHeader>
-                        <CardTitle>New Location</CardTitle>
+                        <CardTitle className="type-h4">New Location</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid w-full items-center gap-1.5">
-                            <Label htmlFor="new-name">Name</Label>
+                            <Label htmlFor="new-name" className="type-ui-label text-muted-foreground">Name</Label>
                             <Input
                                 id="new-name"
                                 value={editForm.name || ''}
@@ -83,7 +82,7 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                             />
                         </div>
                         <div className="grid w-full items-center gap-1.5">
-                            <Label htmlFor="new-desc">Description</Label>
+                            <Label htmlFor="new-desc" className="type-ui-label text-muted-foreground">Description</Label>
                             <Textarea
                                 id="new-desc"
                                 value={editForm.description || ''}
@@ -106,18 +105,18 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                         {editingId === location.id ? (
                             <>
                                 <CardHeader>
-                                    <CardTitle>Edit Location</CardTitle>
+                                    <CardTitle className="type-h4">Edit Location</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid w-full items-center gap-1.5">
-                                        <Label>Name</Label>
+                                        <Label className="type-ui-label text-muted-foreground">Name</Label>
                                         <Input
                                             value={editForm.name || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                                         />
                                     </div>
                                     <div className="grid w-full items-center gap-1.5">
-                                        <Label>Description</Label>
+                                        <Label className="type-ui-label text-muted-foreground">Description</Label>
                                         <Textarea
                                             value={editForm.description || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
@@ -133,7 +132,7 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                         ) : (
                             <>
                                 <CardHeader>
-                                    <CardTitle className="flex justify-between items-center">
+                                    <CardTitle className="flex justify-between items-center type-h4">
                                         <span>{location.name}</span>
                                         <div className="flex gap-1">
                                             <Button variant="ghost" size="icon" onClick={() => startEditing(location)}>
@@ -146,9 +145,9 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-600 line-clamp-3 mb-4">{location.description}</p>
+                                    <p className="type-body-sm text-muted-foreground line-clamp-3 mb-4">{location.description}</p>
                                     <div>
-                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Characters Here</h4>
+                                        <h4 className="type-ui-label text-muted-foreground mb-2">Characters Here</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {characters.filter(c => c.locationId === location.id).length > 0 ? (
                                                 characters.filter(c => c.locationId === location.id).map(char => (
@@ -157,7 +156,7 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                                     </span>
                                                 ))
                                             ) : (
-                                                <span className="text-xs text-gray-400 italic">No characters assigned</span>
+                                                <span className="type-body-xs text-muted-foreground italic">No characters assigned</span>
                                             )}
                                         </div>
                                     </div>
@@ -167,7 +166,7 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                     </Card>
                 ))}
                 {!locations.length && !isCreating && (
-                    <div className="col-span-full text-center text-gray-500 py-8">
+                    <div className="col-span-full type-body-base text-muted-foreground text-center py-8">
                         No locations defined yet.
                     </div>
                 )}

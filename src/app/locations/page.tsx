@@ -8,7 +8,7 @@ export default function LocationsPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-bold mb-6">Location Management</h1>
+            <h1 className="type-h2 mb-6">Location Management</h1>
             <LocationManager
                 locations={locations || []}
                 onAdd={addLocation}
