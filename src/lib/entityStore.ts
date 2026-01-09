@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { DexieStorageAdapter } from './storage-adapter';
 import { Character, Persona, Relationship, CharacterGroup, Location } from './types';
 
 type EntityStore = {
@@ -139,7 +140,8 @@ export const useEntityStore = create<EntityStore>()(
       },
     }),
     {
-      name: 'entity-store', // persists to localStorage
+      name: 'entity-store',
+      storage: createJSONStorage(() => DexieStorageAdapter),
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Ensure all characters have a relationships array

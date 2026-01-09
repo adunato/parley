@@ -3,6 +3,7 @@ import { useEntityStore } from '../entityStore';
 import { useProjectLibraryStore, ProjectMetadata } from '../store/projectStore';
 import { Character, CharacterGroup, Persona, Relationship } from '../types';
 import { Message } from 'ai';
+import { db } from '../db';
 
 // --- Types ---
 export interface ParleyProjectExport {
@@ -61,7 +62,7 @@ export const ProjectService = {
 
     // --- Core Project Management ---
 
-    createNewProject: (name: string, description?: string): string => {
+    createNewProject: async (name: string, description?: string): Promise<string> => {
         const id = crypto.randomUUID();
         const newProject: ProjectMetadata = {
             id,
@@ -81,12 +82,12 @@ export const ProjectService = {
         useProjectLibraryStore.getState().setCurrentProjectId(id);
 
         // 4. Persist Initial State
-        ProjectService.saveProject(id);
+        await ProjectService.saveProject(id);
 
         return id;
     },
 
-    saveProject: (id: string) => {
+    saveProject: async (id: string): Promise<void> => {
         const parleyState = useParleyStore.getState();
         const entityState = useEntityStore.getState();
 
@@ -116,7 +117,12 @@ export const ProjectService = {
         };
 
         try {
-            localStorage.setItem(`${PROJECT_STORAGE_PREFIX}${id}`, JSON.stringify(projectData));
+            await db.projects.put({
+                id,
+                name: projectData.metadata.name,
+                lastModified: Date.now(),
+                data: projectData
+            });
             useProjectLibraryStore.getState().updateProject(id, { lastModified: Date.now() });
         } catch (e) {
             console.error("Failed to save project. Quota might be exceeded.", e);
@@ -124,14 +130,13 @@ export const ProjectService = {
         }
     },
 
-    loadProject: (id: string) => {
-        const dataString = localStorage.getItem(`${PROJECT_STORAGE_PREFIX}${id}`);
-        if (!dataString) {
-            throw new Error(`Project data for ID ${id} not found.`);
-        }
-
+    loadProject: async (id: string): Promise<void> => {
         try {
-            const data: ParleyProjectExport = JSON.parse(dataString);
+            const projectRecord = await db.projects.get(id);
+            if (!projectRecord) {
+                throw new Error(`Project data for ID ${id} not found locally.`);
+            }
+            const data: ParleyProjectExport = projectRecord.data;
 
             // Hydrate Stores
             const parleyStore = useParleyStore.getState();
@@ -163,25 +168,25 @@ export const ProjectService = {
         }
     },
 
-    deleteProject: (id: string) => {
+    deleteProject: async (id: string): Promise<void> => {
         useProjectLibraryStore.getState().deleteProject(id);
-        localStorage.removeItem(`${PROJECT_STORAGE_PREFIX}${id}`);
+        await db.projects.delete(id);
     },
 
     // --- Import / Export ---
 
-    exportProjectToJSON: (id: string): string => {
+    exportProjectToJSON: async (id: string): Promise<string> => {
         // Ensure we have latest saved state
-        ProjectService.saveProject(id);
-        const dataString = localStorage.getItem(`${PROJECT_STORAGE_PREFIX}${id}`);
-        if (!dataString) throw new Error("Project data empty");
-        return dataString;
+        await ProjectService.saveProject(id);
+        const projectRecord = await db.projects.get(id);
+        if (!projectRecord) throw new Error("Project data empty");
+        return JSON.stringify(projectRecord.data);
     },
 
     importProjectFromJSON: async (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const json = JSON.parse(e.target?.result as string) as ParleyProjectExport;
 
@@ -201,7 +206,13 @@ export const ProjectService = {
                         lastModified: Date.parse(json.timestamp) || Date.now()
                     };
 
-                    localStorage.setItem(`${PROJECT_STORAGE_PREFIX}${newId}`, JSON.stringify(json));
+                    await db.projects.put({
+                        id: newId,
+                        name: name,
+                        lastModified: newProject.lastModified,
+                        data: json
+                    });
+
                     useProjectLibraryStore.getState().addProject(newProject);
                     resolve(newId);
 
@@ -300,9 +311,97 @@ export const ProjectService = {
 
     // --- Migration ---
 
-    checkForLegacyData: () => {
+    cloneProject: async (sourceId: string, newName: string): Promise<string> => {
+        // Save current state first if active
+        if (useProjectLibraryStore.getState().currentProjectId === sourceId) {
+            await ProjectService.saveProject(sourceId);
+        }
+        const sourceRecord = await db.projects.get(sourceId);
+        if (!sourceRecord) throw new Error("Source project not found");
+
+        const newId = crypto.randomUUID();
+        const newData = JSON.parse(JSON.stringify(sourceRecord.data)) as ParleyProjectExport; // Deep clone
+        newData.metadata.name = newName;
+
+        const newProject: ProjectMetadata = {
+            id: newId,
+            name: newName,
+            description: newData.metadata.description,
+            lastModified: Date.now()
+        };
+
+        await db.projects.put({
+            id: newId,
+            name: newName,
+            lastModified: Date.now(),
+            data: newData
+        });
+
+        useProjectLibraryStore.getState().addProject(newProject);
+        return newId;
+    },
+
+    migrateLocalStorageToDexie: async (): Promise<boolean> => {
+        let migrated = false;
+        const keys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(PROJECT_STORAGE_PREFIX)) {
+                keys.push(key);
+            }
+        }
+
+        if (keys.length > 0) {
+            console.log(`Checking ${keys.length} projects for migration...`);
+            for (const key of keys) {
+                try {
+                    const dataStr = localStorage.getItem(key);
+                    if (dataStr) {
+                        const data = JSON.parse(dataStr) as ParleyProjectExport;
+                        const id = key.replace(PROJECT_STORAGE_PREFIX, '');
+
+                        const exists = await db.projects.get(id);
+                        if (!exists) {
+                            await db.projects.put({
+                                id,
+                                name: data.metadata.name,
+                                lastModified: Date.parse(data.timestamp) || Date.now(),
+                                data: data
+                            });
+                            console.log(`Migrated project ${id} to Dexie.`);
+                            migrated = true;
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to migrate ${key}`, e);
+                }
+            }
+            keys.forEach(key => localStorage.removeItem(key));
+        }
+
+        // Migrate Stores
+        const stores = ['entity-store', 'parley-game-state', 'parley-project-library', 'parley-storage'];
+        for (const storeName of stores) {
+            const val = localStorage.getItem(storeName);
+            if (val) {
+                const exists = await db.keyvalues.get(storeName);
+                if (!exists) {
+                    await db.keyvalues.put({ key: storeName, value: val });
+                    console.log(`Migrated store ${storeName}`);
+                    migrated = true;
+                }
+                localStorage.removeItem(storeName);
+            }
+        }
+
+        return migrated;
+    },
+
+    checkForLegacyData: async (): Promise<boolean> => {
+        const migrated = await ProjectService.migrateLocalStorageToDexie();
+
         const library = useProjectLibraryStore.getState().projects;
-        if (library.length > 0) return;
+        if (library.length > 0) return migrated;
 
         const entityState = useEntityStore.getState();
         const parleyState = useParleyStore.getState();
@@ -321,9 +420,11 @@ export const ProjectService = {
                 description: "Auto-migrated from previous version."
             };
 
+            await ProjectService.saveProject(newId);
             useProjectLibraryStore.getState().addProject(defaultProject);
-            ProjectService.saveProject(newId);
             useProjectLibraryStore.getState().setCurrentProjectId(newId);
+            return true;
         }
+        return migrated;
     }
 };

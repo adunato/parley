@@ -43,12 +43,7 @@ export default function WorldInfoPage() {
   const [aiStyleDialogPrompt, setAiStyleDialogPrompt] = useState(''); // New state for the AI style dialog's prompt
   const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
 
-  // Check for legacy data on mount
-  useEffect(() => {
-    // We only want to run this once or when specific conditions are met
-    // Logic inside checkForLegacyData handles the "only if empty" check
-    ProjectService.checkForLegacyData();
-  }, []);
+
 
   const generateWorld = async (prompt?: string) => {
     setIsLoading(true);

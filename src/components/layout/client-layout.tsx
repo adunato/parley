@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useParleyStore } from "@/lib/store";
+import { ProjectService } from "@/lib/services/projectService";
 import { cn } from "@/lib/utils";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,14 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             root.setAttribute("data-mode", "demiplane-dark");
         }
     }, [theme]);
+
+    useEffect(() => {
+        ProjectService.checkForLegacyData().then((migrated) => {
+            if (migrated) {
+                window.location.reload();
+            }
+        });
+    }, []);
 
     // Sidebar logic
     // Sidebar logic
