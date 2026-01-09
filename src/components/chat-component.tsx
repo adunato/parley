@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import { useChat, type Message } from "@ai-sdk/react"
 import { useParleyStore } from "@/lib/store";
+import { useGameStore } from "@/lib/store/gameStore"; // New import
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Relationship } from "@/lib/types";
-import { useEntityStore } from "@/lib/entityStore";
+// import { useEntityStore } from "@/lib/entityStore"; // REMOVED
 
 interface ChatComponentProps {
   className?: string
@@ -22,8 +23,15 @@ interface ChatComponentProps {
 
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { chatMessages, setChatMessages, chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore();
-  const { selectedChatCharacter, selectedChatPersona, selectedChatLocation } = useEntityStore();
+  const { chatMessages, setChatMessages,  // From GameStore
+    currentCharacterId, currentPersonaId, currentLocationId, characters, playerPersonas, locations } = useGameStore();
+  const { chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore(); // Settings stay in ParleyStore
+
+  // Derived state
+  const selectedChatCharacter = characters.find(c => c.id === currentCharacterId);
+  const selectedChatPersona = playerPersonas.find(p => p.id === currentPersonaId);
+  const selectedChatLocation = locations.find(l => l.id === currentLocationId);
+
   const messagesRef = useRef<Message[]>([]);
 
   // Local state for 'Actor' functionality
@@ -67,7 +75,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
           ...selectedChatCharacter,
           relationships: [...selectedChatCharacter.relationships, defaultRelationship]
         };
-        useEntityStore.getState().updateCharacter(updatedCharacter);
+        useGameStore.getState().updateCharacter(updatedCharacter);
       }
     }
   }, [relationship, selectedChatCharacter, selectedChatPersona]);
