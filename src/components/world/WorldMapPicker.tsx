@@ -48,6 +48,12 @@ export function WorldMapPicker({
         const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
             if (!containerRef.current) return;
 
+            // If not expanded, clicking anywhere just opens the dialog (handled by wrapper or we trigger it)
+            if (!isExpanded) {
+                setIsDialogOpen(true);
+                return;
+            }
+
             const rect = containerRef.current.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -58,17 +64,14 @@ export function WorldMapPicker({
             const newCoords = { x: clampedX, y: clampedY };
             setCoordinates(newCoords);
             onCoordinatesChange(newCoords);
-
-            // If in expanded mode, we might want to auto-close or just let user keep refining?
-            // Let user keep refining.
         };
 
         return (
             <div
                 ref={containerRef}
                 className={cn(
-                    "relative w-full bg-muted rounded-lg overflow-hidden cursor-crosshair border shadow-inner",
-                    isExpanded ? "aspect-[21/9] h-[80vh]" : "aspect-video",
+                    "relative w-full bg-muted rounded-lg overflow-hidden border shadow-inner transition-colors",
+                    isExpanded ? "aspect-[21/9] h-[80vh] cursor-crosshair" : "aspect-video cursor-pointer hover:ring-2 hover:ring-primary/50",
                     className
                 )}
                 onClick={handleMapClick}
@@ -112,7 +115,7 @@ export function WorldMapPicker({
 
                             <div className={cn(
                                 "absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 bg-black/75 text-white text-xs rounded whitespace-nowrap",
-                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100" // Always show label in expanded mode? Or standard hover.
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                             )}>
                                 {locationName}
                             </div>
@@ -123,33 +126,17 @@ export function WorldMapPicker({
                 {/* Overlay for Expand Button (only in compact mode) */}
                 {!isExpanded && isHovered && mapImage && (
                     <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
-                        {/* Button itself needs pointer-events-auto */}
-                        <div className="pointer-events-auto">
-                            {/* This is handled by the DialogTrigger wrapping the whole thing or a specific button? 
-                                A specific button is better for explicit action vs clicking to set point.
-                                BUT user wants "pop out... when hovering".
-                                So maybe the whole area becomes a trigger? 
-                                No, that prevents clicking to set point in compact mode.
-                                
-                                Let's add a big centered button "Expand for Precision".
-                            */}
-                            <DialogTrigger asChild>
-                                <Button variant="secondary" size="sm" className="shadow-lg" onClick={(e) => {
-                                    // Stop propagation so we don't set a point when clicking expand
-                                    // Actually DialogTrigger handles the click, but we are inside the map div which has onClick.
-                                    e.stopPropagation();
-                                }}>
-                                    <Maximize2 className="w-4 h-4 mr-2" />
-                                    Expand for Precision
-                                </Button>
-                            </DialogTrigger>
+                        <div className="pointer-events-auto bg-background/80 backdrop-blur-sm p-3 rounded-full shadow-lg">
+                            <Maximize2 className="w-6 h-6 text-foreground" />
                         </div>
                     </div>
                 )}
 
-                <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded pointer-events-none">
-                    {isExpanded ? "Click to set precise position" : "Click to set position"}
-                </div>
+                {isExpanded && (
+                    <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded pointer-events-none">
+                        Click to set precise position
+                    </div>
+                )}
             </div>
         );
     };
