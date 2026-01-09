@@ -74,7 +74,6 @@
   }
 
   [data-mode="demiplane-light"] {
-    --font-primary: var(--font-cinzel);
     --radius: 0rem;
     --border-width: 2px;
 
@@ -110,8 +109,7 @@
   }
 
   [data-mode="demiplane-dark"] {
-    --font-primary: var(--font-cinzel);
-    --radius: 0.25rem;
+    --radius: 0rem;
     --border-width: 2px;
 
     /* Demiplane Dark (Void) */
