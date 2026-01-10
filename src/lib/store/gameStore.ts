@@ -42,6 +42,9 @@ interface GameState {
     updateCumulativeRelationshipDelta: (delta: Relationship) => void;
     clearCumulativeRelationshipDelta: () => void;
     clearChat: () => void;
+
+    _hasHydrated: boolean;
+    setHasHydrated: (state: boolean) => void;
 }
 
 export interface WorldConfigSnapshot {
@@ -144,11 +147,19 @@ export const useGameStore = create<GameState>()(
 
             clearCumulativeRelationshipDelta: () => set({ cumulativeRelationshipDelta: undefined }),
 
-            clearChat: () => set({ chatMessages: [] })
+            clearChat: () => set({ chatMessages: [] }),
+
+            _hasHydrated: false,
+            setHasHydrated: (state) => set({ _hasHydrated: state }),
         }),
         {
             name: 'parley-game-state',
             storage: createJSONStorage(() => DexieStorageAdapter),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    state.setHasHydrated(true);
+                }
+            },
         }
     )
 );
