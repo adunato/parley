@@ -11,7 +11,16 @@ import { useGameStore } from '@/lib/store/gameStore';
 import { useParleyStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 
+import { LoadingScreen } from '@/components/ui/loading-screen';
+
 export default function MainMenu() {
+  const isEntityHydrated = useEntityStore(state => state._hasHydrated);
+  const isGameHydrated = useGameStore(state => state._hasHydrated);
+
+  if (!isEntityHydrated || !isGameHydrated) {
+    return <LoadingScreen />;
+  }
+
   const router = useRouter();
   const { characters, playerPersonas, locations, characterGroups } = useEntityStore();
   const { startGame, isGameActive } = useGameStore();

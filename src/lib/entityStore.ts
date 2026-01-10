@@ -31,6 +31,8 @@ type EntityStore = {
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
   clearCumulativeRelationshipDelta: () => void; // Called on new chat
   clearAllData: () => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 };
 
 export const useEntityStore = create<EntityStore>()(
@@ -138,12 +140,15 @@ export const useEntityStore = create<EntityStore>()(
         });
         useEntityStore.persist.clearStorage();
       },
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
       name: 'entity-store',
       storage: createJSONStorage(() => DexieStorageAdapter),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          state.setHasHydrated(true);
           // Ensure all characters have a relationships array
           if (state.characters) {
             state.characters = state.characters.map(character => ({
