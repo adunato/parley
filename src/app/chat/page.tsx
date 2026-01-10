@@ -329,7 +329,7 @@ export default function ChatPage() {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-background">
+        <div className="flex flex-col h-screen bg-background text-foreground">
             {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
                     {(currentCharacterId && currentPersonaId && currentLocationId) ? (
@@ -414,6 +414,11 @@ export default function ChatPage() {
             ) : (
                 <div className="flex-1 flex justify-center p-4">
                     <div className="flex flex-col items-center w-full">
+                        {/* 
+                            Toolbar replaces these buttons in Play Mode. 
+                            If explicitly wanting "New Chat", it might need to be in Toolbar or Menu.
+                            For now, relying on Toolbar Exit to go to Menu -> New Game.
+                        */}
                         <div className="w-full mb-4 flex justify-end gap-2">
                             <Button onClick={handleEndChat} variant="outline">
                                 <CheckCircle className="w-4 h-4 mr-2" />
