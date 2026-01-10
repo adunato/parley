@@ -16,7 +16,6 @@ import { SceneSummaryModal } from "@/components/scene-summary-modal";
 import { Sparkles, PlusCircle, CheckCircle } from "lucide-react";
 // import { useEntityStore } from "@/lib/entityStore"; // REMOVED
 import { PRQC } from "@/lib/types";
-import { GameplayToolbar } from "@/components/gameplay-toolbar"; // Integrated Toolbar
 
 
 export default function ChatPage() {
@@ -314,25 +313,10 @@ export default function ChatPage() {
     };
 
     const handleNewChat = () => {
-        clearCumulativeRelationshipDelta(); // Fixed duplicate call
+        clearCumulativeRelationshipDelta();
+        clearCumulativeRelationshipDelta();
         clearChat();
         setIsChatActive(false);
-    };
-
-    const handleExitGame = () => {
-        // Functionality for Exit icon in toolbar
-        // Matches handleEndChat logic but maybe without summary if triggered abruptly? 
-        // Or simply routes to Home.
-        // Requested behavior: "Exit icon (which goes back to the main menu)"
-        // Safest is to route to /
-        router.push('/');
-    };
-
-    const handleOpenSettings = () => {
-        // Placeholder for Settings icon
-        console.log("Settings clicked");
-        // Could open a modal or route to settings
-        router.push('/settings');
     };
 
     if (!_hasHydrated) {
@@ -346,16 +330,6 @@ export default function ChatPage() {
 
     return (
         <div className="flex flex-col h-screen bg-background text-foreground">
-            {isChatActive && (
-                <GameplayToolbar
-                    currentDay={1} // Placeholder for Day, needing GameState integration later
-                    timeOfDay={"Morning"} // Placeholder for Time, needing GameState integration later
-                    personaName={selectedChatPersona?.basicInfo?.name}
-                    // personaImageSrc={selectedChatPersona?.avatar} // Assuming avatar exists or undefined
-                    onExitGame={handleExitGame}
-                    onOpenSettings={handleOpenSettings}
-                />
-            )}
             {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
                     {(currentCharacterId && currentPersonaId && currentLocationId) ? (
@@ -445,16 +419,16 @@ export default function ChatPage() {
                             If explicitly wanting "New Chat", it might need to be in Toolbar or Menu.
                             For now, relying on Toolbar Exit to go to Menu -> New Game.
                         */}
-                        {/* <div className="w-full mb-4 flex justify-end gap-2">
-                             <Button onClick={handleEndChat} variant="outline">
-                                 <CheckCircle className="w-4 h-4 mr-2" />
-                                 End Chat
-                             </Button>
-                             <Button onClick={handleNewChat} variant="outline">
-                                 <PlusCircle className="w-4 h-4 mr-2" />
-                                 New Chat
-                             </Button>
-                         </div> */}
+                        <div className="w-full mb-4 flex justify-end gap-2">
+                            <Button onClick={handleEndChat} variant="outline">
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                End Chat
+                            </Button>
+                            <Button onClick={handleNewChat} variant="outline">
+                                <PlusCircle className="w-4 h-4 mr-2" />
+                                New Chat
+                            </Button>
+                        </div>
                         <div className="flex flex-row items-start w-full justify-center gap-4 max-w-screen-2xl">
                             {selectedChatCharacter && (
                                 <CharacterTraitsDisplay
