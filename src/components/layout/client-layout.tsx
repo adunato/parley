@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { theme } = useParleyStore();
+    const { theme, appState } = useParleyStore();
 
     useEffect(() => {
         const root = window.document.documentElement;
@@ -36,20 +36,15 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     }, []);
 
     // Sidebar logic
-    const isMainMenu = pathname === "/";
-    const isWorldMap = pathname === "/world_map";
-    const isChat = pathname === "/chat";
-    const isLocationScreen = pathname?.startsWith("/location");
-
-    // Only show sidebar if NOT in main game loop screens
-    const showSidebar = !isMainMenu && !isWorldMap && !isChat && !isLocationScreen;
+    // Sidebar logic: Only show if we are explicitly in Configuration mode
+    const showSidebar = appState === 'configuration';
 
     return (
         <div className="flex min-h-screen">
             {showSidebar && <Sidebar />}
             <main className={cn(
                 "flex-1 overflow-auto bg-background",
-                (!isWorldMap && !isLocationScreen) && "p-6" // Remove padding for maps and immersive location screens
+                appState === 'configuration' && "p-6" // Only add padding if in Configuration mode
             )}>
                 {children}
             </main>
