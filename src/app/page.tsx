@@ -14,20 +14,17 @@ import { useRouter } from 'next/navigation';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 
 export default function MainMenu() {
-  const isEntityHydrated = useEntityStore(state => state._hasHydrated);
-  const isGameHydrated = useGameStore(state => state._hasHydrated);
-
-  if (!isEntityHydrated || !isGameHydrated) {
-    return <LoadingScreen />;
-  }
-
   const router = useRouter();
-  const { characters, playerPersonas, locations, characterGroups } = useEntityStore();
-  const { startGame, isGameActive } = useGameStore();
+  const { characters, playerPersonas, locations, characterGroups, _hasHydrated: isEntityHydrated } = useEntityStore();
+  const { startGame, isGameActive, _hasHydrated: isGameHydrated } = useGameStore();
   const { setAppState } = useParleyStore();
 
   /* State for Persona Selection */
   const [isPersonaSelectionOpen, setIsPersonaSelectionOpen] = useState(false);
+
+  if (!isEntityHydrated || !isGameHydrated) {
+    return <LoadingScreen />;
+  }
 
   const handleNewGame = () => {
     // Open the Persona Selection Dialog instead of starting immediately
