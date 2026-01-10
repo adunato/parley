@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from 'react';
+import { PersonaSelectionDialog } from '@/components/persona-selection-dialog';
+
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -14,13 +17,23 @@ export default function MainMenu() {
   const { startGame, isGameActive } = useGameStore();
   const { setAppState } = useParleyStore();
 
+  /* State for Persona Selection */
+  const [isPersonaSelectionOpen, setIsPersonaSelectionOpen] = useState(false);
+
   const handleNewGame = () => {
+    // Open the Persona Selection Dialog instead of starting immediately
+    setIsPersonaSelectionOpen(true);
+  };
+
+  const handlePersonaSelected = (persona: any) => {
+    // Start the game with the specific persona
     startGame({
       characters,
       playerPersonas,
       locations,
       characterGroups
-    });
+    }, persona.id);
+
     setAppState('game');
     router.push('/world_map');
   };
@@ -83,6 +96,13 @@ export default function MainMenu() {
           v0.1.0 • Pre-Alpha Build
         </div>
       </div>
+
+      <PersonaSelectionDialog
+        open={isPersonaSelectionOpen}
+        onOpenChange={setIsPersonaSelectionOpen}
+        personas={playerPersonas}
+        onSelect={handlePersonaSelected}
+      />
     </div>
   );
 }
