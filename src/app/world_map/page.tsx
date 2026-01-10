@@ -57,7 +57,7 @@ export default function WorldMapPage() {
                     currentDay={1} // Placeholder, need GameState day
                     timeOfDay={"Morning"} // Placeholder, need GameState time
                     personaName={currentPersona?.basicInfo?.name}
-                    // personaImageSrc={currentPersona?.avatar} 
+                    personaImageSrc={currentPersona?.basicInfo?.avatar}
                     onExitGame={handleExitGame}
                     onOpenSettings={handleOpenSettings}
                     className="border-b-white/10 bg-black/60 shadow-lg"
