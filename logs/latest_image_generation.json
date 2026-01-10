@@ -124,7 +124,7 @@
     "inputs": {
       "name": "positive_prompt",
       "type": "prompt (positive)",
-      "default": "cesar considine, 30-year-old, electrician, dark brown hair, graying temples, tousled hair, weathered face, faint lines, lean face, worn utility jacket"
+      "default": "Elliot Harper, 29-year-old, Lead Software Engineer, short dark brown hair, well-groomed beard, angular jawline, piercing blue eyes, warm smile, neat styling, charismatic expression."
     },
     "class_type": "ETN_Parameter",
     "_meta": {
@@ -184,7 +184,7 @@
     "inputs": {
       "name": "seed",
       "type": "number (integer)",
-      "default": 241591385,
+      "default": 290726071,
       "min": 16,
       "max": 1638700000
     },

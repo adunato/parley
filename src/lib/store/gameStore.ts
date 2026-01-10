@@ -29,7 +29,7 @@ interface GameState {
     cumulativeRelationshipDelta: Relationship | undefined; // Session delta
 
     // Actions
-    startGame: (config: WorldConfigSnapshot) => void;
+    startGame: (config: WorldConfigSnapshot, initialPersonaId?: string) => void;
     resumeGame: () => void; // Mostly just a state check
     endGame: () => void;
 
@@ -72,7 +72,7 @@ export const useGameStore = create<GameState>()(
 
             cumulativeRelationshipDelta: undefined,
 
-            startGame: (config) => {
+            startGame: (config, initialPersonaId) => {
                 // Deep copy to ensure we don't mutate the config
                 // JSON parse/stringify is a simple way to deep clone for these plain objects
                 const clonedConfig = JSON.parse(JSON.stringify(config));
@@ -91,10 +91,10 @@ export const useGameStore = create<GameState>()(
                     // Keep previous selection if valid, or reset? Resetting is safer for a "New Game".
                     currentLocationId: null,
                     currentCharacterId: null,
-                    // Requirement: Pick first persona from the list
-                    currentPersonaId: clonedConfig.playerPersonas && clonedConfig.playerPersonas.length > 0
+                    // Requirement: Pick selected persona OR first persona from the list
+                    currentPersonaId: initialPersonaId || (clonedConfig.playerPersonas && clonedConfig.playerPersonas.length > 0
                         ? clonedConfig.playerPersonas[0].id
-                        : null,
+                        : null),
                 });
             },
 
