@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Relationship } from "@/lib/types";
 import { useParleyStore } from "@/lib/store";
 import { useGameStore } from "@/lib/store/gameStore"; // New import
@@ -78,9 +78,21 @@ export default function ChatPage() {
     const [sceneAppliedTraits, setSceneAppliedTraits] = useState<string[]>([]);
     const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
 
-    // ... (useEffect omitted)
+    // Auto-start chat if all parameters are present (e.g. from Location Screen or Character Card)
+    useEffect(() => {
+        if (!isChatActive && _hasHydrated) {
+            if (currentCharacterId && currentPersonaId && currentLocationId) {
+                // We have all context, attempt to start chat automatically
+                // We reuse the logic from handleStartChat but need to avoid calling it if it's not stable.
+                // Best to extract the logic or call it here.
 
-    // ... (useEffect omitted)
+                // Note: handleStartChat relies on selectedChatCharacter derived from currentCharacterId, etc.
+                // We need to wait for render cycle or just call it? 
+                // Since this effect runs on hydration and ID changes, selectedChatCharacter *should* be valid if currentCharacterId is set.
+                handleStartChat();
+            }
+        }
+    }, [_hasHydrated, currentCharacterId, currentPersonaId, currentLocationId, isChatActive]); // Add dependencies carefully
 
     const handleLocationSelect = (locationId: string) => {
         if (locationId === "unassigned") {
@@ -127,7 +139,8 @@ export default function ChatPage() {
         }
     };
 
-    const handleStartChat = async () => {
+    // Wrapped in useCallback for dependency array stability
+    const handleStartChat = useCallback(async () => {
         if (selectedChatCharacter && selectedChatPersona) {
             // Always get the latest character data from the store
             const characterFromStore = characters.find(c => c.id === selectedChatCharacter.id);
@@ -176,9 +189,11 @@ export default function ChatPage() {
             }
             setIsChatActive(true);
         } else {
-            alert("Please select both a character and a persona to start the chat.");
+            // If we are auto-starting, this alert might be annoying if transient state causes it. 
+            // But if we have IDs, we should have objects.
+            // alert("Please select both a character and a persona to start the chat.");
         }
-    };
+    }, [selectedChatCharacter, selectedChatPersona, characters, worldDescription, aiStyle, generationModel, selectedChatLocation, updateCharacter]);
 
     const handleEndChat = async () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
@@ -313,77 +328,84 @@ export default function ChatPage() {
         <div className="flex flex-col h-screen bg-background">
             {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
-                    <Card className="w-full max-w-md border-border shadow-lg">
-                        <CardHeader className="border-b border-border mb-4">
-                            <CardTitle className="type-h3">Start a New Chat</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div>
-                                <label htmlFor="location-select" className="type-ui-label text-muted-foreground mb-2 block">
-                                    Select Location
-                                </label>
-                                <Select onValueChange={handleLocationSelect} value={selectedChatLocation?.id || "unassigned"}>
-                                    <SelectTrigger id="location-select">
-                                        <SelectValue placeholder="Choose a location" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="unassigned">Unassigned / No Location</SelectItem>
-                                        {locations.map((loc) => (
-                                            <SelectItem key={loc.id} value={loc.id}>
-                                                {loc.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label htmlFor="character-select" className="type-ui-label text-muted-foreground mb-2 block">
-                                    Select Character
-                                </label>
-                                <Select onValueChange={handleCharacterSelect} value={selectedChatCharacter?.id || ""}>
-                                    <SelectTrigger id="character-select">
-                                        <SelectValue placeholder="Choose a character" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {filteredCharacters.length === 0 ? (
-                                            <div className="p-2 text-sm text-muted-foreground">No characters in this location</div>
-                                        ) : (
-                                            filteredCharacters.map((character) => (
-                                                <SelectItem key={character.id} value={character.id}>
-                                                    {character.basicInfo.name}
+                    {(currentCharacterId && currentPersonaId && currentLocationId) ? (
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                            <h2 className="type-h3 animate-pulse">Entering Chat...</h2>
+                        </div>
+                    ) : (
+                        <Card className="w-full max-w-md border-border shadow-lg">
+                            <CardHeader className="border-b border-border mb-4">
+                                <CardTitle className="type-h3">Start a New Chat</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div>
+                                    <label htmlFor="location-select" className="type-ui-label text-muted-foreground mb-2 block">
+                                        Select Location
+                                    </label>
+                                    <Select onValueChange={handleLocationSelect} value={selectedChatLocation?.id || "unassigned"}>
+                                        <SelectTrigger id="location-select">
+                                            <SelectValue placeholder="Choose a location" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="unassigned">Unassigned / No Location</SelectItem>
+                                            {locations.map((loc) => (
+                                                <SelectItem key={loc.id} value={loc.id}>
+                                                    {loc.name}
                                                 </SelectItem>
-                                            ))
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label htmlFor="persona-select" className="type-ui-label text-muted-foreground mb-2 block">
-                                    Select Persona
-                                </label>
-                                <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
-                                    <SelectTrigger id="persona-select">
-                                        <SelectValue placeholder="Choose a persona" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {playerPersonas.map((persona) => (
-                                            <SelectItem key={persona.id} value={persona.id}>
-                                                {persona.basicInfo.name} ({persona.id})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button
-                                onClick={handleStartChat}
-                                className="w-full py-2 px-4 shadow-md type-ui-label"
-                                disabled={!selectedChatCharacter || !selectedChatPersona}
-                            >
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                Start Chat
-                            </Button>
-                        </CardContent>
-                    </Card>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <label htmlFor="character-select" className="type-ui-label text-muted-foreground mb-2 block">
+                                        Select Character
+                                    </label>
+                                    <Select onValueChange={handleCharacterSelect} value={selectedChatCharacter?.id || ""}>
+                                        <SelectTrigger id="character-select">
+                                            <SelectValue placeholder="Choose a character" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {filteredCharacters.length === 0 ? (
+                                                <div className="p-2 text-sm text-muted-foreground">No characters in this location</div>
+                                            ) : (
+                                                filteredCharacters.map((character) => (
+                                                    <SelectItem key={character.id} value={character.id}>
+                                                        {character.basicInfo.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <label htmlFor="persona-select" className="type-ui-label text-muted-foreground mb-2 block">
+                                        Select Persona
+                                    </label>
+                                    <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
+                                        <SelectTrigger id="persona-select">
+                                            <SelectValue placeholder="Choose a persona" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {playerPersonas.map((persona) => (
+                                                <SelectItem key={persona.id} value={persona.id}>
+                                                    {persona.basicInfo.name} ({persona.id})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button
+                                    onClick={handleStartChat}
+                                    className="w-full py-2 px-4 shadow-md type-ui-label"
+                                    disabled={!selectedChatCharacter || !selectedChatPersona}
+                                >
+                                    <Sparkles className="w-5 h-5 mr-2" />
+                                    Start Chat
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             ) : (
                 <div className="flex-1 flex justify-center p-4">

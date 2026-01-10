@@ -48,6 +48,8 @@ interface ParleyStore {
     setTheme: (theme: string) => void;
     worldMapImage?: string;
     setWorldMapImage: (image: string) => void;
+    appState: 'menu' | 'configuration' | 'game';
+    setAppState: (state: 'menu' | 'configuration' | 'game') => void;
 }
 
 export type Theme = 'light' | 'dark' | 'demiplane-light' | 'demiplane-dark';
@@ -175,6 +177,8 @@ If {{personaName}} acts in a way that aligns with your character’s personality
                 setTheme: (theme) => set({ theme }),
                 worldMapImage: '',
                 setWorldMapImage: (image) => set({ worldMapImage: image }),
+                appState: 'menu',
+                setAppState: (appState) => set({ appState }),
             }),
             {
                 name: 'parley-storage',

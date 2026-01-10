@@ -5,12 +5,14 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useEntityStore } from '@/lib/entityStore';
 import { useGameStore } from '@/lib/store/gameStore';
+import { useParleyStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 
 export default function MainMenu() {
   const router = useRouter();
   const { characters, playerPersonas, locations, characterGroups } = useEntityStore();
   const { startGame, isGameActive } = useGameStore();
+  const { setAppState } = useParleyStore();
 
   const handleNewGame = () => {
     startGame({
@@ -19,11 +21,19 @@ export default function MainMenu() {
       locations,
       characterGroups
     });
+    setAppState('game');
     router.push('/world_map');
   };
 
   const handleContinue = () => {
+    setAppState('game');
     router.push('/world_map');
+  };
+
+  const handleConfiguration = () => {
+    setAppState('configuration');
+    // No need to push, Link handles it? No, button does.
+    // Wait, the original button used Link. We should intercept or just use onClick handler + router.push for consistency
   };
 
   return (
@@ -59,12 +69,13 @@ export default function MainMenu() {
           </Button>
 
           <Button
-            asChild
             className="w-full h-14 text-sm font-display uppercase tracking-widest font-bold bg-primary text-primary-foreground hover:bg-primary/90 border-0 transition-all rounded-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            onClick={() => {
+              setAppState('configuration');
+              router.push('/character-config');
+            }}
           >
-            <Link href="/character-config">
-              Configuration
-            </Link>
+            Configuration
           </Button>
         </div>
 
