@@ -61,9 +61,31 @@ The game's AI is highly configurable. The prompts that drive the character's rol
     -   `chat_system`: The main driver, injecting `{{relationship}}`, `{{persona}}`, and `{{character}}` data.
     -   `relationship_delta`: (Legacy/Fallback) For per-turn updates.
     -   `analyst_system`: For scene-level analysis.
--   **Configuration**: User prompts are saved to `config/user-prompts.json` (if customized), falling back to hardcoded defaults in code.
 
-### 5. Asset Generation (ComfyUI)
+### 5. World & Exploration
+**User Experience (How it works):**
+The world is navigated through a visual map and detailed location cards.
+1.  **World Map**: A graphical interface (`/files/map.html` rendered in an iframe) allows players to select locations. Use "Instant Save" to persist changes immediately.
+2.  **Locations**: dedicated `/locations` page allows management of game settings.
+3.  **Navigation**: Players can move between the Map, Chat, and Settings via the new "Gameplay Toolbar" overlay.
+
+**Relevant Code Objects (Code implementation):**
+-   **Page**: `src/app/locations/page.tsx` for location management.
+-   **Map**: `src/app/map/page.tsx` (or similar) hosting the map visualization.
+-   **Toolbar**: `src/components/gameplay-toolbar.tsx` provides persistent navigation during active play.
+
+### 6. Immersive UI
+**User Experience (How it works):**
+The interface enhances immersion through dynamic elements:
+-   **Day/Weather System**: Tracks in-game time and weather conditions, displayed via the `DayWeatherDisplay` component.
+-   **Theme Selection**: Users can toggle between "Light", "Dark", and "High Contrast" themes in Settings.
+-   **Gameplay Toolbar**: A persistent HUD showing the current persona, time/weather, and quick actions.
+
+**Relevant Code Objects (Code implementation):**
+-   **Weather**: `DayWeatherDisplay` in `src/components/ui/day-weather-display.tsx`.
+-   **Themes**: Managed via `ThemeProvider` and `GeneralSettings` (`src/app/settings/general/general-settings.tsx`).
+
+### 7. Asset Generation (ComfyUI)
 **User Experience (How it works):**
 Visuals are generated on-the-fly to match the textual descriptions.
 1.  **Description**: The LLM generates a visual prompt based on the character's appearance data.
@@ -73,24 +95,43 @@ Visuals are generated on-the-fly to match the textual descriptions.
 **Relevant Code Objects (Code implementation):**
 -   **Adapter**: `src/lib/imageWorkflowAdapter.ts` modifies a JSON workflow template (`character_avatar.json`) with the specific prompt and seed.
 -   **Client**: `src/lib/comfyui.ts` handles the WebSocket connection and polling of the ComfyUI API (`127.0.0.1:8188`).
--   **Workflows**: Stored in `image_workflows/` directory.
+
+### 8. Game Session Management
+**User Experience (How it works):**
+Parley distinguishes between "World Configuration" (editing characters/locations) and "Active Game" (playing a session).
+-   **New Game**: Clones the current World Configuration into a fresh Game State.
+-   **Resume**: Loads the active Game State.
+-   **Save**: Game state is autosaved to specific slots (or "Instant Save" for config).
+
+**Relevant Code Objects (Code implementation):**
+-   **Stores**: Split between `EntityStore` (Configuration) and `GameStore` (Runtime).
+-   **Logic**: `GameStore` initializes by deep-cloning `EntityStore` data to ensure the base configuration remains pristine while the game state evolves.
 
 ## Technical Architecture
 
 ### Tech Stack
 -   **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, shadcn/ui.
 -   **Backend**: Next.js API Routes.
--   **State Management**: `zustand` with `persist` middleware for local storage.
+-   **State Management**: `zustand` with `persist` middleware (using Dexie adapter).
 -   **AI Integration**: Vercel AI SDK (`ai/react`, `ai/rsc`) and direct OpenAI/LangChain calls.
 
 ### Data Persistence
-All game state is local-first, persisted in the browser's `localStorage` via Zustand:
--   `entity-store`: Characters, Personas, Groups.
--   `parley-storage`: Chat sessions, Global settings (API keys, World Info).
+All game state is **Local-First**, persisted in the browser's **IndexedDB** via `Dexie.js`:
+-   **Dexie Database**: `ParleyDatabase` defined in `src/lib/db.ts`.
+-   **Zustand Middleware**: Custom `SexieStorageAdapter` (or similar) connects Zustand stores to Dexie tables.
+-   **Migration**: Legacy `localStorage` data is automatically migrated to IndexedDB on startup.
+
+### State Management Strategy
+We use a dual-store architecture to separate Configuration from Gameplay:
+1.  **EntityStore**: Manages the "World Bible" (Characters, Locations, Prompts). Changes here affect *future* games.
+2.  **GameStore**: Manages the "Active Session". It includes a snapshot of characters/locations plus runtime state (Chat History, Relationships).
+3.  **ParleyStore**: Global app settings (API Keys, Theme, UI State).
 
 ### Project Structure
 -   `src/app`: Page routes and API endpoints.
 -   `src/components`: UI components (atomic & composite).
 -   `src/lib/engine`: Core logic for Analyst, Judge, and Math.
 -   `src/lib/generator`: Procedural generation logic (BioMachine).
--   `src/lib/store`: State management definitions.
+-   `src/lib/store`: State management definitions (`gameStore`, `projectStore`, `promptStore`).
+-   `src/lib/db.ts`: Dexie database definition.
+-   `src/stories`: Storybook documentation.

@@ -133,7 +133,7 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 ---
 
 ### Phase 6: The Analyst & Judge (Math Engine)
-**Goal:** Implement the logic-based feedback loop (Engine) that updates relationship stats, replacing the direct LLM hallucination.
+**Goal:** Implement the post-scene feedback loop that updates relationship stats and visualizes the results.
 
 #### [NEW] `src/lib/engine/analyst.ts`
 - Implement `AnalyzeScene(chatHistory, character, persona)`: Calls LLM to scan *the entire recent history/scene* for "Aggregate Traits" (OCEAN + Behavioral) and "Major Events".
@@ -149,43 +149,56 @@ This plan outlines the steps to implement the architecture defined in `docs/High
     - Uses `RoutingTable` to map User Traits to `PRQC Deltas`.
     - Calculates final `totalDelta` (Direction * Strength * Multiplier).
 
+#### [NEW] `src/components/scene-report-display.tsx`
+- Create a UI component to visualize the "Scene Report":
+    - **Detected Traits:** Lists what the Analyst found (e.g., "High Aggression").
+    - **Impact:** Shows the calculated deltas (e.g., "Trust -15").
+    - **Result:** Shows the new PRQC values.
+
 #### [NEW] `src/app/api/engine/process-scene/route.ts`
 - Receives chat log & context.
 - Runs `Analyst` (Scene Report) -> `Judge` (Math Logic).
-- Returns `delta` and `description` to the client.
+- Returns `delta`, `description`, and `sceneReport` to the client.
 
 #### Phase 6 Verification
 - **Automated Tests:** Unit tests for `judge.ts` math logic (Sensitivity/Routing).
 - **Integration Test:** Call `/api/engine/process-scene` with mock character/history data.
+- **Visual Check:** Mock a `SceneReport` and render the `SceneReportDisplay` component to ensure it looks correct.
 
 ---
 
-### Phase 7: Integration (The Loop)
-**Goal:** Connect the components into a circular gameplay loop.
+### Phase 7: Integration (The Loop & Triggers)
+**Goal:** Connect the components into a circular gameplay loop and enable event-driven assessment.
 
 #### [MODIFY] `src/app/page.tsx` (or Main Chat Component)
-- Add "End Scene" / "Sleep" button to trigger the Analyst.
-- On success of Analyst:
-    - Display "Scene Summary" modal (Stats changed).
-    - Update local state with new Relationship values.
-    - Clear chat history (or archive it) for the next scene.
+- Add "End Scene" / "Sleep" button to trigger the Analyst manually.
+- Handle "Scene Summary" modal display upon receiving analysis results.
+- Update local state with new Relationship values.
 
 #### [MODIFY] `src/app/api/chat/route.ts`
-- Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
-- If detected, insert a special stop signal or header to inform the client to trigger an immediate force-analysis.
+- Add stream scanning for the `[EVENT: TRIGGER_ASSESSMENT]` token.
+- If detected, send a specific data chunk or header to the client indicating an "Immediate Assessment" is required.
 
-#### Phase 8 Verification
+#### [MODIFY] `src/components/chat-component.tsx`
+- Listen for the trigger signal from the stream.
+- If received, automatically trigger the `/api/engine/process-scene` endpoint (similar to "End Scene").
+
+#### [MODIFY] `src/lib/engine/director.ts`
+- Update the Instruction Catalogue to include rules that output `[EVENT: TRIGGER_ASSESSMENT]` when significant relationship shifts occur (e.g. Trust dropping below 10).
+
+#### Phase 7 Verification
 - **Cycle Check:**
     -   Start Scene (Trust: 50).
     -   Be aggressive/insulting.
     -   End Scene (Click Sleep button).
-    -   Verify Trust drops in the Summary Modal (e.g., to 40).
-    -   Start Next Scene. Verify behavior is slightly colder (Director output changes).
-    -   Verify data persistence (if DB is hooked up) or state persistence across the session.
+    -   Verify Trust drops & Scene Report is shown.
+- **Trigger Check:**
+    -   Trigger a rule that outputs `[EVENT: TRIGGER_ASSESSMENT]`.
+    -   Verify the client automatically pauses and runs the analysis.
 
 ---
 
-### Phase 10: Advanced Rules (Intersections & Constraints)
+### Phase 8: Advanced Rules (Intersections & Constraints)
 **Goal:** Implement the complex, high-specificity rules from Sections 3, 4, and 5.
 
 #### [MODIFY] `src/lib/engine/rules.ts`
@@ -199,16 +212,6 @@ This plan outlines the steps to implement the architecture defined in `docs/High
 - Update `GenerateSystemPrompt` to accept `UserPersona` and evaluate the new advanced rules.
 - Ensure "Hard Constraints" (Section 5) take precedence or are appended with high priority (SYSTEM_MESSAGE reinforcement).
 
-### Phase 11: Engine Trigger (Event-Driven)
-**Goal:** Ensure the Engine only runs when impactful events occur, controlled by the Director.
-
-#### [MODIFY] `src/app/api/chat/route.ts`
-- Add stream scanning for `[EVENT: TRIGGER_ASSESSMENT]`.
-- If detected, insert a special header/data chunk to tell the client "Run Assessment Now".
-
-#### [MODIFY] `src/components/chat-component.tsx`
-- Listen for the trigger signal from the stream.
-- ONLY call `/api/engine/process-turn` when receiving this signal.
-
-#### [MODIFY] `src/lib/engine/director.ts` / Prompt
-- Instruct Director to output `[EVENT: TRIGGER_ASSESSMENT]` when significant relationship shifts occur.
+#### Phase 8 Verification
+- **Intersection Test:** Create a character with High Neuroticism (80) and High Commitment (80). Verify "Anxious Attachment" instruction appears in the prompt.
+- **Constraint Test:** Set Intimacy to 5 and Trust to 5. Verify "Stranger Danger" protocol prevents the character from agreeing to a defined "Go to second location" test prompt.
