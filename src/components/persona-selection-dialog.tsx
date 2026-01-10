@@ -1,7 +1,7 @@
 import { Persona } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PersonaCard } from "./persona-card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Check } from "lucide-react";
@@ -36,7 +36,7 @@ export function PersonaSelectionDialog({ open, onOpenChange, personas, onSelect 
                 </DialogHeader>
 
                 <div className="py-6">
-                    <ScrollArea className="w-full whitespace-nowrap rounded-md border bg-secondary/20 p-4">
+                    <ScrollArea className="w-full whitespace-nowrap rounded-md border bg-secondary/20 p-4" orientation="horizontal">
                         <div className="flex w-max space-x-4 p-4">
                             {personas.map((persona) => (
                                 <PersonaCard
@@ -48,7 +48,6 @@ export function PersonaSelectionDialog({ open, onOpenChange, personas, onSelect 
                                 />
                             ))}
                         </div>
-                        <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                 </div>
 
