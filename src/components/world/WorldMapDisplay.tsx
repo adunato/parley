@@ -76,9 +76,6 @@ export function WorldMapDisplay({
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p className="font-bold">{location.name}</p>
-                                            {location.description && (
-                                                <p className="text-xs max-w-[200px] line-clamp-3">{location.description}</p>
-                                            )}
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

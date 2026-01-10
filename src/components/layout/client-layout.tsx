@@ -36,17 +36,20 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     }, []);
 
     // Sidebar logic
-    // Sidebar logic
     const isMainMenu = pathname === "/";
     const isWorldMap = pathname === "/world_map";
-    const showSidebar = !isMainMenu && !isWorldMap;
+    const isChat = pathname === "/chat";
+    const isLocationScreen = pathname?.startsWith("/location");
+
+    // Only show sidebar if NOT in main game loop screens
+    const showSidebar = !isMainMenu && !isWorldMap && !isChat && !isLocationScreen;
 
     return (
         <div className="flex min-h-screen">
             {showSidebar && <Sidebar />}
             <main className={cn(
                 "flex-1 overflow-auto bg-background",
-                !isWorldMap && "p-6" // Only add padding if NOT world map
+                (!isWorldMap && !isLocationScreen) && "p-6" // Remove padding for maps and immersive location screens
             )}>
                 {children}
             </main>

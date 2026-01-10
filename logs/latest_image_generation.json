@@ -124,7 +124,7 @@
     "inputs": {
       "name": "positive_prompt",
       "type": "prompt (positive)",
-      "default": "Mike Jenson, 45-year-old, CEO, salt-and-pepper hair, sharp jawline, impeccably groomed, tailored suit, crisp white shirt, platinum Rolex, disciplined, luxury skincare"
+      "default": "cesar considine, 30-year-old, electrician, dark brown hair, graying temples, tousled hair, weathered face, faint lines, lean face, worn utility jacket"
     },
     "class_type": "ETN_Parameter",
     "_meta": {
@@ -184,7 +184,7 @@
     "inputs": {
       "name": "seed",
       "type": "number (integer)",
-      "default": 361995741,
+      "default": 241591385,
       "min": 16,
       "max": 1638700000
     },

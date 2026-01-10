@@ -272,11 +272,22 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                         <h4 className="type-ui-label text-muted-foreground mb-2">Characters Here</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {characters.filter(c => c.locationId === location.id).length > 0 ? (
-                                                characters.filter(c => c.locationId === location.id).map(char => (
-                                                    <span key={char.id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary text-secondary-foreground border border-border">
-                                                        {char.basicInfo.name}
-                                                    </span>
-                                                ))
+                                                <div className="flex -space-x-2">
+                                                    {characters.filter(c => c.locationId === location.id).map(char => (
+                                                        <div key={char.id} className="relative group">
+                                                            <div className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-muted">
+                                                                <img
+                                                                    src={char.basicInfo.avatar}
+                                                                    alt={char.basicInfo.name}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                            <div className="absolute bottom-full mb-2 hidden group-hover:block whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded">
+                                                                {char.basicInfo.name}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             ) : (
                                                 <span className="type-body-xs text-muted-foreground italic">No characters assigned</span>
                                             )}

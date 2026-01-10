@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { useState } from 'react';
 import { useParleyStore } from '@/lib/store';
 import { useGameStore } from '@/lib/store/gameStore';
 import { useEntityStore } from '@/lib/entityStore';
@@ -8,12 +9,15 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WorldMapDisplay } from '@/components/world/WorldMapDisplay';
+import { LocationPopup } from '@/components/world/LocationPopup';
+import { Location } from '@/lib/types';
 
 export default function WorldMapPage() {
     const router = useRouter();
     const { worldMapImage } = useParleyStore();
     const gameStore = useGameStore();
     const entityStore = useEntityStore();
+    const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
     // Fallback to configuration locations if game state is not populated (e.g. dev/building mode)
     const displayLocations = (gameStore.locations && gameStore.locations.length > 0)
@@ -24,8 +28,13 @@ export default function WorldMapPage() {
         router.push('/');
     };
 
+    // Legacy generic chat entry - might not be needed if we force entry via Location Popup
     const handleEnterChat = () => {
         router.push('/chat');
+    };
+
+    const handleLocationClick = (location: Location) => {
+        setSelectedLocation(location);
     };
 
     return (
@@ -37,7 +46,7 @@ export default function WorldMapPage() {
                     <WorldMapDisplay
                         mapImage={worldMapImage}
                         locations={displayLocations}
-                        onLocationClick={handleEnterChat}
+                        onLocationClick={handleLocationClick}
                         className="w-full h-full bg-transparent border-0"
                     />
                 </div>
@@ -59,6 +68,12 @@ export default function WorldMapPage() {
                     <MessageSquare className="mr-2 h-5 w-5" /> Enter Chat
                 </Button>
             </div>
+
+            <LocationPopup
+                isOpen={!!selectedLocation}
+                onClose={() => setSelectedLocation(null)}
+                location={selectedLocation}
+            />
         </div>
     );
 }
