@@ -1,26 +1,21 @@
 import * as React from "react"
-import { Sun, Cloud, CloudRain, CloudSnow, CloudLightning, Moon, Sunset } from "lucide-react"
+import { Sun, Moon, Sunset, Sunrise } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export type TimeOfDay = 'Morning' | 'Afternoon' | 'Evening' | 'Night'
+// Keeping Weather type for prop compatibility if needed upstream, but not using it for visual logic per request
 export type Weather = 'Sunny' | 'Cloudy' | 'Rainy' | 'Snowy' | 'Stormy' | 'Clear'
 
 export interface GameTimeDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
     day: number
     timeOfDay: TimeOfDay
-    weather: Weather
+    weather?: Weather // Made optional as we might not need it for display anymore
 }
 
-const getTimeIcon = (time: TimeOfDay, weather: Weather) => {
-    // Weather takes precedence for precipitation/storm
-    if (weather === 'Rainy') return CloudRain
-    if (weather === 'Snowy') return CloudSnow
-    if (weather === 'Stormy') return CloudLightning
-    if (weather === 'Cloudy') return Cloud
-
-    // For Clear/Sunny, use time-based icons
+const getTimeIcon = (time: TimeOfDay) => {
     switch (time) {
         case 'Morning':
+            return Sunrise
         case 'Afternoon':
             return Sun
         case 'Evening':
@@ -32,29 +27,19 @@ const getTimeIcon = (time: TimeOfDay, weather: Weather) => {
     }
 }
 
-const getStyles = (time: TimeOfDay, weather: Weather) => {
-    // Base styles for time of day
-    let styles = "bg-sky-400 text-yellow-100 border-sky-500" // Default/Morning
-
+const getStyles = (time: TimeOfDay) => {
     switch (time) {
+        case 'Morning':
+            return "bg-sky-300 text-yellow-50 border-sky-400"
         case 'Afternoon':
-            styles = "bg-sky-500 text-yellow-50 border-sky-600"
-            break
+            return "bg-sky-500 text-yellow-100 border-sky-600"
         case 'Evening':
-            styles = "bg-orange-400 text-orange-50 border-orange-500"
-            break
+            return "bg-orange-400 text-orange-50 border-orange-500"
         case 'Night':
-            styles = "bg-indigo-950 text-indigo-100 border-indigo-900"
-            break
+            return "bg-indigo-950 text-indigo-100 border-indigo-900"
+        default:
+            return "bg-sky-400 text-yellow-100 border-sky-500"
     }
-
-    // Weather overrides
-    if (weather === 'Rainy') styles = "bg-blue-700 text-blue-100 border-blue-800"
-    if (weather === 'Stormy') styles = "bg-slate-700 text-yellow-100 border-slate-800"
-    if (weather === 'Snowy') styles = "bg-slate-200 text-slate-600 border-slate-300"
-    if (weather === 'Cloudy') styles = "bg-slate-400 text-slate-100 border-slate-500"
-
-    return styles
 }
 
 export function GameTimeDisplay({
@@ -64,30 +49,33 @@ export function GameTimeDisplay({
     className,
     ...props
 }: GameTimeDisplayProps) {
-    const Icon = getTimeIcon(timeOfDay, weather)
-    const colorClass = getStyles(timeOfDay, weather)
+    const Icon = getTimeIcon(timeOfDay)
+    const colorClass = getStyles(timeOfDay)
 
     return (
         <div
             className={cn(
-                "inline-flex items-center relative",
+                "inline-flex items-center relative gap-2",
                 className
             )}
             {...props}
         >
-            {/* Day Container */}
-            <div className="flex items-center justify-center bg-white border-2 border-slate-400 rounded-lg pl-6 pr-14 py-2 min-w-[160px] shadow-sm z-10">
-                <span className="text-xl font-display font-semibold text-slate-900 tracking-tight">
-                    Day {day} {timeOfDay}
-                </span>
-            </div>
-
-            {/* Weather/Time Icon Badge */}
-            <div className={cn(
-                "absolute -right-6 flex items-center justify-center w-14 h-14 rounded-full border-4 shadow-md z-20",
+             {/* Weather/Time Icon Badge */}
+             <div className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-full border-2 shadow-sm z-20",
                 colorClass
             )}>
-                <Icon className="w-8 h-8" strokeWidth={2.5} />
+                <Icon className="w-5 h-5" strokeWidth={2.5} />
+            </div>
+
+            {/* Day Text */}
+            <div className="flex items-center justify-center bg-background/80 backdrop-blur-sm border border-border rounded-md px-3 py-1 shadow-sm">
+                <span className="text-sm font-display font-semibold text-foreground tracking-wide whitespace-nowrap">
+                    Day {day}
+                    <span className="hidden sm:inline-block ml-1 opacity-70 text-xs font-normal uppercase tracking-wider">
+                        {timeOfDay}
+                    </span>
+                </span>
             </div>
         </div>
     )
