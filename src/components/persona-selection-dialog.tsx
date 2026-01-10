@@ -27,7 +27,7 @@ export function PersonaSelectionDialog({ open, onOpenChange, personas, onSelect 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl w-full">
+            <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <DialogHeader className="text-center sm:text-center mb-4">
                     <DialogTitle className="text-3xl font-display uppercase tracking-widest text-primary">Select Your Persona</DialogTitle>
                     <DialogDescription className="font-sans text-lg">
@@ -36,8 +36,8 @@ export function PersonaSelectionDialog({ open, onOpenChange, personas, onSelect 
                 </DialogHeader>
 
                 <div className="py-6">
-                    <ScrollArea className="w-full whitespace-nowrap rounded-md border bg-secondary/20 p-4" orientation="horizontal">
-                        <div className="flex w-max space-x-4 p-4">
+                    <div className="w-full overflow-x-auto whitespace-nowrap rounded-md border bg-secondary/20 p-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                        <div className="flex w-max space-x-4 p-4 min-w-full">
                             {personas.map((persona) => (
                                 <PersonaCard
                                     key={persona.id}
@@ -48,7 +48,7 @@ export function PersonaSelectionDialog({ open, onOpenChange, personas, onSelect 
                                 />
                             ))}
                         </div>
-                    </ScrollArea>
+                    </div>
                 </div>
 
                 <div className="flex justify-end gap-4 mt-4">

@@ -28,11 +28,6 @@ export default function WorldMapPage() {
         router.push('/');
     };
 
-    // Legacy generic chat entry - might not be needed if we force entry via Location Popup
-    const handleEnterChat = () => {
-        router.push('/chat');
-    };
-
     const handleLocationClick = (location: Location) => {
         setSelectedLocation(location);
     };
@@ -63,17 +58,11 @@ export default function WorldMapPage() {
                 </Button>
             </div>
 
-            <div className="absolute bottom-8 right-8 z-10 pointer-events-none">
-                <Button size="lg" onClick={handleEnterChat} className="pointer-events-auto shadow-lg shadow-primary/20 animate-pulse hover:animate-none">
-                    <MessageSquare className="mr-2 h-5 w-5" /> Enter Chat
-                </Button>
-            </div>
-
             <LocationPopup
                 isOpen={!!selectedLocation}
                 onClose={() => setSelectedLocation(null)}
                 location={selectedLocation}
             />
-        </div>
+        </div >
     );
 }

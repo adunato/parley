@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Relationship } from "@/lib/types";
 import { useParleyStore } from "@/lib/store";
 import { useGameStore } from "@/lib/store/gameStore"; // New import
@@ -18,6 +19,8 @@ import { PRQC } from "@/lib/types";
 
 
 export default function ChatPage() {
+    const router = useRouter();
+
     const {
         // clearChat, // Moving clearChat to gameStore
         _hasHydrated,
@@ -306,6 +309,7 @@ export default function ChatPage() {
         clearCumulativeRelationshipDelta(); // Just in case
         clearChat();
         setIsChatActive(false);
+        router.push('/world_map');
     };
 
     const handleNewChat = () => {
