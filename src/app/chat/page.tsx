@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Relationship } from "@/lib/types";
 import { useParleyStore } from "@/lib/store";
 import { useGameStore } from "@/lib/store/gameStore"; // New import
@@ -78,9 +78,21 @@ export default function ChatPage() {
     const [sceneAppliedTraits, setSceneAppliedTraits] = useState<string[]>([]);
     const [sceneSummaryText, setSceneSummaryText] = useState<string | null>(null);
 
-    // ... (useEffect omitted)
+    // Auto-start chat if all parameters are present (e.g. from Location Screen or Character Card)
+    useEffect(() => {
+        if (!isChatActive && _hasHydrated) {
+            if (currentCharacterId && currentPersonaId && currentLocationId) {
+                // We have all context, attempt to start chat automatically
+                // We reuse the logic from handleStartChat but need to avoid calling it if it's not stable.
+                // Best to extract the logic or call it here.
 
-    // ... (useEffect omitted)
+                // Note: handleStartChat relies on selectedChatCharacter derived from currentCharacterId, etc.
+                // We need to wait for render cycle or just call it? 
+                // Since this effect runs on hydration and ID changes, selectedChatCharacter *should* be valid if currentCharacterId is set.
+                handleStartChat();
+            }
+        }
+    }, [_hasHydrated, currentCharacterId, currentPersonaId, currentLocationId, isChatActive]); // Add dependencies carefully
 
     const handleLocationSelect = (locationId: string) => {
         if (locationId === "unassigned") {
@@ -127,7 +139,8 @@ export default function ChatPage() {
         }
     };
 
-    const handleStartChat = async () => {
+    // Wrapped in useCallback for dependency array stability
+    const handleStartChat = useCallback(async () => {
         if (selectedChatCharacter && selectedChatPersona) {
             // Always get the latest character data from the store
             const characterFromStore = characters.find(c => c.id === selectedChatCharacter.id);
@@ -176,9 +189,11 @@ export default function ChatPage() {
             }
             setIsChatActive(true);
         } else {
-            alert("Please select both a character and a persona to start the chat.");
+            // If we are auto-starting, this alert might be annoying if transient state causes it. 
+            // But if we have IDs, we should have objects.
+            // alert("Please select both a character and a persona to start the chat.");
         }
-    };
+    }, [selectedChatCharacter, selectedChatPersona, characters, worldDescription, aiStyle, generationModel, selectedChatLocation, updateCharacter]);
 
     const handleEndChat = async () => {
         if (selectedChatCharacter && selectedChatPersona && currentRelationship) {

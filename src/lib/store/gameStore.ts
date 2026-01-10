@@ -91,6 +91,10 @@ export const useGameStore = create<GameState>()(
                     // Keep previous selection if valid, or reset? Resetting is safer for a "New Game".
                     currentLocationId: null,
                     currentCharacterId: null,
+                    // Requirement: Pick first persona from the list
+                    currentPersonaId: clonedConfig.playerPersonas && clonedConfig.playerPersonas.length > 0
+                        ? clonedConfig.playerPersonas[0].id
+                        : null,
                 });
             },
 
