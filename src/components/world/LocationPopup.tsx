@@ -30,7 +30,22 @@ export function LocationPopup({ isOpen, onClose, location }: LocationPopupProps)
 
     if (!location) return null;
 
-    const locationCharacters = characters.filter(c => c.locationId === location.id);
+    // Filter characters and sync avatars from EntityStore (Config) to ensure visuals are up to date even in Game State
+    const locationCharacters = characters
+        .filter(c => c.locationId === location.id)
+        .map(char => {
+            const configChar = entityCharacters.find(ec => ec.id === char.id);
+            if (configChar && configChar.basicInfo.avatar) {
+                return {
+                    ...char,
+                    basicInfo: {
+                        ...char.basicInfo,
+                        avatar: configChar.basicInfo.avatar
+                    }
+                };
+            }
+            return char;
+        });
 
     const handleVisit = () => {
         router.push(`/location/${location.id}`);

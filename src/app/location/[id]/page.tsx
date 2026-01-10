@@ -33,8 +33,22 @@ export default function LocationScreen() {
     const locationId = params.id as string;
     const location = locations.find(l => l.id === locationId);
 
-    // Filter characters at this location
-    const locationCharacters = characters.filter(c => c.locationId === locationId);
+    // Filter characters and sync avatars from EntityStore (Config)
+    const locationCharacters = characters
+        .filter(c => c.locationId === locationId)
+        .map(char => {
+            const configChar = entityCharacters.find(ec => ec.id === char.id);
+            if (configChar && configChar.basicInfo.avatar) {
+                return {
+                    ...char,
+                    basicInfo: {
+                        ...char.basicInfo,
+                        avatar: configChar.basicInfo.avatar
+                    }
+                };
+            }
+            return char;
+        });
 
     if (!location) {
         return (
