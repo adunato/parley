@@ -1,0 +1,132 @@
+import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TagListEditor } from './tag-list-editor';
+import { WeightEditor } from './weight-editor';
+import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+
+interface BioEntityEditorProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    initialData?: EventNode | LifeEvent;
+    onSave: (data: any) => void;
+    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
+}
+
+export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type }: BioEntityEditorProps) {
+    const [id, setId] = useState('');
+    const [text, setText] = useState('');
+    const [provides, setProvides] = useState<string[]>([]);
+    const [requires, setRequires] = useState<string[]>([]);
+    const [weights, setWeights] = useState<{ [tag: string]: number; "DEFAULT": number }>({ "DEFAULT": 1 });
+
+    useEffect(() => {
+        if (open && initialData) {
+            setId(initialData.id);
+            setText(initialData.text);
+            setProvides(initialData.provides || []);
+            setWeights(initialData.weights);
+
+            if ('requires' in initialData) {
+                setRequires(initialData.requires || []);
+            } else {
+                setRequires([]);
+            }
+        } else if (open) {
+            // Reset for new
+            setId('');
+            setText('');
+            setProvides([]);
+            setRequires([]);
+            setWeights({ "DEFAULT": 1 });
+        }
+    }, [open, initialData]);
+
+    const handleSave = () => {
+        if (!id || !text) return;
+
+        const base = {
+            id,
+            text,
+            provides: provides.length > 0 ? provides : undefined,
+            weights
+        };
+
+        if (type === 'LIFE_EVENT') {
+            onSave(base as LifeEvent);
+        } else {
+            onSave({
+                ...base,
+                slot: type as SlotType,
+                requires: requires.length > 0 ? requires : undefined
+            } as EventNode);
+        }
+        onOpenChange(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>{initialData ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>ID (Unique)</Label>
+                            <Input
+                                value={id}
+                                onChange={e => setId(e.target.value)}
+                                disabled={!!initialData} // Lock ID on edit? Usually safer.
+                                placeholder="my_entity_id"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Narrative Text</Label>
+                        <Textarea
+                            value={text}
+                            onChange={e => setText(e.target.value)}
+                            placeholder="Description of the event..."
+                            className="min-h-[80px]"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <TagListEditor
+                                label="Provides Tags (Grants)"
+                                tags={provides}
+                                onChange={setProvides}
+                                placeholder="WEALTHY"
+                            />
+
+                            {type !== 'LIFE_EVENT' && (
+                                <TagListEditor
+                                    label="Requires Tags (Prerequisite)"
+                                    tags={requires}
+                                    onChange={setRequires}
+                                    placeholder="DEGREE"
+                                />
+                            )}
+                        </div>
+
+                        <div>
+                            <WeightEditor weights={weights} onChange={setWeights} />
+                        </div>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={!id || !text}>Save</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

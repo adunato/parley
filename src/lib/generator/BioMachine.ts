@@ -1,51 +1,21 @@
-import originsData from './data/origins.json';
-import educationData from './data/education.json';
-import careersData from './data/careers.json';
-import eventsData from './data/events.json';
 
-// --- Types ---
-
-export type SlotType = 'ORIGIN' | 'EDUCATION' | 'CAREER';
-
-export interface EventNode {
-    id: string;
-    slot: SlotType;
-    text: string;
-    requires?: string[];
-    provides?: string[];
-    weights: { [tag: string]: number; "DEFAULT": number };
-}
-
-export interface LifeEvent {
-    id: string;
-    text: string;
-    provides?: string[];
-    weights: { [tag: string]: number; "DEFAULT": number };
-}
-
-export interface BioGenerationRequest {
-    targetCareerId?: string; // Pinning constraint
-    targetOriginId?: string; // Pinning constraint
-    age?: number;
-}
-
-export interface BioState {
-    spine: EventNode[];
-    flesh: LifeEvent[];
-    tags: Set<string>;
-    age: number;
-}
+import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent } from './types';
 
 // --- The Engine ---
 
 export class BioMachine {
 
-    private origins: EventNode[] = originsData as EventNode[];
-    private education: EventNode[] = educationData as EventNode[];
-    private careers: EventNode[] = careersData as EventNode[];
-    private lifeEvents: LifeEvent[] = eventsData as LifeEvent[];
+    private origins: EventNode[];
+    private education: EventNode[];
+    private careers: EventNode[];
+    private lifeEvents: LifeEvent[];
 
-    constructor() { }
+    constructor(data: BioData) {
+        this.origins = data.origins;
+        this.education = data.education;
+        this.careers = data.careers;
+        this.lifeEvents = data.lifeEvents;
+    }
 
     public generate(request: BioGenerationRequest): BioState {
         const age = request.age || 30; // Default age
@@ -109,7 +79,7 @@ export class BioMachine {
         /*
         const requiredTagsFromEdu = new Set<string>();
         validEducation.forEach(e => e.requires?.forEach(t => requiredTagsFromEdu.add(t)));
-
+    
         if (requiredTagsFromEdu.size > 0) {
             validOrigins = validOrigins.filter(origin => {
                 if (!origin.provides) return false;

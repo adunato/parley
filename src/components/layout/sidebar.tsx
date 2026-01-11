@@ -11,7 +11,8 @@ import {
   Globe,
   MapPin,
   Home,
-  MessageSquare
+  MessageSquare,
+  Dna
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ export function Sidebar({ className }: SidebarProps) {
     { href: "/persona-config", label: "Personas", icon: UserCog },
     { href: "/world-info", label: "World Info", icon: Globe },
     { href: "/locations", label: "Locations", icon: MapPin },
+    { href: "/bio-config", label: "Bio Generator", icon: Dna },
     // Keeping Chat for dev convenience, though not strictly "configuration"
     { href: "/chat", label: "Chat", icon: MessageSquare },
   ];
