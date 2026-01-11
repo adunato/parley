@@ -10,9 +10,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Wand2, User, BookOpen, Loader2 } from "lucide-react";
 
 import { NameGenerator, SupportedCountry, GenderOption, Identity } from '@/lib/generator/NameGenerator';
-import { BioMachine, BioState, BioGenerationRequest, EventNode } from '@/lib/generator/BioMachine';
-import originsData from '@/lib/generator/data/origins.json';
-import careersData from '@/lib/generator/data/careers.json';
+import { BioMachine } from '@/lib/generator/BioMachine';
+import { BioState, BioGenerationRequest, EventNode } from '@/lib/generator/types';
+import { useBioStore } from '@/lib/store/bioStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ProceduralGeneratorDialogProps {
     open: boolean;
@@ -22,6 +23,16 @@ interface ProceduralGeneratorDialogProps {
 }
 
 export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
+    // Store
+    const bioData = useBioStore(useShallow(state => ({
+        origins: state.origins,
+        education: state.education,
+        careers: state.careers,
+        lifeEvents: state.lifeEvents
+    })));
+    const origins = bioData.origins;
+    const careers = bioData.careers;
+
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
     const [selectedState, setSelectedState] = useState<string>('random');
@@ -44,9 +55,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
     // Constants
     const SETTINGS_KEY = 'parley_proc_gen_settings';
-    const machine = useMemo(() => new BioMachine(), []);
-    const origins = originsData as EventNode[];
-    const careers = careersData as EventNode[];
+    const machine = useMemo(() => new BioMachine(bioData), [bioData]);
 
     // Effects
     useEffect(() => {

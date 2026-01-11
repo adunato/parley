@@ -150,26 +150,19 @@ To support "Pinning" (Reverse Generation), we use **Domain Reduction**.
 5. **Selection:**  
    * Now that the domains are "clean" (contain only valid logical precursors), run the standard Weighted Random selection to pick the specific path.
 
-## **6\. Development Roadmap**
+## **6\. Development Status**
 
-### **Phase 1: Data Ingestion**
+### **Implemented**
 
-* Generate JSON datasets for Origins, Education, and Careers using an LLM.  
-* Ensure all requires and provides tags utilize a shared dictionary (e.g., always use DEGREE\_MED, never MED\_DEGREE).
+*   **Logic Engine (Layer 1):** `BioMachine.solveSpine()` implements the constraint solver using bi-directional propagation (though currently simplified to forward selection with filtering).
+*   **Simulator (Layer 2):** `BioMachine.simulateFlesh()` tracks age and triggers probabilistic life events.
+*   **Data Ingestion:** System loads `origins.json`, `education.json`, `careers.json`, and `events.json` (formerly `parallel_events.json`).
+*   **LLM Integration (Layer 3):** `bio_writer` prompt is available in the PromptStore.
 
-### **Phase 2: The Logic Engine (TypeScript)**
+### **Planned / In Progress**
 
-* Implement the ConstraintSolver class.  
-* Implement the reduceDomains() function to handle the backward propagation.
-
-### **Phase 3: The Simulator**
-
-* Create the "Bucket" system for parallel life events (Health, Family, Crime).  
-* Implement the age-loop (iterating year 0 to current\_age).
-
-### **Phase 4: LLM Integration**
-
-* Design the prompt template that ingests the JSON state and outputs the final biography.
+*   **Configuration UI:** Exposing the underlying data entities (Origins, Education, Careers) for user editing via the Settings interface.
+*   **Advanced Constraints:** Full bidirectional propagation for complex pinning scenarios.
 
 ## **7\. Appendix: Sample Data Sets**
 
@@ -256,7 +249,7 @@ The final node of the spine. Note the strict requires field.
   }  
 \]
 
-### **7.4 parallel\_events.json (Layer 2\)**
+### **7.4 events.json (Layer 2)**
 
 These events are simulated in the "Flesh" layer. They do not block the career path but add narrative color.
 
