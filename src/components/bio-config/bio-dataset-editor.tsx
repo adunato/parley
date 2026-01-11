@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BioEntityEditor } from './bio-entity-editor';
 import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
@@ -20,6 +20,7 @@ interface BioDatasetEditorProps {
 export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title, description }: BioDatasetEditorProps) {
     const [search, setSearch] = useState('');
     const [editingItem, setEditingItem] = useState<EventNode | LifeEvent | undefined>(undefined);
+    const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     const filteredData = data.filter(item =>
@@ -27,20 +28,44 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
         item.text.toLowerCase().includes(search.toLowerCase())
     );
 
+    const existingIds = data.map(i => i.id);
+
     const handleCreate = () => {
         setEditingItem(undefined);
+        setEditorMode('create');
         setIsEditorOpen(true);
     };
 
     const handleEdit = (item: EventNode | LifeEvent) => {
         setEditingItem(item);
+        setEditorMode('edit');
+        setIsEditorOpen(true);
+    };
+
+    const handleDuplicate = (item: EventNode | LifeEvent) => {
+        // Create a copy with a suffixed ID
+        const copy = {
+            ...item,
+            id: `${item.id}_copy`
+        };
+        setEditingItem(copy);
+        setEditorMode('create'); // Treat as create so checks work correctly
         setIsEditorOpen(true);
     };
 
     const handleSave = (item: EventNode | LifeEvent) => {
-        if (editingItem) {
-            onUpdate(item);
+        if (editorMode === 'edit' && editingItem) {
+            // Check for ID Rename
+            if (editingItem.id !== item.id) {
+                // Renamed: Delete old + Add new
+                onDelete(editingItem.id);
+                onAdd(item);
+            } else {
+                // Same ID: Update
+                onUpdate(item);
+            }
         } else {
+            // Create (New or Duplicate)
             onAdd(item);
         }
     };
@@ -75,7 +100,7 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                             <TableHead>Text</TableHead>
                             <TableHead>Provides</TableHead>
                             <TableHead>Requires</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
+                            <TableHead className="w-[120px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -115,11 +140,14 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleEdit(item)}>
+                                        <div className="flex justify-end gap-1">
+                                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleEdit(item)} title="Edit">
                                                 <Pencil className="w-4 h-4" />
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDelete(item.id)}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleDuplicate(item)} title="Duplicate">
+                                                <Copy className="w-4 h-4" />
+                                            </Button>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDelete(item.id)} title="Delete">
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
@@ -137,6 +165,8 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                 initialData={editingItem}
                 onSave={handleSave}
                 type={type}
+                existingIds={existingIds}
+                mode={editorMode}
             />
         </div>
     );
