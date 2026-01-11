@@ -35,6 +35,8 @@ Players can generate complex, life-like characters with deep backstories in seco
 -   **Data Sources**: JSON files in `src/lib/generator/data/` (`origins.json`, `careers.json`, etc.) define the nodes and their requirements/tags.
 -   **Prompt**: `bio_writer` in `src/lib/store/promptStore.ts` converts the structured `BioState` into natural language.
 
+> **Detailed Design**: See [High-Level Design: Procedural Character Bio Generator](./High-Level%20Design_%20Procedural%20Character%20Bio%20Generator.md) for full architecture.
+
 ### 3. Relationship Engine (PRQC & OCEAN)
 **User Experience (How it works):**
 Relationships are modeled using the **PRQC** model (Patient-Reported Outcomes Measurement Information System - Relationship Quality), evolving along 5 dimensions:
