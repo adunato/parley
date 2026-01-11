@@ -752,7 +752,7 @@ export default function CharacterConfiguration() {
                                 <Card className="border-border shadow-sm">
                                     <div className="pt-6 relative">
                                         <SectionHeader title="Basic Information" />
-                                        <div className="absolute right-4 top-4">
+                                        <div className="absolute right-4 top-2">
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
