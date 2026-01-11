@@ -1,6 +1,12 @@
 import { BioMachine } from '../src/lib/generator/BioMachine';
 import { NameGenerator } from '../src/lib/generator/NameGenerator';
 
+import originsData from '../src/lib/generator/data/origins.json';
+import educationData from '../src/lib/generator/data/education.json';
+import careersData from '../src/lib/generator/data/careers.json';
+import eventsData from '../src/lib/generator/data/events.json';
+import { EventNode, LifeEvent } from '../src/lib/generator/types';
+
 async function runTests() {
     console.log("=== Testing NameGenerator ===");
     console.log("USA:", NameGenerator.generateIdentity('USA'));
@@ -8,7 +14,12 @@ async function runTests() {
     console.log("France:", NameGenerator.generateIdentity('France'));
 
     console.log("\n=== Testing BioMachine ===");
-    const machine = new BioMachine();
+    const machine = new BioMachine({
+        origins: originsData as EventNode[],
+        education: educationData as EventNode[],
+        careers: careersData as EventNode[],
+        lifeEvents: eventsData as LifeEvent[]
+    });
 
     console.log("\n--- Test 1: Random Generation ---");
     const resultRandom = machine.generate({ age: 25 });

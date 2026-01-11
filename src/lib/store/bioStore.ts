@@ -32,6 +32,13 @@ interface BioStoreState {
     updateLifeEvent: (item: LifeEvent) => void;
     deleteLifeEvent: (id: string) => void;
 
+    setData: (data: {
+        origins: EventNode[];
+        education: EventNode[];
+        careers: EventNode[];
+        lifeEvents: LifeEvent[];
+    }) => void;
+
     // Computed
     getAllData: () => {
         origins: EventNode[];
@@ -84,6 +91,9 @@ export const useBioStore = create<BioStoreState>()(
                 lifeEvents: state.lifeEvents.filter(i => i.id !== id)
             })),
 
+            // Bulk Set (for migration)
+            setData: (data) => set(data),
+
             getAllData: () => ({
                 origins: get().origins,
                 education: get().education,
@@ -99,17 +109,20 @@ export const useBioStore = create<BioStoreState>()(
             storage: createJSONStorage(() => DexieStorageAdapter),
             onRehydrateStorage: () => (state) => {
                 if (state) {
-                    state.setHasHydrated(true);
-
-                    // Migration Logic: If empty, load defaults
-                    const { origins, education, careers, lifeEvents } = state;
+                    // Check if empty and migrate
+                    const { origins, education, careers } = state;
                     if (origins.length === 0 && education.length === 0 && careers.length === 0) {
                         console.log("BioStore: Migrating default data...");
-                        state.origins = originsData as EventNode[];
-                        state.education = educationData as EventNode[];
-                        state.careers = careersData as EventNode[];
-                        state.lifeEvents = eventsData as LifeEvent[];
+                        // Use action to update state cleanly
+                        state.setData({
+                            origins: originsData as EventNode[],
+                            education: educationData as EventNode[],
+                            careers: careersData as EventNode[],
+                            lifeEvents: eventsData as LifeEvent[]
+                        });
                     }
+
+                    state.setHasHydrated(true);
                 }
             },
         }
