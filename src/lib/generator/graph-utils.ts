@@ -1,9 +1,9 @@
-import { Node, Edge, Position } from 'reactflow';
+import { Node, Edge, Position, MarkerType } from 'reactflow';
 import dagre from 'dagre';
 import { EventNode, BioData } from '@/lib/generator/types';
 
-const NODE_WIDTH = 250;
-const NODE_HEIGHT = 80;
+const NODE_WIDTH = 300;
+const NODE_HEIGHT = 200;
 
 export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'LR') => {
     const dagreGraph = new dagre.graphlib.Graph();
@@ -45,20 +45,12 @@ export function buildBioGraph(data: BioData) {
     const addNode = (item: EventNode, type: string) => {
         nodes.push({
             id: item.id,
-            type: 'default', // Using default for now, can upgrade to custom later
+            type: 'bioNode',
             data: {
-                label: item.text.length > 30 ? item.text.substring(0, 30) + '...' : item.text,
-                fullData: item
+                item,
+                type
             },
-            position: { x: 0, y: 0 }, // Will be set by dagre
-            style: {
-                width: 240,
-                fontSize: '10px',
-                background: type === 'ORIGIN' ? '#e2e8f0' : type === 'EDUCATION' ? '#fee2e2' : '#dbeafe',
-                border: '1px solid #94a3b8',
-                borderRadius: '4px',
-                padding: '8px'
-            }
+            position: { x: 0, y: 0 },
         });
     };
 
@@ -90,8 +82,14 @@ export function buildBioGraph(data: BioData) {
                     label: matching.join(', '),
                     type: 'smoothstep',
                     animated: false,
-                    style: { stroke: '#cbd5e1' },
-                    labelStyle: { fill: '#64748b', fontSize: 10 }
+                    width: 240,
+                    fontSize: '10px',
+                    style: { stroke: '#94a3b8', strokeWidth: 2 },
+                    labelStyle: { fill: '#475569', fontWeight: 700, fontSize: 10 },
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#94a3b8',
+                    },
                 });
             }
         });

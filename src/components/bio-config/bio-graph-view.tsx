@@ -16,6 +16,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 
+import { BioNode } from "@/components/bio-config/bio-node";
+
 export function BioGraphView() {
     // 1. Get Data
     const bioData = useBioStore(useShallow(state => ({
@@ -42,7 +44,7 @@ export function BioGraphView() {
     }, [bioData.origins, bioData.education, bioData.careers]);
 
     // Graph Config
-    const nodeTypes = useMemo(() => ({}), []);
+    const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
 
     return (
         <div className="h-[600px] w-full border rounded-md bg-slate-50 relative">
