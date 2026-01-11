@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
+import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { useBioStore } from "@/lib/store/bioStore";
 
 export default function BioConfigPage() {
@@ -16,13 +17,22 @@ export default function BioConfigPage() {
                 </p>
             </div>
 
-            <Tabs defaultValue="origins" className="space-y-4">
+            <Tabs defaultValue="graph" className="space-y-4">
                 <TabsList>
+                    <TabsTrigger value="graph">Graph View</TabsTrigger>
                     <TabsTrigger value="origins">Origins</TabsTrigger>
                     <TabsTrigger value="education">Education</TabsTrigger>
                     <TabsTrigger value="careers">Careers</TabsTrigger>
                     <TabsTrigger value="events">Life Events</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="graph" className="space-y-4">
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-semibold tracking-tight">Dependency Graph</h2>
+                        <p className="text-sm text-muted-foreground">Visualizes the flow from Origins to Careers based on tag requirements.</p>
+                    </div>
+                    <BioGraphView />
+                </TabsContent>
 
                 <TabsContent value="origins" className="space-y-4">
                     <BioDatasetEditor
