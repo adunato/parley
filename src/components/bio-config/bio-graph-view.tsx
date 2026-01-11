@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import ReactFlow, {
     Background,
     Controls,
+    ControlButton,
     MiniMap,
     useNodesState,
     useEdgesState,
@@ -14,7 +15,7 @@ import { useBioStore } from '@/lib/store/bioStore';
 import { buildBioGraph } from '@/lib/generator/graph-utils';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Maximize, Minimize } from "lucide-react";
 
 import { BioNode } from "@/components/bio-config/bio-node";
 import { BioGraphProvider } from "./bio-graph-context";
@@ -33,6 +34,10 @@ export function BioGraphView() {
     // 2. React Flow State
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+    // Graph Container Ref
+    const graphContainerRef = useRef<HTMLDivElement>(null);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Edit State
     const [editingEntity, setEditingEntity] = useState<{ item: any, type: string } | null>(null);
@@ -70,6 +75,31 @@ export function BioGraphView() {
         console.log(`[BioGraphView] Effect runs. Mode=${layoutMode}, Center=${centerId}`);
         performLayout();
     }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, layoutMode, centerId]);
+
+    // Full Screen Handler
+    const toggleFullScreen = () => {
+        if (!graphContainerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            graphContainerRef.current.requestFullscreen()
+                .then(() => setIsFullScreen(true))
+                .catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+        } else {
+            document.exitFullscreen()
+                .then(() => setIsFullScreen(false));
+        }
+    };
+
+    // Listen for fullscreen change (ESC key)
+    useEffect(() => {
+        const handleChange = () => {
+            setIsFullScreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleChange);
+        return () => document.removeEventListener('fullscreenchange', handleChange);
+    }, []);
 
     // Handle Save from Editor
     const { setData } = useBioStore();
@@ -120,7 +150,10 @@ export function BioGraphView() {
 
     return (
         <BioGraphProvider edges={edges}>
-            <div className="h-[600px] w-full border rounded-md bg-slate-50 relative">
+            <div
+                ref={graphContainerRef}
+                className={`w-full border rounded-md bg-slate-50 relative ${isFullScreen ? 'h-screen w-screen rounded-none' : 'h-[600px]'}`}
+            >
                 <ReactFlow
                     nodes={nodes}
                     edges={edges}
@@ -130,7 +163,15 @@ export function BioGraphView() {
                     fitView
                 >
                     <Background color="#ccc" gap={20} />
-                    <Controls />
+                    <Controls>
+                        <ControlButton onClick={toggleFullScreen} title={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                            {isFullScreen ? (
+                                <Minimize className="h-4 w-4" />
+                            ) : (
+                                <Maximize className="h-4 w-4" />
+                            )}
+                        </ControlButton>
+                    </Controls>
                     <MiniMap nodeStrokeWidth={3} zoomable pannable />
                     <Panel position="top-right">
                         <Button size="sm" variant="outline" onClick={() => {
@@ -143,19 +184,29 @@ export function BioGraphView() {
                         </Button>
                     </Panel>
                 </ReactFlow>
+                {/* Ensure Editor and Guide render when in fullscreen too, as they are children of Provider but NOT children of this DIV in original code structure? 
+                    Wait, looking at original code structure:
+                    <BioGraphProvider>
+                        <div ref={container}> <ReactFlow> ... </ReactFlow> </div>
+                        <Editor />
+                        <Guide />
+                    </BioGraphProvider>
+                    
+                    If I fullscreen the DIV, Editor and Guide will be HIDDEN because they are outside the div.
+                    I must move Editor and Guide INSIDE the full screened div.
+                */}
+                {editingEntity && (
+                    <BioEntityEditor
+                        open={!!editingEntity}
+                        onOpenChange={(open) => !open && setEditingEntity(null)}
+                        type={editingEntity.type as any}
+                        initialData={editingEntity.item}
+                        onSave={handleSaveEntity}
+                    />
+                )}
+
+                <BioGraphGuide />
             </div>
-
-            {editingEntity && (
-                <BioEntityEditor
-                    open={!!editingEntity}
-                    onOpenChange={(open) => !open && setEditingEntity(null)}
-                    type={editingEntity.type as any}
-                    initialData={editingEntity.item}
-                    onSave={handleSaveEntity}
-                />
-            )}
-
-            <BioGraphGuide />
         </BioGraphProvider>
     );
 }
