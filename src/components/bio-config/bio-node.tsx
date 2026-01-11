@@ -23,12 +23,14 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
     const borderColor =
         type === 'ORIGIN' ? 'border-emerald-500' :
             type === 'EDUCATION' ? 'border-blue-500' :
-                type === 'CAREER' ? 'border-purple-500' : 'border-gray-500';
+                type === 'CAREER' ? 'border-purple-500' :
+                    type === 'LIFE_EVENT' ? 'border-orange-500' : 'border-gray-500';
 
     const headerBg =
         type === 'ORIGIN' ? 'bg-emerald-50' :
             type === 'EDUCATION' ? 'bg-blue-50' :
-                type === 'CAREER' ? 'bg-purple-50' : 'bg-gray-50';
+                type === 'CAREER' ? 'bg-purple-50' :
+                    type === 'LIFE_EVENT' ? 'bg-orange-50' : 'bg-gray-50';
 
     return (
         <Card className={cn(

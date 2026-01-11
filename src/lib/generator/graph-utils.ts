@@ -57,6 +57,7 @@ export function buildBioGraph(data: BioData) {
     data.origins.forEach(o => addNode(o, 'ORIGIN'));
     data.education.forEach(e => addNode(e, 'EDUCATION'));
     data.careers.forEach(c => addNode(c, 'CAREER'));
+    data.lifeEvents.forEach(e => addNode(e, 'LIFE_EVENT'));
 
     // Edges: Origin -> Education
     // Logic: If Origins provides tags that Education requires
@@ -66,10 +67,6 @@ export function buildBioGraph(data: BioData) {
 
         data.education.forEach(edu => {
             if (!edu.requires) {
-                // If education requires NOTHING, does it come from ANY Origin? 
-                // Or is it a generic start? 
-                // For graph clarity, maybe connects to Generic Origins?
-                // Let's only map EXPLICIT dependencies for now to reduce noise.
                 return;
             }
 
@@ -82,8 +79,6 @@ export function buildBioGraph(data: BioData) {
                     label: matching.join(', '),
                     type: 'smoothstep',
                     animated: false,
-                    width: 240,
-                    fontSize: '10px',
                     style: { stroke: '#94a3b8', strokeWidth: 2 },
                     labelStyle: { fill: '#475569', fontWeight: 700, fontSize: 10 },
                     markerEnd: {
@@ -112,8 +107,44 @@ export function buildBioGraph(data: BioData) {
                     label: matching.join(', '),
                     type: 'smoothstep',
                     animated: false,
-                    style: { stroke: '#94a3b8' },
-                    labelStyle: { fill: '#64748b', fontSize: 10 }
+                    style: { stroke: '#94a3b8', strokeWidth: 2 },
+                    labelStyle: { fill: '#475569', fontWeight: 700, fontSize: 10 },
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#94a3b8',
+                    },
+                });
+            }
+        });
+    });
+
+    // Edges: Influences (Nodes -> Life Events)
+    // Logic: If Node provides TAG, and LifeEvent has weight for TAG
+    const allProviders = [...data.origins, ...data.education, ...data.careers];
+
+    data.lifeEvents.forEach(event => {
+        const weightTags = Object.keys(event.weights).filter(k => k !== 'DEFAULT');
+        if (weightTags.length === 0) return;
+        const weightTagsSet = new Set(weightTags);
+
+        allProviders.forEach(provider => {
+            if (!provider.provides) return;
+
+            const matching = provider.provides.filter(t => weightTagsSet.has(t));
+            if (matching.length > 0) {
+                edges.push({
+                    id: `${provider.id}-${event.id}`,
+                    source: provider.id,
+                    target: event.id,
+                    label: matching.join(', '),
+                    type: 'smoothstep',
+                    animated: true, // Dotted/Animated for influence
+                    style: { stroke: '#f97316', strokeDasharray: '5,5', strokeWidth: 1.5 }, // Orange, dotted
+                    labelStyle: { fill: '#ea580c', fontSize: 9 },
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#f97316',
+                    },
                 });
             }
         });
