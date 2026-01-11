@@ -147,7 +147,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="w-5 h-5" />
@@ -160,7 +160,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
                 <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
                     {/* LEFT COLUMN: Controls */}
-                    <div className="col-span-4 space-y-6 border-r pr-6 overflow-y-auto">
+                    <div className="col-span-4 space-y-6 border-r pr-6 pb-6 overflow-y-auto">
 
                         <div className="space-y-4">
                             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">1. Identity Settings</h3>
