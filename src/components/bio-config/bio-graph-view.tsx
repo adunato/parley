@@ -111,7 +111,7 @@ export function BioGraphView() {
     const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
 
     return (
-        <BioGraphProvider>
+        <BioGraphProvider edges={edges}>
             <div className="h-[600px] w-full border rounded-md bg-slate-50 relative">
                 <ReactFlow
                     nodes={nodes}

@@ -5,20 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { EventNode, LifeEvent } from "@/lib/generator/types";
 import { useBioGraphContext } from './bio-graph-context';
-import { Pencil } from 'lucide-react'; // Import Pencil icon
+import { Pencil, Eye } from 'lucide-react'; // Import Pencil and Eye icons
 
 // Custom Node Component
 export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void }>) => {
     const { item, type } = data;
-    const { highlightedTag, setHighlightedTag } = useBioGraphContext();
+    const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds } = useBioGraphContext();
 
     const handleMouseEnter = (tag: string) => setHighlightedTag(tag);
     const handleMouseLeave = () => setHighlightedTag(null);
 
-    const isDimmed = highlightedTag !== null &&
-        !item.provides?.includes(highlightedTag) &&
-        !('requires' in item && item.requires?.includes(highlightedTag)) &&
-        !Object.keys(item.weights).includes(highlightedTag);
+    // Dims if:
+    // 1. A path is focused AND this node is NOT in the connected set.
+    // 2. A tag is highlighted AND this node doesn't have it (existing logic).
+    const isDimmed = (focusedNodeId !== null && !connectedNodeIds.has(item.id)) ||
+        (highlightedTag !== null &&
+            !item.provides?.includes(highlightedTag) &&
+            !('requires' in item && item.requires?.includes(highlightedTag)) &&
+            !Object.keys(item.weights).includes(highlightedTag));
 
     // Type Colors
     const borderColor =
@@ -40,6 +44,7 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             selected ? "ring-2 ring-primary ring-offset-2" : "",
             isDimmed ? "opacity-40 grayscale-[0.5]" : ""
         )}>
+            {/* Input Handle (Left) */}
             {type !== 'ORIGIN' && (
                 <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
             )}
@@ -53,18 +58,40 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                         {type}
                     </div>
                 </div>
-                {data.onEdit && (
+
+                <div className="flex items-center gap-1">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            data.onEdit(item);
+                            // Toggle focus
+                            if (focusedNodeId === item.id) {
+                                setFocusedNodeId(null);
+                            } else {
+                                setFocusedNodeId(item.id);
+                            }
                         }}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-black/5 rounded"
-                        title="Edit Entity"
+                        className={cn(
+                            "transition-colors p-1 rounded",
+                            focusedNodeId === item.id ? "text-primary bg-primary/10 ring-1 ring-primary" : "text-muted-foreground hover:text-foreground hover:bg-black/5"
+                        )}
+                        title="View Path (Dependencies & Influence)"
                     >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Eye className="h-3.5 w-3.5" />
                     </button>
-                )}
+
+                    {data.onEdit && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                data.onEdit!(item);
+                            }}
+                            className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-black/5 rounded"
+                            title="Edit Entity"
+                        >
+                            <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                    )}
+                </div>
             </CardHeader>
 
             <CardContent className="p-3 space-y-3">
