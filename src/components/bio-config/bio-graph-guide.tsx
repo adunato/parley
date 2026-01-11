@@ -80,8 +80,24 @@ export function BioGraphGuide() {
                             </div>
                             <div>
                                 <strong className="block mb-1">Weights (Probability)</strong>
-                                <div className="text-muted-foreground">
-                                    Tags modify weights. <code className="bg-muted px-1 rounded">RICH (x50)</code> means having the RICH tag creates a 50x multiplier for that event's chance.
+                                <div className="text-muted-foreground space-y-2">
+                                    <p>
+                                        Tags modify weights. <code className="bg-muted px-1 rounded">RICH (x50)</code> means having the RICH tag creates a 50x multiplier for that event's chance.
+                                    </p>
+                                    <div className="bg-muted/30 p-2 rounded text-[10px] border border-muted-foreground/20">
+                                        <div className="font-semibold mb-1">Example: Relative Probability</div>
+                                        <ul className="list-disc pl-3 space-y-0.5">
+                                            <li><span className="font-mono">Event A</span> (Default 1)</li>
+                                            <li><span className="font-mono">Event B</span> (Weight 50 via Tag)</li>
+                                        </ul>
+                                        <div className="mt-1 pt-1 border-t border-muted-foreground/20">
+                                            Total Weight: <span className="font-mono">51</span>
+                                            <div className="grid grid-cols-2 mt-0.5 gap-2">
+                                                <div>Chance A: 1/51 (~2%)</div>
+                                                <div>Chance B: 50/51 (~98%)</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

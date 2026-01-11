@@ -202,6 +202,8 @@ export function BioGraphView() {
                         type={editingEntity.type as any}
                         initialData={editingEntity.item}
                         onSave={handleSaveEntity}
+                        existingIds={nodes.map(n => n.id)}
+                        mode="edit"
                     />
                 )}
 
