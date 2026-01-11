@@ -2,14 +2,22 @@ import { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { EventNode, LifeEvent } from "@/lib/generator/types";
+import { useBioGraphContext } from './bio-graph-context';
 
 // Custom Node Component
 export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string }>) => {
     const { item, type } = data;
+    const { highlightedTag, setHighlightedTag } = useBioGraphContext();
+
+    const handleMouseEnter = (tag: string) => setHighlightedTag(tag);
+    const handleMouseLeave = () => setHighlightedTag(null);
+
+    const isDimmed = highlightedTag !== null &&
+        !item.provides?.includes(highlightedTag) &&
+        !('requires' in item && item.requires?.includes(highlightedTag)) &&
+        !Object.keys(item.weights).includes(highlightedTag);
 
     // Type Colors
     const borderColor =
@@ -26,7 +34,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
         <Card className={cn(
             "w-[280px] shadow-md transition-all duration-200",
             borderColor,
-            selected ? "ring-2 ring-primary ring-offset-2" : ""
+            selected ? "ring-2 ring-primary ring-offset-2" : "",
+            isDimmed ? "opacity-40 grayscale-[0.5]" : ""
         )}>
             {/* Input Handle (Left) */}
             {type !== 'ORIGIN' && (
@@ -54,7 +63,16 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase">Requires</div>
                         <div className="flex flex-wrap gap-1">
                             {item.requires.map(t => (
-                                <Badge key={t} variant="outline" className="text-[9px] px-1 py-0 h-4 border-red-200 text-red-700 bg-red-50">
+                                <Badge
+                                    key={t}
+                                    variant="outline"
+                                    className={cn(
+                                        "text-[9px] px-1 py-0 h-4 border-red-200 text-red-700 bg-red-50 cursor-pointer transition-all",
+                                        highlightedTag === t ? "ring-2 ring-red-500 scale-110 font-bold bg-red-100" : ""
+                                    )}
+                                    onMouseEnter={() => handleMouseEnter(t)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
                                     {t}
                                 </Badge>
                             ))}
@@ -68,7 +86,16 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                         <div className="text-[10px] font-semibold text-muted-foreground uppercase">Provides</div>
                         <div className="flex flex-wrap gap-1">
                             {item.provides.map(t => (
-                                <Badge key={t} variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-emerald-100 text-emerald-800 hover:bg-emerald-200">
+                                <Badge
+                                    key={t}
+                                    variant="secondary"
+                                    className={cn(
+                                        "text-[9px] px-1 py-0 h-4 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer transition-all",
+                                        highlightedTag === t ? "ring-2 ring-emerald-500 scale-110 font-bold bg-emerald-200" : ""
+                                    )}
+                                    onMouseEnter={() => handleMouseEnter(t)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
                                     {t}
                                 </Badge>
                             ))}
@@ -76,11 +103,26 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                     </div>
                 )}
 
-                {/* Weights (Only show if interesting, i.e. > 1 entry) */}
-                {Object.keys(item.weights).length > 1 && (
-                    <div className="pt-2 border-t">
-                        <div className="text-[10px] text-muted-foreground">
-                            {Object.keys(item.weights).length - 1} Special Weight(s)
+                {/* Weights */}
+                {Object.keys(item.weights).length > 0 && (
+                    <div className="pt-2 border-t space-y-1">
+                        <div className="text-[10px] font-semibold text-muted-foreground uppercase">Weights</div>
+                        <div className="grid grid-cols-2 gap-1">
+                            {Object.entries(item.weights).map(([tag, weight]) => (
+                                <div
+                                    key={tag}
+                                    className={cn(
+                                        "flex items-center justify-between text-[10px] bg-slate-100 rounded px-1.5 py-0.5 cursor-pointer transition-all",
+                                        highlightedTag === tag ? "ring-1 ring-slate-500 bg-slate-200" : ""
+                                    )}
+                                    title={`${tag}: ${weight}`}
+                                    onMouseEnter={() => handleMouseEnter(tag)}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    <span className="truncate max-w-[80px]">{tag}</span>
+                                    <span className="font-mono font-bold text-slate-600">{weight}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}

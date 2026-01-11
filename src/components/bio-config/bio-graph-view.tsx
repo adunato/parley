@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 
 import { BioNode } from "@/components/bio-config/bio-node";
+import { BioGraphProvider } from "./bio-graph-context";
 
 export function BioGraphView() {
     // 1. Get Data
@@ -47,25 +48,27 @@ export function BioGraphView() {
     const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
 
     return (
-        <div className="h-[600px] w-full border rounded-md bg-slate-50 relative">
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                nodeTypes={nodeTypes}
-                fitView
-            >
-                <Background color="#ccc" gap={20} />
-                <Controls />
-                <MiniMap nodeStrokeWidth={3} zoomable pannable />
-                <Panel position="top-right">
-                    <Button size="sm" variant="outline" onClick={performLayout}>
-                        <RefreshCcw className="w-4 h-4 mr-2" />
-                        Reset Layout
-                    </Button>
-                </Panel>
-            </ReactFlow>
-        </div>
+        <BioGraphProvider>
+            <div className="h-[600px] w-full border rounded-md bg-slate-50 relative">
+                <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    nodeTypes={nodeTypes}
+                    fitView
+                >
+                    <Background color="#ccc" gap={20} />
+                    <Controls />
+                    <MiniMap nodeStrokeWidth={3} zoomable pannable />
+                    <Panel position="top-right">
+                        <Button size="sm" variant="outline" onClick={performLayout}>
+                            <RefreshCcw className="w-4 h-4 mr-2" />
+                            Reset Layout
+                        </Button>
+                    </Panel>
+                </ReactFlow>
+            </div>
+        </BioGraphProvider>
     );
 }
