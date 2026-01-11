@@ -66,6 +66,9 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
         targets.forEach(t => {
             if (!visitedDown.has(t)) {
                 visitedDown.add(t);
+                // Keep the 'closest' level (lowest absolute value) or farthest?
+                // Standard layering usually wants longest path? 
+                // For centric, shortest path is fine to keep it compact.
                 levels.set(t, (levels.get(t) !== undefined ? Math.min(levels.get(t)!, lvl + 1) : lvl + 1));
                 queueDown.push({ id: t, lvl: lvl + 1 });
             }
@@ -82,30 +85,93 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
         sources.forEach(s => {
             if (!visitedUp.has(s)) {
                 visitedUp.add(s);
-                // If already set by downstream (loop?), usually we prefer downstream logic, but here we want upstream to be negative.
-                // Simple implementation: Just set it.
                 levels.set(s, lvl - 1);
                 queueUp.push({ id: s, lvl: lvl - 1 });
             }
         });
     }
 
-    // 2. Assign Positions
-    // Group nodes by level
+    // FILTER: Only include connected nodes (visitedUp U visitedDown)
+    const activeIds = new Set([...visitedUp, ...visitedDown]);
+    const activeNodes = nodes.filter(n => activeIds.has(n.id));
+    const activeEdges = edges.filter(e => activeIds.has(e.source) && activeIds.has(e.target));
+
+    // 2. Assign Positions with Barycenter Heuristic
+
+    // Group by Level
     const nodesByLevel = new Map<number, string[]>();
-    nodes.forEach(n => {
-        const lvl = levels.get(n.id);
-        // If unconnected to center, put them at Level 0
-        const safeLvl = lvl !== undefined ? lvl : 0;
-        if (!nodesByLevel.has(safeLvl)) nodesByLevel.set(safeLvl, []);
-        nodesByLevel.get(safeLvl)?.push(n.id);
+    let minLvl = 0;
+    let maxLvl = 0;
+
+    activeIds.forEach(id => {
+        const lvl = levels.get(id)!;
+        if (!nodesByLevel.has(lvl)) nodesByLevel.set(lvl, []);
+        nodesByLevel.get(lvl)?.push(id);
+        if (lvl < minLvl) minLvl = lvl;
+        if (lvl > maxLvl) maxLvl = lvl;
     });
 
-    const LEVEL_X_SPACING = 500;
-    const NODE_Y_SPACING = 300;
+    const LEVEL_X_SPACING = 400;
+    const NODE_Y_SPACING = 250;
 
-    nodesByLevel.forEach((ids, lvl) => {
-        ids.sort(); // Deterministic order
+    // Helper: Get Y position (or 0 if not set yet)
+    const getY = (id: string) => nodeMap.get(id)?.position?.y || 0;
+
+    // Initial Place: Level 0 (Center)
+    // We assume Level 0 has only ONE node (the center), or multiple if loops?
+    // BFS Up/Down from single point -> Level 0 is just centerId.
+    const centerNode = nodeMap.get(centerId);
+    if (centerNode) centerNode.position = { x: 0, y: 0 };
+
+    // Propagate Right (1 to Max)
+    for (let lvl = 1; lvl <= maxLvl; lvl++) {
+        const ids = nodesByLevel.get(lvl) || [];
+
+        // Sort by Average Y of Parents (in lvl-1)
+        ids.sort((a, b) => {
+            const getBarycenter = (nodeId: string) => {
+                const parents = incoming.get(nodeId)?.filter(p => levels.get(p) === lvl - 1) || [];
+                if (parents.length === 0) return 0;
+                const sum = parents.reduce((acc, pid) => acc + getY(pid), 0);
+                return sum / parents.length;
+            };
+            return getBarycenter(a) - getBarycenter(b);
+        });
+
+        // Assign Ys centered around parents? No, stack them, but center the stack.
+        // Better: Stack them centered around 0 to keep alignment with main flow.
+        // The Sort ensures relative order matches parents.
+        const count = ids.length;
+        const totalHeight = count * NODE_Y_SPACING;
+        const startY = -(totalHeight / 2) + (NODE_Y_SPACING / 2);
+
+        ids.forEach((id, index) => {
+            const node = nodeMap.get(id);
+            if (node) {
+                node.position = {
+                    x: lvl * LEVEL_X_SPACING,
+                    y: startY + (index * NODE_Y_SPACING)
+                };
+                node.targetPosition = Position.Left;
+                node.sourcePosition = Position.Right;
+            }
+        });
+    }
+
+    // Propagate Left (-1 to Min)
+    for (let lvl = -1; lvl >= minLvl; lvl--) {
+        const ids = nodesByLevel.get(lvl) || [];
+
+        // Sort by Average Y of Children (in lvl+1)
+        ids.sort((a, b) => {
+            const getBarycenter = (nodeId: string) => {
+                const children = outgoing.get(nodeId)?.filter(c => levels.get(c) === lvl + 1) || [];
+                if (children.length === 0) return 0;
+                const sum = children.reduce((acc, cid) => acc + getY(cid), 0);
+                return sum / children.length;
+            };
+            return getBarycenter(a) - getBarycenter(b);
+        });
 
         const count = ids.length;
         const totalHeight = count * NODE_Y_SPACING;
@@ -118,15 +184,13 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
                     x: lvl * LEVEL_X_SPACING,
                     y: startY + (index * NODE_Y_SPACING)
                 };
-
-                // Set logic specific handles? 
                 node.targetPosition = Position.Left;
                 node.sourcePosition = Position.Right;
             }
         });
-    });
+    }
 
-    return { nodes, edges };
+    return { nodes: activeNodes, edges: activeEdges };
 };
 
 export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' = 'default', centerId?: string) {
