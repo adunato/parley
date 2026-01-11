@@ -24,6 +24,7 @@ interface ProceduralGeneratorDialogProps {
 export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
+    const [selectedState, setSelectedState] = useState<string>('random');
     const [selectedGender, setSelectedGender] = useState<'random' | GenderOption>('random');
     const [age, setAge] = useState<number>(30);
     const [mode, setMode] = useState<'random' | 'custom'>('random');
@@ -46,7 +47,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
     // Handlers
     const handleGenerateIdentity = () => {
         const genderArg = selectedGender === 'random' ? undefined : selectedGender;
-        const id = NameGenerator.generateIdentity(country, genderArg);
+        const stateArg = selectedState === 'random' ? undefined : selectedState;
+        const id = NameGenerator.generateIdentity(country, genderArg, stateArg);
         setIdentity(id);
     };
 
@@ -126,7 +128,10 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">1. Identity Settings</h3>
                             <div className="space-y-2">
                                 <Label>Country of Origin</Label>
-                                <Select value={country} onValueChange={(v: any) => setCountry(v)}>
+                                <Select value={country} onValueChange={(v: any) => {
+                                    setCountry(v);
+                                    setSelectedState('random');
+                                }}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -137,6 +142,29 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {/* State/Region Selection */}
+                            {useMemo(() => {
+                                const states = NameGenerator.getStates(country);
+                                if (!states || states.length === 0) return null;
+
+                                return (
+                                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <Label>State / Region</Label>
+                                        <Select value={selectedState} onValueChange={setSelectedState}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Random" />
+                                            </SelectTrigger>
+                                            <SelectContent className="max-h-[200px]">
+                                                <SelectItem value="random">Random</SelectItem>
+                                                {states.map(s => (
+                                                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                );
+                            }, [country, selectedState])}
 
                             <div className="space-y-2">
                                 <Label>Gender</Label>

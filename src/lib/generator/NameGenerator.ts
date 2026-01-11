@@ -40,14 +40,14 @@ const LOCALE_MAP: Record<SupportedCountry, Faker> = {
 
 export class NameGenerator {
 
-    public static generateIdentity(country: SupportedCountry = 'USA', gender?: GenderOption): Identity {
+    public static generateIdentity(country: SupportedCountry = 'USA', gender?: GenderOption, state?: string): Identity {
         const fakerInstance = LOCALE_MAP[country] || fakerEN_US;
 
         const sex = gender || fakerInstance.person.sexType();
         const firstName = fakerInstance.person.firstName(sex);
         const lastName = fakerInstance.person.lastName();
         const city = fakerInstance.location.city();
-        const state = fakerInstance.location.state(); // Note: Not all locales have states, might be undefined/generic
+        const randomState = fakerInstance.location.state(); // Note: Not all locales have states, might be undefined/generic
 
         // Format location based on locale nuances if we wanted to be very specific, 
         // but typically "City, Country" or "City, State" is fine.
@@ -56,9 +56,17 @@ export class NameGenerator {
         let locationString = city;
         if (country === 'USA' || country === 'UK' || country === 'Germany') {
             // Countries where state/county is commonly cited
-            locationString = `${city}, ${state}`;
+            // If state is provided, use it. Otherwise random.
+            // Note: Faker's state() returns a random state from the locale. 
+            // If we have a specific state, we use it.
+            const selectedState = state || randomState;
+            locationString = `${city}, ${selectedState}`;
         } else {
-            locationString = `${city}, ${country}`;
+            if (state) {
+                locationString = `${city}, ${state}`;
+            } else {
+                locationString = `${city}, ${country}`;
+            }
         }
 
         return {
@@ -68,6 +76,23 @@ export class NameGenerator {
             country,
             gender: sex.charAt(0).toUpperCase() + sex.slice(1) // 'Male' or 'Female'
         };
+    }
+
+    public static getStates(country: SupportedCountry): string[] {
+        const fakerInstance = LOCALE_MAP[country];
+        // Accessing definitions safely. 
+        // Note: The type definition for faker v8+ might not expose definitions directly on the localized instance interface 
+        // identically to how the internal JS object structure is.
+        // However, based on our test script, `fakerInstance.definitions.location.state` existed dynamically.
+        // We might need to cast to 'any' to avoid TS errors if the types don't officially support it yet on the interface.
+
+        // @ts-ignore
+        const states = fakerInstance.definitions?.location?.state;
+
+        if (Array.isArray(states)) {
+            return states.sort();
+        }
+        return [];
     }
 
     public static getSupportedCountries(): SupportedCountry[] {
