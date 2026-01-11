@@ -1,6 +1,6 @@
 import { Node, Edge, Position, MarkerType } from 'reactflow';
 import dagre from 'dagre';
-import { EventNode, BioData } from '@/lib/generator/types';
+import { EventNode, BioData, LifeEvent } from '@/lib/generator/types';
 
 const NODE_WIDTH = 300;
 const NODE_HEIGHT = 200;
@@ -118,37 +118,57 @@ export function buildBioGraph(data: BioData) {
         });
     });
 
-    // Edges: Influences (Nodes -> Life Events)
-    // Logic: If Node provides TAG, and LifeEvent has weight for TAG
-    const allProviders = [...data.origins, ...data.education, ...data.careers];
+    // --- Helper: Add Influence Edges ---
+    // adds dotted orange edges if Source provides a tag that modifies Target's weight
+    const addInfluenceEdges = (sources: EventNode[], targets: (EventNode | LifeEvent)[]) => {
+        targets.forEach(target => {
+            const weightTags = Object.keys(target.weights);
+            if (weightTags.length === 0) return;
+            const weightTagsSet = new Set(weightTags);
 
-    data.lifeEvents.forEach(event => {
-        const weightTags = Object.keys(event.weights).filter(k => k !== 'DEFAULT');
-        if (weightTags.length === 0) return;
-        const weightTagsSet = new Set(weightTags);
+            sources.forEach(source => {
+                if (!source.provides) return;
 
-        allProviders.forEach(provider => {
-            if (!provider.provides) return;
+                // Find tags provided by source that affect target's weight
+                const matching = source.provides.filter(t => weightTagsSet.has(t));
 
-            const matching = provider.provides.filter(t => weightTagsSet.has(t));
-            if (matching.length > 0) {
-                edges.push({
-                    id: `${provider.id}-${event.id}`,
-                    source: provider.id,
-                    target: event.id,
-                    label: matching.join(', '),
-                    type: 'smoothstep',
-                    animated: true, // Dotted/Animated for influence
-                    style: { stroke: '#f97316', strokeDasharray: '5,5', strokeWidth: 1.5 }, // Orange, dotted
-                    labelStyle: { fill: '#ea580c', fontSize: 9 },
-                    markerEnd: {
-                        type: MarkerType.ArrowClosed,
-                        color: '#f97316',
-                    },
-                });
-            }
+                if (matching.length > 0) {
+                    const label = matching.map(t => `${t} (x${target.weights[t]})`).join(', ');
+
+                    // Check if an edge already exists (e.g. a Requirement edge) related to these two?
+                    // actually, Requirement edges are separate logical concepts (Blue solid vs Orange dotted).
+                    // We can have both. React Flow handles multiple edges between nodes if ids are unique.
+
+                    edges.push({
+                        id: `influence-${source.id}-${target.id}`,
+                        source: source.id,
+                        target: target.id,
+                        label: label,
+                        type: 'smoothstep',
+                        animated: true,
+                        style: { stroke: '#f97316', strokeDasharray: '5,5', strokeWidth: 1.5 }, // Orange, dotted
+                        labelStyle: { fill: '#ea580c', fontSize: 9 },
+                        markerEnd: {
+                            type: MarkerType.ArrowClosed,
+                            color: '#f97316',
+                        },
+                    });
+                }
+            });
         });
-    });
+    };
+
+    // 1. Influence: Origin -> Education
+    addInfluenceEdges(data.origins, data.education);
+
+    // 2. Influence: Origin + Education -> Career
+    // (Careers can be influenced by background or education)
+    const careerSources = [...data.origins, ...data.education];
+    addInfluenceEdges(careerSources, data.careers);
+
+    // 3. Influence: Origin + Education + Career -> Life Events
+    const lifeEventSources = [...data.origins, ...data.education, ...data.careers];
+    addInfluenceEdges(lifeEventSources, data.lifeEvents);
 
     return getLayoutedElements(nodes, edges);
 }

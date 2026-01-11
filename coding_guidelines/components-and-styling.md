@@ -47,7 +47,64 @@ If your component is accepting too many props you might consider splitting it in
 
 For larger projects, it is a good idea to build abstractions around all the shared components. It makes the application more consistent and easier to maintain. Identify repetitions before creating the components to avoid wrong abstractions.
 
-[Component Library Example Code](../apps/react-vite/src/components/ui/button/button.tsx)
+```tsx
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+```
 
 It is a good idea to wrap 3rd party components as well in order to adapt them to the application's needs. It might be easier to make the underlying changes in the future without affecting the application's functionality.
 
@@ -101,4 +158,93 @@ With the rise of headless component libraries, there is another tier of componen
 
 [Storybook](https://storybook.js.org/) is a great tool for developing and testing components in isolation. Think of it as a catalogue of all the components your application is using. Very useful for developing and discoverability of components.
 
-[Storybook Story Example Code](../apps/react-vite/src/components/ui/button/button.stories.tsx)
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './button';
+
+const meta = {
+    title: 'UI/Button',
+    component: Button,
+    parameters: {
+        layout: 'centered',
+    },
+    tags: ['autodocs'],
+    argTypes: {
+        variant: {
+            control: 'select',
+            options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+        },
+        size: {
+            control: 'select',
+            options: ['default', 'sm', 'lg', 'icon'],
+        },
+    },
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+    args: {
+        children: 'Button',
+        variant: 'default',
+        size: 'default',
+    },
+};
+
+export const Secondary: Story = {
+    args: {
+        children: 'Secondary',
+        variant: 'secondary',
+    },
+};
+
+export const Destructive: Story = {
+    args: {
+        children: 'Destructive',
+        variant: 'destructive',
+    },
+};
+
+export const Outline: Story = {
+    args: {
+        children: 'Outline',
+        variant: 'outline',
+    },
+};
+
+export const Ghost: Story = {
+    args: {
+        children: 'Ghost',
+        variant: 'ghost',
+    },
+};
+
+export const Link: Story = {
+    args: {
+        children: 'Link',
+        variant: 'link',
+    },
+};
+
+export const Small: Story = {
+    args: {
+        children: 'Small Button',
+        size: 'sm',
+    },
+};
+
+export const Large: Story = {
+    args: {
+        children: 'Large Button',
+        size: 'lg',
+    },
+};
+
+export const Icon: Story = {
+    args: {
+        children: '🔔',
+        size: 'icon',
+    },
+};
+```

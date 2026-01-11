@@ -18,6 +18,7 @@ import { RefreshCcw } from "lucide-react";
 
 import { BioNode } from "@/components/bio-config/bio-node";
 import { BioGraphProvider } from "./bio-graph-context";
+import { BioGraphGuide } from './bio-graph-guide';
 
 export function BioGraphView() {
     // 1. Get Data
@@ -69,6 +70,8 @@ export function BioGraphView() {
                     </Panel>
                 </ReactFlow>
             </div>
+
+            <BioGraphGuide />
         </BioGraphProvider>
     );
 }
