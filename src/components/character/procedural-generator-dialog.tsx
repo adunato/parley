@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,10 +39,48 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
     // Loading States
     const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
+    // Persistence State
+    const [hasLoaded, setHasLoaded] = useState(false);
+
     // Constants
+    const SETTINGS_KEY = 'parley_proc_gen_settings';
     const machine = useMemo(() => new BioMachine(), []);
     const origins = originsData as EventNode[];
     const careers = careersData as EventNode[];
+
+    // Effects
+    useEffect(() => {
+        const saved = localStorage.getItem(SETTINGS_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.country) setCountry(parsed.country);
+                if (parsed.selectedState) setSelectedState(parsed.selectedState);
+                if (parsed.selectedGender) setSelectedGender(parsed.selectedGender);
+                if (parsed.age) setAge(parsed.age);
+                if (parsed.mode) setMode(parsed.mode);
+                if (parsed.targetOrigin) setTargetOrigin(parsed.targetOrigin);
+                if (parsed.targetCareer) setTargetCareer(parsed.targetCareer);
+            } catch (e) {
+                console.error("Failed to parse saved settings", e);
+            }
+        }
+        setHasLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (!hasLoaded) return;
+        const settings = {
+            country,
+            selectedState,
+            selectedGender,
+            age,
+            mode,
+            targetOrigin,
+            targetCareer
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }, [hasLoaded, country, selectedState, selectedGender, age, mode, targetOrigin, targetCareer]);
 
     // Handlers
     const handleGenerateIdentity = () => {
