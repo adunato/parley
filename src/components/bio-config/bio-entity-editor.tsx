@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +14,11 @@ interface BioEntityEditorProps {
     initialData?: EventNode | LifeEvent;
     onSave: (data: any) => void;
     type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
+    existingIds: string[];
+    mode?: 'create' | 'edit';
 }
 
-export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type }: BioEntityEditorProps) {
+export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, existingIds, mode = 'edit' }: BioEntityEditorProps) {
     const [id, setId] = useState('');
     const [text, setText] = useState('');
     const [provides, setProvides] = useState<string[]>([]);
@@ -45,8 +47,20 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type 
         }
     }, [open, initialData]);
 
+    const isDuplicateId = useMemo(() => {
+        if (!id) return false;
+        // If we are editing and the ID matches the initial ID, it's not a duplicate (it's the same item)
+        // But if we are in 'create' mode, even if it matches initialData (which might be a template), it IS a duplicate if it exists in the list.
+        // Wait, validation logic:
+        // Collision if: ID exists in list AND ( (Mode is Create) OR (Mode is Edit AND ID != originalID) )
+        if (mode === 'edit' && initialData && id === initialData.id) {
+            return false;
+        }
+        return existingIds.includes(id);
+    }, [id, existingIds, mode, initialData]);
+
     const handleSave = () => {
-        if (!id || !text) return;
+        if (!id || !text || isDuplicateId) return;
 
         const base = {
             id,
@@ -67,11 +81,13 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type 
         onOpenChange(false);
     };
 
+    const isEditing = mode === 'edit' && !!initialData;
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{initialData ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
+                    <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
@@ -81,9 +97,12 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type 
                             <Input
                                 value={id}
                                 onChange={e => setId(e.target.value)}
-                                disabled={!!initialData} // Lock ID on edit? Usually safer.
                                 placeholder="my_entity_id"
+                                className={isDuplicateId ? "border-red-500" : ""}
                             />
+                            {isDuplicateId && (
+                                <p className="text-xs text-red-500">ID already exists!</p>
+                            )}
                         </div>
                     </div>
 
@@ -124,7 +143,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type 
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSave} disabled={!id || !text}>Save</Button>
+                    <Button onClick={handleSave} disabled={!id || !text || isDuplicateId}>Save</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
