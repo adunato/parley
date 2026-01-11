@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +24,7 @@ interface ProceduralGeneratorDialogProps {
 export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
+    const [selectedState, setSelectedState] = useState<string>('random');
     const [selectedGender, setSelectedGender] = useState<'random' | GenderOption>('random');
     const [age, setAge] = useState<number>(30);
     const [mode, setMode] = useState<'random' | 'custom'>('random');
@@ -38,15 +39,54 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
     // Loading States
     const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
+    // Persistence State
+    const [hasLoaded, setHasLoaded] = useState(false);
+
     // Constants
+    const SETTINGS_KEY = 'parley_proc_gen_settings';
     const machine = useMemo(() => new BioMachine(), []);
     const origins = originsData as EventNode[];
     const careers = careersData as EventNode[];
 
+    // Effects
+    useEffect(() => {
+        const saved = localStorage.getItem(SETTINGS_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.country) setCountry(parsed.country);
+                if (parsed.selectedState) setSelectedState(parsed.selectedState);
+                if (parsed.selectedGender) setSelectedGender(parsed.selectedGender);
+                if (parsed.age) setAge(parsed.age);
+                if (parsed.mode) setMode(parsed.mode);
+                if (parsed.targetOrigin) setTargetOrigin(parsed.targetOrigin);
+                if (parsed.targetCareer) setTargetCareer(parsed.targetCareer);
+            } catch (e) {
+                console.error("Failed to parse saved settings", e);
+            }
+        }
+        setHasLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (!hasLoaded) return;
+        const settings = {
+            country,
+            selectedState,
+            selectedGender,
+            age,
+            mode,
+            targetOrigin,
+            targetCareer
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }, [hasLoaded, country, selectedState, selectedGender, age, mode, targetOrigin, targetCareer]);
+
     // Handlers
     const handleGenerateIdentity = () => {
         const genderArg = selectedGender === 'random' ? undefined : selectedGender;
-        const id = NameGenerator.generateIdentity(country, genderArg);
+        const stateArg = selectedState === 'random' ? undefined : selectedState;
+        const id = NameGenerator.generateIdentity(country, genderArg, stateArg);
         setIdentity(id);
     };
 
@@ -107,7 +147,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="w-5 h-5" />
@@ -120,13 +160,16 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
 
                 <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
                     {/* LEFT COLUMN: Controls */}
-                    <div className="col-span-4 space-y-6 border-r pr-6 overflow-y-auto">
+                    <div className="col-span-4 space-y-6 border-r pr-6 pl-1 pt-1 pb-6 overflow-y-auto">
 
                         <div className="space-y-4">
                             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">1. Identity Settings</h3>
                             <div className="space-y-2">
                                 <Label>Country of Origin</Label>
-                                <Select value={country} onValueChange={(v: any) => setCountry(v)}>
+                                <Select value={country} onValueChange={(v: any) => {
+                                    setCountry(v);
+                                    setSelectedState('random');
+                                }}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -137,6 +180,29 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {/* State/Region Selection */}
+                            {useMemo(() => {
+                                const states = NameGenerator.getStates(country);
+                                if (!states || states.length === 0) return null;
+
+                                return (
+                                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <Label>State / Region</Label>
+                                        <Select value={selectedState} onValueChange={setSelectedState}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Random" />
+                                            </SelectTrigger>
+                                            <SelectContent className="max-h-[200px]">
+                                                <SelectItem value="random">Random</SelectItem>
+                                                {states.map(s => (
+                                                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                );
+                            }, [country, selectedState])}
 
                             <div className="space-y-2">
                                 <Label>Gender</Label>
