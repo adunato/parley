@@ -64,6 +64,7 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
+                                console.log(`[BioNode] Reorganize clicked for ${item.id}`);
                                 data.onReorganize!(item.id);
                             }}
                             className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-black/5 rounded"

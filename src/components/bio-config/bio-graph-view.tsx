@@ -54,6 +54,7 @@ export function BioGraphView() {
                     setEditingEntity({ item, type: node.data.type });
                 },
                 onReorganize: (id: string) => {
+                    console.log(`[BioGraphView] onReorganize triggers. Setting mode=centric, centerId=${id}`);
                     setLayoutMode('centric');
                     setCenterId(id);
                 }
@@ -66,6 +67,7 @@ export function BioGraphView() {
 
     // 4. Effect: Re-layout on data change OR layout mode change
     useEffect(() => {
+        console.log(`[BioGraphView] Effect runs. Mode=${layoutMode}, Center=${centerId}`);
         performLayout();
     }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, layoutMode, centerId]);
 
