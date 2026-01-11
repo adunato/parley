@@ -16,9 +16,10 @@ interface BioEntityEditorProps {
     type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
     existingIds: string[];
     mode?: 'create' | 'edit';
+    container?: HTMLElement | null;
 }
 
-export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, existingIds, mode = 'edit' }: BioEntityEditorProps) {
+export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, existingIds, mode = 'edit', container }: BioEntityEditorProps) {
     const [id, setId] = useState('');
     const [text, setText] = useState('');
     const [provides, setProvides] = useState<string[]>([]);
@@ -85,7 +86,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent container={container} className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
                 </DialogHeader>
