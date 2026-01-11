@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { EventNode, LifeEvent } from "@/lib/generator/types";
 import { useBioGraphContext } from './bio-graph-context';
+import { Pencil } from 'lucide-react'; // Import Pencil icon
 
 // Custom Node Component
-export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string }>) => {
+export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void }>) => {
     const { item, type } = data;
     const { highlightedTag, setHighlightedTag } = useBioGraphContext();
 
@@ -39,18 +40,31 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             selected ? "ring-2 ring-primary ring-offset-2" : "",
             isDimmed ? "opacity-40 grayscale-[0.5]" : ""
         )}>
-            {/* Input Handle (Left) */}
             {type !== 'ORIGIN' && (
                 <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
             )}
 
-            <CardHeader className={cn("p-3 py-2 border-b", headerBg)}>
-                <CardTitle className="text-sm font-mono font-bold truncate" title={item.id}>
-                    {item.id}
-                </CardTitle>
-                <div className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">
-                    {type}
+            <CardHeader className={cn("p-3 py-2 border-b flex flex-row items-center justify-between space-y-0", headerBg)}>
+                <div className="flex flex-col overflow-hidden">
+                    <CardTitle className="text-sm font-mono font-bold truncate" title={item.id}>
+                        {item.id}
+                    </CardTitle>
+                    <div className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">
+                        {type}
+                    </div>
                 </div>
+                {data.onEdit && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            data.onEdit(item);
+                        }}
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-black/5 rounded"
+                        title="Edit Entity"
+                    >
+                        <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                )}
             </CardHeader>
 
             <CardContent className="p-3 space-y-3">
