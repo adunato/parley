@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
     Background,
     Controls,
@@ -35,21 +35,27 @@ export function BioGraphView() {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     // Edit State
-    const [editingEntity, setEditingEntity] = useNodesState<{ item: any, type: string } | null>(null);
+    const [editingEntity, setEditingEntity] = useState<{ item: any, type: string } | null>(null);
+
+    // Layout State
+    const [layoutMode, setLayoutMode] = useState<'default' | 'centric'>('default');
+    const [centerId, setCenterId] = useState<string | undefined>(undefined);
 
     // 3. Layout Function
     const performLayout = () => {
-        const layouted = buildBioGraph(bioData);
+        const layouted = buildBioGraph(bioData, layoutMode, centerId);
 
-        // Inject onEdit callback
+        // Inject onEdit and onReorganize callback
         const nodesWithEdit = layouted.nodes.map(node => ({
             ...node,
             data: {
                 ...node.data,
                 onEdit: (item: any) => {
-                    // Determine type based on where it came from or the node data type
-                    // The 'type' was saved in data.type in buildBioGraph
                     setEditingEntity({ item, type: node.data.type });
+                },
+                onReorganize: (id: string) => {
+                    setLayoutMode('centric');
+                    setCenterId(id);
                 }
             }
         }));
@@ -58,10 +64,10 @@ export function BioGraphView() {
         setEdges(layouted.edges);
     };
 
-    // 4. Effect: Re-layout on data change
+    // 4. Effect: Re-layout on data change OR layout mode change
     useEffect(() => {
         performLayout();
-    }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents]);
+    }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, layoutMode, centerId]);
 
     // Handle Save from Editor
     const { setData } = useBioStore();
@@ -125,7 +131,11 @@ export function BioGraphView() {
                     <Controls />
                     <MiniMap nodeStrokeWidth={3} zoomable pannable />
                     <Panel position="top-right">
-                        <Button size="sm" variant="outline" onClick={performLayout}>
+                        <Button size="sm" variant="outline" onClick={() => {
+                            setLayoutMode('default');
+                            setCenterId(undefined);
+                            // performLayout called via effect
+                        }}>
                             <RefreshCcw className="w-4 h-4 mr-2" />
                             Reset Layout
                         </Button>

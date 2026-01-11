@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { EventNode, LifeEvent } from "@/lib/generator/types";
 import { useBioGraphContext } from './bio-graph-context';
-import { Pencil, Eye } from 'lucide-react'; // Import Pencil and Eye icons
+import { Pencil, Eye, Network } from 'lucide-react'; // Import Network icon
 
 // Custom Node Component
-export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void }>) => {
+export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void, onReorganize?: (id: string) => void }>) => {
     const { item, type } = data;
     const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds } = useBioGraphContext();
 
@@ -60,6 +60,19 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                 </div>
 
                 <div className="flex items-center gap-1">
+                    {data.onReorganize && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                data.onReorganize!(item.id);
+                            }}
+                            className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-black/5 rounded"
+                            title="Reorganize Graph (Hierarchy View)"
+                        >
+                            <Network className="h-3.5 w-3.5" />
+                        </button>
+                    )}
+
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
