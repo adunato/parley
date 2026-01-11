@@ -750,8 +750,27 @@ export default function CharacterConfiguration() {
                             <div className="max-w-2xl space-y-6">
                                 {/* Basic Information */}
                                 <Card className="border-border shadow-sm">
-                                    <div className="pt-6">
+                                    <div className="pt-6 relative">
                                         <SectionHeader title="Basic Information" />
+                                        <div className="absolute right-4 top-4">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => setIsProceduralGeneratorOpen(true)}
+                                                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                        >
+                                                            <Sparkles className="w-4 h-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Open Procedural Generator</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
                                     </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
