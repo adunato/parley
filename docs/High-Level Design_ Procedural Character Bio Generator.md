@@ -330,15 +330,41 @@ The "actual chance" of an event is its share of the total weight in the current 
 
 ---
 
-### **8.2 The Role of Age**
+### **8.2 The Role of Age & Generation Sequence**
 
-Age determines the **Simulation Depth** of the "Flesh" layer and sets the boundaries for the character's narrative timeline.
+The engine follows a strict "Spine-then-Flesh" sequence. The **Spine** (Origin, Education, Career) is always generated first and represents the character's status as they enter adulthood (age 18). The **Flesh** (Life Events) is a chronological simulation that builds upon that foundation.
 
-*   **The Adult Threshold:** The engine assumes that the character completes their "Spine" (Origin → Education → Career) by the age of 18.
-*   **Job Timing:** Conceptually, the character enters their selected **Career** at age 18. Even if the character's target age is younger (e.g., 16), the engine currently generates a full Spine including a Career.
-*   **Simulation Start:** Life Event simulation (The Flesh) **only begins at age 18**. If a character is 17 or younger, no simulation occurs, and they will only have their Spine data.
-*   **Iteration:** For characters older than 18, the engine simulates life in **5-year chunks** (18-23, 23-28, etc.) until it reaches the target age.
-*   **Trigger Chance:** In each 5-year chunk, there is a **70% flat chance** (currently hard-coded in `BioMachine.ts`) that a Life Event will trigger. If it triggers, a weighted selection is performed from the pool of available events.
+#### **8.2.1 Generation Walkthrough: 18-Year-Old**
+For a character whose target age is 18, the simulation effectively stops after the Spine is built.
+
+1.  **Step 1: Origin Selection.** The engine picks an Origin (e.g., `Born into Wealth`). The character gains the `RICH` tag.
+2.  **Step 2: Education Selection.** The engine filters Education options. Paths like `Street Education` might be excluded or heavily penalized, while `Private Tutor` becomes highly likely due to the `RICH` tag. The engine picks `Private Tutor`. The character gains the `SMART` tag.
+3.  **Step 3: Career Selection.** The engine filters Careers. `Investment Banker` requires `SMART`. Since the character has it, this becomes a valid option. The engine picks `Investment Banker`.
+4.  **Simulation Check:** Since the character is 18, the engine checks the "Flesh" layer. Iteration starts at 18 and ends at 18. **No Life Events are generated.**
+5.  **Final Result:** A high-status 18-year-old ready to start their career.
+
+#### **8.2.2 Generation Walkthrough: 65-Year-Old**
+For an older character, the engine first establishes the foundation (Spine) and then simulates the intervening decades.
+
+1.  **Step 1-3 (The Spine):** The engine performs the same steps as above. Let's assume the character ends up as an `Electrician` with the `TRADESMAN` and `STREET_SMART` tags at age 18.
+2.  **Step 4: Simulation (The Flesh):** The engine runs multiple 5-year iterations:
+    *   **Age 18-23:** 70% chance check passes. Weighted selection finds `Work Accident`. (Weight was increased by `TRADESMAN` tag). Character gains `INJURED` tag.
+    *   **Age 23-28:** 70% chance check fails. No event.
+    *   **Age 28-33:** 70% chance check passes. Weighted selection finds `Career Change`. (Weight was increased by `STREET_SMART` tag). Character gains `NEW_OUTLOOK`.
+    *   **... (Iterations continue until age 65) ...**
+3.  **Step 5: Final Accumulation.** All tags gathered during the simulation (e.g., `INJURED`, `NEW_OUTLOOK`, `GRANDPARENT`) are combined with the original Spine tags.
+4.  **Final Result:** A 65-year-old with a logical career beginning and a lifetime of probabilistic events that were shaped by that beginning.
+
+---
+
+### **8.3 Summary of Logic Flow**
+
+| Feature | Spine (Layer 1) | Flesh (Layer 2) |
+| :--- | :--- | :--- |
+| **Timing** | Pre-18 (Foundation) | Post-18 (Simulation) |
+| **Mutuality** | Mutually Exclusive (1 per slot) | Cumulative (Many possible) |
+| **Dependence** | Forward & Backward Constraints | Forward Influence only |
+| **Selection** | Mandatory (Pool must result in 1) | Probabilistic (70% trigger chance) |
 
 ---
 
