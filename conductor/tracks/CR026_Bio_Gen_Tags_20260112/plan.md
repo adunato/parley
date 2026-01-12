@@ -5,12 +5,12 @@
     -   **Goal:** Confirm if JSON files are legacy and verify current store structure for bio entities.
     -   **Action:** Inspect `src/lib/store.ts`, `src/lib/entityStore.ts` and their interaction with `src/lib/generator/data/*.json`.
     -   *Result:* JSON files are used as initial seed data in `onRehydrateStorage` in `useBioStore` (`src/lib/store/bioStore.ts`). The store uses Dexie for persistence. Tags are currently implicit in `provides`, `requires`, and `weights` keys of entities.
-- [~] Task: Define Tag Data Model
+- [x] Task: Define Tag Data Model [c7882d6]
     -   **Goal:** Create a consistent data model for Tags in the store.
     -   **Sub-tasks:**
         -   Write Tests (Verify store can hold and persist new Tag entities)
         -   Implement Feature (Update Zustand/Dexie schema)
-- [ ] Task: Conductor - User Manual Verification 'Analysis & Data Foundation' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Analysis & Data Foundation' (Protocol in workflow.md)
 
 ## Phase 2: Core Logic & Backend
 - [ ] Task: Implement Tag Reverse-Lookup Logic
