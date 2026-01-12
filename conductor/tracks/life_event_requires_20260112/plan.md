@@ -26,7 +26,7 @@
 - [x] Task: Conductor - User Manual Verification 'UI Implementation' (Protocol in workflow.md) eefed9f
 
 ## Phase 4: LLM Integration & Verification
-- [ ] Task: Update LLM Prompting
+- [x] Task: Update LLM Prompting c5d1249
     - [ ] Sub-task: Update the generation prompt in `src/lib/generator/` (likely within the service using `lifeEventGenerationSchema`) to instruct the LLM on how to use the `requires` field meaningfully.
 - [ ] Task: End-to-End Verification
     - [ ] Sub-task: Run the bio-generator test script or use the UI to verify that the LLM generates requirements and the engine respects them.
