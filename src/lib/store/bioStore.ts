@@ -131,12 +131,32 @@ export const useBioStore = create<BioStoreState>()(
                     origins: renameInList(state.origins, 'provides'),
                     education: renameInWeights(renameInList(renameInList(state.education, 'provides'), 'requires')),
                     careers: renameInWeights(renameInList(state.careers, 'requires')),
-                    lifeEvents: renameInWeights(renameInList(state.lifeEvents, 'provides'))
+                    lifeEvents: renameInWeights(renameInList(renameInList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
-            deleteTag: (id) => set((state) => ({
-                tags: state.tags.filter(i => i.id !== id)
-            })),
+            deleteTag: (id) => set((state) => {
+                const removeFromList = (list: any[], field: 'provides' | 'requires') => 
+                    list.map(obj => ({
+                        ...obj,
+                        [field]: obj[field]?.filter((t: string) => t !== id)
+                    }));
+
+                const removeFromWeights = (list: any[]) =>
+                    list.map(obj => {
+                        if (!obj.weights || obj.weights[id] === undefined) return obj;
+                        const newWeights = { ...obj.weights };
+                        delete newWeights[id];
+                        return { ...obj, weights: newWeights };
+                    });
+
+                return {
+                    tags: state.tags.filter(i => i.id !== id),
+                    origins: removeFromList(state.origins, 'provides'),
+                    education: removeFromWeights(removeFromList(removeFromList(state.education, 'provides'), 'requires')),
+                    careers: removeFromWeights(removeFromList(state.careers, 'requires')),
+                    lifeEvents: removeFromWeights(removeFromList(removeFromList(state.lifeEvents, 'provides'), 'requires'))
+                };
+            }),
 
             // Bulk Set (for migration)
             setData: (data) => set(data),
