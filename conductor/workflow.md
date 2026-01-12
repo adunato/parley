@@ -1,5 +1,15 @@
 # Project Workflow
 
+## Branching Strategy
+
+1. **Main Branch:** `dev` is the primary development branch.
+2. **Feature Branches:** For every Conductor Track, create a dedicated branch.
+   - **Naming:** `feature/<track_id>` (e.g., `feature/CR025_Bio_Gen_Config_Tags`).
+3. **Workflow:**
+   - Always create the branch from the latest `dev`.
+   - All tasks within a track MUST be committed to its dedicated feature branch.
+   - Merge back to `dev` only when the entire track is complete and verified.
+
 ## Guiding Principles
 
 1. **The Plan is the Source of Truth:** All work must be tracked in `plan.md`

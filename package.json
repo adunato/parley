@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "jest",
     "test:openrouter": "tsc -p tsconfig.test.json && node dist-test/tests/testOpenRouter.js",
     "test:comfyui": "tsc -p tsconfig.test.json && node dist-test/tests/testComfyUI.js",
     "build-storybook": "storybook build",
