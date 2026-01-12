@@ -204,6 +204,7 @@ export function BioGraphView() {
                         onSave={handleSaveEntity}
                         existingIds={nodes.map(n => n.id)}
                         mode="edit"
+                        container={isFullScreen ? graphContainerRef.current : null}
                     />
                 )}
 
