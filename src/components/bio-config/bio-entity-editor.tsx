@@ -74,7 +74,10 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         };
 
         if (type === 'LIFE_EVENT') {
-            onSave(base as LifeEvent);
+            onSave({
+                ...base,
+                requires: requires.length > 0 ? requires : undefined
+            } as LifeEvent);
         } else {
             onSave({
                 ...base,
@@ -130,14 +133,12 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                     placeholder="WEALTHY"
                                 />
 
-                                {type !== 'LIFE_EVENT' && (
-                                    <TagListEditor
-                                        label="Requires Tags (Prerequisite)"
-                                        tags={requires}
-                                        onChange={setRequires}
-                                        placeholder="DEGREE"
-                                    />
-                                )}
+                                <TagListEditor
+                                    label="Requires Tags (Prerequisite)"
+                                    tags={requires}
+                                    onChange={setRequires}
+                                    placeholder="DEGREE"
+                                />
                             </div>
 
                             <div>
