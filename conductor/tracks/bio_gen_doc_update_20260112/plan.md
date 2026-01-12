@@ -13,7 +13,7 @@
     - Revise "System Architecture" to include the Frontend Layer (UI, Graph View, Editors).
     - Update "Data Logic & Schema" to match `types.ts` (e.g., specific fields in `EventNode`).
     - **Verification:** Compare text against `src/lib/generator/types.ts`.
-- [~] Task: Doc Update - User Guide & Mechanics
+- [x] Task: Doc Update - User Guide & Mechanics (63054d6)
     - Add a new major section "8. User Guide & Mechanics" to `docs\High-Level Design_ Procedural Character Bio Generator.md`.
     - Write "The Mechanics of Choice": Explain the `Base * Modifiers` logic.
     - Write "Configuration & UI": Explain how to use the Bio Config Page.
