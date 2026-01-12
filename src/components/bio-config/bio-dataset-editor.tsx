@@ -100,13 +100,14 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                             <TableHead>Text</TableHead>
                             <TableHead>Provides</TableHead>
                             <TableHead>Requires</TableHead>
+                            <TableHead>Influenced by</TableHead>
                             <TableHead className="w-[120px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                     No items found.
                                 </TableCell>
                             </TableRow>
@@ -138,6 +139,15 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                                                 )}
                                             </div>
                                         )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {Object.entries(item.weights || {}).map(([tag, weight]) => (
+                                                <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0 border-blue-200 bg-blue-50 text-blue-700">
+                                                    {tag}:{weight}
+                                                </Badge>
+                                            ))}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
