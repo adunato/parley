@@ -42,6 +42,7 @@ describe('LifeEventGenerator Service', () => {
         id: 'inherited_manor',
         text: 'Inherited a dusty old manor',
         provides: ['landowner'],
+        requires: ['noble'],
         weights: { 'DEFAULT': 1, 'noble': 10 }
       }
     ];

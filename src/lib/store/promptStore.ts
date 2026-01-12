@@ -347,11 +347,12 @@ Existing Life Events in this category (DO NOT duplicate these):
    - a unique 'id' in lower_snake_case.
    - a descriptive 'text' field (the narrative).
    - an optional 'provides' array of tag IDs that this event grants to the character.
+   - an optional 'requires' array of tag IDs (logical prerequisites).
    - a 'weights' object determining its selection probability.
 3. The 'weights' object MUST contain a "DEFAULT" key (e.g., 1.0).
 4. To link the Life Event to the SOURCE ENTITY, include tags provided by the source entity in the 'weights' object with higher values (e.g., if source provides 'noble', the life event might have 'noble': 5.0).
 5. TAG MANAGEMENT:
-   - If you use tags in 'provides' or 'weights' that are NOT present in the SOURCE ENTITY or CONTEXT description, you MUST include them in the 'newTags' array.
+   - If you use tags in 'provides', 'requires', or 'weights' that are NOT present in the SOURCE ENTITY or CONTEXT description, you MUST include them in the 'newTags' array.
    - For each new tag, provide a concise 'id' and a brief 'description'.
 6. Ensure the events are diverse and logical within a modern life simulation context.
 7. DO NOT generate NPCs, Locations, or any other entity types.`
