@@ -19,10 +19,10 @@
     - [x] Sub-task: Verify that generated Tags have valid weights.
 - [x] Task: Conductor - User Manual Verification 'Service Implementation' (Protocol in workflow.md) 85c358c
 
-## Phase 3: Integration & UI Hook
+## Phase 3: Integration & UI Hook [checkpoint: 71ee84d]
 - [x] Task: Create API Endpoint 7634eb1
     - [x] Sub-task: Expose the service via a Next.js API route (e.g., `POST /api/bio-config/generate-events`) to allow frontend access.
 - [x] Task: UI Implementation (Basic) 7634eb1
     - [x] Sub-task: Add a "Generate Life Events" button/form to the Bio-Generator Configuration UI (likely near the Entity editor).
     - [x] Sub-task: Handle the API response and display the generated entities for review/saving.
-- [~] Task: Conductor - User Manual Verification 'Integration & UI Hook' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Integration & UI Hook' (Protocol in workflow.md) 71ee84d
