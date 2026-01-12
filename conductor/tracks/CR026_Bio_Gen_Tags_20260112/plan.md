@@ -37,6 +37,7 @@
 - [x] Task: Migrate Existing Tags to Store [4cc0243]
     -   **Goal:** Populate the new `tags` store array by harvesting unique tags from existing entities.
     -   **Action:** Update `onRehydrateStorage` in `bioStore.ts` or add a specific migration function.
-- [ ] Task: Remove Legacy JSON Files (Conditional)
+- [x] Task: Remove Legacy JSON Files (Conditional) [skipped]
     -   **Goal:** Clean up the codebase if Phase 1 confirms files are redundant.
-- [ ] Task: Conductor - User Manual Verification 'Finalization & Cleanup' (Protocol in workflow.md)
+    -   **Note:** Files are NOT redundant; they are used for seeding default data.
+- [~] Task: Conductor - User Manual Verification 'Finalization & Cleanup' (Protocol in workflow.md)
