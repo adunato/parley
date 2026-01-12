@@ -28,7 +28,8 @@ export function BioGraphView() {
         origins: state.origins,
         education: state.education,
         careers: state.careers,
-        lifeEvents: state.lifeEvents
+        lifeEvents: state.lifeEvents,
+        tags: state.tags
     })));
 
     // 2. React Flow State
@@ -74,7 +75,7 @@ export function BioGraphView() {
     useEffect(() => {
         console.log(`[BioGraphView] Effect runs. Mode=${layoutMode}, Center=${centerId}`);
         performLayout();
-    }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, layoutMode, centerId]);
+    }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, bioData.tags, layoutMode, centerId]);
 
     // Full Screen Handler
     const toggleFullScreen = () => {
@@ -113,7 +114,8 @@ export function BioGraphView() {
             origins: [...bioData.origins],
             education: [...bioData.education],
             careers: [...bioData.careers],
-            lifeEvents: [...bioData.lifeEvents]
+            lifeEvents: [...bioData.lifeEvents],
+            tags: [...bioData.tags]
         };
 
         // Helper to update list
@@ -140,6 +142,7 @@ export function BioGraphView() {
         if (type === 'EDUCATION') updateList(newData.education);
         if (type === 'CAREER') updateList(newData.careers);
         if (type === 'LIFE_EVENT') updateList(newData.lifeEvents);
+        if (type === 'TAG') updateList(newData.tags);
 
         setData(newData);
         setEditingEntity(null);

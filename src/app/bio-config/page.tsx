@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
+import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { useBioStore } from "@/lib/store/bioStore";
 
@@ -24,6 +25,7 @@ export default function BioConfigPage() {
                     <TabsTrigger value="education">Education</TabsTrigger>
                     <TabsTrigger value="careers">Careers</TabsTrigger>
                     <TabsTrigger value="events">Life Events</TabsTrigger>
+                    <TabsTrigger value="tags">Tags</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="graph" className="space-y-4">
@@ -79,6 +81,16 @@ export default function BioConfigPage() {
                         onAdd={store.addLifeEvent}
                         onUpdate={store.updateLifeEvent}
                         onDelete={store.deleteLifeEvent}
+                    />
+                </TabsContent>
+
+                <TabsContent value="tags" className="space-y-4">
+                    <TagDatasetEditor
+                        tags={store.tags}
+                        bioData={store.getAllData()}
+                        onAdd={store.addTag}
+                        onUpdate={store.updateTag}
+                        onDelete={store.deleteTag}
                     />
                 </TabsContent>
             </Tabs>

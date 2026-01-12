@@ -1,0 +1,8 @@
+{
+  "track_id": "CR026_Bio_Gen_Tags_20260112",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-01-12T09:46:00Z",
+  "updated_at": "2026-01-12T09:46:00Z",
+  "description": "In bio-config, add 'Tags' to the tabs of entities with columns for 'Provided by', 'Required by', and 'Influences'."
+}
