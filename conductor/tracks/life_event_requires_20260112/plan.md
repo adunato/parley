@@ -19,7 +19,7 @@
     - [x] Sub-task: Run tests and ensure >80% coverage for the new filtering logic.
 - [x] Task: Conductor - User Manual Verification 'Core Logic Implementation (BioMachine)' (Protocol in workflow.md) 870bbf7
 
-## Phase 3: UI Implementation
+## Phase 3: UI Implementation [checkpoint: fff6598]
 - [x] Task: Update BioEntityEditor UI cb9baa1
     - [ ] Sub-task: Modify `src/components/bio-config/bio-entity-editor.tsx` to display and allow editing of the `requires` field when the type is `LIFE_EVENT`.
     - [ ] Sub-task: Ensure consistency with how `requires` is edited for Spine entities (Origins, Careers, etc.).
