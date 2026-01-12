@@ -40,75 +40,94 @@ The character's life is divided into rigid chronological buckets called **Slots*
 
 ## **3\. System Architecture**
 
-The system is composed of three distinct layers, functioning as a pipeline.
+The system is composed of four distinct layers, spanning from the visual configuration tools to the final narrative generation.
 
-graph TD  
-    Input\[User Constraints: 'Job=Surgeon'\] \--\> Layer1  
-      
-    subgraph "Layer 1: The Spine (Logic)"  
-        Direction\[Constraint Solver\]  
-        Direction \--\>|Filter Invalid Paths| CoherentPath\[Origin \-\> Edu \-\> Job\]  
-    end  
-      
-    subgraph "Layer 2: The Flesh (Simulation)"  
-        CoherentPath \--\>|Tags: 'RICH', 'STRESSED'| SimEngine\[Life Event Simulator\]  
-        SimEngine \--\>|Add: 'Divorce', 'Injury'| FullState\[Complete Bio Data\]  
-    end  
-      
-    subgraph "Layer 3: The Skin (Narrative)"  
-        FullState \--\>|JSON Payload| LLM\[Large Language Model\]  
-        LLM \--\> Output\[Final Text Biography\]  
+graph TD
+    UI[Frontend Configuration UI] -->|Update Data| Store[Zustand Store + Dexie]
+    Store -->|Inject Dataset| Engine[Layer 1 & 2: BioMachine]
+    
+    subgraph "Logic & Simulation"
+        Engine -->|Layer 1: The Spine| Spine[Origin -> Edu -> Job]
+        Engine -->|Layer 2: The Flesh| Flesh[Life Event Simulation]
     end
+    
+    Spine -->|JSON Payload| LLM[Layer 3: The Skin (LLM)]
+    Flesh -->|JSON Payload| LLM
+    LLM --> Output[Final Text Biography]
+
+### **Layer 0: Frontend Configuration (UI & State)**
+The system features a comprehensive set of React-based tools for managing the generative datasets.
+* **State Management:** `useBioStore` (Zustand) handles the current dataset, persistence via IndexedDB (Dexie), and cascading rename logic for tags.
+* **BioGraphView:** A visualization tool that maps out the logical connections between event nodes.
+* **Editors:** Dedicated interfaces for managing Origins, Education, Careers, Life Events, and Tags.
 
 ### **Layer 1: The Spine (Logic & Constraints)**
-
-This layer ensures the timeline makes sense. It uses a **Constraint Satisfaction Algorithm** (CSP) to resolve the timeline.
-
-* **Input:** User Pins (e.g., "Career: Surgeon") or "Random".  
-* **Process:** It loads all possible events for all slots and applies a "Sieve" to remove impossible connections.  
-* **Logic:**  
-  * *Constraint:* "Surgeon" requires$$\`DEGREE\_MEDICAL\`$$  
-    .  
-  * *Propagator:* The system looks at the **Education** slot. It removes "Art School", "Dropout", and "Engineering" because they do not provide$$\`DEGREE\_MEDICAL\`$$  
-    . Only "Med School" remains valid.
+This layer ensures the timeline makes sense. It uses a constraint-aware selection algorithm to resolve the timeline.
+* **Input:** User Pins (e.g., "Career: Surgeon") or "Random".
+* **Process:** It loads all possible events for all slots and applies filters to ensure logical continuity.
+* **Logic:**
+    * **Backward Propagation:** If a Career requires a tag (e.g., `DEGREE_MEDICAL`), the system filters the Education slot to only include nodes providing that tag.
+    * **Forward Selection Filtering:** Once an Origin is selected, the Education slot is further filtered to only include nodes whose requirements are met by the selected Origin's provided tags.
 
 ### **Layer 2: The Flesh (Simulation)**
-
-This layer adds richness. Once the logical spine is generated, this layer runs a "Parallel Track" simulation for things that don't strictly affect the career path but add flavor (Relationships, Health, Accidents).
-
-* **Mechanism:** It iterates through the character's age in 5-year increments.  
-* **Logic:** It uses the Tags generated in Layer 1 to influence these events.  
-  * *Example:* If Layer 1 gave the tag DANGEROUS\_JOB, the probability of the "Work Accident" event in Layer 2 increases by 500%.
+This layer adds richness. Once the logical spine is generated, this layer runs a probabilistic simulation for events that add flavor but don't strictly define the career path.
+* **Mechanism:** It iterates through the character's age (18 to current) in 5-year increments.
+* **Logic:** 70% chance of event per chunk. It uses the Tags generated in Layer 1 (and preceding Layer 2 events) to influence probabilities.
 
 ### **Layer 3: The Skin (Narrative)**
-
-This layer converts the structured data into human-readable text.
-
-* **Input:** A robust JSON object containing the timeline and tags.  
-* **Process:** An LLM (e.g., GPT/Claude) is prompted to "Write a noir-style biography" based strictly on the provided facts, ensuring the tone matches the desired output without hallucinating conflicting details.
+This layer converts the structured data into human-readable text using an LLM.
+* **Input:** A robust JSON object containing the `spine`, `flesh`, and `tags`.
+* **Process:** The `bio_writer` prompt instructs the LLM to write a biography based strictly on the provided facts.
 
 ## **4\. Data Logic & Schema**
 
-The system relies on strict JSON definitions for the "Spine" events.
+The system relies on strict JSON definitions for the "Spine" events and simulation data.
 
 ### **4.1 Schema Definition**
 
-Each event in the timeline (e.g., a specific job or school) is defined as an object.
+#### **EventNode (Layer 1)**
+Each event in the logical timeline is defined as an `EventNode`.
 
-interface EventNode {  
-  id: string;          // Unique ID (e.g., "job\_neurosurgeon")  
-  slot: string;        // "EDUCATION" | "CAREER" ...  
-    
-  // LOGIC GATES  
-  requires?: string\[\]; // Tags required to enter this node (e.g., \["DEGREE"\])  
-  provides?: string\[\]; // Tags granted by this node (e.g., \["WEALTHY", "STRESSED"\])  
-    
-  // PROBABILITY ENGINE  
-  weights: {  
-    \[tag: string\]: number; // e.g., "RICH": 50  
-    "DEFAULT": number;     // Baseline probability  
-  };  
+```typescript
+interface EventNode {
+  id: string;
+  slot: 'ORIGIN' | 'EDUCATION' | 'CAREER';
+  text: string;           // Narrative description
+  requires?: string[];    // Tags required to enter this node
+  provides?: string[];    // Tags granted by this node
+  weights: {
+    [tag: string]: number; // Modifiers (e.g., "RICH": 50)
+    "DEFAULT": number;     // Baseline probability
+  };
 }
+```
+
+#### **LifeEvent (Layer 2)**
+Simulation events that populate the "Flesh" layer.
+
+```typescript
+interface LifeEvent {
+  id: string;
+  text: string;
+  provides?: string[];
+  weights: {
+    [tag: string]: number;
+    "DEFAULT": number;
+  };
+}
+```
+
+#### **BioState (Final Output)**
+The result of a generation request.
+
+```typescript
+interface BioState {
+  spine: EventNode[];
+  flesh: LifeEvent[];
+  tags: Set<string>;
+  age: number;
+}
+```
 
 ### **4.2 Example Data Flow**
 
@@ -135,34 +154,38 @@ interface EventNode {
      // Missing DRIVING\_LICENSE, so this path is pruned.  
    }
 
-## **5\. Algorithm Detail: Bidirectional Solving**
+## **5\. Algorithm Detail: Constraint Selection**
 
-To support "Pinning" (Reverse Generation), we use **Domain Reduction**.
+To support "Pinning" (Reverse Generation) and maintain logical continuity, the system uses a combination of pre-filtering and just-in-time constraints.
 
-1. **Initialization:** Create a list of *all* possible options for every slot (Origin, Childhood, Education, Career).  
-2. **Pinning:** If the user specifies "Career \= Surgeon", remove all other careers from the Career slot.  
-3. **Backward Propagation:**  
-   * Check the requirements of the remaining options in the Career slot.  
-   * Look at the Education slot. Remove any option that does *not* provide the required tags.  
-4. **Forward Propagation:**  
-   * Check the requirements of the remaining options in the Education slot.  
-   * Look at the Childhood slot. Remove any option that conflicts.  
-5. **Selection:**  
-   * Now that the domains are "clean" (contain only valid logical precursors), run the standard Weighted Random selection to pick the specific path.
+1. **Initialization:** Load the full dataset (Origins, Education, Careers, Events) from the store.
+2. **Backward Propagation (Pre-filtering):**
+   * If a specific **Career** is pinned or if multiple careers are valid, the system identifies all `requires` tags from the valid career pool.
+   * The **Education** slot is filtered to only include nodes that provide at least one of these required tags.
+3. **Layer 1 Selection (The Spine):**
+   * **Step A: Select Origin.** A weighted random selection is performed on all valid Origins.
+   * **Step B: Select Education.** The Education pool (pre-filtered in step 2) is further constrained: only nodes whose `requires` tags are met by the *selected* Origin are feasible. Weighted selection follows.
+   * **Step C: Select Career.** The Career pool is filtered: only nodes whose `requires` tags are met by the combined tags of the selected Origin and Education are feasible. Weighted selection follows.
+4. **Layer 2 Simulation (The Flesh):**
+   * The system iterates from age 18 to the target age.
+   * For each 5-year chunk, a probabilistic check occurs.
+   * Available `LifeEvent` options are filtered to exclude already-selected events.
+   * Selection uses the full tag set accumulated from the Spine and previous simulation events.
 
 ## **6\. Development Status**
 
 ### **Implemented**
 
-*   **Logic Engine (Layer 1):** `BioMachine.solveSpine()` implements the constraint solver using bi-directional propagation (though currently simplified to forward selection with filtering).
-*   **Simulator (Layer 2):** `BioMachine.simulateFlesh()` tracks age and triggers probabilistic life events.
-*   **Data Ingestion:** System loads `origins.json`, `education.json`, `careers.json`, and `events.json` (formerly `parallel_events.json`).
+*   **Logic Engine (Layer 1):** `BioMachine.solveSpine()` implements constraint-aware selection with backward propagation.
+*   **Simulator (Layer 2):** `BioMachine.simulateFlesh()` tracks age and triggers probabilistic life events in 5-year chunks.
+*   **Configuration UI (Layer 0):** Full React suite for managing datasets, including the `BioGraphView` and `useBioStore` for persistence.
+*   **Data Ingestion:** System loads data from IndexedDB via the `BioStore`.
 *   **LLM Integration (Layer 3):** `bio_writer` prompt is available in the PromptStore.
 
 ### **Planned / In Progress**
 
-*   **Configuration UI:** Exposing the underlying data entities (Origins, Education, Careers) for user editing via the Settings interface.
 *   **Advanced Constraints:** Full bidirectional propagation for complex pinning scenarios.
+*   **Live Preview:** Direct link between the dataset editor and the LLM generation for instant feedback.
 
 ## **7\. Appendix: Sample Data Sets**
 
