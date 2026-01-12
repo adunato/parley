@@ -317,28 +317,28 @@ The "actual chance" of an event is its share of the total weight in the current 
 
 **Probability = (Event Weight) / (Sum of All Weights in the Feasible Pool)**
 
-*   **Weight vs. Percentage:** If "University" has a weight of 10 and "Trade School" has a weight of 10, they both have a 50% chance. If a Tag triples the weight of "University" to 30, the total weight becomes 40, and "University" now has a 75% chance (30/40).
-*   **Default Weight:** This is the baseline "gravity" of an option before any modifiers are applied.
-
-#### **8.1.3 The Modifier Formula**
-A character's history (Tags) modifies these weights dynamically:
-
-**Final Weight = Default Weight × Modifier(Tag A) × Modifier(Tag B) × ...**
-
-*   **Example:**
-    *   **Event:** "Ivy League" (Default Weight: 5)
-    *   **Character Tags:** `[RICH, SMART]`
-    *   **Modifiers:** `RICH` (x10), `SMART` (x2)
-    *   **Final Weight:** 5 × 10 × 2 = **100**
+*   **Competing Events Example:**
+    *   Imagine a selection pool with two events: **Ivy League** (Default Weight: 5) and **Trade School** (Default Weight: 20).
+    *   **Total Weight:** 5 + 20 = 25.
+    *   **Ivy League Chance:** 5/25 = **20%**.
+    *   **Trade School Chance:** 20/25 = **80%**.
+    *   *If the character gains the `RICH` tag (x10 modifier for Ivy League):*
+    *   **New Ivy League Weight:** 5 × 10 = 50.
+    *   **New Total Weight:** 50 + 20 = 70.
+    *   **New Ivy League Chance:** 50/70 = **71.4%**.
+*   **Default Weight:** This is the baseline "gravity" of an option before any modifiers are applied. It represents how common an event is in a vacuum.
 
 ---
 
 ### **8.2 The Role of Age**
 
-Age determines the **Simulation Depth** of the "Flesh" layer.
-*   **Chronology:** The engine assumes the character is 18 years old after completing the "Spine" (Education).
-*   **Iteration:** It simulates life in **5-year chunks** (18-23, 23-28, etc.) until it reaches the target age.
-*   **Probability of Occurrence:** In each 5-year chunk, there is a **70% flat chance** that a Life Event will trigger. If it triggers, the engine performs a weighted selection from the available pool of events.
+Age determines the **Simulation Depth** of the "Flesh" layer and sets the boundaries for the character's narrative timeline.
+
+*   **The Adult Threshold:** The engine assumes that the character completes their "Spine" (Origin → Education → Career) by the age of 18.
+*   **Job Timing:** Conceptually, the character enters their selected **Career** at age 18. Even if the character's target age is younger (e.g., 16), the engine currently generates a full Spine including a Career.
+*   **Simulation Start:** Life Event simulation (The Flesh) **only begins at age 18**. If a character is 17 or younger, no simulation occurs, and they will only have their Spine data.
+*   **Iteration:** For characters older than 18, the engine simulates life in **5-year chunks** (18-23, 23-28, etc.) until it reaches the target age.
+*   **Trigger Chance:** In each 5-year chunk, there is a **70% flat chance** (currently hard-coded in `BioMachine.ts`) that a Life Event will trigger. If it triggers, a weighted selection is performed from the pool of available events.
 
 ---
 
