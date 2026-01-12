@@ -25,10 +25,10 @@ The system must parse the LLM output into a structured format compatible with th
     *   The Weight (probability/likelihood of connection).
 
 ## 3. Acceptance Criteria
-*   [ ] **Entity Generation:** The system generates `N` valid Life Event Entities that can be stored in the Bio-Generator configuration.
-*   [ ] **Connection Logic:** Each generated Life Event Entity includes the necessary Tags and Weights to logically connect it to the Source Entity.
-*   [ ] **Schema Compliance:** The output adheres to the existing `LifeEvent` and `Tag` schemas used by "Origins", "Education", etc.
-*   [ ] **User Steering:** Optional prompts effectively influence the theme of the generated entities.
+*   [x] **Entity Generation:** The system generates `N` valid Life Event Entities that can be stored in the Bio-Generator configuration.
+*   [x] **Connection Logic:** Each generated Life Event Entity includes the necessary Tags and Weights to logically connect it to the Source Entity.
+*   [x] **Schema Compliance:** The output adheres to the existing `LifeEvent` and `Tag` schemas used by "Origins", "Education", etc.
+*   [x] **User Steering:** Optional prompts effectively influence the theme of the generated entities.
 
 ## 4. Out of Scope
 *   Generation of other entity types (NPCs, Locations, Organizations) that are not Life Events.
