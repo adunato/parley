@@ -26,12 +26,12 @@
     -   **Sub-tasks:**
         -   Write Tests (Verify tab appears and table renders)
         -   Implement Feature (Update `src/app/bio-config/page.tsx` and related components)
-- [~] Task: Implement Tag Edit & CRUD Dialogs
+- [x] Task: Implement Tag Edit & CRUD Dialogs [b82e986]
     -   **Goal:** Allow users to Create, Edit, and Delete tags with appropriate dialogs.
     -   **Sub-tasks:**
         -   Write Tests (Verify CRUD operations update the store correctly)
         -   Implement Feature (Create `TagEditorDialog` and integrate into the table)
-- [ ] Task: Conductor - User Manual Verification 'UI Implementation' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'UI Implementation' (Protocol in workflow.md)
 
 ## Phase 4: Finalization & Cleanup
 - [ ] Task: Remove Legacy JSON Files (Conditional)
