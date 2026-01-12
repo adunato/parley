@@ -302,40 +302,59 @@ These events are simulated in the "Flesh" layer. They do not block the career pa
 
 ## **8\. User Guide & Mechanics**
 
-This section explains how to use the Bio Generator tools and the underlying math that determines a character's life path.
+This section explains the underlying logic of the Bio Generator, specifically how probabilities are calculated and how user constraints (Pinning) affect the outcome.
 
-### **8.1 The Mechanics of Choice: How Luck Works**
+### **8.1 The Mechanics of Choice**
 
-Selection in the Bio Generator is not purely random. It uses a **Weighted Probability** system where a character's history (Tags) directly influences their future.
+Selection in the Bio Generator uses a **Weighted Random Selection** process. It is not a simple percentage (like "5% chance"); instead, it is a competition between all valid options in a pool.
 
-#### **The Formula**
-Each potential event (Education, Career, Life Event) has a set of weights. The final probability of an event being chosen is calculated as:
+#### **8.1.1 Selection Pools & Mutuality**
+*   **The Spine (Origin, Education, Career):** Options within these slots are **mutually exclusive**. You can only have one Origin, one Education path, and one Career. The engine evaluates all potential options for a slot, filters out those whose requirements aren't met, and then picks exactly one from the remaining "Feasible Pool."
+*   **The Flesh (Life Events):** These are individual events. While multiple events can happen over a lifetime, each specific event (by ID) can only occur **once**.
+
+#### **8.1.2 From Weights to Probability**
+The "actual chance" of an event is its share of the total weight in the current pool.
+
+**Probability = (Event Weight) / (Sum of All Weights in the Feasible Pool)**
+
+*   **Weight vs. Percentage:** If "University" has a weight of 10 and "Trade School" has a weight of 10, they both have a 50% chance. If a Tag triples the weight of "University" to 30, the total weight becomes 40, and "University" now has a 75% chance (30/40).
+*   **Default Weight:** This is the baseline "gravity" of an option before any modifiers are applied.
+
+#### **8.1.3 The Modifier Formula**
+A character's history (Tags) modifies these weights dynamically:
 
 **Final Weight = Default Weight × Modifier(Tag A) × Modifier(Tag B) × ...**
 
-*   **Default Weight:** The baseline chance of the event (e.g., "Ivy League" has a default of 5).
-*   **Modifiers:** If the character possesses a specific tag, the default weight is multiplied by that tag's modifier value.
-
-#### **Example 1: The Advantage of Wealth**
-*   **Event:** Ivy League University
-*   **Default Weight:** 5
-*   **Modifier (RICH):** 50
-*   **Modifier (POOR):** 0.2
-
-*   **Result A (Rich Character):** 5 × 50 = **250** (Extremely Likely)
-*   **Result B (Poor Character):** 5 × 0.2 = **1** (Extremely Rare)
-
-#### **Example 2: The Spiral of Burnout**
-*   **Event:** Mid-life Crisis
-*   **Default Weight:** 10
-*   **Modifier (STRESSED):** 5
-*   **Modifier (BURNOUT):** 10
-
-*   **Result (Stressed & Burned Out):** 10 × 5 × 10 = **500** (Almost Guaranteed)
+*   **Example:**
+    *   **Event:** "Ivy League" (Default Weight: 5)
+    *   **Character Tags:** `[RICH, SMART]`
+    *   **Modifiers:** `RICH` (x10), `SMART` (x2)
+    *   **Final Weight:** 5 × 10 × 2 = **100**
 
 ---
 
-### **8.2 Configuration & UI**
+### **8.2 The Role of Age**
+
+Age determines the **Simulation Depth** of the "Flesh" layer.
+*   **Chronology:** The engine assumes the character is 18 years old after completing the "Spine" (Education).
+*   **Iteration:** It simulates life in **5-year chunks** (18-23, 23-28, etc.) until it reaches the target age.
+*   **Probability of Occurrence:** In each 5-year chunk, there is a **70% flat chance** that a Life Event will trigger. If it triggers, the engine performs a weighted selection from the available pool of events.
+
+---
+
+### **8.3 Pinning & Reverse Generation**
+
+Pinning allows you to "force" a specific outcome (e.g., "Must be a Surgeon"). The engine then uses **Backward Propagation** to ensure the character's history supports that outcome.
+
+1.  **Domain Reduction:** If you pin a Career, the engine deletes all other options from the Career slot.
+2.  **Requirement Harvesting:** It looks at the `requires` list of the pinned Career (e.g., `requires: [DEGREE_MEDICAL]`).
+3.  **Pruning Precursors:** It then looks at the **Education** slot and removes any path that does *not* provide `DEGREE_MEDICAL`.
+4.  **Forward Selection:** Now that the "impossible" paths are gone, it generates the character forward normally, knowing that whatever it picks for Education will definitely satisfy the Career's needs.
+
+---
+
+### **8.4 Configuration & UI**
+... (rest of the section)
 
 Creators can modify these probabilities and logical connections using the built-in configuration tools.
 
