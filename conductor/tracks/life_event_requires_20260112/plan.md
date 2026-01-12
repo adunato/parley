@@ -25,7 +25,7 @@
     - [ ] Sub-task: Ensure consistency with how `requires` is edited for Spine entities (Origins, Careers, etc.).
 - [x] Task: Conductor - User Manual Verification 'UI Implementation' (Protocol in workflow.md) eefed9f
 
-## Phase 4: LLM Integration & Verification
+## Phase 4: LLM Integration & Verification [checkpoint: 1d25688]
 - [x] Task: Update LLM Prompting c5d1249
     - [ ] Sub-task: Update the generation prompt in `src/lib/generator/` (likely within the service using `lifeEventGenerationSchema`) to instruct the LLM on how to use the `requires` field meaningfully.
 - [x] Task: End-to-End Verification cb9baa1
