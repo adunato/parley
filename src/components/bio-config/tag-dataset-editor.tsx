@@ -57,6 +57,8 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
         } else {
             onAdd(item);
         }
+    };
+
     const handleDelete = (id: string) => {
         const rels = getTagRelationships(id, bioData);
         const hasRefs = rels.providedBy.length > 0 || rels.requiredBy.length > 0 || rels.influences.length > 0;

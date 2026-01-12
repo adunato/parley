@@ -34,6 +34,9 @@
 - [~] Task: Conductor - User Manual Verification 'UI Implementation' (Protocol in workflow.md)
 
 ## Phase 4: Finalization & Cleanup
+- [ ] Task: Migrate Existing Tags to Store
+    -   **Goal:** Populate the new `tags` store array by harvesting unique tags from existing entities.
+    -   **Action:** Update `onRehydrateStorage` in `bioStore.ts` or add a specific migration function.
 - [ ] Task: Remove Legacy JSON Files (Conditional)
     -   **Goal:** Clean up the codebase if Phase 1 confirms files are redundant.
 - [ ] Task: Conductor - User Manual Verification 'Finalization & Cleanup' (Protocol in workflow.md)

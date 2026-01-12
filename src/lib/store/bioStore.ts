@@ -159,15 +159,46 @@ export const useBioStore = create<BioStoreState>()(
                 if (state) {
                     // Check if empty and migrate
                     const { origins, education, careers, tags } = state;
-                    if (origins.length === 0 && education.length === 0 && careers.length === 0 && (tags?.length || 0) === 0) {
+                    
+                    // 1. Seed default data if empty
+                    if (origins.length === 0 && education.length === 0 && careers.length === 0) {
                         console.log("BioStore: Migrating default data...");
-                        // Use action to update state cleanly
                         state.setData({
                             origins: originsData as EventNode[],
                             education: educationData as EventNode[],
                             careers: careersData as EventNode[],
                             lifeEvents: eventsData as LifeEvent[],
-                            tags: [] // Initial empty tags
+                            tags: [] // Will be populated in next step
+                        });
+                    }
+
+                    // 2. Harvest Tags Migration (If tags are empty but other data exists)
+                    // We check state again because setData above might have just run
+                    if ((state.tags || []).length === 0 && (state.origins.length > 0 || state.education.length > 0)) {
+                        console.log("BioStore: Harvesting tags from entities...");
+                        const uniqueTags = new Set<string>();
+                        
+                        const collect = (list: any[]) => {
+                            list.forEach(item => {
+                                item.provides?.forEach((t: string) => uniqueTags.add(t));
+                                item.requires?.forEach((t: string) => uniqueTags.add(t));
+                                if (item.weights) {
+                                    Object.keys(item.weights).forEach(t => {
+                                        if (t !== "DEFAULT") uniqueTags.add(t);
+                                    });
+                                }
+                            });
+                        };
+
+                        collect(state.origins);
+                        collect(state.education);
+                        collect(state.careers);
+                        collect(state.lifeEvents);
+
+                        const newTags = Array.from(uniqueTags).map(id => ({ id }));
+                        state.setData({
+                            ...state.getAllData(),
+                            tags: newTags
                         });
                     }
 
