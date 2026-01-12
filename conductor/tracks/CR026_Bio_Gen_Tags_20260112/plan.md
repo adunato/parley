@@ -1,6 +1,6 @@
 # Implementation Plan - CR026 Bio Generator Tags Management
 
-## Phase 1: Analysis & Data Foundation
+## Phase 1: Analysis & Data Foundation [checkpoint: c3d7094]
 - [x] Task: Investigate Store and JSON Data Relationship [analysis: f17c39e]
     -   **Goal:** Confirm if JSON files are legacy and verify current store structure for bio entities.
     -   **Action:** Inspect `src/lib/store.ts`, `src/lib/entityStore.ts` and their interaction with `src/lib/generator/data/*.json`.
@@ -10,10 +10,10 @@
     -   **Sub-tasks:**
         -   Write Tests (Verify store can hold and persist new Tag entities)
         -   Implement Feature (Update Zustand/Dexie schema)
-- [~] Task: Conductor - User Manual Verification 'Analysis & Data Foundation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Analysis & Data Foundation' (Protocol in workflow.md) [c3d7094]
 
 ## Phase 2: Core Logic & Backend
-- [ ] Task: Implement Tag Reverse-Lookup Logic
+- [~] Task: Implement Tag Reverse-Lookup Logic
     -   **Goal:** Create functions to identify which entities Provide, Require, or are Influenced by a specific tag.
     -   **Sub-tasks:**
         -   Write Tests (Verify lookup accuracy for all relationship types)
