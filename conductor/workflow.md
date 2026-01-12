@@ -8,7 +8,7 @@
 3. **Workflow:**
    - Always create the branch from the latest `dev`.
    - All tasks within a track MUST be committed to its dedicated feature branch.
-   - Merge back to `dev` only when the entire track is complete and verified.
+   - **Completion:** Push the feature branch to `origin` and instruct the user to create a Pull Request. Do NOT merge locally.
 
 ## Guiding Principles
 
