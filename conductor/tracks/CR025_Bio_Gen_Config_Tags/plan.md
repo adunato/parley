@@ -24,7 +24,7 @@
         -   Implement Feature (Add column header and cell rendering logic for `TAG:weight` format)
 
 ## Phase 3: Verification
-- [~] Task: Verify and Build
+- [x] Task: Verify and Build [756b6dc]
     -   **Goal:** Ensure the UI looks correct and the project builds.
     -   **Action:** Run `npm run build` and visually check the component (if possible via Storybook or running app).
     -   **Sub-tasks:**
