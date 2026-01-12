@@ -8,10 +8,3 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 
 
----
-
-
-
-## [ ] Track: Update Bio Generator HLD and User Guide
-
-*Link: [./conductor/tracks/bio_gen_doc_update_20260112/](./conductor/tracks/bio_gen_doc_update_20260112/)*
