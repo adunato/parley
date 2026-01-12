@@ -17,7 +17,7 @@
     - [x] Sub-task: Modify `BioMachine.ts` to filter `LifeEvent` candidates based on character's current tags.
 - [x] Task: Verify Tests and Coverage 870bbf7
     - [x] Sub-task: Run tests and ensure >80% coverage for the new filtering logic.
-- [ ] Task: Conductor - User Manual Verification 'Core Logic Implementation (BioMachine)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Core Logic Implementation (BioMachine)' (Protocol in workflow.md) 870bbf7
 
 ## Phase 3: UI Implementation
 - [ ] Task: Update BioEntityEditor UI

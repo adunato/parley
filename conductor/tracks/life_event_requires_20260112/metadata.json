@@ -1,0 +1,8 @@
+{
+  "track_id": "life_event_requires_20260112",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-01-12T20:43:00Z",
+  "updated_at": "2026-01-12T20:43:00Z",
+  "description": "Life Events in bio generator should have an optional 'requires' field."
+}
