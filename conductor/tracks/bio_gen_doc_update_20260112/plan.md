@@ -1,7 +1,7 @@
 # Implementation Plan - Update Bio Generator HLD and User Guide
 
 ## Phase 1: Analysis & Preparation
-- [ ] Task: Analysis - Review Current Implementation
+- [~] Task: Analysis - Review Current Implementation
     - Review `src/lib/generator/BioMachine.ts` for exact logic of `solveSpine` and `selectWeighted`.
     - Review `src/lib/store/bioStore.ts` for data structure and persistence.
     - Review `src/components/bio-config/` to understand the UI capabilities.
