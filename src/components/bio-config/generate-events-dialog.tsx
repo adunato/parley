@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { EventNode, LifeEvent } from '@/lib/generator/types';
+import { EventNode, LifeEvent, Tag } from '@/lib/generator/types';
 import { useBioStore } from '@/lib/store/bioStore';
-import { Loader2, Plus, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Plus, Sparkles } from 'lucide-react';
 
 interface GenerateEventsDialogProps {
     open: boolean;
@@ -18,12 +18,20 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
     const [count, setCount] = useState(3);
     const [prompt, setPrompt] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [generatedEvents, setGeneratedEvents] = useState<LifeEvent[]>([]);
+    const [newTags, setNewTags] = useState<Tag[]>([]);
+    
     const addLifeEvent = useBioStore(state => state.addLifeEvent);
+    const addTag = useBioStore(state => state.addTag);
     const existingLifeEvents = useBioStore(state => state.lifeEvents);
+    const existingTags = useBioStore(state => state.tags);
 
     const handleGenerate = async () => {
         setLoading(true);
+        setError(null);
+        setSuccess(null);
         try {
             const res = await fetch('/api/bio-config/generate-events', {
                 method: 'POST',
@@ -38,21 +46,50 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
             const data = await res.json();
             if (data.events) {
                 setGeneratedEvents(data.events);
+                setNewTags(data.newTags || []);
+            } else if (data.error) {
+                setError(data.error);
             }
         } catch (e) {
             console.error(e);
+            setError("Failed to connect to generation service.");
         } finally {
             setLoading(false);
         }
     };
 
     const handleAccept = (event: LifeEvent) => {
+        // 1. Add the event
         addLifeEvent(event);
+        
+        // 2. Add used tags if they are new
+        const usedTagIds = new Set<string>();
+        event.provides?.forEach(t => usedTagIds.add(t));
+        Object.keys(event.weights).forEach(t => {
+            if (t !== 'DEFAULT') usedTagIds.add(t);
+        });
+
+        const tagsToAdd = newTags.filter(t => usedTagIds.has(t.id) && !existingTags.some(et => et.id === t.id));
+        tagsToAdd.forEach(t => addTag(t));
+
+        // 3. Feedback
         setGeneratedEvents(prev => prev.filter(e => e.id !== event.id));
+        setSuccess(`Added "${event.text}" to dataset.`);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(o) => {
+            if (!o) {
+                setGeneratedEvents([]);
+                setNewTags([]);
+                setError(null);
+                setSuccess(null);
+            }
+            onOpenChange(o);
+        }}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -65,6 +102,22 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                 </DialogHeader>
                 
                 <div className="space-y-6 py-4">
+                    {/* Error Display */}
+                    {error && (
+                        <div className="bg-destructive/10 text-destructive p-3 rounded-md flex items-center gap-2 text-sm">
+                            <AlertCircle className="w-4 h-4" />
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Success Display */}
+                    {success && (
+                        <div className="bg-green-500/10 text-green-600 p-3 rounded-md flex items-center gap-2 text-sm">
+                            <CheckCircle2 className="w-4 h-4" />
+                            {success}
+                        </div>
+                    )}
+
                     {/* Input Section - Hide if reviewing generated events */}
                     {generatedEvents.length === 0 && (
                         <>
@@ -98,7 +151,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-semibold">Generated Events ({generatedEvents.length} remaining)</h3>
-                                <Button variant="ghost" size="sm" onClick={() => setGeneratedEvents([])}>Clear & Restart</Button>
+                                <Button variant="ghost" size="sm" onClick={() => { setGeneratedEvents([]); setNewTags([]); }}>Clear & Restart</Button>
                             </div>
                             
                             <div className="space-y-3">
@@ -138,6 +191,23 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                                     </div>
                                 ))}
                             </div>
+
+                            {newTags.length > 0 && (
+                                <div className="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+                                    <h4 className="text-sm font-semibold text-indigo-900 mb-2 flex items-center gap-1">
+                                        <Sparkles className="w-3 h-3" />
+                                        Discovered New Tags
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {newTags.map(tag => (
+                                            <div key={tag.id} title={tag.description} className="text-xs bg-white border border-indigo-200 text-indigo-700 px-2 py-1 rounded shadow-sm">
+                                                {tag.id}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-indigo-600 mt-2 italic">These tags will be added to your library when you accept an event that uses them.</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -149,7 +219,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                             {loading ? 'Generating...' : 'Generate Events'}
                         </Button>
                      ) : (
-                        <Button variant="outline" onClick={() => { setGeneratedEvents([]); onOpenChange(false); }}>Done</Button>
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>
                      )}
                 </DialogFooter>
             </DialogContent>

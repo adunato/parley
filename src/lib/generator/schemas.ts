@@ -9,4 +9,8 @@ export const lifeEventSchema = z.object({
 
 export const lifeEventGenerationSchema = z.object({
   lifeEvents: z.array(lifeEventSchema).describe("A list of generated life events"),
+  newTags: z.array(z.object({
+    id: z.string().describe("The unique identifier of the tag"),
+    description: z.string().optional().describe("A brief description of what this tag represents")
+  })).optional().describe("A list of new tags introduced by these events that were not in the source or context")
 });

@@ -26,3 +26,9 @@
     - [x] Sub-task: Add a "Generate Life Events" button/form to the Bio-Generator Configuration UI (likely near the Entity editor).
     - [x] Sub-task: Handle the API response and display the generated entities for review/saving.
 - [x] Task: Conductor - User Manual Verification 'Integration & UI Hook' (Protocol in workflow.md) 71ee84d
+
+## Phase 4: Refinement & Robustness
+- [x] Task: Enhance Generation Schema & Prompt (2aa9f8c)
+- [x] Task: Update Generation Service (a4d18c9)
+- [x] Task: UI & Store Integration Improvements (d27e11d)
+- [x] Task: Conductor - User Manual Verification 'Refinement & Robustness' (Protocol in workflow.md) (d27e11d)

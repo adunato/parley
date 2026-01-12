@@ -12,7 +12,8 @@ jest.mock('../lib/generator/lifeEventGenerator', () => ({
 describe('POST /api/bio-config/generate-events', () => {
   it('should return generated events', async () => {
     const mockEvents = [{ id: 'e1', text: 'Event 1', weights: { DEFAULT: 1 } }];
-    (generateLifeEvents as jest.Mock).mockResolvedValue(mockEvents);
+    const mockTags = [{ id: 't1', description: 'Tag 1' }];
+    (generateLifeEvents as jest.Mock).mockResolvedValue({ lifeEvents: mockEvents, newTags: mockTags });
 
     const req = new NextRequest('http://localhost/api/bio-config/generate-events', {
       method: 'POST',
@@ -27,6 +28,7 @@ describe('POST /api/bio-config/generate-events', () => {
 
     expect(res.status).toBe(200);
     expect(data.events).toEqual(mockEvents);
+    expect(data.newTags).toEqual(mockTags);
   });
 
   it('should return 400 if parameters are missing', async () => {

@@ -45,10 +45,12 @@ describe('LifeEventGenerator Service', () => {
         weights: { 'DEFAULT': 1, 'noble': 10 }
       }
     ];
+    const mockTags = [{ id: 'landowner', description: 'Owns land' }];
 
     (generateObject as jest.Mock).mockResolvedValue({
       object: {
-        lifeEvents: mockEvents
+        lifeEvents: mockEvents,
+        newTags: mockTags
       }
     });
 
@@ -59,12 +61,15 @@ describe('LifeEventGenerator Service', () => {
       system: expect.any(String)
     }));
     
-    expect(result).toEqual(mockEvents);
+    expect(result).toEqual({
+      lifeEvents: mockEvents,
+      newTags: mockTags
+    });
   });
 
   it('should include user prompt in the LLM call', async () => {
     (generateObject as jest.Mock).mockResolvedValue({
-      object: { lifeEvents: [] }
+      object: { lifeEvents: [], newTags: [] }
     });
 
     const userPrompt = "Make it spooky";

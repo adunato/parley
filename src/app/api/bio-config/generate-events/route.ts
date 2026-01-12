@@ -12,14 +12,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const events = await generateLifeEvents(
+    const { lifeEvents, newTags } = await generateLifeEvents(
       sourceEntity,
       count,
       existingEvents || [],
       userPrompt
     );
 
-    return NextResponse.json({ events });
+    return NextResponse.json({ events: lifeEvents, newTags });
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json(
