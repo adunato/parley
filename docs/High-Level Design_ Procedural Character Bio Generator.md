@@ -133,44 +133,44 @@ interface BioState {
 
 **Scenario:** User requests a **"Taxi Driver"**.
 
-1. **Career Node (Selected):**  
-   {  
-     "id": "taxi\_driver",  
-     "requires": \["DRIVING\_LICENSE"\],  
-     "provides": \["WORKING\_CLASS"\]  
+1. **Career Node (Selected):**
+   {
+     "id": "taxi\_driver",
+     "requires": \["DRIVING\_LICENSE"\],
+     "provides": \["WORKING\_CLASS"\]
    }
 
 2. **Constraint Check:** System scans **Education** slot for nodes providing DRIVING\_LICENSE.  
-3. **Education Node (Filtered In):**  
-   {  
-     "id": "high\_school\_graduate",  
-     "provides": \["DIPLOMA", "DRIVING\_LICENSE"\]  
+3. **Education Node (Filtered In):**
+   {
+     "id": "high\_school\_graduate",
+     "provides": \["DIPLOMA", "DRIVING\_LICENSE"\]
    }
 
-4. **Education Node (Filtered Out):**  
-   {  
-     "id": "boarding\_school\_no\_cars",  
-     "provides": \["DIPLOMA", "LATIN\_SKILLS"\]  
-     // Missing DRIVING\_LICENSE, so this path is pruned.  
+4. **Education Node (Filtered Out):**
+   {
+     "id": "boarding\_school\_no\_cars",
+     "provides": \["DIPLOMA", "LATIN\_SKILLS"\]
+     // Missing DRIVING\_LICENSE, so this path is pruned.
    }
 
 ## **5\. Algorithm Detail: Constraint Selection**
 
 To support "Pinning" (Reverse Generation) and maintain logical continuity, the system uses a combination of pre-filtering and just-in-time constraints.
 
-1. **Initialization:** Load the full dataset (Origins, Education, Careers, Events) from the store.
+1. **Initialization:** Load the full dataset (Origins, Education, Careers, Events) from the store. 
 2. **Backward Propagation (Pre-filtering):**
    * If a specific **Career** is pinned or if multiple careers are valid, the system identifies all `requires` tags from the valid career pool.
    * The **Education** slot is filtered to only include nodes that provide at least one of these required tags.
 3. **Layer 1 Selection (The Spine):**
-   * **Step A: Select Origin.** A weighted random selection is performed on all valid Origins.
+   * **Step A: Select Origin.** A weighted random selection is performed on all valid Origins. 
    * **Step B: Select Education.** The Education pool (pre-filtered in step 2) is further constrained: only nodes whose `requires` tags are met by the *selected* Origin are feasible. Weighted selection follows.
    * **Step C: Select Career.** The Career pool is filtered: only nodes whose `requires` tags are met by the combined tags of the selected Origin and Education are feasible. Weighted selection follows.
 4. **Layer 2 Simulation (The Flesh):**
    * The system iterates from age 18 to the target age.
    * For each 5-year chunk, a probabilistic check occurs.
    * Available `LifeEvent` options are filtered to exclude already-selected events.
-   * Selection uses the full tag set accumulated from the Spine and previous simulation events.
+   * Selection uses the full tag set accumulated from the Spine and previous simulation events. 
 
 ## **6\. Development Status**
 
@@ -195,107 +195,157 @@ The following are JSON examples of the datasets required to power Layer 1 (The S
 
 Defines the starting state of the simulation.
 
-\[  
-  {  
-    "id": "working\_class\_urban",  
-    "slot": "ORIGIN",  
-    "text": "Born into a cramped apartment in an industrial district.",  
-    "provides": \["POOR", "STREET\_SMART"\],  
-    "weights": { "DEFAULT": 50 }  
-  },  
-  {  
-    "id": "old\_money",  
-    "slot": "ORIGIN",  
-    "text": "Born into a family with generational wealth and high expectations.",  
-    "provides": \["RICH", "CONNECTED", "SNOB"\],  
-    "weights": { "DEFAULT": 5 }  
-  }  
+\[
+  {
+    "id": "working\_class\_urban",
+    "slot": "ORIGIN",
+    "text": "Born into a cramped apartment in an industrial district.",
+    "provides": \["POOR", "STREET\_SMART"\],
+    "weights": { "DEFAULT": 50 }
+  },
+  {
+    "id": "old\_money",
+    "slot": "ORIGIN",
+    "text": "Born into a family with generational wealth and high expectations.",
+    "provides": \["RICH", "CONNECTED", "SNOB"\],
+    "weights": { "DEFAULT": 5 }
+  }
 \]
 
 ### **7.2 education.json (Layer 1\)**
 
 Logic connector between Origin and Career.
 
-\[  
-  {  
-    "id": "ivy\_league",  
-    "slot": "EDUCATION",  
-    "text": "Accepted into a prestigious Ivy League university.",  
-    "provides": \["DEGREE\_ADVANCED", "ALUMNI\_NETWORK", "DEBT"\],  
-    "requires": \["GOOD\_GRADES"\],  
-    "weights": {  
-      "RICH": 50,  
-      "STRESSED": 20,  
-      "POOR": 1,  
-      "DEFAULT": 5  
-    }  
-  },  
-  {  
-    "id": "trade\_school",  
-    "slot": "EDUCATION",  
-    "text": "Opted for a trade school to start earning money quickly.",  
-    "provides": \["TRADESMAN\_CERT", "NO\_DEBT"\],  
-    "weights": {  
-      "STREET\_SMART": 30,  
-      "POOR": 20,  
-      "RICH": 1,  
-      "DEFAULT": 10  
-    }  
-  }  
+\[
+  {
+    "id": "ivy\_league",
+    "slot": "EDUCATION",
+    "text": "Accepted into a prestigious Ivy League university.",
+    "provides": \["DEGREE\_ADVANCED", "ALUMNI\_NETWORK", "DEBT"\],
+    "requires": \["GOOD\_GRADES"\],
+    "weights": {
+      "RICH": 50,
+      "STRESSED": 20,
+      "POOR": 1,
+      "DEFAULT": 5
+    }
+  },
+  {
+    "id": "trade\_school",
+    "slot": "EDUCATION",
+    "text": "Opted for a trade school to start earning money quickly.",
+    "provides": \["TRADESMAN\_CERT", "NO\_DEBT"\],
+    "weights": {
+      "STREET\_SMART": 30,
+      "POOR": 20,
+      "RICH": 1,
+      "DEFAULT": 10
+    }
+  }
 \]
 
 ### **7.3 career.json (Layer 1\)**
 
 The final node of the spine. Note the strict requires field.
 
-\[  
-  {  
-    "id": "investment\_banker",  
-    "slot": "CAREER",  
-    "text": "Secured a high-pressure job at an investment bank.",  
-    "provides": \["WEALTHY", "BURNOUT", "HIGH\_STATUS"\],  
-    "requires": \["DEGREE\_ADVANCED"\],  
-    "weights": {  
-      "ALUMNI\_NETWORK": 100,  
-      "DEFAULT": 10  
-    }  
-  },  
-  {  
-    "id": "electrician",  
-    "slot": "CAREER",  
-    "text": "Started a contracting business fixing residential wiring.",  
-    "provides": \["STABLE\_INCOME", "PHYSICAL\_TOLL"\],  
-    "requires": \["TRADESMAN\_CERT"\],  
-    "weights": {  
-      "DEFAULT": 50  
-    }  
-  }  
+\[
+  {
+    "id": "investment\_banker",
+    "slot": "CAREER",
+    "text": "Secured a high-pressure job at an investment bank.",
+    "provides": \["WEALTHY", "BURNOUT", "HIGH\_STATUS"\],
+    "requires": \["DEGREE\_ADVANCED"\],
+    "weights": {
+      "ALUMNI\_NETWORK": 100,
+      "DEFAULT": 10
+    }
+  },
+  {
+    "id": "electrician",
+    "slot": "CAREER",
+    "text": "Started a contracting business fixing residential wiring.",
+    "provides": \["STABLE\_INCOME", "PHYSICAL\_TOLL"\],
+    "requires": \["TRADESMAN\_CERT"\],
+    "weights": {
+      "DEFAULT": 50
+    }
+  }
 \]
 
 ### **7.4 events.json (Layer 2)**
 
 These events are simulated in the "Flesh" layer. They do not block the career path but add narrative color.
 
-\[  
-  {  
-    "id": "severe\_accident",  
-    "text": "Suffered a debilitating injury at work.",  
-    "provides": \["CHRONIC\_PAIN", "MEDICAL\_DEBT"\],  
-    "weights": {  
-      "PHYSICAL\_TOLL": 20,  
-      "DANGEROUS\_JOB": 50,  
-      "DEFAULT": 1  
-    }  
-  },  
-  {  
-    "id": "white\_collar\_crime",  
-    "text": "Investigated for insider trading.",  
-    "provides": \["CRIMINAL\_RECORD\_FINANCIAL"\],  
-    "weights": {  
-      "WEALTHY": 10,  
-      "BURNOUT": 15,  
-      "POOR": 0,  
-      "DEFAULT": 0  
-    }  
-  }  
-\]  
+\[
+  {
+    "id": "severe\_accident",
+    "text": "Suffered a debilitating injury at work.",
+    "provides": \["CHRONIC\_PAIN", "MEDICAL\_DEBT"\],
+    "weights": {
+      "PHYSICAL\_TOLL": 20,
+      "DANGEROUS\_JOB": 50,
+      "DEFAULT": 1
+    }
+  },
+  {
+    "id": "white\_collar\_crime",
+    "text": "Investigated for insider trading.",
+    "provides": \["CRIMINAL\_RECORD\_FINANCIAL"\],
+    "weights": {
+      "WEALTHY": 10,
+      "BURNOUT": 15,
+      "POOR": 0,
+      "DEFAULT": 0
+    }
+  }
+\]
+
+## **8\. User Guide & Mechanics**
+
+This section explains how to use the Bio Generator tools and the underlying math that determines a character's life path.
+
+### **8.1 The Mechanics of Choice: How Luck Works**
+
+Selection in the Bio Generator is not purely random. It uses a **Weighted Probability** system where a character's history (Tags) directly influences their future.
+
+#### **The Formula**
+Each potential event (Education, Career, Life Event) has a set of weights. The final probability of an event being chosen is calculated as:
+
+**Final Weight = Default Weight × Modifier(Tag A) × Modifier(Tag B) × ...**
+
+*   **Default Weight:** The baseline chance of the event (e.g., "Ivy League" has a default of 5).
+*   **Modifiers:** If the character possesses a specific tag, the default weight is multiplied by that tag's modifier value.
+
+#### **Example 1: The Advantage of Wealth**
+*   **Event:** Ivy League University
+*   **Default Weight:** 5
+*   **Modifier (RICH):** 50
+*   **Modifier (POOR):** 0.2
+
+*   **Result A (Rich Character):** 5 × 50 = **250** (Extremely Likely)
+*   **Result B (Poor Character):** 5 × 0.2 = **1** (Extremely Rare)
+
+#### **Example 2: The Spiral of Burnout**
+*   **Event:** Mid-life Crisis
+*   **Default Weight:** 10
+*   **Modifier (STRESSED):** 5
+*   **Modifier (BURNOUT):** 10
+
+*   **Result (Stressed & Burned Out):** 10 × 5 × 10 = **500** (Almost Guaranteed)
+
+---
+
+### **8.2 Configuration & UI**
+
+Creators can modify these probabilities and logical connections using the built-in configuration tools.
+
+#### **The Bio Config Page**
+Located in the application settings, this page allows for CRUD (Create, Read, Update, Delete) operations on the entire dataset.
+*   **Dataset Editors:** Specialized forms for editing Origins, Education, Careers, and Life Events. You can define the text, the tags provided/required, and the weight modifiers.
+*   **Tag Manager:** Define the vocabulary of the system. Renaming a tag here will automatically update all references to it across the entire dataset (Cascading Rename).
+
+#### **The Bio Graph View**
+This tool provides a visual map of the "Spine".
+*   **Nodes:** Represent Origins, Education, or Careers.
+*   **Edges:** Represent logical requirements. If Career A requires Tag B, and Education C provides Tag B, an arrow will show the dependency.
+*   **Utility:** Use this to identify "Logical Dead Ends" (e.g., a Career that requires a tag that no Education node provides).
