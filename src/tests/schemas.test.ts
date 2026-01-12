@@ -16,6 +16,24 @@ describe('Life Event Schemas', () => {
     expect(result.success).toBe(true);
   });
 
+  it('should validate a LifeEvent object with optional requires field', () => {
+    const validEvent = {
+      id: 'test_event',
+      text: 'A test event',
+      requires: ['tag1', 'tag2'],
+      weights: {
+        'DEFAULT': 1
+      }
+    };
+
+    const result = lifeEventSchema.safeParse(validEvent);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toHaveProperty('requires');
+      expect(result.data.requires).toEqual(['tag1', 'tag2']);
+    }
+  });
+
   it('should fail if DEFAULT weight is missing (logic check, though Zod schema just checks record structure, strict validation might need refinement if we want to enforce specific keys)', () => {
     // Note: Zod record doesn't strictly enforce specific keys unless refined. 
     // This test ensures the basic structure holds.

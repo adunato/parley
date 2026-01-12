@@ -15,7 +15,8 @@ export type PromptId =
     | 'analyst_system'
     | 'avatar_desc'
     | 'bio_writer'
-    | 'relationship_context_fallback';
+    | 'relationship_context_fallback'
+    | 'life_event_gen';
 
 export interface PromptConfig {
     id: PromptId;
@@ -323,6 +324,38 @@ Write a 2-paragraph background story weaving these facts together naturally. Foc
         description: 'Default context when generating a relationship without specific input.',
         variables: [],
         template: `No specific relationship context provided. Generate a plausible relationship based on their personalities.`
+    },
+    life_event_gen: {
+        id: 'life_event_gen',
+        description: 'Generates new Life Event entities connected to a source entity.',
+        variables: ['count', 'sourceEntity', 'context', 'userPrompt'],
+        template: `You are an expert narrative designer for a procedural life simulation game.
+Your goal is to expand the game's "World Bible" by generating {{count}} new "Life Event" entities that naturally stem from or relate to a specific source entity.
+
+--- SOURCE ENTITY ---
+{{sourceEntity}}
+
+--- CONTEXT ---
+Existing Life Events in this category (DO NOT duplicate these):
+{{context}}
+
+{{userPrompt}}
+
+--- INSTRUCTIONS ---
+1. Generate exactly {{count}} new, unique Life Event entities.
+2. Each Life Event must have:
+   - a unique 'id' in lower_snake_case.
+   - a descriptive 'text' field (the narrative).
+   - an optional 'provides' array of tag IDs that this event grants to the character.
+   - an optional 'requires' array of tag IDs (logical prerequisites).
+   - a 'weights' object determining its selection probability.
+3. The 'weights' object MUST contain a "DEFAULT" key (e.g., 1.0).
+4. To link the Life Event to the SOURCE ENTITY, include tags provided by the source entity in the 'weights' object with higher values (e.g., if source provides 'noble', the life event might have 'noble': 5.0).
+5. TAG MANAGEMENT:
+   - If you use tags in 'provides', 'requires', or 'weights' that are NOT present in the SOURCE ENTITY or CONTEXT description, you MUST include them in the 'newTags' array.
+   - For each new tag, provide a concise 'id' and a brief 'description'.
+6. Ensure the events are diverse and logical within a modern life simulation context.
+7. DO NOT generate NPCs, Locations, or any other entity types.`
     }
 };
 

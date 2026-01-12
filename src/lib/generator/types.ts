@@ -15,6 +15,7 @@ export interface EventNode {
 export interface LifeEvent {
     id: string;
     text: string;
+    requires?: string[];
     provides?: string[];
     weights: { [tag: string]: number; "DEFAULT": number };
 }

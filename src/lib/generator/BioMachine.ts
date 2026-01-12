@@ -137,8 +137,12 @@ export class BioMachine {
         for (let i = 18; i < age; i += 5) {
             // Chance to trigger an event per chunk
             if (Math.random() > 0.3) { // 70% chance of event
-                // Filter out already selected events
-                const availableEvents = this.lifeEvents.filter(e => !selectedEventIds.has(e.id));
+                // Filter out already selected events AND check requirements
+                const availableEvents = this.lifeEvents.filter(e => {
+                    if (selectedEventIds.has(e.id)) return false;
+                    if (!e.requires) return true;
+                    return e.requires.every(req => tags.has(req));
+                });
 
                 const event = this.selectWeighted(availableEvents, tags);
                 if (event) {

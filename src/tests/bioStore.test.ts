@@ -76,4 +76,44 @@ describe('useBioStore', () => {
         expect(state.lifeEvents[0].provides).toContain(newId);
         expect(state.lifeEvents[0].weights[newId]).toBe(0.5);
     });
+
+    it('should cascade rename tag ID in lifeEvents requires field', () => {
+        const oldId = 'OLD_TAG';
+        const newId = 'NEW_TAG';
+
+        useBioStore.setState({
+            lifeEvents: [
+                { id: 'ev1', text: 't', requires: [oldId], weights: { DEFAULT: 1 } }
+            ],
+            tags: [{ id: oldId }],
+            _hasHydrated: true
+        });
+
+        useBioStore.getState().updateTag({ id: newId }, oldId);
+
+        const state = useBioStore.getState();
+        expect(state.lifeEvents[0].requires).toContain(newId);
+        expect(state.lifeEvents[0].requires).not.toContain(oldId);
+    });
+
+    it('should cascade delete tag ID across all entities', () => {
+        const tagId = 'TO_DELETE';
+
+        useBioStore.setState({
+            origins: [{ id: 'o1', slot: 'ORIGIN', text: 't', provides: [tagId, 'KEEP'], weights: { DEFAULT: 1 } }],
+            lifeEvents: [{ id: 'ev1', text: 't', requires: [tagId], provides: [tagId], weights: { [tagId]: 1, DEFAULT: 1 } }],
+            tags: [{ id: tagId }, { id: 'KEEP' }],
+            _hasHydrated: true
+        });
+
+        useBioStore.getState().deleteTag(tagId);
+
+        const state = useBioStore.getState();
+        expect(state.tags).toHaveLength(1);
+        expect(state.origins[0].provides).not.toContain(tagId);
+        expect(state.origins[0].provides).toContain('KEEP');
+        expect(state.lifeEvents[0].requires).not.toContain(tagId);
+        expect(state.lifeEvents[0].provides).not.toContain(tagId);
+        expect(state.lifeEvents[0].weights[tagId]).toBeUndefined();
+    });
 });

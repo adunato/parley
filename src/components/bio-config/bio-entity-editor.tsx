@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
 import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+import { GenerateEventsDialog } from './generate-events-dialog';
+import { Sparkles } from 'lucide-react';
 
 interface BioEntityEditorProps {
     open: boolean;
@@ -25,6 +27,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const [provides, setProvides] = useState<string[]>([]);
     const [requires, setRequires] = useState<string[]>([]);
     const [weights, setWeights] = useState<{ [tag: string]: number; "DEFAULT": number }>({ "DEFAULT": 1 });
+    const [showGenerator, setShowGenerator] = useState(false);
 
     useEffect(() => {
         if (open && initialData) {
@@ -71,7 +74,10 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         };
 
         if (type === 'LIFE_EVENT') {
-            onSave(base as LifeEvent);
+            onSave({
+                ...base,
+                requires: requires.length > 0 ? requires : undefined
+            } as LifeEvent);
         } else {
             onSave({
                 ...base,
@@ -85,68 +91,86 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const isEditing = mode === 'edit' && !!initialData;
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent container={container} className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
-                </DialogHeader>
+        <>
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent container={container} className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
+                    </DialogHeader>
 
-                <div className="space-y-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>ID (Unique)</Label>
-                            <Input
-                                value={id}
-                                onChange={e => setId(e.target.value)}
-                                placeholder="my_entity_id"
-                                className={isDuplicateId ? "border-red-500" : ""}
-                            />
-                            {isDuplicateId && (
-                                <p className="text-xs text-red-500">ID already exists!</p>
-                            )}
+                    <div className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>ID (Unique)</Label>
+                                <Input
+                                    value={id}
+                                    onChange={e => setId(e.target.value)}
+                                    placeholder="my_entity_id"
+                                    className={isDuplicateId ? "border-red-500" : ""}
+                                />
+                                {isDuplicateId && (
+                                    <p className="text-xs text-red-500">ID already exists!</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label>Narrative Text</Label>
-                        <Textarea
-                            value={text}
-                            onChange={e => setText(e.target.value)}
-                            placeholder="Description of the event..."
-                            className="min-h-[80px]"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <TagListEditor
-                                label="Provides Tags (Grants)"
-                                tags={provides}
-                                onChange={setProvides}
-                                placeholder="WEALTHY"
+                        <div className="space-y-2">
+                            <Label>Narrative Text</Label>
+                            <Textarea
+                                value={text}
+                                onChange={e => setText(e.target.value)}
+                                placeholder="Description of the event..."
+                                className="min-h-[80px]"
                             />
+                        </div>
 
-                            {type !== 'LIFE_EVENT' && (
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <TagListEditor
+                                    label="Provides Tags (Grants)"
+                                    tags={provides}
+                                    onChange={setProvides}
+                                    placeholder="WEALTHY"
+                                />
+
                                 <TagListEditor
                                     label="Requires Tags (Prerequisite)"
                                     tags={requires}
                                     onChange={setRequires}
                                     placeholder="DEGREE"
                                 />
-                            )}
-                        </div>
+                            </div>
 
-                        <div>
-                            <WeightEditor weights={weights} onChange={setWeights} />
+                            <div>
+                                <WeightEditor weights={weights} onChange={setWeights} />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSave} disabled={!id || !text || isDuplicateId}>Save</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    <DialogFooter className="flex justify-between sm:justify-between items-center">
+                         <div className="flex gap-2">
+                            {isEditing && (
+                               <Button variant="secondary" onClick={() => setShowGenerator(true)} type="button">
+                                   <Sparkles className="w-4 h-4 mr-2" />
+                                   Gen Events
+                               </Button>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                            <Button onClick={handleSave} disabled={!id || !text || isDuplicateId}>Save</Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {isEditing && initialData && (
+                <GenerateEventsDialog 
+                    open={showGenerator} 
+                    onOpenChange={setShowGenerator} 
+                    sourceEntity={initialData} 
+                />
+            )}
+        </>
     );
 }
