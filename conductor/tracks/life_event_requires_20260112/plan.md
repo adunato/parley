@@ -30,4 +30,4 @@
     - [ ] Sub-task: Update the generation prompt in `src/lib/generator/` (likely within the service using `lifeEventGenerationSchema`) to instruct the LLM on how to use the `requires` field meaningfully.
 - [x] Task: End-to-End Verification cb9baa1
     - [ ] Sub-task: Run the bio-generator test script or use the UI to verify that the LLM generates requirements and the engine respects them.
-- [ ] Task: Conductor - User Manual Verification 'LLM Integration & Verification' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'LLM Integration & Verification' (Protocol in workflow.md) c92a1b9
