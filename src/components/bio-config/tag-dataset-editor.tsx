@@ -12,7 +12,7 @@ interface TagDatasetEditorProps {
     tags: Tag[];
     bioData: BioData;
     onAdd: (tag: Tag) => void;
-    onUpdate: (tag: Tag) => void;
+    onUpdate: (tag: Tag, oldId: string) => void;
     onDelete: (id: string) => void;
 }
 
@@ -53,10 +53,21 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
 
     const handleSave = (item: Tag) => {
         if (editorMode === 'edit' && editingItem) {
-            onUpdate(item);
+            onUpdate(item, editingItem.id);
         } else {
             onAdd(item);
         }
+    const handleDelete = (id: string) => {
+        const rels = getTagRelationships(id, bioData);
+        const hasRefs = rels.providedBy.length > 0 || rels.requiredBy.length > 0 || rels.influences.length > 0;
+
+        if (hasRefs) {
+            const confirmMsg = `This tag is referenced by ${rels.providedBy.length + rels.requiredBy.length + rels.influences.length} entities. Deleting it will leave these references dangling. Are you sure?`;
+            if (!window.confirm(confirmMsg)) return;
+        } else {
+            if (!window.confirm('Are you sure you want to delete this tag?')) return;
+        }
+        onDelete(id);
     };
 
     return (
@@ -136,7 +147,7 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleDuplicate(tag)} title="Duplicate">
                                                     <Copy className="w-4 h-4" />
                                                 </Button>
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDelete(tag.id)} title="Delete">
+                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleDelete(tag.id)} title="Delete">
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>

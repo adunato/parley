@@ -34,7 +34,7 @@ interface BioStoreState {
     deleteLifeEvent: (id: string) => void;
 
     addTag: (item: Tag) => void;
-    updateTag: (item: Tag) => void;
+    updateTag: (item: Tag, oldId?: string) => void;
     deleteTag: (id: string) => void;
 
     setData: (data: {
@@ -100,9 +100,40 @@ export const useBioStore = create<BioStoreState>()(
             })),
 
             addTag: (item) => set((state) => ({ tags: [...state.tags, item] })),
-            updateTag: (item) => set((state) => ({
-                tags: state.tags.map(i => i.id === item.id ? item : i)
-            })),
+            updateTag: (item, oldId) => set((state) => {
+                const effectiveOldId = oldId || item.id;
+                const isRename = effectiveOldId !== item.id;
+
+                if (!isRename) {
+                    return {
+                        tags: state.tags.map(i => i.id === item.id ? item : i)
+                    };
+                }
+
+                // Cascading Rename Logic
+                const renameInList = (list: any[], field: 'provides' | 'requires') => 
+                    list.map(obj => ({
+                        ...obj,
+                        [field]: obj[field]?.map((t: string) => t === effectiveOldId ? item.id : t)
+                    }));
+
+                const renameInWeights = (list: any[]) =>
+                    list.map(obj => {
+                        if (!obj.weights || obj.weights[effectiveOldId] === undefined) return obj;
+                        const newWeights = { ...obj.weights };
+                        newWeights[item.id] = newWeights[effectiveOldId];
+                        delete newWeights[effectiveOldId];
+                        return { ...obj, weights: newWeights };
+                    });
+
+                return {
+                    tags: state.tags.map(i => i.id === effectiveOldId ? item : i),
+                    origins: renameInList(state.origins, 'provides'),
+                    education: renameInWeights(renameInList(renameInList(state.education, 'provides'), 'requires')),
+                    careers: renameInWeights(renameInList(state.careers, 'requires')),
+                    lifeEvents: renameInWeights(renameInList(state.lifeEvents, 'provides'))
+                };
+            }),
             deleteTag: (id) => set((state) => ({
                 tags: state.tags.filter(i => i.id !== id)
             })),

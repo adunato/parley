@@ -21,12 +21,12 @@
 - [x] Task: Conductor - User Manual Verification 'Core Logic & Backend' (Protocol in workflow.md) [5c0fe06]
 
 ## Phase 3: UI Implementation
-- [~] Task: Create Tags Management Tab
+- [x] Task: Create Tags Management Tab [6e056d8]
     -   **Goal:** Integrate the "Tags" tab into the Bio Config layout.
     -   **Sub-tasks:**
         -   Write Tests (Verify tab appears and table renders)
         -   Implement Feature (Update `src/app/bio-config/page.tsx` and related components)
-- [ ] Task: Implement Tag Edit & CRUD Dialogs
+- [~] Task: Implement Tag Edit & CRUD Dialogs
     -   **Goal:** Allow users to Create, Edit, and Delete tags with appropriate dialogs.
     -   **Sub-tasks:**
         -   Write Tests (Verify CRUD operations update the store correctly)

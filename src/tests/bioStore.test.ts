@@ -51,4 +51,29 @@ describe('useBioStore', () => {
         const state = useBioStore.getState();
         expect(state.tags).toHaveLength(0);
     });
+
+    it('should cascade rename tag ID across all entities', () => {
+        const oldId = 'OLD_TAG';
+        const newId = 'NEW_TAG';
+
+        useBioStore.setState({
+            origins: [{ id: 'o1', slot: 'ORIGIN', text: 't', provides: [oldId], weights: { DEFAULT: 1 } }],
+            education: [{ id: 'e1', slot: 'EDUCATION', text: 't', requires: [oldId], provides: ['OTHER'], weights: { [oldId]: 5, DEFAULT: 1 } }],
+            careers: [{ id: 'c1', slot: 'CAREER', text: 't', requires: ['OTHER'], weights: { [oldId]: 10, DEFAULT: 1 } }],
+            lifeEvents: [{ id: 'ev1', text: 't', provides: [oldId], weights: { [oldId]: 0.5, DEFAULT: 1 } }],
+            tags: [{ id: oldId }],
+            _hasHydrated: true
+        });
+
+        useBioStore.getState().updateTag({ id: newId }, oldId);
+
+        const state = useBioStore.getState();
+        expect(state.tags[0].id).toBe(newId);
+        expect(state.origins[0].provides).toContain(newId);
+        expect(state.education[0].requires).toContain(newId);
+        expect(state.education[0].weights[newId]).toBe(5);
+        expect(state.careers[0].weights[newId]).toBe(10);
+        expect(state.lifeEvents[0].provides).toContain(newId);
+        expect(state.lifeEvents[0].weights[newId]).toBe(0.5);
+    });
 });
