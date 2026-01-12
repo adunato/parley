@@ -1,6 +1,6 @@
 # Plan: Optional "Requires" Field for Life Events
 
-## Phase 1: Types, Schemas & Store Updates
+## Phase 1: Types, Schemas & Store Updates [checkpoint: 200f5fc]
 - [x] Task: Update Type Definitions 18724bc
     - [x] Sub-task: Add `requires?: string[]` to `LifeEvent` interface in `src/lib/generator/types.ts`.
 - [x] Task: Update Zod Schemas 62e59f5
@@ -8,7 +8,7 @@
 - [x] Task: Update BioStore Cascading Logic fbe3043
     - [x] Sub-task: Update `updateTag` rename logic in `src/lib/store/bioStore.ts` to include `requires` field for `lifeEvents`.
     - [x] Sub-task: Update `deleteTag` or re-harvest logic if necessary to handle `requires` cleanup.
-- [ ] Task: Conductor - User Manual Verification 'Types, Schemas & Store Updates' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Types, Schemas & Store Updates' (Protocol in workflow.md) 200f5fc
 
 ## Phase 2: Core Logic Implementation (BioMachine)
 - [ ] Task: Write Failing Tests for BioMachine Filtering
