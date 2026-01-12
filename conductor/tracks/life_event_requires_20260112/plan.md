@@ -10,7 +10,7 @@
     - [x] Sub-task: Update `deleteTag` or re-harvest logic if necessary to handle `requires` cleanup.
 - [x] Task: Conductor - User Manual Verification 'Types, Schemas & Store Updates' (Protocol in workflow.md) 200f5fc
 
-## Phase 2: Core Logic Implementation (BioMachine)
+## Phase 2: Core Logic Implementation (BioMachine) [checkpoint: 25e1576]
 - [x] Task: Write Failing Tests for BioMachine Filtering 870bbf7
     - [x] Sub-task: Create or update `BioMachine` tests to verify that `LifeEvent` items with unmet `requires` tags are filtered out.
 - [x] Task: Implement Filtering Logic in BioMachine 870bbf7
