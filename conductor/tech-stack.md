@@ -20,4 +20,4 @@
 
 ## 5. Development & Quality Assurance
 *   **Component Documentation:** [Storybook](https://storybook.js.org/) - For isolated component development and testing.
-*   **Testing:** [Jest](https://jestjs.io/) - JavaScript testing framework.
+*   **Testing:** [Jest](https://jestjs.io/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - For unit and component testing.
