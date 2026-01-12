@@ -8,7 +8,7 @@
     - **Deliverable:** Brief notes on discrepancies between current HLD and code.
 
 ## Phase 2: Documentation Update
-- [~] Task: Doc Update - Architecture Section
+- [x] Task: Doc Update - Architecture Section (16bdfa5)
     - Update `docs\High-Level Design_ Procedural Character Bio Generator.md`.
     - Revise "System Architecture" to include the Frontend Layer (UI, Graph View, Editors).
     - Update "Data Logic & Schema" to match `types.ts` (e.g., specific fields in `EventNode`).
