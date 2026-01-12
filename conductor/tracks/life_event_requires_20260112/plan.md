@@ -11,12 +11,12 @@
 - [x] Task: Conductor - User Manual Verification 'Types, Schemas & Store Updates' (Protocol in workflow.md) 200f5fc
 
 ## Phase 2: Core Logic Implementation (BioMachine)
-- [ ] Task: Write Failing Tests for BioMachine Filtering
-    - [ ] Sub-task: Create or update `BioMachine` tests to verify that `LifeEvent` items with unmet `requires` tags are filtered out.
-- [ ] Task: Implement Filtering Logic in BioMachine
-    - [ ] Sub-task: Modify `BioMachine.ts` to filter `LifeEvent` candidates based on character's current tags.
-- [ ] Task: Verify Tests and Coverage
-    - [ ] Sub-task: Run tests and ensure >80% coverage for the new filtering logic.
+- [x] Task: Write Failing Tests for BioMachine Filtering 870bbf7
+    - [x] Sub-task: Create or update `BioMachine` tests to verify that `LifeEvent` items with unmet `requires` tags are filtered out.
+- [x] Task: Implement Filtering Logic in BioMachine 870bbf7
+    - [x] Sub-task: Modify `BioMachine.ts` to filter `LifeEvent` candidates based on character's current tags.
+- [x] Task: Verify Tests and Coverage 870bbf7
+    - [x] Sub-task: Run tests and ensure >80% coverage for the new filtering logic.
 - [ ] Task: Conductor - User Manual Verification 'Core Logic Implementation (BioMachine)' (Protocol in workflow.md)
 
 ## Phase 3: UI Implementation
