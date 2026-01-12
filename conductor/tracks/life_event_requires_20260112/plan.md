@@ -5,9 +5,9 @@
     - [x] Sub-task: Add `requires?: string[]` to `LifeEvent` interface in `src/lib/generator/types.ts`.
 - [x] Task: Update Zod Schemas 62e59f5
     - [x] Sub-task: Add `requires: z.array(z.string()).optional()` to `lifeEventSchema` in `src/lib/generator/schemas.ts`.
-- [ ] Task: Update BioStore Cascading Logic
-    - [ ] Sub-task: Update `updateTag` rename logic in `src/lib/store/bioStore.ts` to include `requires` field for `lifeEvents`.
-    - [ ] Sub-task: Update `deleteTag` or re-harvest logic if necessary to handle `requires` cleanup.
+- [x] Task: Update BioStore Cascading Logic fbe3043
+    - [x] Sub-task: Update `updateTag` rename logic in `src/lib/store/bioStore.ts` to include `requires` field for `lifeEvents`.
+    - [x] Sub-task: Update `deleteTag` or re-harvest logic if necessary to handle `requires` cleanup.
 - [ ] Task: Conductor - User Manual Verification 'Types, Schemas & Store Updates' (Protocol in workflow.md)
 
 ## Phase 2: Core Logic Implementation (BioMachine)
