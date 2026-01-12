@@ -13,12 +13,12 @@
 - [x] Task: Conductor - User Manual Verification 'Analysis & Data Foundation' (Protocol in workflow.md) [c3d7094]
 
 ## Phase 2: Core Logic & Backend
-- [~] Task: Implement Tag Reverse-Lookup Logic
+- [x] Task: Implement Tag Reverse-Lookup Logic [641a23f]
     -   **Goal:** Create functions to identify which entities Provide, Require, or are Influenced by a specific tag.
     -   **Sub-tasks:**
         -   Write Tests (Verify lookup accuracy for all relationship types)
         -   Implement Feature (Add helper functions to a new `tag-utils.ts`)
-- [ ] Task: Conductor - User Manual Verification 'Core Logic & Backend' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Core Logic & Backend' (Protocol in workflow.md)
 
 ## Phase 3: UI Implementation
 - [ ] Task: Create Tags Management Tab
