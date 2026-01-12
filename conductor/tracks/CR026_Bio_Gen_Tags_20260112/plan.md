@@ -1,10 +1,11 @@
 # Implementation Plan - CR026 Bio Generator Tags Management
 
 ## Phase 1: Analysis & Data Foundation
-- [ ] Task: Investigate Store and JSON Data Relationship
+- [x] Task: Investigate Store and JSON Data Relationship [analysis: f17c39e]
     -   **Goal:** Confirm if JSON files are legacy and verify current store structure for bio entities.
     -   **Action:** Inspect `src/lib/store.ts`, `src/lib/entityStore.ts` and their interaction with `src/lib/generator/data/*.json`.
-- [ ] Task: Define Tag Data Model
+    -   *Result:* JSON files are used as initial seed data in `onRehydrateStorage` in `useBioStore` (`src/lib/store/bioStore.ts`). The store uses Dexie for persistence. Tags are currently implicit in `provides`, `requires`, and `weights` keys of entities.
+- [~] Task: Define Tag Data Model
     -   **Goal:** Create a consistent data model for Tags in the store.
     -   **Sub-tasks:**
         -   Write Tests (Verify store can hold and persist new Tag entities)

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag } from '../generator/types';
 
 // Default Data Imports
 import originsData from '../generator/data/origins.json';
@@ -14,6 +14,7 @@ interface BioStoreState {
     education: EventNode[];
     careers: EventNode[];
     lifeEvents: LifeEvent[];
+    tags: Tag[];
 
     // Actions
     addOrigin: (item: EventNode) => void;
@@ -32,11 +33,16 @@ interface BioStoreState {
     updateLifeEvent: (item: LifeEvent) => void;
     deleteLifeEvent: (id: string) => void;
 
+    addTag: (item: Tag) => void;
+    updateTag: (item: Tag) => void;
+    deleteTag: (id: string) => void;
+
     setData: (data: {
         origins: EventNode[];
         education: EventNode[];
         careers: EventNode[];
         lifeEvents: LifeEvent[];
+        tags: Tag[];
     }) => void;
 
     // Computed
@@ -45,6 +51,7 @@ interface BioStoreState {
         education: EventNode[];
         careers: EventNode[];
         lifeEvents: LifeEvent[];
+        tags: Tag[];
     };
 
     _hasHydrated: boolean;
@@ -58,6 +65,7 @@ export const useBioStore = create<BioStoreState>()(
             education: [],
             careers: [],
             lifeEvents: [],
+            tags: [],
 
             addOrigin: (item) => set((state) => ({ origins: [...state.origins, item] })),
             updateOrigin: (item) => set((state) => ({
@@ -91,6 +99,14 @@ export const useBioStore = create<BioStoreState>()(
                 lifeEvents: state.lifeEvents.filter(i => i.id !== id)
             })),
 
+            addTag: (item) => set((state) => ({ tags: [...state.tags, item] })),
+            updateTag: (item) => set((state) => ({
+                tags: state.tags.map(i => i.id === item.id ? item : i)
+            })),
+            deleteTag: (id) => set((state) => ({
+                tags: state.tags.filter(i => i.id !== id)
+            })),
+
             // Bulk Set (for migration)
             setData: (data) => set(data),
 
@@ -98,7 +114,8 @@ export const useBioStore = create<BioStoreState>()(
                 origins: get().origins,
                 education: get().education,
                 careers: get().careers,
-                lifeEvents: get().lifeEvents
+                lifeEvents: get().lifeEvents,
+                tags: get().tags
             }),
 
             _hasHydrated: false,
@@ -110,15 +127,16 @@ export const useBioStore = create<BioStoreState>()(
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     // Check if empty and migrate
-                    const { origins, education, careers } = state;
-                    if (origins.length === 0 && education.length === 0 && careers.length === 0) {
+                    const { origins, education, careers, tags } = state;
+                    if (origins.length === 0 && education.length === 0 && careers.length === 0 && (tags?.length || 0) === 0) {
                         console.log("BioStore: Migrating default data...");
                         // Use action to update state cleanly
                         state.setData({
                             origins: originsData as EventNode[],
                             education: educationData as EventNode[],
                             careers: careersData as EventNode[],
-                            lifeEvents: eventsData as LifeEvent[]
+                            lifeEvents: eventsData as LifeEvent[],
+                            tags: [] // Initial empty tags
                         });
                     }
 

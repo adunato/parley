@@ -28,7 +28,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
         origins: state.origins,
         education: state.education,
         careers: state.careers,
-        lifeEvents: state.lifeEvents
+        lifeEvents: state.lifeEvents,
+        tags: state.tags
     })));
     const origins = bioData.origins;
     const careers = bioData.careers;

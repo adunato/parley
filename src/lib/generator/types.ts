@@ -19,6 +19,11 @@ export interface LifeEvent {
     weights: { [tag: string]: number; "DEFAULT": number };
 }
 
+export interface Tag {
+    id: string;
+    description?: string;
+}
+
 export interface BioGenerationRequest {
     targetCareerId?: string; // Pinning constraint
     targetOriginId?: string; // Pinning constraint
@@ -38,4 +43,5 @@ export interface BioData {
     education: EventNode[];
     careers: EventNode[];
     lifeEvents: LifeEvent[];
+    tags: Tag[];
 }

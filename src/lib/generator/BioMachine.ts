@@ -1,5 +1,5 @@
 
-import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent } from './types';
+import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent, Tag } from './types';
 
 // --- The Engine ---
 
@@ -9,12 +9,14 @@ export class BioMachine {
     private education: EventNode[];
     private careers: EventNode[];
     private lifeEvents: LifeEvent[];
+    private tags: Tag[];
 
     constructor(data: BioData) {
         this.origins = data.origins;
         this.education = data.education;
         this.careers = data.careers;
         this.lifeEvents = data.lifeEvents;
+        this.tags = data.tags;
     }
 
     public generate(request: BioGenerationRequest): BioState {
