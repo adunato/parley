@@ -47,7 +47,7 @@ describe('AgePhase Types and Constants', () => {
             endAge: 100, // or generic max
             simulationInterval: 5,
             eventChance: 0.4,
-            spineSlot: null
+            spineSlot: 'SENIOR'
         });
     });
 });

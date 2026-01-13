@@ -13,6 +13,7 @@ interface BioStoreState {
     origins: EventNode[];
     education: EventNode[];
     careers: EventNode[];
+    senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
     phaseConfig: Record<AgePhase, PhaseConfig>;
@@ -29,6 +30,10 @@ interface BioStoreState {
     addCareer: (item: EventNode) => void;
     updateCareer: (item: EventNode) => void;
     deleteCareer: (id: string) => void;
+
+    addSenior: (item: EventNode) => void;
+    updateSenior: (item: EventNode) => void;
+    deleteSenior: (id: string) => void;
 
     addLifeEvent: (item: LifeEvent) => void;
     updateLifeEvent: (item: LifeEvent) => void;
@@ -47,6 +52,7 @@ interface BioStoreState {
         origins: EventNode[];
         education: EventNode[];
         careers: EventNode[];
+        senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
         phaseConfig?: Record<AgePhase, PhaseConfig>;
@@ -57,6 +63,7 @@ interface BioStoreState {
         origins: EventNode[];
         education: EventNode[];
         careers: EventNode[];
+        senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
         phaseConfig: Record<AgePhase, PhaseConfig>;
@@ -72,6 +79,7 @@ export const useBioStore = create<BioStoreState>()(
             origins: [],
             education: [],
             careers: [],
+            senior: [],
             lifeEvents: [],
             tags: [],
             phaseConfig: AGE_PHASES,
@@ -98,6 +106,14 @@ export const useBioStore = create<BioStoreState>()(
             })),
             deleteCareer: (id) => set((state) => ({
                 careers: state.careers.filter(i => i.id !== id)
+            })),
+
+            addSenior: (item) => set((state) => ({ senior: [...state.senior, item] })),
+            updateSenior: (item) => set((state) => ({
+                senior: state.senior.map(i => i.id === item.id ? item : i)
+            })),
+            deleteSenior: (id) => set((state) => ({
+                senior: state.senior.filter(i => i.id !== id)
             })),
 
             addLifeEvent: (item) => set((state) => ({ lifeEvents: [...state.lifeEvents, item] })),
@@ -140,6 +156,7 @@ export const useBioStore = create<BioStoreState>()(
                     origins: renameInList(state.origins, 'provides'),
                     education: renameInWeights(renameInList(renameInList(state.education, 'provides'), 'requires')),
                     careers: renameInWeights(renameInList(state.careers, 'requires')),
+                    senior: renameInWeights(renameInList(state.senior, 'requires')), // Assuming senior spine nodes might have requirements
                     lifeEvents: renameInWeights(renameInList(renameInList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
@@ -163,6 +180,7 @@ export const useBioStore = create<BioStoreState>()(
                     origins: removeFromList(state.origins, 'provides'),
                     education: removeFromWeights(removeFromList(removeFromList(state.education, 'provides'), 'requires')),
                     careers: removeFromWeights(removeFromList(state.careers, 'requires')),
+                    senior: removeFromWeights(removeFromList(state.senior, 'requires')),
                     lifeEvents: removeFromWeights(removeFromList(removeFromList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
@@ -194,6 +212,7 @@ export const useBioStore = create<BioStoreState>()(
                 origins: get().origins,
                 education: get().education,
                 careers: get().careers,
+                senior: get().senior,
                 lifeEvents: get().lifeEvents,
                 tags: get().tags,
                 phaseConfig: get().phaseConfig
@@ -208,15 +227,16 @@ export const useBioStore = create<BioStoreState>()(
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     // Check if empty and migrate
-                    const { origins, education, careers, tags } = state;
+                    const { origins, education, careers, senior, tags } = state;
                     
                     // 1. Seed default data if empty
-                    if (origins.length === 0 && education.length === 0 && careers.length === 0) {
+                    if (origins.length === 0 && education.length === 0 && careers.length === 0 && (senior || []).length === 0) {
                         console.log("BioStore: Migrating default data...");
                         state.setData({
                             origins: originsData as EventNode[],
                             education: educationData as EventNode[],
                             careers: careersData as EventNode[],
+                            senior: [], // No default senior spine yet
                             lifeEvents: eventsData as LifeEvent[],
                             tags: [] // Will be populated in next step
                         });
@@ -243,6 +263,7 @@ export const useBioStore = create<BioStoreState>()(
                         collect(state.origins);
                         collect(state.education);
                         collect(state.careers);
+                        collect(state.senior || []);
                         collect(state.lifeEvents);
 
                         const newTags = Array.from(uniqueTags).map(id => ({ id }));
@@ -273,16 +294,18 @@ export const useBioStore = create<BioStoreState>()(
                         origins: ensurePhases(state.origins, 'Childhood'),
                         education: ensurePhases(state.education, 'Formative'),
                         careers: ensurePhases(state.careers, 'Professional'),
+                        senior: ensurePhases(state.senior || [], 'Senior'),
                         lifeEvents: ensurePhases(state.lifeEvents, undefined, ['Childhood', 'Formative', 'Professional', 'Senior'])
                     };
 
-                    if (migrationResult.origins.changed || migrationResult.education.changed || migrationResult.careers.changed || migrationResult.lifeEvents.changed) {
+                    if (migrationResult.origins.changed || migrationResult.education.changed || migrationResult.careers.changed || migrationResult.senior.changed || migrationResult.lifeEvents.changed) {
                         console.log("BioStore: Migrating entities to support age phases...");
                         state.setData({
                             ...state.getAllData(),
                             origins: migrationResult.origins.newList,
                             education: migrationResult.education.newList,
                             careers: migrationResult.careers.newList,
+                            senior: migrationResult.senior.newList,
                             lifeEvents: migrationResult.lifeEvents.newList
                         });
                     }

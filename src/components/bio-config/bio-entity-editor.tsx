@@ -8,10 +8,7 @@ import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
 import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
 import { GenerateEventsDialog } from './generate-events-dialog';
-import { Sparkles, Check, ChevronsUpDown } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Sparkles } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface BioEntityEditorProps {
@@ -19,7 +16,7 @@ interface BioEntityEditorProps {
     onOpenChange: (open: boolean) => void;
     initialData?: EventNode | LifeEvent;
     onSave: (data: any) => void;
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
+    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR' | 'LIFE_EVENT';
     phase?: AgePhase; // Suggested phase from tab
     existingIds: string[];
     mode?: 'create' | 'edit';
@@ -141,59 +138,31 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                             <div className="space-y-2">
                                 <Label>Age Phase{type === 'LIFE_EVENT' ? 's' : ''}</Label>
                                 {type === 'LIFE_EVENT' ? (
-                                    <Popover>
-                                        <PopoverTrigger asChild>
+                                    <div className="flex flex-wrap gap-2">
+                                        {allPhases.map(p => (
                                             <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className="w-full justify-between font-normal"
+                                                key={p}
+                                                type="button"
+                                                variant={selectedPhases.includes(p) ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedPhases(prev => 
+                                                        prev.includes(p)
+                                                            ? prev.filter(ph => ph !== p)
+                                                            : [...prev, p]
+                                                    );
+                                                }}
                                             >
-                                                {selectedPhases.length > 0
-                                                    ? `${selectedPhases.length} Phases selected`
-                                                    : "Select phases..."}
-                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                {p}
                                             </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[300px] p-0">
-                                            <Command>
-                                                <CommandInput placeholder="Search phase..." />
-                                                <CommandEmpty>No phase found.</CommandEmpty>
-                                                <CommandGroup>
-                                                    {allPhases.map((phase) => (
-                                                        <CommandItem
-                                                            key={phase}
-                                                            onSelect={() => {
-                                                                setSelectedPhases(prev => 
-                                                                    prev.includes(phase)
-                                                                        ? prev.filter(p => p !== phase)
-                                                                        : [...prev, phase]
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Check
-                                                                className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    selectedPhases.includes(phase) ? "opacity-100" : "opacity-0"
-                                                                )}
-                                                            />
-                                                            {phase}
-                                                        </CommandItem>
-                                                    ))}
-                                                </CommandGroup>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <Select value={selectedPhase} onValueChange={(v: AgePhase) => setSelectedPhase(v)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select phase" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {allPhases.map(p => (
-                                                <SelectItem key={p} value={p}>{p}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <Input 
+                                        value={selectedPhase || 'None'} 
+                                        disabled={true} 
+                                        className="bg-muted text-muted-foreground"
+                                    />
                                 )}
                             </div>
                         </div>

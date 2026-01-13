@@ -10,7 +10,7 @@ import { useBioStore } from "@/lib/store/bioStore";
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT'; // The target type for new items
+    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR' | 'LIFE_EVENT'; // The target type for new items
     phase?: AgePhase; // The active phase context
     onAdd: (item: any) => void;
     onUpdate: (item: any) => void;
@@ -25,10 +25,24 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-    const filteredData = data.filter(item =>
-        item.id.toLowerCase().includes(search.toLowerCase()) ||
-        item.text.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredData = data.filter(item => {
+        // Search Filter
+        const matchesSearch = item.id.toLowerCase().includes(search.toLowerCase()) ||
+            item.text.toLowerCase().includes(search.toLowerCase());
+        
+        if (!matchesSearch) return false;
+
+        // Phase Filter
+        if (phase) {
+            // Check 'phase' property (single)
+            if ('phase' in item && item.phase === phase) return true;
+            // Check 'phases' property (multiple)
+            if ('phases' in item && item.phases?.includes(phase)) return true;
+            return false;
+        }
+
+        return true;
+    });
 
     const existingIds = data.map(i => i.id);
 
@@ -113,7 +127,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                         <TableRow>
                             <TableHead className="w-[120px]">ID</TableHead>
                             <TableHead>Text</TableHead>
-                            <TableHead>Age Phases</TableHead>
+                            {type === 'LIFE_EVENT' && <TableHead>Age Phases</TableHead>}
                             <TableHead>Provides</TableHead>
                             <TableHead>Requires</TableHead>
                             <TableHead>Influenced by</TableHead>
@@ -134,6 +148,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                                     <TableCell className="max-w-[300px] truncate" title={item.text}>
                                         {item.text}
                                     </TableCell>
+                                    {type === 'LIFE_EVENT' && (
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
                                             {('phase' in item && item.phase) && (
@@ -148,6 +163,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                                             ))}
                                         </div>
                                     </TableCell>
+                                    )}
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
                                             {item.provides?.slice(0, 3).map(t => (

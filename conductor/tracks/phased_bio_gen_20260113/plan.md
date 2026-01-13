@@ -32,3 +32,11 @@
 - [x] Task: Perform comprehensive integration tests for character generation
 - [x] Task: Update `docs/game_design.md` and `docs/High-Level Design_ Procedural Character Bio Generator.md`
 - [x] Task: Conductor - User Manual Verification 'Final Verification & Documentation' (Protocol in workflow.md)
+
+## Phase 6: Feedback & Polish
+- [x] Task: Refine `BioDatasetEditor` (Hide "Age Phases" column for Spine, Filter data by phase)
+- [x] Task: Enable Senior Tab with filtered Life Events editor (Reverted: Moving to Spine model)
+- [x] Task: Fix `BioEntityEditor` (Disable phase editing for Spine, Fix Multi-select for Life Events)
+- [x] Task: Implement Senior Spine Slot (Schema: `SlotType`, Store: `senior` array, Engine: `BioMachine` support)
+- [x] Task: Update Senior Tab in `BioConfig` to use new Senior Spine store
+- [x] Task: Conductor - User Manual Verification 'Feedback & Polish' (Protocol in workflow.md)

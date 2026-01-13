@@ -8,6 +8,7 @@ export class BioMachine {
     private origins: EventNode[];
     private education: EventNode[];
     private careers: EventNode[];
+    private senior: EventNode[];
     private lifeEvents: LifeEvent[];
     private tags: Tag[];
     private phaseConfig: Record<AgePhase, PhaseConfig>;
@@ -16,6 +17,7 @@ export class BioMachine {
         this.origins = data.origins;
         this.education = data.education;
         this.careers = data.careers;
+        this.senior = data.senior || []; // Default empty if not present
         this.lifeEvents = data.lifeEvents;
         this.tags = data.tags;
         this.phaseConfig = data.phaseConfig || AGE_PHASES;
@@ -28,6 +30,7 @@ export class BioMachine {
         let validOrigins = [...this.origins];
         let validEducation = [...this.education];
         let validCareers = [...this.careers];
+        let validSenior = [...this.senior];
 
         // A. Pinning
         if (request.targetOriginId) {
@@ -61,7 +64,7 @@ export class BioMachine {
 
         for (const phase of phases) {
             // A. Resolve Spine for this phase
-            const spineNode = this.resolvePhaseSpine(phase, tags, validOrigins, validEducation, validCareers);
+            const spineNode = this.resolvePhaseSpine(phase, tags, validOrigins, validEducation, validCareers, validSenior);
             if (spineNode) {
                 spine.push(spineNode);
                 spineNode.provides?.forEach(t => tags.add(t));
@@ -85,7 +88,7 @@ export class BioMachine {
 
     // --- New Phased Logic ---
 
-    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validOrigins?: EventNode[], validEducation?: EventNode[], validCareers?: EventNode[]): EventNode | null {
+    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validOrigins?: EventNode[], validEducation?: EventNode[], validCareers?: EventNode[], validSenior?: EventNode[]): EventNode | null {
         const config = this.phaseConfig[phase];
         if (!config.spineSlot) return null;
 
@@ -102,6 +105,9 @@ export class BioMachine {
                 break;
             case 'CAREER':
                 pool = validCareers || this.careers;
+                break;
+            case 'SENIOR':
+                pool = validSenior || this.senior;
                 break;
         }
 

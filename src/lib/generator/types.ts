@@ -1,7 +1,7 @@
 
 // --- Types ---
 
-export type SlotType = 'ORIGIN' | 'EDUCATION' | 'CAREER';
+export type SlotType = 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR';
 
 export type AgePhase = 'Childhood' | 'Formative' | 'Professional' | 'Senior';
 
@@ -45,7 +45,7 @@ export const AGE_PHASES: Record<AgePhase, PhaseConfig> = {
         endAge: 100,
         simulationInterval: 5,
         eventChance: 0.4,
-        spineSlot: null
+        spineSlot: 'SENIOR'
     }
 };
 
@@ -91,6 +91,7 @@ export interface BioData {
     origins: EventNode[];
     education: EventNode[];
     careers: EventNode[];
+    senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
     phaseConfig?: Record<AgePhase, PhaseConfig>;

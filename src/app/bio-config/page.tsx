@@ -79,10 +79,16 @@ export default function BioConfigPage() {
                 </TabsContent>
 
                 <TabsContent value="senior" className="space-y-4">
-                    <div className="p-8 border-2 border-dashed rounded-lg text-center text-muted-foreground">
-                        <h3 className="text-lg font-medium">Senior Phase</h3>
-                        <p>This phase currently has no associated Spine nodes (it focus on Life Events).</p>
-                    </div>
+                    <BioDatasetEditor
+                        title="Senior (Status)"
+                        description="Retirement status or late-life role."
+                        data={store.senior}
+                        type="SENIOR"
+                        phase="Senior"
+                        onAdd={store.addSenior}
+                        onUpdate={store.updateSenior}
+                        onDelete={store.deleteSenior}
+                    />
                 </TabsContent>
 
                 <TabsContent value="events" className="space-y-4">
