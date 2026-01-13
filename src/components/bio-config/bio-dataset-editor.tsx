@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { BioEntityEditor } from './bio-entity-editor';
 import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
 import { Badge } from "@/components/ui/badge";
+import { useBioStore } from "@/lib/store/bioStore";
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
@@ -54,6 +55,19 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
     };
 
     const handleSave = (item: EventNode | LifeEvent) => {
+        // Automatically register tags in the global database
+        const tagsToRegister = new Set<string>();
+        item.provides?.forEach(t => tagsToRegister.add(t));
+        if ('requires' in item) item.requires?.forEach(t => tagsToRegister.add(t));
+        if (item.weights) {
+            Object.keys(item.weights).forEach(t => {
+                if (t !== 'DEFAULT') tagsToRegister.add(t);
+            });
+        }
+        if (tagsToRegister.size > 0) {
+            useBioStore.getState().registerTags(Array.from(tagsToRegister));
+        }
+
         if (editorMode === 'edit' && editingItem) {
             // Check for ID Rename
             if (editingItem.id !== item.id) {

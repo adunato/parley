@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TagSelector } from "./tag-selector";
 import { X, Plus } from "lucide-react";
 
 interface TagListEditorProps {
@@ -49,9 +49,9 @@ export function TagListEditor({ tags, onChange, label, placeholder }: TagListEdi
                 ))}
             </div>
             <div className="flex gap-2">
-                <Input
+                <TagSelector
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onValueChange={setInputValue}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder || "Add tag..."}
                     className="h-8 text-sm"
