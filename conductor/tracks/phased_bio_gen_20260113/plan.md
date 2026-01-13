@@ -28,8 +28,7 @@
 - [x] Task: Update `ProceduralGeneratorDialog` to ensure compatibility with refactored `BioMachine`
 - [x] Task: Conductor - User Manual Verification 'Integration & Store Migration' (Protocol in workflow.md)
 
-## Phase 5: Final Verification & Documentation
+## Phase 5: Final Verification & Documentation [checkpoint: a04bd3a]
 - [x] Task: Perform comprehensive integration tests for character generation
-- [~] Task: Update `docs/game_design.md` and `docs/High-Level Design_ Procedural Character Bio Generator.md`
-- [ ] Task: Conductor - User Manual Verification 'Final Verification & Documentation' (Protocol in workflow.md)
-- [ ] Task: Conductor - User Manual Verification 'Final Verification & Documentation' (Protocol in workflow.md)
+- [x] Task: Update `docs/game_design.md` and `docs/High-Level Design_ Procedural Character Bio Generator.md`
+- [x] Task: Conductor - User Manual Verification 'Final Verification & Documentation' (Protocol in workflow.md)
