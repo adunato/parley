@@ -14,13 +14,13 @@
 - [x] Task: Verify "Pinning" (Target Origin/Career) logic compatibility with phased approach
 - [x] Task: Conductor - User Manual Verification 'BioMachine Refactoring (Core Logic)' (Protocol in workflow.md)
 
-## Phase 3: UI Updates (Configuration)
+## Phase 3: UI Updates (Configuration) [checkpoint: 794deca]
 - [x] Task: Refactor `BioDatasetEditor` Tabs to align with Age Phases (Childhood, Formative, Professional, Senior, Life Events, Tags)
 - [x] Task: Update `BioEntityEditor` (Spine) to implicitly or explicitly handle phase assignment based on active tab
 - [x] Task: Update `BioEntityEditor` (Flesh/LifeEvent) to support multiple Age Phase assignment
 - [x] Task: Update `BioDatasetEditor` (List View) to display "Age Phases" column/tags for Life Events
-- [~] Task: Implement basic UI in `BioConfig` to view/edit global phase settings
-- [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
+- [x] Task: Implement basic UI in `BioConfig` to view/edit global phase settings
+- [x] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 
 ## Phase 4: Integration & Store Migration
