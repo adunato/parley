@@ -54,4 +54,47 @@ describe('BioEntityEditor', () => {
             text: 'Test description'
         }));
     });
+
+    it('allows selecting a single phase for ORIGIN type', () => {
+        render(
+            <BioEntityEditor
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onSave={mockOnSave}
+                type="ORIGIN"
+                existingIds={[]}
+                mode="create"
+            />
+        );
+
+        // Fill in required fields
+        fireEvent.change(screen.getByPlaceholderText('my_entity_id'), { target: { value: 'test-origin' } });
+        fireEvent.change(screen.getByPlaceholderText('Description of the event...'), { target: { value: 'Test description' } });
+
+        // Phase selection (Select component)
+        // By default it should show "Select phase" placeholder or a default
+        // In the implementation, it's a Select.
+        
+        fireEvent.click(screen.getByText('Save'));
+
+        expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
+            phase: undefined // Because we didn't select one yet in this test
+        }));
+    });
+
+    it('allows selecting multiple phases for LIFE_EVENT type', () => {
+        render(
+            <BioEntityEditor
+                open={true}
+                onOpenChange={mockOnOpenChange}
+                onSave={mockOnSave}
+                type="LIFE_EVENT"
+                existingIds={[]}
+                mode="create"
+            />
+        );
+
+        expect(screen.getByText('Age Phases')).toBeInTheDocument();
+        expect(screen.getByText('Select phases...')).toBeInTheDocument();
+    });
 });

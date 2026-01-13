@@ -15,11 +15,12 @@
 - [x] Task: Conductor - User Manual Verification 'BioMachine Refactoring (Core Logic)' (Protocol in workflow.md)
 
 ## Phase 3: UI Updates (Configuration)
-- [ ] Task: Refactor `BioDatasetEditor` Tabs to align with Age Phases (Childhood, Formative, Professional, Senior, Life Events, Tags)
-- [ ] Task: Update `BioEntityEditor` (Spine) to implicitly or explicitly handle phase assignment based on active tab
-- [ ] Task: Update `BioEntityEditor` (Flesh/LifeEvent) to support multiple Age Phase assignment
-- [ ] Task: Update `BioDatasetEditor` (List View) to display "Age Phases" column/tags for Life Events
-- [ ] Task: Implement basic UI in `BioConfig` to view/edit global phase settings
+- [x] Task: Refactor `BioDatasetEditor` Tabs to align with Age Phases (Childhood, Formative, Professional, Senior, Life Events, Tags)
+- [x] Task: Update `BioEntityEditor` (Spine) to implicitly or explicitly handle phase assignment based on active tab
+- [x] Task: Update `BioEntityEditor` (Flesh/LifeEvent) to support multiple Age Phase assignment
+- [x] Task: Update `BioDatasetEditor` (List View) to display "Age Phases" column/tags for Life Events
+- [~] Task: Implement basic UI in `BioConfig` to view/edit global phase settings
+- [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 
 ## Phase 4: Integration & Store Migration

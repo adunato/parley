@@ -18,7 +18,8 @@ async function runTests() {
         origins: originsData as EventNode[],
         education: educationData as EventNode[],
         careers: careersData as EventNode[],
-        lifeEvents: eventsData as LifeEvent[]
+        lifeEvents: eventsData as LifeEvent[],
+        tags: []
     });
 
     console.log("\n--- Test 1: Random Generation ---");

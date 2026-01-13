@@ -6,9 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
-import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
 import { GenerateEventsDialog } from './generate-events-dialog';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Check, ChevronsUpDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 interface BioEntityEditorProps {
     open: boolean;
@@ -16,17 +20,20 @@ interface BioEntityEditorProps {
     initialData?: EventNode | LifeEvent;
     onSave: (data: any) => void;
     type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
+    phase?: AgePhase; // Suggested phase from tab
     existingIds: string[];
     mode?: 'create' | 'edit';
     container?: HTMLElement | null;
 }
 
-export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, existingIds, mode = 'edit', container }: BioEntityEditorProps) {
+export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, phase, existingIds, mode = 'edit', container }: BioEntityEditorProps) {
     const [id, setId] = useState('');
     const [text, setText] = useState('');
     const [provides, setProvides] = useState<string[]>([]);
     const [requires, setRequires] = useState<string[]>([]);
     const [weights, setWeights] = useState<{ [tag: string]: number; "DEFAULT": number }>({ "DEFAULT": 1 });
+    const [selectedPhase, setSelectedPhase] = useState<AgePhase | undefined>(undefined);
+    const [selectedPhases, setSelectedPhases] = useState<AgePhase[]>([]);
     const [showGenerator, setShowGenerator] = useState(false);
 
     useEffect(() => {
@@ -41,6 +48,18 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             } else {
                 setRequires([]);
             }
+
+            if ('phase' in initialData) {
+                setSelectedPhase(initialData.phase);
+            } else {
+                setSelectedPhase(undefined);
+            }
+
+            if ('phases' in initialData) {
+                setSelectedPhases(initialData.phases || []);
+            } else {
+                setSelectedPhases([]);
+            }
         } else if (open) {
             // Reset for new
             setId('');
@@ -48,8 +67,10 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             setProvides([]);
             setRequires([]);
             setWeights({ "DEFAULT": 1 });
+            setSelectedPhase(phase);
+            setSelectedPhases(phase ? [phase] : []);
         }
-    }, [open, initialData]);
+    }, [open, initialData, phase]);
 
     const isDuplicateId = useMemo(() => {
         if (!id) return false;
@@ -76,19 +97,22 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         if (type === 'LIFE_EVENT') {
             onSave({
                 ...base,
-                requires: requires.length > 0 ? requires : undefined
+                requires: requires.length > 0 ? requires : undefined,
+                phases: selectedPhases.length > 0 ? selectedPhases : undefined
             } as LifeEvent);
         } else {
             onSave({
                 ...base,
                 slot: type as SlotType,
-                requires: requires.length > 0 ? requires : undefined
+                requires: requires.length > 0 ? requires : undefined,
+                phase: selectedPhase
             } as EventNode);
         }
         onOpenChange(false);
     };
 
     const isEditing = mode === 'edit' && !!initialData;
+    const allPhases = Object.keys(AGE_PHASES) as AgePhase[];
 
     return (
         <>
@@ -110,6 +134,66 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                 />
                                 {isDuplicateId && (
                                     <p className="text-xs text-red-500">ID already exists!</p>
+                                )}
+                            </div>
+                            
+                            {/* Phase Selection */}
+                            <div className="space-y-2">
+                                <Label>Age Phase{type === 'LIFE_EVENT' ? 's' : ''}</Label>
+                                {type === 'LIFE_EVENT' ? (
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className="w-full justify-between font-normal"
+                                            >
+                                                {selectedPhases.length > 0
+                                                    ? `${selectedPhases.length} Phases selected`
+                                                    : "Select phases..."}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[300px] p-0">
+                                            <Command>
+                                                <CommandInput placeholder="Search phase..." />
+                                                <CommandEmpty>No phase found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {allPhases.map((phase) => (
+                                                        <CommandItem
+                                                            key={phase}
+                                                            onSelect={() => {
+                                                                setSelectedPhases(prev => 
+                                                                    prev.includes(phase)
+                                                                        ? prev.filter(p => p !== phase)
+                                                                        : [...prev, phase]
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    selectedPhases.includes(phase) ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {phase}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                ) : (
+                                    <Select value={selectedPhase} onValueChange={(v: AgePhase) => setSelectedPhase(v)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select phase" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {allPhases.map(p => (
+                                                <SelectItem key={p} value={p}>{p}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 )}
                             </div>
                         </div>
