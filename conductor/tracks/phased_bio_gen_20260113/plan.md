@@ -41,7 +41,7 @@
 - [x] Task: Update Senior Tab in `BioConfig` to use new Senior Spine store
 - [x] Task: Conductor - User Manual Verification 'Feedback & Polish' (Protocol in workflow.md)
 
-## Phase 7: Visualization Updates
+## Phase 7: Visualization Updates [checkpoint: 559e936]
 - [x] Task: Update `BioGraphView` to include Senior Spine nodes
 - [x] Task: Update Graph Legend/Guide to include Senior category and color
 - [x] Task: Conductor - User Manual Verification 'Visualization Updates' (Protocol in workflow.md)
