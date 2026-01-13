@@ -8,11 +8,12 @@
 - [x] Task: Conductor - User Manual Verification 'Foundation & Schema Updates' (Protocol in workflow.md) [checkpoint: 0ac144f]
 
 ## Phase 2: BioMachine Refactoring (Core Logic)
-- [ ] Task: Implement Phase-Aware Spine Selection Logic (Refactor `solveSpine`)
-- [ ] Task: Implement Phase-Aware Flesh Simulation Logic (Refactor `simulateFlesh`)
-- [ ] Task: Refactor `BioMachine.generate` to interleave Spine and Flesh by iterating through Age Phases
-- [ ] Task: Verify "Pinning" (Target Origin/Career) logic compatibility with phased approach
-- [ ] Task: Conductor - User Manual Verification 'BioMachine Refactoring (Core Logic)' (Protocol in workflow.md)
+- [x] Task: Implement Phase-Aware Spine Selection Logic (Refactor `solveSpine`)
+- [x] Task: Implement Phase-Aware Flesh Simulation Logic (Refactor `simulateFlesh`)
+- [x] Task: Refactor `BioMachine.generate` to interleave Spine and Flesh by iterating through Age Phases
+- [x] Task: Verify "Pinning" (Target Origin/Career) logic compatibility with phased approach
+- [x] Task: Verify "Pinning" (Target Origin/Career) logic compatibility with phased approach
+- [~] Task: Conductor - User Manual Verification 'BioMachine Refactoring (Core Logic)' (Protocol in workflow.md)
 
 ## Phase 3: UI Updates (Configuration)
 - [ ] Task: Refactor `BioDatasetEditor` Tabs to align with Age Phases (Childhood, Formative, Professional, Senior, Life Events, Tags)
