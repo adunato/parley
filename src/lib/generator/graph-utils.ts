@@ -213,6 +213,7 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
     data.origins.forEach(o => addNode(o, 'ORIGIN'));
     data.education.forEach(e => addNode(e, 'EDUCATION'));
     data.careers.forEach(c => addNode(c, 'CAREER'));
+    data.senior?.forEach(s => addNode(s, 'SENIOR'));
     data.lifeEvents.forEach(e => addNode(e, 'LIFE_EVENT'));
 
     // Edges: Origin -> Education
@@ -274,6 +275,34 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
         });
     });
 
+    // Edges: Career -> Senior
+    data.careers.forEach(career => {
+        if (!career.provides) return;
+        const careerTags = new Set(career.provides);
+
+        data.senior?.forEach(sen => {
+            if (!sen.requires) return;
+
+            const matching = sen.requires.filter(t => careerTags.has(t));
+            if (matching.length > 0) {
+                edges.push({
+                    id: `${career.id}-${sen.id}`,
+                    source: career.id,
+                    target: sen.id,
+                    label: matching.join(', '),
+                    type: 'smoothstep',
+                    animated: false,
+                    style: { stroke: '#94a3b8', strokeWidth: 2 },
+                    labelStyle: { fill: '#475569', fontWeight: 700, fontSize: 10 },
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: '#94a3b8',
+                    },
+                });
+            }
+        });
+    });
+
     // --- Helper: Add Influence Edges ---
     // adds dotted orange edges if Source provides a tag that modifies Target's weight
     const addInfluenceEdges = (sources: EventNode[], targets: (EventNode | LifeEvent)[]) => {
@@ -318,8 +347,14 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
     const careerSources = [...data.origins, ...data.education];
     addInfluenceEdges(careerSources, data.careers);
 
-    // 3. Influence: Origin + Education + Career -> Life Events
-    const lifeEventSources = [...data.origins, ...data.education, ...data.careers];
+    // 3. Influence: Career -> Senior
+    const seniorSources = [...data.origins, ...data.education, ...data.careers];
+    if (data.senior) {
+        addInfluenceEdges(seniorSources, data.senior);
+    }
+
+    // 4. Influence: Origin + Education + Career + Senior -> Life Events
+    const lifeEventSources = [...data.origins, ...data.education, ...data.careers, ...(data.senior || [])];
     addInfluenceEdges(lifeEventSources, data.lifeEvents);
 
     console.log(`[buildBioGraph] Mode=${layoutMode}, Center=${centerId}`);

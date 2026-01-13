@@ -29,13 +29,15 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
         type === 'ORIGIN' ? 'border-emerald-500' :
             type === 'EDUCATION' ? 'border-blue-500' :
                 type === 'CAREER' ? 'border-purple-500' :
-                    type === 'LIFE_EVENT' ? 'border-orange-500' : 'border-gray-500';
+                    type === 'SENIOR' ? 'border-amber-500' :
+                        type === 'LIFE_EVENT' ? 'border-orange-500' : 'border-gray-500';
 
     const headerBg =
         type === 'ORIGIN' ? 'bg-emerald-50' :
             type === 'EDUCATION' ? 'bg-blue-50' :
                 type === 'CAREER' ? 'bg-purple-50' :
-                    type === 'LIFE_EVENT' ? 'bg-orange-50' : 'bg-gray-50';
+                    type === 'SENIOR' ? 'bg-amber-50' :
+                        type === 'LIFE_EVENT' ? 'bg-orange-50' : 'bg-gray-50';
 
     return (
         <Card className={cn(
@@ -185,12 +187,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                 )}
             </CardContent>
 
-            {/* Output Handle (Right) */}
-            {type !== 'LIFE_EVENT' && type !== 'CAREER' && ( // Careers are usually end nodes in this graph, but could potentiall link to events? For now let's keep it open.
-                <Handle type="source" position={Position.Right} className="w-3 h-3 bg-muted-foreground" />
-            )}
-            {/* Always allow source from career just in case */}
-            {type === 'CAREER' && (
+            {/* Output Handle (Right) - All Spine nodes can be sources */}
+            {type !== 'LIFE_EVENT' && (
                 <Handle type="source" position={Position.Right} className="w-3 h-3 bg-muted-foreground" />
             )}
         </Card>

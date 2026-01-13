@@ -28,6 +28,7 @@ export function BioGraphView() {
         origins: state.origins,
         education: state.education,
         careers: state.careers,
+        senior: state.senior,
         lifeEvents: state.lifeEvents,
         tags: state.tags
     })));
@@ -75,7 +76,7 @@ export function BioGraphView() {
     useEffect(() => {
         console.log(`[BioGraphView] Effect runs. Mode=${layoutMode}, Center=${centerId}`);
         performLayout();
-    }, [bioData.origins, bioData.education, bioData.careers, bioData.lifeEvents, bioData.tags, layoutMode, centerId]);
+    }, [bioData.origins, bioData.education, bioData.careers, bioData.senior, bioData.lifeEvents, bioData.tags, layoutMode, centerId]);
 
     // Full Screen Handler
     const toggleFullScreen = () => {
@@ -107,13 +108,14 @@ export function BioGraphView() {
     const handleSaveEntity = (updatedItem: any) => {
         if (!editingEntity) return;
 
-        const type = editingEntity.type; // ORIGIN, EDUCATION, CAREER, LIFE_EVENT
+        const type = editingEntity.type; // ORIGIN, EDUCATION, CAREER, SENIOR, LIFE_EVENT
 
         // Create deep copy of current lists to modify
         const newData = {
             origins: [...bioData.origins],
             education: [...bioData.education],
             careers: [...bioData.careers],
+            senior: [...(bioData.senior || [])],
             lifeEvents: [...bioData.lifeEvents],
             tags: [...bioData.tags]
         };
@@ -122,16 +124,8 @@ export function BioGraphView() {
         const updateList = (list: any[]) => {
             const idx = list.findIndex(i => i.id === editingEntity.item.id); // Match by original ID
             if (idx >= 0) {
-                // Determine if ID changed? That's tricky for references, but assuming ID is key.
-                // If ID changed, we might break edges, but graph rebuilds anyway.
                 list[idx] = updatedItem;
             } else {
-                // If not found (maybe renamed?), push? or error.
-                // Ideally we match by old ID. But BioEntityEditor passes new data.
-                // We should probably rely on the fact that if we are editing, we replace the one at that index?
-                // Actually, let's just find by *old* ID. But wait, updatedItem has new ID.
-                // We need to know the original ID if we want to support renaming safely.
-                // For now, let's assume we find by the ID passed to the editor (editingEntity.item.id)
                 const originalId = editingEntity.item.id;
                 const originalIdx = list.findIndex(i => i.id === originalId);
                 if (originalIdx >= 0) list[originalIdx] = updatedItem;
@@ -141,6 +135,7 @@ export function BioGraphView() {
         if (type === 'ORIGIN') updateList(newData.origins);
         if (type === 'EDUCATION') updateList(newData.education);
         if (type === 'CAREER') updateList(newData.careers);
+        if (type === 'SENIOR') updateList(newData.senior);
         if (type === 'LIFE_EVENT') updateList(newData.lifeEvents);
         if (type === 'TAG') updateList(newData.tags);
 

@@ -42,6 +42,11 @@ export function BioGraphGuide() {
                                     <span className="text-muted-foreground">- Professional role</span>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-amber-100 border border-amber-500"></div>
+                                    <span className="font-semibold text-amber-700">Senior (Amber)</span>
+                                    <span className="text-muted-foreground">- Late-life status</span>
+                                </div>
+                                <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-orange-100 border border-orange-500"></div>
                                     <span className="font-semibold text-orange-700">Life Event (Orange)</span>
                                     <span className="text-muted-foreground">- Random event</span>
