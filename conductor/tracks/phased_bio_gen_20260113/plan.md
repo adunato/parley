@@ -23,10 +23,10 @@
 - [x] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 
-## Phase 4: Integration & Store Migration
-- [~] Task: Update `BioStore` hydration/migration logic to handle new schema and default config
-- [ ] Task: Update `ProceduralGeneratorDialog` to ensure compatibility with refactored `BioMachine`
-- [ ] Task: Conductor - User Manual Verification 'Integration & Store Migration' (Protocol in workflow.md)
+## Phase 4: Integration & Store Migration [checkpoint: 953ccc6]
+- [x] Task: Update `BioStore` hydration/migration logic to handle new schema and default config
+- [x] Task: Update `ProceduralGeneratorDialog` to ensure compatibility with refactored `BioMachine`
+- [x] Task: Conductor - User Manual Verification 'Integration & Store Migration' (Protocol in workflow.md)
 
 ## Phase 5: Final Verification & Documentation
 - [ ] Task: Perform comprehensive integration tests for character generation
