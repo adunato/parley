@@ -252,6 +252,41 @@ export const useBioStore = create<BioStoreState>()(
                         });
                     }
 
+                    // 3. Phased Bio Migration (Assign default phases if missing)
+                    const ensurePhases = (list: any[], defaultPhase?: AgePhase, defaultPhases?: AgePhase[]) => {
+                        let changed = false;
+                        const newList = list.map(item => {
+                            if (defaultPhase && !item.phase) {
+                                changed = true;
+                                return { ...item, phase: defaultPhase };
+                            }
+                            if (defaultPhases && !item.phases) {
+                                changed = true;
+                                return { ...item, phases: defaultPhases };
+                            }
+                            return item;
+                        });
+                        return { newList, changed };
+                    };
+
+                    const migrationResult = {
+                        origins: ensurePhases(state.origins, 'Childhood'),
+                        education: ensurePhases(state.education, 'Formative'),
+                        careers: ensurePhases(state.careers, 'Professional'),
+                        lifeEvents: ensurePhases(state.lifeEvents, undefined, ['Childhood', 'Formative', 'Professional', 'Senior'])
+                    };
+
+                    if (migrationResult.origins.changed || migrationResult.education.changed || migrationResult.careers.changed || migrationResult.lifeEvents.changed) {
+                        console.log("BioStore: Migrating entities to support age phases...");
+                        state.setData({
+                            ...state.getAllData(),
+                            origins: migrationResult.origins.newList,
+                            education: migrationResult.education.newList,
+                            careers: migrationResult.careers.newList,
+                            lifeEvents: migrationResult.lifeEvents.newList
+                        });
+                    }
+
                     state.setHasHydrated(true);
                 }
             },

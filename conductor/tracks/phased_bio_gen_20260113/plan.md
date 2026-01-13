@@ -24,7 +24,7 @@
 - [ ] Task: Conductor - User Manual Verification 'UI Updates (Configuration)' (Protocol in workflow.md)
 
 ## Phase 4: Integration & Store Migration
-- [ ] Task: Update `BioStore` hydration/migration logic to handle new schema and default config
+- [~] Task: Update `BioStore` hydration/migration logic to handle new schema and default config
 - [ ] Task: Update `ProceduralGeneratorDialog` to ensure compatibility with refactored `BioMachine`
 - [ ] Task: Conductor - User Manual Verification 'Integration & Store Migration' (Protocol in workflow.md)
 

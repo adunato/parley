@@ -93,4 +93,5 @@ export interface BioData {
     careers: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
+    phaseConfig?: Record<AgePhase, PhaseConfig>;
 }

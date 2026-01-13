@@ -10,6 +10,7 @@ export class BioMachine {
     private careers: EventNode[];
     private lifeEvents: LifeEvent[];
     private tags: Tag[];
+    private phaseConfig: Record<AgePhase, PhaseConfig>;
 
     constructor(data: BioData) {
         this.origins = data.origins;
@@ -17,6 +18,7 @@ export class BioMachine {
         this.careers = data.careers;
         this.lifeEvents = data.lifeEvents;
         this.tags = data.tags;
+        this.phaseConfig = data.phaseConfig || AGE_PHASES;
     }
 
     public generate(request: BioGenerationRequest): BioState {
@@ -84,7 +86,7 @@ export class BioMachine {
     // --- New Phased Logic ---
 
     public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validOrigins?: EventNode[], validEducation?: EventNode[], validCareers?: EventNode[]): EventNode | null {
-        const config = AGE_PHASES[phase];
+        const config = this.phaseConfig[phase];
         if (!config.spineSlot) return null;
 
         let pool: EventNode[] = [];
@@ -121,7 +123,7 @@ export class BioMachine {
     }
 
     public simulatePhaseFlesh(phase: AgePhase, currentTags: Set<string>, targetAge: number, previouslySelectedEventIds: Set<string>): LifeEvent[] {
-        const config = AGE_PHASES[phase];
+        const config = this.phaseConfig[phase];
         const events: LifeEvent[] = [];
         
         // Determine Simulation Range
