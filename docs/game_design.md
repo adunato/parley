@@ -23,16 +23,19 @@ Conversation in Parley goes beyond simple request-response. The "Hybrid Relation
 
 ### 2. Procedural Character Generation (BioMachine)
 **User Experience (How it works):**
-Players can generate complex, life-like characters with deep backstories in seconds. Instead of just random text, the system simulates a life path:
-1.  **Spine Generation**: The system solves constraints to pick a valid Origin, Education, and Career path that makes logical sense (e.g., a "Noble" origin leads to "Checkered Past" education and "Politician" career).
-2.  **Flesh Simulation**: It then simulates 5-year blocks of the character's life, randomly triggering "Life Events" (e.g., "War Injury", "Bankruptcy", "Marriage") that add texture and tags to the character.
-3.  **Narrative Synthesis**: Finally, an LLM weaves these structured facts into a cohesive textual biography.
+Players can generate complex, life-like characters with deep backstories in seconds. Instead of just random text, the system simulates a life path divided into **Age Phases** (Childhood, Formative, Professional, Senior):
+1.  **Phased Loop**: The system iterates chronologically through each age phase.
+2.  **Interleaved Selection**: Within each phase, it resolves the major life milestone ("The Spine") and then simulates probabilistic "Life Events" ("The Flesh") for that specific age range.
+3.  **Logical Continuity**: Tags gathered early in life (e.g., "Childhood Trauma") influence and unlock paths in later phases (e.g., "Medical School" or "Special Ops Career").
+4.  **Narrative Synthesis**: Finally, an LLM weaves these structured facts into a cohesive textual biography.
 
 **Relevant Code Objects (Code implementation):**
 -   **Generator**: `BioMachine` in `src/lib/generator/BioMachine.ts`.
-    -   `solveSpine()`: Constraint solver for Origin -> Education -> Career.
-    -   `simulateFlesh()`: Iterative event generation based on age.
--   **Data Sources**: JSON files in `src/lib/generator/data/` (`origins.json`, `careers.json`, etc.) define the nodes and their requirements/tags.
+    -   `generate()`: Executes the interleaved phase loop.
+    -   `resolvePhaseSpine()`: Resolves milestones for a specific phase.
+    -   `simulatePhaseFlesh()`: Simulates probabilistic events for a phase range.
+-   **Configuration**: `useBioStore` manages global phase boundaries and event probabilities.
+-   **Data Sources**: JSON files in `src/lib/generator/data/` define the nodes, requirements, and assigned phases.
 -   **Prompt**: `bio_writer` in `src/lib/store/promptStore.ts` converts the structured `BioState` into natural language.
 
 > **Detailed Design**: See [High-Level Design: Procedural Character Bio Generator](./High-Level%20Design_%20Procedural%20Character%20Bio%20Generator.md) for full architecture.
