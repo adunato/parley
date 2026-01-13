@@ -14,7 +14,8 @@
         "weights": {
             "ALUMNI_NETWORK": 100,
             "DEFAULT": 10
-        }
+        },
+        "phase": "Professional"
     },
     {
         "id": "electrician",
@@ -29,6 +30,7 @@
         ],
         "weights": {
             "DEFAULT": 50
-        }
+        },
+        "phase": "Professional"
     }
 ]

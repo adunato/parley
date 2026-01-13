@@ -16,7 +16,8 @@
             "STRESSED": 20,
             "POOR": 1,
             "DEFAULT": 5
-        }
+        },
+        "phase": "Formative"
     },
     {
         "id": "trade_school",
@@ -31,6 +32,7 @@
             "POOR": 20,
             "RICH": 1,
             "DEFAULT": 10
-        }
+        },
+        "phase": "Formative"
     }
 ]

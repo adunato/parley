@@ -9,7 +9,8 @@
         ],
         "weights": {
             "DEFAULT": 50
-        }
+        },
+        "phase": "Childhood"
     },
     {
         "id": "old_money",
@@ -22,6 +23,7 @@
         ],
         "weights": {
             "DEFAULT": 5
-        }
+        },
+        "phase": "Childhood"
     }
 ]

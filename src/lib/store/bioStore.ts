@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType, Tag } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES } from '../generator/types';
 
 // Default Data Imports
 import originsData from '../generator/data/origins.json';
@@ -15,6 +15,7 @@ interface BioStoreState {
     careers: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
+    phaseConfig: Record<AgePhase, PhaseConfig>;
 
     // Actions
     addOrigin: (item: EventNode) => void;
@@ -37,6 +38,8 @@ interface BioStoreState {
     updateTag: (item: Tag, oldId?: string) => void;
     deleteTag: (id: string) => void;
 
+    updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
+
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
 
@@ -46,6 +49,7 @@ interface BioStoreState {
         careers: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        phaseConfig?: Record<AgePhase, PhaseConfig>;
     }) => void;
 
     // Computed
@@ -55,6 +59,7 @@ interface BioStoreState {
         careers: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        phaseConfig: Record<AgePhase, PhaseConfig>;
     };
 
     _hasHydrated: boolean;
@@ -69,6 +74,7 @@ export const useBioStore = create<BioStoreState>()(
             careers: [],
             lifeEvents: [],
             tags: [],
+            phaseConfig: AGE_PHASES,
 
             addOrigin: (item) => set((state) => ({ origins: [...state.origins, item] })),
             updateOrigin: (item) => set((state) => ({
@@ -161,6 +167,16 @@ export const useBioStore = create<BioStoreState>()(
                 };
             }),
 
+            updatePhaseConfig: (phase, updates) => set((state) => ({
+                phaseConfig: {
+                    ...state.phaseConfig,
+                    [phase]: {
+                        ...state.phaseConfig[phase],
+                        ...updates
+                    }
+                }
+            })),
+
             registerTags: (tagIds) => set((state) => {
                 const existingTagIds = new Set(state.tags.map(t => t.id));
                 const newTags = tagIds
@@ -172,14 +188,15 @@ export const useBioStore = create<BioStoreState>()(
             }),
 
             // Bulk Set (for migration)
-            setData: (data) => set(data),
+            setData: (data) => set({ ...data, phaseConfig: data.phaseConfig || AGE_PHASES }),
 
             getAllData: () => ({
                 origins: get().origins,
                 education: get().education,
                 careers: get().careers,
                 lifeEvents: get().lifeEvents,
-                tags: get().tags
+                tags: get().tags,
+                phaseConfig: get().phaseConfig
             }),
 
             _hasHydrated: false,
