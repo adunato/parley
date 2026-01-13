@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TagSelector } from "./tag-selector";
 import { Plus, Trash2 } from "lucide-react";
 import { Label } from '@/components/ui/label';
+import { useBioStore } from "@/lib/store/bioStore";
 
 interface WeightEditorProps {
     weights: { [tag: string]: number; "DEFAULT": number };
@@ -17,6 +19,7 @@ export function WeightEditor({ weights, onChange }: WeightEditorProps) {
         if (!newTag.trim()) return;
         const tag = newTag.trim().toUpperCase().replace(/\s+/g, '_');
         onChange({ ...weights, [tag]: newValue });
+        useBioStore.getState().registerTags([tag]);
         setNewTag('');
         setNewValue(1);
     };
@@ -73,10 +76,10 @@ export function WeightEditor({ weights, onChange }: WeightEditorProps) {
             {/* Add New */}
             <div className="flex gap-2 items-end pt-2 border-t mt-2">
                 <div className="flex-1">
-                    <Input
+                    <TagSelector
                         placeholder="TAG_NAME"
                         value={newTag}
-                        onChange={e => setNewTag(e.target.value)}
+                        onValueChange={setNewTag}
                         className="h-8 text-xs"
                     />
                 </div>

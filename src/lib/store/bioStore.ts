@@ -37,6 +37,9 @@ interface BioStoreState {
     updateTag: (item: Tag, oldId?: string) => void;
     deleteTag: (id: string) => void;
 
+    // Registers multiple tags if they don't already exist
+    registerTags: (tagIds: string[]) => void;
+
     setData: (data: {
         origins: EventNode[];
         education: EventNode[];
@@ -156,6 +159,16 @@ export const useBioStore = create<BioStoreState>()(
                     careers: removeFromWeights(removeFromList(state.careers, 'requires')),
                     lifeEvents: removeFromWeights(removeFromList(removeFromList(state.lifeEvents, 'provides'), 'requires'))
                 };
+            }),
+
+            registerTags: (tagIds) => set((state) => {
+                const existingTagIds = new Set(state.tags.map(t => t.id));
+                const newTags = tagIds
+                    .filter(id => !existingTagIds.has(id))
+                    .map(id => ({ id }));
+                
+                if (newTags.length === 0) return state;
+                return { tags: [...state.tags, ...newTags] };
             }),
 
             // Bulk Set (for migration)

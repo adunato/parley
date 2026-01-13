@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { TagSelector } from "./tag-selector";
 import { X, Plus } from "lucide-react";
+import { useBioStore } from "@/lib/store/bioStore";
 
 interface TagListEditorProps {
     tags: string[];
@@ -19,6 +20,7 @@ export function TagListEditor({ tags, onChange, label, placeholder }: TagListEdi
         const newTag = inputValue.trim().toUpperCase().replace(/\s+/g, '_');
         if (!tags.includes(newTag)) {
             onChange([...tags, newTag]);
+            useBioStore.getState().registerTags([newTag]);
         }
         setInputValue('');
     };
@@ -49,9 +51,9 @@ export function TagListEditor({ tags, onChange, label, placeholder }: TagListEdi
                 ))}
             </div>
             <div className="flex gap-2">
-                <Input
+                <TagSelector
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onValueChange={setInputValue}
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder || "Add tag..."}
                     className="h-8 text-sm"
