@@ -21,6 +21,6 @@
 - [x] Task: Update `/design` or `game_design.md` if the component structure has changed significantly. [checkpoint: e4d42e1]
 
 ## Phase 5: Bug Fix - Global Tag Registration
-- [ ] Task: Investigate and fix the issue where new tags are not being added to the global list upon saving an entity.
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Bug Fix - Global Tag Registration' (Protocol in workflow.md)
+- [x] Task: Investigate and fix the issue where new tags are not being added to the global list upon saving an entity.
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Bug Fix - Global Tag Registration' (Protocol in workflow.md) [checkpoint: efb27bc]
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification and Documentation' (Protocol in workflow.md)
