@@ -5,7 +5,7 @@
 - [x] Task: Update `EventNode` and `LifeEvent` interfaces in `src/lib/generator/types.ts`
 - [x] Task: Update `BioStore` state to include global generation configuration (phases, intervals, probabilities)
 - [x] Task: Update default JSON datasets with phase associations (Childhood, Formative, Professional, Senior)
-- [~] Task: Conductor - User Manual Verification 'Foundation & Schema Updates' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Foundation & Schema Updates' (Protocol in workflow.md) [checkpoint: 0ac144f]
 
 ## Phase 2: BioMachine Refactoring (Core Logic)
 - [ ] Task: Implement Phase-Aware Spine Selection Logic (Refactor `solveSpine`)
