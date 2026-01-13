@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { TagSelector } from "./tag-selector";
 import { Plus, Trash2 } from "lucide-react";
 import { Label } from '@/components/ui/label';
+import { useBioStore } from "@/lib/store/bioStore";
 
 interface WeightEditorProps {
     weights: { [tag: string]: number; "DEFAULT": number };
@@ -18,6 +19,7 @@ export function WeightEditor({ weights, onChange }: WeightEditorProps) {
         if (!newTag.trim()) return;
         const tag = newTag.trim().toUpperCase().replace(/\s+/g, '_');
         onChange({ ...weights, [tag]: newValue });
+        useBioStore.getState().registerTags([tag]);
         setNewTag('');
         setNewValue(1);
     };

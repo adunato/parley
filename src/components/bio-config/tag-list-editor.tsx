@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TagSelector } from "./tag-selector";
 import { X, Plus } from "lucide-react";
+import { useBioStore } from "@/lib/store/bioStore";
 
 interface TagListEditorProps {
     tags: string[];
@@ -19,6 +20,7 @@ export function TagListEditor({ tags, onChange, label, placeholder }: TagListEdi
         const newTag = inputValue.trim().toUpperCase().replace(/\s+/g, '_');
         if (!tags.includes(newTag)) {
             onChange([...tags, newTag]);
+            useBioStore.getState().registerTags([newTag]);
         }
         setInputValue('');
     };

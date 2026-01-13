@@ -13,11 +13,16 @@ global.ResizeObserver = class ResizeObserver {
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-jest.mock("@/lib/store/bioStore", () => ({
-  useBioStore: () => ({
+const mockRegisterTags = jest.fn();
+jest.mock("@/lib/store/bioStore", () => {
+  const mockStore = () => ({
     tags: [{ id: "ALREADY_EXISTS" }],
-  }),
-}));
+  });
+  mockStore.getState = () => ({
+    registerTags: mockRegisterTags
+  });
+  return { useBioStore: mockStore };
+});
 
 describe("WeightEditor", () => {
   it("renders default weight and adds new tag weight", () => {
@@ -36,6 +41,7 @@ describe("WeightEditor", () => {
     if (addBtn) {
         fireEvent.click(addBtn);
         expect(onChange).toHaveBeenCalledWith({ "DEFAULT": 1, "SPEED_BONUS": 1 });
+        expect(mockRegisterTags).toHaveBeenCalledWith(["SPEED_BONUS"]);
     }
   });
 });

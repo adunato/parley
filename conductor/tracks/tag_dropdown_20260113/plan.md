@@ -18,5 +18,9 @@
 
 ## Phase 4: Final Verification and Documentation
 - [x] Task: Perform a final sweep of the Bio Config UI to ensure style consistency.
-- [x] Task: Update `/design` or `game_design.md` if the component structure has changed significantly.
+- [x] Task: Update `/design` or `game_design.md` if the component structure has changed significantly. [checkpoint: e4d42e1]
+
+## Phase 5: Bug Fix - Global Tag Registration
+- [ ] Task: Investigate and fix the issue where new tags are not being added to the global list upon saving an entity.
+- [ ] Task: Conductor - User Manual Verification 'Phase 5: Bug Fix - Global Tag Registration' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification and Documentation' (Protocol in workflow.md)

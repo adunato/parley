@@ -13,11 +13,16 @@ global.ResizeObserver = class ResizeObserver {
 // Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
-jest.mock("@/lib/store/bioStore", () => ({
-  useBioStore: () => ({
+const mockRegisterTags = jest.fn();
+jest.mock("@/lib/store/bioStore", () => {
+  const mockStore = () => ({
     tags: [{ id: "ALREADY_EXISTS" }],
-  }),
-}));
+  });
+  mockStore.getState = () => ({
+    registerTags: mockRegisterTags
+  });
+  return { useBioStore: mockStore };
+});
 
 describe("TagListEditor", () => {
   it("renders existing tags and adds new one", () => {
@@ -37,6 +42,7 @@ describe("TagListEditor", () => {
     fireEvent.click(screen.getByRole("button"));
 
     expect(onChange).toHaveBeenCalledWith(["EXISTING_1", "NEW_TAG"]);
+    expect(mockRegisterTags).toHaveBeenCalledWith(["NEW_TAG"]);
   });
 
   it("removes a tag", () => {
