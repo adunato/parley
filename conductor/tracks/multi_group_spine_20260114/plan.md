@@ -2,12 +2,12 @@
 
 This plan refactors the `BioMachine` engine to support selecting multiple spine nodes per age phase, partitioned by groups.
 
-## Phase 1: Core Engine Refactor [ ]
+## Phase 1: Core Engine Refactor [checkpoint: e7f3fc9]
 - [x] Task: TDD - Refactor `resolvePhaseSpine` to handle a provided pool of nodes and perform a single weighted selection. 56e431b
 - [x] Task: TDD - Implement logic in `generate()` to identify unique groups (including an 'ungrouped' pool) within an age phase. 56e431b
 - [x] Task: TDD - Update the phase loop in `generate()` to resolve exactly one node per group. 56e431b
 - [x] Task: TDD - Ensure intra-phase selection independence (selected tags are only applied to the state *after* all groups in the phase are processed). 56e431b
-- [ ] Task: Conductor - User Manual Verification 'Core Engine Refactor' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Core Engine Refactor' (Protocol in workflow.md)
 
 ## Phase 2: Constraint & Interaction [ ]
 - [ ] Task: TDD - Verify that "Flesh" simulation iterations receive the aggregate tags from all selected groups in the phase.
