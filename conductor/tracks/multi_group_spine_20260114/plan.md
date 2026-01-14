@@ -16,6 +16,6 @@ This plan refactors the `BioMachine` engine to support selecting multiple spine 
 - [x] Task: Conductor - User Manual Verification 'Constraint & Interaction' (Protocol in workflow.md)
 
 ## Phase 3: Final Integration & UI Testing [ ]
-- [ ] Task: Run full regression tests for `BioMachine`.
-- [ ] Task: Manual verification: Generate a character with multiple groups defined in "Childhood" and verify the JSON state contains nodes from each.
+- [x] Task: Run full regression tests for `BioMachine`. 0f93e06
+- [x] Task: Manual verification: Generate a character with multiple groups defined in "Childhood" and verify the JSON state contains nodes from each. 4beee93
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Final Integration & UI Testing' (Protocol in workflow.md)
