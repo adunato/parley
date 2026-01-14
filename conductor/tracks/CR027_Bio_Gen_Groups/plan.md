@@ -6,7 +6,7 @@
 - [x] Task: Update `src/lib/generator/types.ts` to include `BioGroup` and update `BioData` and `EventNode`. 8988102
 - [x] Task: Update `src/lib/store.ts` (or relevant store file) to handle the new `groups` array in `BioData` and ensure persistence. 8988102
 - [x] Task: Write unit tests for store actions (add group, remove group, assign entity to group). 8988102
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Foundation' (Protocol in workflow.md) [checkpoint: cc51a33]
 
 ## Phase 2: UI Selection Logic - Grid Enhancements
 *Goal: Add multi-select checkboxes and basic action bar to the existing grids.*
