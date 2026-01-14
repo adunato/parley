@@ -13,7 +13,9 @@ const mockData: BioData = {
         { id: 'job_prof', slot: 'PROFESSIONAL', text: 'Job', weights: { DEFAULT: 10 }, phase: 'Professional', provides: ['TAG_C'], requires: ['TAG_E'] }
     ],
     senior: [],
-    lifeEvents: [],
+    lifeEvents: [
+        { id: 'event_child', text: 'Childhood Event', weights: { DEFAULT: 100 }, phases: ['Childhood'], provides: ['TAG_Event'] }
+    ],
     tags: [],
     groups: []
 };

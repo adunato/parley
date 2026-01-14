@@ -33,10 +33,30 @@ export class BioMachine {
 
         // A. Pinning
         if (request.targetChildhoodId) {
-            validChildhood = validChildhood.filter(node => node.id === request.targetChildhoodId);
+            const target = this.childhood.find(n => n.id === request.targetChildhoodId);
+            if (target) {
+                const targetGroupId = target.groupId; // Can be undefined
+                validChildhood = validChildhood.filter(node => {
+                    // If both share the same group (or both are ungrouped), filter out everything except the target
+                    if (node.groupId === targetGroupId) {
+                        return node.id === target.id;
+                    }
+                    // Keep other groups
+                    return true;
+                });
+            }
         }
         if (request.targetProfessionalId) {
-            validProfessional = validProfessional.filter(node => node.id === request.targetProfessionalId);
+            const target = this.professional.find(n => n.id === request.targetProfessionalId);
+            if (target) {
+                const targetGroupId = target.groupId;
+                validProfessional = validProfessional.filter(node => {
+                    if (node.groupId === targetGroupId) {
+                        return node.id === target.id;
+                    }
+                    return true;
+                });
+            }
         }
 
         // B. Backward Propagation (Professional -> Formative)
@@ -44,11 +64,37 @@ export class BioMachine {
         validProfessional.forEach(c => c.requires?.forEach(t => requiredTagsFromProfessional.add(t)));
 
         if (requiredTagsFromProfessional.size > 0) {
-            validFormative = validFormative.filter(edu => {
-                // Keep if it provides ANY of the required tags OR if professional have no requirements that it fails to meet
-                if (!edu.provides) return false;
-                return edu.provides.some(tag => requiredTagsFromProfessional.has(tag));
+            // Group-aware pruning:
+            // Only prune groups that are capable of satisfying the requirement.
+            // If a group has NO nodes that provide the required tags, it is "unrelated" and should be left alone.
+            
+            // 1. Identify groups (and ungrouped)
+            const groups: Record<string, EventNode[]> = {};
+            const ungrouped: EventNode[] = [];
+            
+            validFormative.forEach(node => {
+                const gid = node.groupId || 'UNGROUPED';
+                if (!groups[gid]) groups[gid] = [];
+                groups[gid].push(node);
             });
+
+            let newValidFormative: EventNode[] = [];
+
+            Object.entries(groups).forEach(([gid, nodes]) => {
+                // Check if this group can potentially satisfy ANY requirement
+                const canSatisfy = nodes.some(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
+
+                if (canSatisfy) {
+                    // This group is relevant. Prune it to only include satisfying nodes.
+                    const satisfyingNodes = nodes.filter(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
+                    newValidFormative.push(...satisfyingNodes);
+                } else {
+                    // This group is irrelevant to the requirement. Keep all nodes.
+                    newValidFormative.push(...nodes);
+                }
+            });
+
+            validFormative = newValidFormative;
         }
 
         // --- 2. Phase Loop Execution ---
@@ -61,12 +107,16 @@ export class BioMachine {
         const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
 
         for (const phase of phases) {
-            // A. Resolve Spine for this phase
-            const spineNode = this.resolvePhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
-            if (spineNode) {
-                spine.push(spineNode);
-                spineNode.provides?.forEach(t => tags.add(t));
-            }
+            // A. Resolve Spine for this phase (Supports multiple groups)
+            const phaseSpineNodes = this.resolveMultiGroupPhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
+            
+            // Selection Independence: Tags are collected separately and added AFTER all group selections for this phase
+            const newSpineTags = new Set<string>();
+            phaseSpineNodes.forEach(node => {
+                spine.push(node);
+                node.provides?.forEach(t => newSpineTags.add(t));
+            });
+            newSpineTags.forEach(t => tags.add(t));
 
             // B. Simulate Flesh for this phase
             const events = this.simulatePhaseFlesh(phase, tags, age, selectedEventIds);
@@ -86,41 +136,82 @@ export class BioMachine {
 
     // --- New Phased Logic ---
 
-    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+    /**
+     * Resolves spine nodes for a phase, allowing one node per group.
+     */
+    public resolveMultiGroupPhaseSpine(
+        phase: AgePhase, 
+        currentTags: Set<string>, 
+        validChildhood?: EventNode[], 
+        validFormative?: EventNode[], 
+        validProfessional?: EventNode[], 
+        validSenior?: EventNode[]
+    ): EventNode[] {
         const config = this.phaseConfig[phase];
-        if (!config.spineSlot) return null;
+        if (!config.spineSlot) return [];
 
-        let pool: EventNode[] = [];
+        let basePool: EventNode[] = [];
         
-        // Select correct pool
-        // If valid* arrays are passed (from pinning logic), use them. Otherwise use full instance data.
         switch (config.spineSlot) {
-            case 'CHILDHOOD':
-                pool = validChildhood || this.childhood;
-                break;
-            case 'FORMATIVE':
-                pool = validFormative || this.formative;
-                break;
-            case 'PROFESSIONAL':
-                pool = validProfessional || this.professional;
-                break;
-            case 'SENIOR':
-                pool = validSenior || this.senior;
-                break;
+            case 'CHILDHOOD': basePool = validChildhood || this.childhood; break;
+            case 'FORMATIVE': basePool = validFormative || this.formative; break;
+            case 'PROFESSIONAL': basePool = validProfessional || this.professional; break;
+            case 'SENIOR': basePool = validSenior || this.senior; break;
         }
 
-        // Filter by Phase (Strict Mode: Spine Node MUST match the phase)
-        pool = pool.filter(node => node.phase === phase);
+        // Filter by Phase
+        const phasePool = basePool.filter(node => node.phase === phase);
 
+        // Group the nodes
+        const groups: Record<string, EventNode[]> = {};
+        const ungrouped: EventNode[] = [];
+
+        phasePool.forEach(node => {
+            if (node.groupId) {
+                if (!groups[node.groupId]) groups[node.groupId] = [];
+                groups[node.groupId].push(node);
+            } else {
+                ungrouped.push(node);
+            }
+        });
+
+        const selectedNodes: EventNode[] = [];
+
+        // Resolve each group independently
+        Object.values(groups).forEach(pool => {
+            const selected = this.resolveSpineFromPool(pool, currentTags);
+            if (selected) selectedNodes.push(selected);
+        });
+
+        // Resolve ungrouped pool
+        const selectedUngrouped = this.resolveSpineFromPool(ungrouped, currentTags);
+        if (selectedUngrouped) selectedNodes.push(selectedUngrouped);
+
+        return selectedNodes;
+    }
+
+    /**
+     * Resolves a single spine node from a pool based on requirements and weights.
+     */
+    public resolveSpineFromPool(pool: EventNode[], currentTags: Set<string>): EventNode | null {
         // Filter by Requirements (Forward Constraint)
         const feasible = pool.filter(node => {
             if (!node.requires) return true;
             return node.requires.every(req => currentTags.has(req));
         });
 
-        if (feasible.length === 0) return null; // Or throw error if critical?
+        if (feasible.length === 0) return null;
 
         return this.selectWeighted(feasible, currentTags);
+    }
+
+    /**
+     * Legacy/Helper: Resolves a single node for a phase. 
+     * Now uses resolveMultiGroupPhaseSpine and returns the first result if multiple groups exist.
+     */
+    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+        const selected = this.resolveMultiGroupPhaseSpine(phase, currentTags, validChildhood, validFormative, validProfessional, validSenior);
+        return selected.length > 0 ? selected[0] : null;
     }
 
     public simulatePhaseFlesh(phase: AgePhase, currentTags: Set<string>, targetAge: number, previouslySelectedEventIds: Set<string>): LifeEvent[] {
@@ -144,7 +235,8 @@ export class BioMachine {
                     if (previouslySelectedEventIds.has(e.id)) return false;
                     
                     // Phase Check (Must be in allowed phases for this event)
-                    if (!e.phases || !e.phases.includes(phase)) return false;
+                    // If no phases are defined, we treat it as "all phases allowed"
+                    if (e.phases && !e.phases.includes(phase)) return false;
 
                     // Requirement Check
                     if (!e.requires) return true;
