@@ -33,10 +33,30 @@ export class BioMachine {
 
         // A. Pinning
         if (request.targetChildhoodId) {
-            validChildhood = validChildhood.filter(node => node.id === request.targetChildhoodId);
+            const target = this.childhood.find(n => n.id === request.targetChildhoodId);
+            if (target) {
+                const targetGroupId = target.groupId; // Can be undefined
+                validChildhood = validChildhood.filter(node => {
+                    // If both share the same group (or both are ungrouped), filter out everything except the target
+                    if (node.groupId === targetGroupId) {
+                        return node.id === target.id;
+                    }
+                    // Keep other groups
+                    return true;
+                });
+            }
         }
         if (request.targetProfessionalId) {
-            validProfessional = validProfessional.filter(node => node.id === request.targetProfessionalId);
+            const target = this.professional.find(n => n.id === request.targetProfessionalId);
+            if (target) {
+                const targetGroupId = target.groupId;
+                validProfessional = validProfessional.filter(node => {
+                    if (node.groupId === targetGroupId) {
+                        return node.id === target.id;
+                    }
+                    return true;
+                });
+            }
         }
 
         // B. Backward Propagation (Professional -> Formative)
@@ -44,11 +64,37 @@ export class BioMachine {
         validProfessional.forEach(c => c.requires?.forEach(t => requiredTagsFromProfessional.add(t)));
 
         if (requiredTagsFromProfessional.size > 0) {
-            validFormative = validFormative.filter(edu => {
-                // Keep if it provides ANY of the required tags OR if professional have no requirements that it fails to meet
-                if (!edu.provides) return false;
-                return edu.provides.some(tag => requiredTagsFromProfessional.has(tag));
+            // Group-aware pruning:
+            // Only prune groups that are capable of satisfying the requirement.
+            // If a group has NO nodes that provide the required tags, it is "unrelated" and should be left alone.
+            
+            // 1. Identify groups (and ungrouped)
+            const groups: Record<string, EventNode[]> = {};
+            const ungrouped: EventNode[] = [];
+            
+            validFormative.forEach(node => {
+                const gid = node.groupId || 'UNGROUPED';
+                if (!groups[gid]) groups[gid] = [];
+                groups[gid].push(node);
             });
+
+            let newValidFormative: EventNode[] = [];
+
+            Object.entries(groups).forEach(([gid, nodes]) => {
+                // Check if this group can potentially satisfy ANY requirement
+                const canSatisfy = nodes.some(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
+
+                if (canSatisfy) {
+                    // This group is relevant. Prune it to only include satisfying nodes.
+                    const satisfyingNodes = nodes.filter(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
+                    newValidFormative.push(...satisfyingNodes);
+                } else {
+                    // This group is irrelevant to the requirement. Keep all nodes.
+                    newValidFormative.push(...nodes);
+                }
+            });
+
+            validFormative = newValidFormative;
         }
 
         // --- 2. Phase Loop Execution ---
