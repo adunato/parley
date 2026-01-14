@@ -7,6 +7,7 @@ import { BioEntityEditor } from './bio-entity-editor';
 import { AgePhase, EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
 import { Badge } from "@/components/ui/badge";
 import { useBioStore } from "@/lib/store/bioStore";
+import { SelectionToolbar } from './selection-toolbar';
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
@@ -24,6 +25,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     const [editingItem, setEditingItem] = useState<EventNode | LifeEvent | undefined>(undefined);
     const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const filteredData = data.filter(item => {
         // Search Filter
@@ -45,6 +47,24 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     });
 
     const existingIds = data.map(i => i.id);
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(new Set(filteredData.map(i => i.id)));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleSelectRow = (id: string, checked: boolean) => {
+        const newSelected = new Set(selectedIds);
+        if (checked) {
+            newSelected.add(id);
+        } else {
+            newSelected.delete(id);
+        }
+        setSelectedIds(newSelected);
+    };
 
     const handleCreate = () => {
         setEditingItem(undefined);
@@ -121,10 +141,25 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                 />
             </div>
 
+            <SelectionToolbar 
+                selectedCount={selectedIds.size} 
+                onDelete={() => {/* TODO: Phase 4 */}}
+            >
+                {/* Group Action will go here */}
+            </SelectionToolbar>
+
             <div className="border rounded-md">
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[40px]">
+                                <input 
+                                    type="checkbox"
+                                    checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
+                                    onChange={(e) => handleSelectAll(e.target.checked)}
+                                    className="translate-y-[2px]"
+                                />
+                            </TableHead>
                             <TableHead className="w-[120px]">ID</TableHead>
                             <TableHead>Text</TableHead>
                             {type === 'LIFE_EVENT' && <TableHead>Age Phases</TableHead>}
@@ -137,13 +172,21 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                                     No items found.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredData.map((item) => (
-                                <TableRow key={item.id}>
+                                <TableRow key={item.id} data-state={selectedIds.has(item.id) ? "selected" : undefined}>
+                                    <TableCell>
+                                        <input 
+                                            type="checkbox"
+                                            checked={selectedIds.has(item.id)}
+                                            onChange={(e) => handleSelectRow(item.id, e.target.checked)}
+                                            className="translate-y-[2px]"
+                                        />
+                                    </TableCell>
                                     <TableCell className="font-mono text-[10px] break-all">{item.id}</TableCell>
                                     <TableCell className="max-w-[300px] truncate" title={item.text}>
                                         {item.text}
