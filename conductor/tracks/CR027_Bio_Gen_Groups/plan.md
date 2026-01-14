@@ -3,9 +3,9 @@
 ## Phase 1: Foundation - Data Schema & State Management
 *Goal: Update the core data structures to support BioGroups and entity associations.*
 
-- [ ] Task: Update `src/lib/generator/types.ts` to include `BioGroup` and update `BioData` and `EventNode`.
-- [ ] Task: Update `src/lib/store.ts` (or relevant store file) to handle the new `groups` array in `BioData` and ensure persistence.
-- [ ] Task: Write unit tests for store actions (add group, remove group, assign entity to group).
+- [x] Task: Update `src/lib/generator/types.ts` to include `BioGroup` and update `BioData` and `EventNode`. 8988102
+- [x] Task: Update `src/lib/store.ts` (or relevant store file) to handle the new `groups` array in `BioData` and ensure persistence. 8988102
+- [x] Task: Write unit tests for store actions (add group, remove group, assign entity to group). 8988102
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation' (Protocol in workflow.md)
 
 ## Phase 2: UI Selection Logic - Grid Enhancements
