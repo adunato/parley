@@ -20,11 +20,11 @@
 ## Phase 3: Grouping Workflow & Management
 *Goal: Implement the "Group" action, "Create Group" modal, and "Manage Groups" modal.*
 
-- [ ] Task: Create the `CreateGroupModal` (simple Name/Description form).
-- [ ] Task: Implement the "Group" action in the toolbar (only for spine entities) that triggers the modal and updates selected entities.
-- [ ] Task: Create the `ManageGroupsModal` to list, rename, and delete existing groups.
-- [ ] Task: Add the "Group" column to the Age Phase grids to display the assigned group name.
-- [ ] Task: Write integration tests for the grouping workflow (create group -> entities update -> display name).
+- [x] Task: Create the `CreateGroupModal` (simple Name/Description form). 434770a
+- [x] Task: Implement the "Group" action in the toolbar (only for spine entities) that triggers the modal and updates selected entities. 434770a
+- [x] Task: Create the `ManageGroupsModal` to list, rename, and delete existing groups. 434770a
+- [x] Task: Add the "Group" column to the Age Phase grids to display the assigned group name. 434770a
+- [x] Task: Write integration tests for the grouping workflow (create group -> entities update -> display name). 434770a
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Grouping Workflow' (Protocol in workflow.md)
 
 ## Phase 4: Bulk Delete & Cleanup
