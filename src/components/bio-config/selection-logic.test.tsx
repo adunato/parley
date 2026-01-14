@@ -119,7 +119,7 @@ describe('BioDatasetEditor Selection', () => {
             />
         );
         
-        expect(screen.getByText('Group')).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Group' })).toBeInTheDocument();
         expect(screen.getByText('Group Alpha')).toBeInTheDocument();
     });
 });

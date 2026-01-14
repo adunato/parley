@@ -2,9 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SelectionToolbar } from './selection-toolbar';
 
 describe('SelectionToolbar', () => {
-    it('renders nothing when selectedCount is 0', () => {
-        render(<SelectionToolbar selectedCount={0} onDelete={() => {}} />);
+    it('renders container but no text/delete when selectedCount is 0', () => {
+        const { container } = render(<SelectionToolbar selectedCount={0} onDelete={() => {}} />);
         expect(screen.queryByText(/selected/i)).not.toBeInTheDocument();
+        expect(container.firstChild).toBeInTheDocument();
     });
 
     it('renders when items selected', () => {

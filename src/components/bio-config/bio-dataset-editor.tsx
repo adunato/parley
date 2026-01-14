@@ -92,6 +92,13 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
         setIsGroupModalOpen(false);
     };
 
+    const handleBulkDelete = () => {
+        if (window.confirm(`Are you sure you want to delete ${selectedIds.size} items?`)) {
+            selectedIds.forEach(id => onDelete(id));
+            setSelectedIds(new Set());
+        }
+    };
+
     const handleCreate = () => {
         setEditingItem(undefined);
         setEditorMode('create');
@@ -158,39 +165,39 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                 </Button>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between gap-2">
                 <Input
                     placeholder="Search..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="max-w-sm"
                 />
-            </div>
-
-            <SelectionToolbar 
-                selectedCount={selectedIds.size} 
-                onDelete={() => {/* TODO: Phase 4 */}}
-            >
-                {type !== 'LIFE_EVENT' && (
+                
+                <SelectionToolbar 
+                    selectedCount={selectedIds.size} 
+                    onDelete={handleBulkDelete}
+                >
+                    {type !== 'LIFE_EVENT' && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setIsGroupModalOpen(true)}
+                            disabled={selectedIds.size === 0}
+                        >
+                            <FolderPlus className="w-4 h-4 mr-2" />
+                            Group
+                        </Button>
+                    )}
                     <Button 
                         variant="ghost" 
                         size="sm" 
-                        onClick={() => setIsGroupModalOpen(true)}
-                        disabled={selectedIds.size === 0}
+                        onClick={() => setIsManageGroupsModalOpen(true)}
                     >
-                        <FolderPlus className="w-4 h-4 mr-2" />
-                        Group
+                        <Settings className="w-4 h-4 mr-2" />
+                        Manage Groups
                     </Button>
-                )}
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsManageGroupsModalOpen(true)}
-                >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Manage Groups
-                </Button>
-            </SelectionToolbar>
+                </SelectionToolbar>
+            </div>
 
             <div className="border rounded-md">
                 <Table>

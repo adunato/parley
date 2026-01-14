@@ -9,15 +9,15 @@ interface SelectionToolbarProps {
 }
 
 export function SelectionToolbar({ selectedCount, onDelete, children }: SelectionToolbarProps) {
-    if (selectedCount === 0) return null;
-
     return (
-        <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md border border-muted">
-            <span className="text-sm font-medium text-muted-foreground ml-2">
-                {selectedCount} selected
-            </span>
-            <div className="flex items-center gap-2">
-                {children}
+        <div className="flex items-center gap-2">
+            {selectedCount > 0 && (
+                <span className="text-sm font-medium text-muted-foreground mr-2">
+                    {selectedCount} selected
+                </span>
+            )}
+            {children}
+            {selectedCount > 0 && (
                 <Button 
                     variant="ghost" 
                     size="sm" 
@@ -27,7 +27,7 @@ export function SelectionToolbar({ selectedCount, onDelete, children }: Selectio
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete
                 </Button>
-            </div>
+            )}
         </div>
     );
 }

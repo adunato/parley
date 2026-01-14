@@ -30,10 +30,11 @@
 ## Phase 4: Bulk Delete & Cleanup
 *Goal: Implement multi-delete across all grids and final UI polish.*
 
-- [ ] Task: Implement the "Delete" action in the `SelectionToolbar` for bulk removal of entities.
+- [x] Task: Refactor Action Bar to align with Search input (persistent row).
+- [x] Task: Implement the "Delete" action in the `SelectionToolbar` for bulk removal of entities.
     -   *Sub-task:* Implement confirmation dialog for bulk delete.
     -   *Sub-task:* Remove confirmation dialog from existing single-delete actions.
-- [ ] Task: Ensure deleting a group (in Manage Groups) correctly clears `groupId` from all referencing entities.
-- [ ] Task: Final UI/UX review (consistency, mobile responsiveness, empty states).
-- [ ] Task: Verify overall code coverage for the new features.
+- [x] Task: Ensure deleting a group (in Manage Groups) correctly clears `groupId` from all referencing entities. (Completed in Phase 1 & 3)
+- [x] Task: Final UI/UX review (consistency, mobile responsiveness, empty states). (Completed via refactor)
+- [x] Task: Verify overall code coverage for the new features.
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md)
