@@ -61,12 +61,16 @@ export class BioMachine {
         const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
 
         for (const phase of phases) {
-            // A. Resolve Spine for this phase
-            const spineNode = this.resolvePhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
-            if (spineNode) {
-                spine.push(spineNode);
-                spineNode.provides?.forEach(t => tags.add(t));
-            }
+            // A. Resolve Spine for this phase (Supports multiple groups)
+            const phaseSpineNodes = this.resolveMultiGroupPhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
+            
+            // Selection Independence: Tags are collected separately and added AFTER all group selections for this phase
+            const newSpineTags = new Set<string>();
+            phaseSpineNodes.forEach(node => {
+                spine.push(node);
+                node.provides?.forEach(t => newSpineTags.add(t));
+            });
+            newSpineTags.forEach(t => tags.add(t));
 
             // B. Simulate Flesh for this phase
             const events = this.simulatePhaseFlesh(phase, tags, age, selectedEventIds);
@@ -86,41 +90,82 @@ export class BioMachine {
 
     // --- New Phased Logic ---
 
-    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+    /**
+     * Resolves spine nodes for a phase, allowing one node per group.
+     */
+    public resolveMultiGroupPhaseSpine(
+        phase: AgePhase, 
+        currentTags: Set<string>, 
+        validChildhood?: EventNode[], 
+        validFormative?: EventNode[], 
+        validProfessional?: EventNode[], 
+        validSenior?: EventNode[]
+    ): EventNode[] {
         const config = this.phaseConfig[phase];
-        if (!config.spineSlot) return null;
+        if (!config.spineSlot) return [];
 
-        let pool: EventNode[] = [];
+        let basePool: EventNode[] = [];
         
-        // Select correct pool
-        // If valid* arrays are passed (from pinning logic), use them. Otherwise use full instance data.
         switch (config.spineSlot) {
-            case 'CHILDHOOD':
-                pool = validChildhood || this.childhood;
-                break;
-            case 'FORMATIVE':
-                pool = validFormative || this.formative;
-                break;
-            case 'PROFESSIONAL':
-                pool = validProfessional || this.professional;
-                break;
-            case 'SENIOR':
-                pool = validSenior || this.senior;
-                break;
+            case 'CHILDHOOD': basePool = validChildhood || this.childhood; break;
+            case 'FORMATIVE': basePool = validFormative || this.formative; break;
+            case 'PROFESSIONAL': basePool = validProfessional || this.professional; break;
+            case 'SENIOR': basePool = validSenior || this.senior; break;
         }
 
-        // Filter by Phase (Strict Mode: Spine Node MUST match the phase)
-        pool = pool.filter(node => node.phase === phase);
+        // Filter by Phase
+        const phasePool = basePool.filter(node => node.phase === phase);
 
+        // Group the nodes
+        const groups: Record<string, EventNode[]> = {};
+        const ungrouped: EventNode[] = [];
+
+        phasePool.forEach(node => {
+            if (node.groupId) {
+                if (!groups[node.groupId]) groups[node.groupId] = [];
+                groups[node.groupId].push(node);
+            } else {
+                ungrouped.push(node);
+            }
+        });
+
+        const selectedNodes: EventNode[] = [];
+
+        // Resolve each group independently
+        Object.values(groups).forEach(pool => {
+            const selected = this.resolveSpineFromPool(pool, currentTags);
+            if (selected) selectedNodes.push(selected);
+        });
+
+        // Resolve ungrouped pool
+        const selectedUngrouped = this.resolveSpineFromPool(ungrouped, currentTags);
+        if (selectedUngrouped) selectedNodes.push(selectedUngrouped);
+
+        return selectedNodes;
+    }
+
+    /**
+     * Resolves a single spine node from a pool based on requirements and weights.
+     */
+    public resolveSpineFromPool(pool: EventNode[], currentTags: Set<string>): EventNode | null {
         // Filter by Requirements (Forward Constraint)
         const feasible = pool.filter(node => {
             if (!node.requires) return true;
             return node.requires.every(req => currentTags.has(req));
         });
 
-        if (feasible.length === 0) return null; // Or throw error if critical?
+        if (feasible.length === 0) return null;
 
         return this.selectWeighted(feasible, currentTags);
+    }
+
+    /**
+     * Legacy/Helper: Resolves a single node for a phase. 
+     * Now uses resolveMultiGroupPhaseSpine and returns the first result if multiple groups exist.
+     */
+    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+        const selected = this.resolveMultiGroupPhaseSpine(phase, currentTags, validChildhood, validFormative, validProfessional, validSenior);
+        return selected.length > 0 ? selected[0] : null;
     }
 
     public simulatePhaseFlesh(phase: AgePhase, currentTags: Set<string>, targetAge: number, previouslySelectedEventIds: Set<string>): LifeEvent[] {
