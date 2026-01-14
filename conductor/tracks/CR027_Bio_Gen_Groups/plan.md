@@ -37,4 +37,4 @@
 - [x] Task: Ensure deleting a group (in Manage Groups) correctly clears `groupId` from all referencing entities. (Completed in Phase 1 & 3)
 - [x] Task: Final UI/UX review (consistency, mobile responsiveness, empty states). (Completed via refactor)
 - [x] Task: Verify overall code coverage for the new features.
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Final Verification' (Protocol in workflow.md) [checkpoint: 454d300]
