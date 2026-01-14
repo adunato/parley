@@ -134,4 +134,55 @@ describe('BioMachine Groups', () => {
         expect(spineIds).toContain('origin_B');
         expect(spineIds).toContain('family_1');
     });
+
+    it('should select a life event with missing phases (defaulting to all phases)', () => {
+        const testData: BioData = {
+            ...mockData,
+            lifeEvents: [
+                { 
+                    id: 'event_no_phases', 
+                    text: 'No Phases Event', 
+                    weights: { DEFAULT: 100 }
+                    // phases is missing
+                }
+            ]
+        };
+
+        const machine = new BioMachine(testData);
+        // Force event trigger
+        const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9);
+        const result = machine.generate({ age: 18 });
+        spy.mockRestore();
+
+        // Current implementation will return false because e.phases is missing
+        expect(result.flesh.some(e => e.id === 'event_no_phases')).toBe(true);
+    });
+
+    it('should select sibling events even if other high-weight events exist (probabilistic check)', () => {
+        const testData: BioData = {
+            ...mockData,
+            childhood: [
+                { id: 'poor', slot: 'CHILDHOOD', text: 'Poor', weights: { DEFAULT: 1 }, phase: 'Childhood', groupId: 'origin', provides: ['POOR'] },
+                { id: 'nosib', slot: 'CHILDHOOD', text: 'No Sib', weights: { DEFAULT: 1 }, phase: 'Childhood', groupId: 'siblings', provides: ['SIBLINGS_0'] },
+            ],
+            lifeEvents: [
+                { id: 'camp', text: 'Camp', weights: { DEFAULT: 1, SIBLINGS_0: 3 }, phases: ['Childhood'] },
+                { id: 'farm', text: 'Farm', weights: { DEFAULT: 1, POOR: 50 }, phases: ['Childhood'] }
+            ]
+        };
+
+        const machine = new BioMachine(testData);
+        const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9);
+        
+        let campCount = 0;
+        for (let i = 0; i < 100; i++) {
+            const result = machine.generate({ age: 18 });
+            if (result.flesh.some(e => e.id === 'camp')) campCount++;
+        }
+        spy.mockRestore();
+
+        // Chance per roll is 3 / 53 = ~5.6%. 4 rolls per phase = ~20% total.
+        // In 100 trials, we expect around 20.
+        expect(campCount).toBeGreaterThan(0);
+    });
 });

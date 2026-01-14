@@ -235,7 +235,8 @@ export class BioMachine {
                     if (previouslySelectedEventIds.has(e.id)) return false;
                     
                     // Phase Check (Must be in allowed phases for this event)
-                    if (!e.phases || !e.phases.includes(phase)) return false;
+                    // If no phases are defined, we treat it as "all phases allowed"
+                    if (e.phases && !e.phases.includes(phase)) return false;
 
                     // Requirement Check
                     if (!e.requires) return true;
