@@ -1,33 +1,39 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType, Tag } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES } from '../generator/types';
 
 // Default Data Imports
-import originsData from '../generator/data/origins.json';
-import educationData from '../generator/data/education.json';
-import careersData from '../generator/data/careers.json';
+import childhoodData from '../generator/data/childhood.json';
+import formativeData from '../generator/data/formative.json';
+import professionalData from '../generator/data/professional.json';
 import eventsData from '../generator/data/events.json';
 
 interface BioStoreState {
-    origins: EventNode[];
-    education: EventNode[];
-    careers: EventNode[];
+    childhood: EventNode[];
+    formative: EventNode[];
+    professional: EventNode[];
+    senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
+    phaseConfig: Record<AgePhase, PhaseConfig>;
 
     // Actions
-    addOrigin: (item: EventNode) => void;
-    updateOrigin: (item: EventNode) => void;
-    deleteOrigin: (id: string) => void;
+    addChildhood: (item: EventNode) => void;
+    updateChildhood: (item: EventNode) => void;
+    deleteChildhood: (id: string) => void;
 
-    addEducation: (item: EventNode) => void;
-    updateEducation: (item: EventNode) => void;
-    deleteEducation: (id: string) => void;
+    addFormative: (item: EventNode) => void;
+    updateFormative: (item: EventNode) => void;
+    deleteFormative: (id: string) => void;
 
-    addCareer: (item: EventNode) => void;
-    updateCareer: (item: EventNode) => void;
-    deleteCareer: (id: string) => void;
+    addProfessional: (item: EventNode) => void;
+    updateProfessional: (item: EventNode) => void;
+    deleteProfessional: (id: string) => void;
+
+    addSenior: (item: EventNode) => void;
+    updateSenior: (item: EventNode) => void;
+    deleteSenior: (id: string) => void;
 
     addLifeEvent: (item: LifeEvent) => void;
     updateLifeEvent: (item: LifeEvent) => void;
@@ -37,24 +43,30 @@ interface BioStoreState {
     updateTag: (item: Tag, oldId?: string) => void;
     deleteTag: (id: string) => void;
 
+    updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
+
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
 
     setData: (data: {
-        origins: EventNode[];
-        education: EventNode[];
-        careers: EventNode[];
+        childhood: EventNode[];
+        formative: EventNode[];
+        professional: EventNode[];
+        senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        phaseConfig?: Record<AgePhase, PhaseConfig>;
     }) => void;
 
     // Computed
     getAllData: () => {
-        origins: EventNode[];
-        education: EventNode[];
-        careers: EventNode[];
+        childhood: EventNode[];
+        formative: EventNode[];
+        professional: EventNode[];
+        senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        phaseConfig: Record<AgePhase, PhaseConfig>;
     };
 
     _hasHydrated: boolean;
@@ -64,34 +76,44 @@ interface BioStoreState {
 export const useBioStore = create<BioStoreState>()(
     persist(
         (set, get) => ({
-            origins: [],
-            education: [],
-            careers: [],
+            childhood: [],
+            formative: [],
+            professional: [],
+            senior: [],
             lifeEvents: [],
             tags: [],
+            phaseConfig: AGE_PHASES,
 
-            addOrigin: (item) => set((state) => ({ origins: [...state.origins, item] })),
-            updateOrigin: (item) => set((state) => ({
-                origins: state.origins.map(i => i.id === item.id ? item : i)
+            addChildhood: (item) => set((state) => ({ childhood: [...state.childhood, item] })),
+            updateChildhood: (item) => set((state) => ({
+                childhood: state.childhood.map(i => i.id === item.id ? item : i)
             })),
-            deleteOrigin: (id) => set((state) => ({
-                origins: state.origins.filter(i => i.id !== id)
-            })),
-
-            addEducation: (item) => set((state) => ({ education: [...state.education, item] })),
-            updateEducation: (item) => set((state) => ({
-                education: state.education.map(i => i.id === item.id ? item : i)
-            })),
-            deleteEducation: (id) => set((state) => ({
-                education: state.education.filter(i => i.id !== id)
+            deleteChildhood: (id) => set((state) => ({
+                childhood: state.childhood.filter(i => i.id !== id)
             })),
 
-            addCareer: (item) => set((state) => ({ careers: [...state.careers, item] })),
-            updateCareer: (item) => set((state) => ({
-                careers: state.careers.map(i => i.id === item.id ? item : i)
+            addFormative: (item) => set((state) => ({ formative: [...state.formative, item] })),
+            updateFormative: (item) => set((state) => ({
+                formative: state.formative.map(i => i.id === item.id ? item : i)
             })),
-            deleteCareer: (id) => set((state) => ({
-                careers: state.careers.filter(i => i.id !== id)
+            deleteFormative: (id) => set((state) => ({
+                formative: state.formative.filter(i => i.id !== id)
+            })),
+
+            addProfessional: (item) => set((state) => ({ professional: [...state.professional, item] })),
+            updateProfessional: (item) => set((state) => ({
+                professional: state.professional.map(i => i.id === item.id ? item : i)
+            })),
+            deleteProfessional: (id) => set((state) => ({
+                professional: state.professional.filter(i => i.id !== id)
+            })),
+
+            addSenior: (item) => set((state) => ({ senior: [...state.senior, item] })),
+            updateSenior: (item) => set((state) => ({
+                senior: state.senior.map(i => i.id === item.id ? item : i)
+            })),
+            deleteSenior: (id) => set((state) => ({
+                senior: state.senior.filter(i => i.id !== id)
             })),
 
             addLifeEvent: (item) => set((state) => ({ lifeEvents: [...state.lifeEvents, item] })),
@@ -131,9 +153,10 @@ export const useBioStore = create<BioStoreState>()(
 
                 return {
                     tags: state.tags.map(i => i.id === effectiveOldId ? item : i),
-                    origins: renameInList(state.origins, 'provides'),
-                    education: renameInWeights(renameInList(renameInList(state.education, 'provides'), 'requires')),
-                    careers: renameInWeights(renameInList(state.careers, 'requires')),
+                    childhood: renameInList(state.childhood, 'provides'),
+                    formative: renameInWeights(renameInList(renameInList(state.formative, 'provides'), 'requires')),
+                    professional: renameInWeights(renameInList(state.professional, 'requires')),
+                    senior: renameInWeights(renameInList(state.senior, 'requires')), 
                     lifeEvents: renameInWeights(renameInList(renameInList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
@@ -154,12 +177,23 @@ export const useBioStore = create<BioStoreState>()(
 
                 return {
                     tags: state.tags.filter(i => i.id !== id),
-                    origins: removeFromList(state.origins, 'provides'),
-                    education: removeFromWeights(removeFromList(removeFromList(state.education, 'provides'), 'requires')),
-                    careers: removeFromWeights(removeFromList(state.careers, 'requires')),
+                    childhood: removeFromList(state.childhood, 'provides'),
+                    formative: removeFromWeights(removeFromList(removeFromList(state.formative, 'provides'), 'requires')),
+                    professional: removeFromWeights(removeFromList(state.professional, 'requires')),
+                    senior: removeFromWeights(removeFromList(state.senior, 'requires')),
                     lifeEvents: removeFromWeights(removeFromList(removeFromList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
+
+            updatePhaseConfig: (phase, updates) => set((state) => ({
+                phaseConfig: {
+                    ...state.phaseConfig,
+                    [phase]: {
+                        ...state.phaseConfig[phase],
+                        ...updates
+                    }
+                }
+            })),
 
             registerTags: (tagIds) => set((state) => {
                 const existingTagIds = new Set(state.tags.map(t => t.id));
@@ -172,14 +206,16 @@ export const useBioStore = create<BioStoreState>()(
             }),
 
             // Bulk Set (for migration)
-            setData: (data) => set(data),
+            setData: (data) => set({ ...data, phaseConfig: data.phaseConfig || AGE_PHASES }),
 
             getAllData: () => ({
-                origins: get().origins,
-                education: get().education,
-                careers: get().careers,
+                childhood: get().childhood,
+                formative: get().formative,
+                professional: get().professional,
+                senior: get().senior,
                 lifeEvents: get().lifeEvents,
-                tags: get().tags
+                tags: get().tags,
+                phaseConfig: get().phaseConfig
             }),
 
             _hasHydrated: false,
@@ -188,30 +224,47 @@ export const useBioStore = create<BioStoreState>()(
         {
             name: 'parley-bio-config',
             storage: createJSONStorage(() => DexieStorageAdapter),
-            onRehydrateStorage: () => (state) => {
+            onRehydrateStorage: () => (state: any) => { // Using any to handle migration from old props
                 if (state) {
                     // Check if empty and migrate
-                    const { origins, education, careers, tags } = state;
                     
-                    // 1. Seed default data if empty
-                    if (origins.length === 0 && education.length === 0 && careers.length === 0) {
-                        console.log("BioStore: Migrating default data...");
-                        state.setData({
-                            origins: originsData as EventNode[],
-                            education: educationData as EventNode[],
-                            careers: careersData as EventNode[],
-                            lifeEvents: eventsData as LifeEvent[],
-                            tags: [] // Will be populated in next step
-                        });
+                    // Legacy Migration: Map old props to new props if they exist in persistence
+                    if (state.origins && !state.childhood) {
+                        console.log("BioStore: Migrating 'origins' to 'childhood'");
+                        state.childhood = state.origins;
+                        delete state.origins;
+                    }
+                    if (state.education && !state.formative) {
+                        console.log("BioStore: Migrating 'education' to 'formative'");
+                        state.formative = state.education;
+                        delete state.education;
+                    }
+                    if (state.careers && !state.professional) {
+                        console.log("BioStore: Migrating 'careers' to 'professional'");
+                        state.professional = state.careers;
+                        delete state.careers;
                     }
 
-                    // 2. Harvest Tags Migration (If tags are empty but other data exists)
-                    // We check state again because setData above might have just run
-                    if ((state.tags || []).length === 0 && (state.origins.length > 0 || state.education.length > 0)) {
+                    const { childhood, formative, professional, senior, tags } = state;
+                    
+                    // 1. Seed default data if empty
+                    if ((!childhood || childhood.length === 0) && (!formative || formative.length === 0) && (!professional || professional.length === 0) && (senior || []).length === 0) {
+                        console.log("BioStore: Migrating default data...");
+                        state.childhood = childhoodData;
+                        state.formative = formativeData;
+                        state.professional = professionalData;
+                        state.senior = [];
+                        state.lifeEvents = eventsData;
+                        state.tags = [];
+                    }
+
+                    // 2. Harvest Tags Migration
+                    if ((state.tags || []).length === 0 && (state.childhood?.length > 0 || state.formative?.length > 0)) {
                         console.log("BioStore: Harvesting tags from entities...");
                         const uniqueTags = new Set<string>();
                         
                         const collect = (list: any[]) => {
+                            if (!list) return;
                             list.forEach(item => {
                                 item.provides?.forEach((t: string) => uniqueTags.add(t));
                                 item.requires?.forEach((t: string) => uniqueTags.add(t));
@@ -223,19 +276,62 @@ export const useBioStore = create<BioStoreState>()(
                             });
                         };
 
-                        collect(state.origins);
-                        collect(state.education);
-                        collect(state.careers);
+                        collect(state.childhood);
+                        collect(state.formative);
+                        collect(state.professional);
+                        collect(state.senior || []);
                         collect(state.lifeEvents);
 
-                        const newTags = Array.from(uniqueTags).map(id => ({ id }));
-                        state.setData({
-                            ...state.getAllData(),
-                            tags: newTags
-                        });
+                        state.tags = Array.from(uniqueTags).map(id => ({ id }));
                     }
 
-                    state.setHasHydrated(true);
+                    // 3. Phased Bio Migration (Assign default phases if missing)
+                    const ensurePhases = (list: any[], defaultPhase?: AgePhase, defaultPhases?: AgePhase[]) => {
+                        if (!list) return { newList: [], changed: false };
+                        let changed = false;
+                        const newList = list.map(item => {
+                            if (defaultPhase && !item.phase) {
+                                changed = true;
+                                return { ...item, phase: defaultPhase };
+                            }
+                            if (defaultPhases && !item.phases) {
+                                changed = true;
+                                return { ...item, phases: defaultPhases };
+                            }
+                            return item;
+                        });
+                        return { newList, changed };
+                    };
+
+                    const migrationResult = {
+                        childhood: ensurePhases(state.childhood, 'Childhood'),
+                        formative: ensurePhases(state.formative, 'Formative'),
+                        professional: ensurePhases(state.professional, 'Professional'),
+                        senior: ensurePhases(state.senior || [], 'Senior'),
+                        lifeEvents: ensurePhases(state.lifeEvents, undefined, ['Childhood', 'Formative', 'Professional', 'Senior'])
+                    };
+
+                    if (migrationResult.childhood.changed || migrationResult.formative.changed || migrationResult.professional.changed || migrationResult.senior.changed || migrationResult.lifeEvents.changed) {
+                        console.log("BioStore: Migrating entities to support age phases...");
+                        state.childhood = migrationResult.childhood.newList;
+                        state.formative = migrationResult.formative.newList;
+                        state.professional = migrationResult.professional.newList;
+                        state.senior = migrationResult.senior.newList;
+                        state.lifeEvents = migrationResult.lifeEvents.newList;
+                    }
+
+                    // Fix Slot Names in Data (if migrating from old JSONs)
+                    const fixSlot = (list: any[], oldSlot: string, newSlot: string) => {
+                        if (!list) return;
+                        list.forEach(item => {
+                            if (item.slot === oldSlot) item.slot = newSlot;
+                        });
+                    }
+                    fixSlot(state.childhood, 'ORIGIN', 'CHILDHOOD');
+                    fixSlot(state.formative, 'EDUCATION', 'FORMATIVE');
+                    fixSlot(state.professional, 'CAREER', 'PROFESSIONAL');
+
+                    state._hasHydrated = true;
                 }
             },
         }

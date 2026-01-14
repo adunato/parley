@@ -1,45 +1,57 @@
 import { BioMachine } from '../src/lib/generator/BioMachine';
 import { NameGenerator } from '../src/lib/generator/NameGenerator';
 
-import originsData from '../src/lib/generator/data/origins.json';
-import educationData from '../src/lib/generator/data/education.json';
-import careersData from '../src/lib/generator/data/careers.json';
+import childhoodData from '../src/lib/generator/data/childhood.json';
+import formativeData from '../src/lib/generator/data/formative.json';
+import professionalData from '../src/lib/generator/data/professional.json';
 import eventsData from '../src/lib/generator/data/events.json';
 import { EventNode, LifeEvent } from '../src/lib/generator/types';
 
-async function runTests() {
-    console.log("=== Testing NameGenerator ===");
-    console.log("USA:", NameGenerator.generateIdentity('USA'));
-    console.log("Japan:", NameGenerator.generateIdentity('Japan'));
-    console.log("France:", NameGenerator.generateIdentity('France'));
+// Mock Data Bundle
+const mockData = {
+    childhood: childhoodData as EventNode[],
+    formative: formativeData as EventNode[],
+    professional: professionalData as EventNode[],
+    senior: [] as EventNode[],
+    lifeEvents: eventsData as LifeEvent[],
+    tags: [] // Not needed for basic generation test
+};
 
-    console.log("\n=== Testing BioMachine ===");
-    const machine = new BioMachine({
-        origins: originsData as EventNode[],
-        education: educationData as EventNode[],
-        careers: careersData as EventNode[],
-        lifeEvents: eventsData as LifeEvent[]
-    });
+async function testGenerator() {
+    console.log("--- Starting Bio Generator Test ---");
+
+    const machine = new BioMachine(mockData);
 
     console.log("\n--- Test 1: Random Generation ---");
-    const resultRandom = machine.generate({ age: 25 });
-    console.log("Spine:", resultRandom.spine.map(n => n.id).join(' -> '));
-    console.log("Flesh:", resultRandom.flesh.map(e => e.id));
+    const resultRandom = machine.generate({ age: 30 });
+    console.log("Spine:", resultRandom.spine.map(n => n.id));
+    console.log("Flesh Events:", resultRandom.flesh.length);
     console.log("Tags:", Array.from(resultRandom.tags));
 
-    console.log("\n--- Test 2: Pinning Career (Investment Banker) ---");
-    const resultBanker = machine.generate({ targetCareerId: 'investment_banker', age: 40 });
-    console.log("Spine:", resultBanker.spine.map(n => n.id).join(' -> '));
-    console.log("Requirements Check (investment_banker requires DEGREE_ADVANCED):");
-    const hasDegree = resultBanker.tags.has('DEGREE_ADVANCED');
-    console.log(`Has Degree: ${hasDegree ? 'PASS' : 'FAIL'}`);
+    console.log("\n--- Test 2: Pinning Professional (Investment Banker) ---");
+    const resultBanker = machine.generate({ targetProfessionalId: 'investment_banker', age: 40 });
+    const careerNode = resultBanker.spine.find(n => n.slot === 'PROFESSIONAL');
+    console.log("Professional Check:", careerNode?.id);
+    if (careerNode?.id !== 'investment_banker') {
+        console.error("FAILED: Did not pin career.");
+    } else {
+        console.log("SUCCESS: Career pinned.");
+    }
 
-    console.log("\n--- Test 3: Pinning Origin (Old Money) ---");
-    const resultOldMoney = machine.generate({ targetOriginId: 'old_money', age: 30 });
-    console.log("Spine:", resultOldMoney.spine.map(n => n.id).join(' -> '));
-    console.log("Origin Check (Starts with old_money):");
-    const isOldMoney = resultOldMoney.spine[0].id === 'old_money';
-    console.log(`Is Old Money: ${isOldMoney ? 'PASS' : 'FAIL'}`);
+    console.log("\n--- Test 3: Pinning Childhood (Old Money) ---");
+    const resultOldMoney = machine.generate({ targetChildhoodId: 'old_money', age: 30 });
+    const originNode = resultOldMoney.spine.find(n => n.slot === 'CHILDHOOD');
+    console.log("Childhood Check (Starts with old_money):");
+    console.log(originNode?.id);
+    
+    // Check flow
+    console.log("Full Spine:", resultOldMoney.spine.map(n => n.id));
+
+    console.log("\n--- Test 4: Identity Generation ---");
+    const identity = NameGenerator.generateIdentity('USA', 'female');
+    console.log("Generated:", identity);
+
+    console.log("\n--- Done ---");
 }
 
-runTests().catch(console.error);
+testGenerator().catch(console.error);

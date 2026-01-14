@@ -4,13 +4,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Pencil, Trash2, Search, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BioEntityEditor } from './bio-entity-editor';
-import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+import { AgePhase, EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
 import { Badge } from "@/components/ui/badge";
 import { useBioStore } from "@/lib/store/bioStore";
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT'; // The target type for new items
+    type: 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR' | 'LIFE_EVENT'; // The target type for new items
+    phase?: AgePhase; // The active phase context
     onAdd: (item: any) => void;
     onUpdate: (item: any) => void;
     onDelete: (id: string) => void;
@@ -18,16 +19,30 @@ interface BioDatasetEditorProps {
     description: string;
 }
 
-export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title, description }: BioDatasetEditorProps) {
+export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete, title, description }: BioDatasetEditorProps) {
     const [search, setSearch] = useState('');
     const [editingItem, setEditingItem] = useState<EventNode | LifeEvent | undefined>(undefined);
     const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
-    const filteredData = data.filter(item =>
-        item.id.toLowerCase().includes(search.toLowerCase()) ||
-        item.text.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredData = data.filter(item => {
+        // Search Filter
+        const matchesSearch = item.id.toLowerCase().includes(search.toLowerCase()) ||
+            item.text.toLowerCase().includes(search.toLowerCase());
+        
+        if (!matchesSearch) return false;
+
+        // Phase Filter
+        if (phase) {
+            // Check 'phase' property (single)
+            if ('phase' in item && item.phase === phase) return true;
+            // Check 'phases' property (multiple)
+            if ('phases' in item && item.phases?.includes(phase)) return true;
+            return false;
+        }
+
+        return true;
+    });
 
     const existingIds = data.map(i => i.id);
 
@@ -110,8 +125,9 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[200px]">ID</TableHead>
+                            <TableHead className="w-[120px]">ID</TableHead>
                             <TableHead>Text</TableHead>
+                            {type === 'LIFE_EVENT' && <TableHead>Age Phases</TableHead>}
                             <TableHead>Provides</TableHead>
                             <TableHead>Requires</TableHead>
                             <TableHead>Influenced by</TableHead>
@@ -121,17 +137,33 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                                     No items found.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredData.map((item) => (
                                 <TableRow key={item.id}>
-                                    <TableCell className="font-mono text-xs">{item.id}</TableCell>
-                                    <TableCell className="max-w-[400px] truncate" title={item.text}>
+                                    <TableCell className="font-mono text-[10px] break-all">{item.id}</TableCell>
+                                    <TableCell className="max-w-[300px] truncate" title={item.text}>
                                         {item.text}
                                     </TableCell>
+                                    {type === 'LIFE_EVENT' && (
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {('phase' in item && item.phase) && (
+                                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
+                                                    {item.phase}
+                                                </Badge>
+                                            )}
+                                            {('phases' in item && item.phases) && item.phases.map(p => (
+                                                <Badge key={p} variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
+                                                    {p}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </TableCell>
+                                    )}
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
                                             {item.provides?.slice(0, 3).map(t => (
@@ -189,6 +221,7 @@ export function BioDatasetEditor({ data, type, onAdd, onUpdate, onDelete, title,
                 initialData={editingItem}
                 onSave={handleSave}
                 type={type}
+                phase={phase}
                 existingIds={existingIds}
                 mode={editorMode}
             />

@@ -25,14 +25,16 @@ interface ProceduralGeneratorDialogProps {
 export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
     // Store
     const bioData = useBioStore(useShallow(state => ({
-        origins: state.origins,
-        education: state.education,
-        careers: state.careers,
+        childhood: state.childhood,
+        formative: state.formative,
+        professional: state.professional,
+        senior: state.senior,
         lifeEvents: state.lifeEvents,
-        tags: state.tags
+        tags: state.tags,
+        phaseConfig: state.phaseConfig
     })));
-    const origins = bioData.origins;
-    const careers = bioData.careers;
+    const childhood = bioData.childhood;
+    const professional = bioData.professional;
 
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
@@ -40,8 +42,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
     const [selectedGender, setSelectedGender] = useState<'random' | GenderOption>('random');
     const [age, setAge] = useState<number>(30);
     const [mode, setMode] = useState<'random' | 'custom'>('random');
-    const [targetOrigin, setTargetOrigin] = useState<string>('random');
-    const [targetCareer, setTargetCareer] = useState<string>('random');
+    const [targetChildhood, setTargetChildhood] = useState<string>('random');
+    const [targetProfessional, setTargetProfessional] = useState<string>('random');
 
     // Generated Data State
     const [identity, setIdentity] = useState<Identity | null>(null);
@@ -69,8 +71,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                 if (parsed.selectedGender) setSelectedGender(parsed.selectedGender);
                 if (parsed.age) setAge(parsed.age);
                 if (parsed.mode) setMode(parsed.mode);
-                if (parsed.targetOrigin) setTargetOrigin(parsed.targetOrigin);
-                if (parsed.targetCareer) setTargetCareer(parsed.targetCareer);
+                if (parsed.targetChildhood) setTargetChildhood(parsed.targetChildhood);
+                if (parsed.targetProfessional) setTargetProfessional(parsed.targetProfessional);
             } catch (e) {
                 console.error("Failed to parse saved settings", e);
             }
@@ -86,11 +88,11 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
             selectedGender,
             age,
             mode,
-            targetOrigin,
-            targetCareer
+            targetChildhood,
+            targetProfessional
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }, [hasLoaded, country, selectedState, selectedGender, age, mode, targetOrigin, targetCareer]);
+    }, [hasLoaded, country, selectedState, selectedGender, age, mode, targetChildhood, targetProfessional]);
 
     // Handlers
     const handleGenerateIdentity = () => {
@@ -103,8 +105,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
     const handleGenerateHistory = () => {
         const request: BioGenerationRequest = {
             age,
-            targetOriginId: targetOrigin === 'random' ? undefined : targetOrigin,
-            targetCareerId: targetCareer === 'random' ? undefined : targetCareer,
+            targetChildhoodId: targetChildhood === 'random' ? undefined : targetChildhood,
+            targetProfessionalId: targetProfessional === 'random' ? undefined : targetProfessional,
         };
         const result = machine.generate(request);
         setBioState(result);
@@ -141,8 +143,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
         if (!identity) return;
 
         // Determine Role from career if available
-        const role = bioState?.spine.find(n => n.slot === 'CAREER')?.id.replace(/_/g, ' ') || 'Unknown';
-        const origin = bioState?.spine.find(n => n.slot === 'ORIGIN')?.id.replace(/_/g, ' ') || 'Unknown';
+        const role = bioState?.spine.find(n => n.slot === 'PROFESSIONAL')?.id.replace(/_/g, ' ') || 'Unknown';
+        const origin = bioState?.spine.find(n => n.slot === 'CHILDHOOD')?.id.replace(/_/g, ' ') || 'Unknown';
 
         onApply({
             name: `${identity.firstName} ${identity.lastName}`,
@@ -259,28 +261,28 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             {mode === 'custom' && (
                                 <div className="space-y-3 pl-2 border-l-2 border-muted">
                                     <div className="space-y-1">
-                                        <Label className="text-xs text-muted-foreground">Target Origin</Label>
-                                        <Select value={targetOrigin} onValueChange={setTargetOrigin}>
+                                        <Label className="text-xs text-muted-foreground">Target Childhood</Label>
+                                        <Select value={targetChildhood} onValueChange={setTargetChildhood}>
                                             <SelectTrigger className="h-8">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="random">Random</SelectItem>
-                                                {origins.map(o => (
+                                                {childhood.map(o => (
                                                     <SelectItem key={o.id} value={o.id}>{o.id.replace(/_/g, ' ')}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="text-xs text-muted-foreground">Target Career</Label>
-                                        <Select value={targetCareer} onValueChange={setTargetCareer}>
+                                        <Label className="text-xs text-muted-foreground">Target Professional</Label>
+                                        <Select value={targetProfessional} onValueChange={setTargetProfessional}>
                                             <SelectTrigger className="h-8">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="random">Random</SelectItem>
-                                                {careers.map(c => (
+                                                {professional.map(c => (
                                                     <SelectItem key={c.id} value={c.id}>{c.id.replace(/_/g, ' ')}</SelectItem>
                                                 ))}
                                             </SelectContent>

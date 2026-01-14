@@ -10,7 +10,8 @@
             "BURNOUT": 15,
             "POOR": 0,
             "DEFAULT": 0
-        }
+        },
+        "phases": ["Professional", "Senior"]
     },
     {
         "id": "workplace_injury",
@@ -22,7 +23,8 @@
         "weights": {
             "PHYSICAL_TOLL": 20,
             "DEFAULT": 1
-        }
+        },
+        "phases": ["Formative", "Professional", "Senior"]
     },
     {
         "id": "promotion",
@@ -34,7 +36,8 @@
         "weights": {
             "BURNOUT": 0.5,
             "DEFAULT": 5
-        }
+        },
+        "phases": ["Professional", "Senior"]
     },
     {
         "id": "layoff",
@@ -46,7 +49,8 @@
         "weights": {
             "STABLE_INCOME": 1,
             "DEFAULT": 5
-        }
+        },
+        "phases": ["Professional", "Senior"]
     },
     {
         "id": "travel_gap_year",
@@ -59,7 +63,8 @@
             "RICH": 5,
             "POOR": 0.1,
             "DEFAULT": 2
-        }
+        },
+        "phases": ["Formative", "Professional"]
     },
     {
         "id": "night_classes",
@@ -71,7 +76,8 @@
         "weights": {
             "AMBITIOUS": 5,
             "DEFAULT": 3
-        }
+        },
+        "phases": ["Formative", "Professional"]
     },
     {
         "id": "volunteer_work",
@@ -82,7 +88,8 @@
         ],
         "weights": {
             "DEFAULT": 3
-        }
+        },
+        "phases": ["Childhood", "Formative", "Professional", "Senior"]
     },
     {
         "id": "bad_investment",
@@ -94,6 +101,7 @@
         "weights": {
             "RISK_TAKER": 5,
             "DEFAULT": 2
-        }
+        },
+        "phases": ["Formative", "Professional", "Senior"]
     }
 ]

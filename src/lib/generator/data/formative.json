@@ -1,7 +1,7 @@
 [
     {
         "id": "ivy_league",
-        "slot": "EDUCATION",
+        "slot": "FORMATIVE",
         "text": "Accepted into a prestigious Ivy League university.",
         "provides": [
             "DEGREE_ADVANCED",
@@ -16,11 +16,12 @@
             "STRESSED": 20,
             "POOR": 1,
             "DEFAULT": 5
-        }
+        },
+        "phase": "Formative"
     },
     {
         "id": "trade_school",
-        "slot": "EDUCATION",
+        "slot": "FORMATIVE",
         "text": "Opted for a trade school to start earning money quickly.",
         "provides": [
             "TRADESMAN_CERT",
@@ -31,6 +32,7 @@
             "POOR": 20,
             "RICH": 1,
             "DEFAULT": 10
-        }
+        },
+        "phase": "Formative"
     }
 ]

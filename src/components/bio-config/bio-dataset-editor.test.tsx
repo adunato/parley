@@ -102,6 +102,62 @@ describe("BioDatasetEditor", () => {
         // Expect registerTags to have been called
         await waitFor(() => {
             expect(mockRegisterTags).toHaveBeenCalledWith(expect.arrayContaining(["NEW_GLOBAL_TAG"]));
+                });
+            });
+        
+            it("filters data by phase if provided", () => {
+                const mixedData: EventNode[] = [
+                    { id: "e1", slot: "ORIGIN", text: "Childhood Origin", phase: "Childhood", weights: { DEFAULT: 1 } },
+                    { id: "e2", slot: "ORIGIN", text: "Other Origin", phase: "Formative", weights: { DEFAULT: 1 } } // Should not happen for Origin but good for test
+                ];
+        
+                render(
+                    <BioDatasetEditor 
+                        data={mixedData} 
+                        type="ORIGIN" 
+                        phase="Childhood"
+                        onAdd={jest.fn()} 
+                        onUpdate={jest.fn()} 
+                        onDelete={jest.fn()} 
+                        title="Test" 
+                        description="Test" 
+                    />
+                );
+        
+                expect(screen.getByText("Childhood Origin")).toBeInTheDocument();
+                expect(screen.queryByText("Other Origin")).not.toBeInTheDocument();
+            });
+        
+            it("hides Age Phases column for non-LIFE_EVENT types", () => {
+                render(
+                    <BioDatasetEditor 
+                        data={mockData} 
+                        type="ORIGIN" 
+                        onAdd={jest.fn()} 
+                        onUpdate={jest.fn()} 
+                        onDelete={jest.fn()} 
+                        title="Test" 
+                        description="Test" 
+                    />
+                );
+        
+                expect(screen.queryByText("Age Phases")).not.toBeInTheDocument();
+            });
+        
+            it("shows Age Phases column for LIFE_EVENT type", () => {
+                render(
+                    <BioDatasetEditor 
+                        data={[]} 
+                        type="LIFE_EVENT" 
+                        onAdd={jest.fn()} 
+                        onUpdate={jest.fn()} 
+                        onDelete={jest.fn()} 
+                        title="Test" 
+                        description="Test" 
+                    />
+                );
+        
+                expect(screen.getByText("Age Phases")).toBeInTheDocument();
+            });
         });
-    });
-});
+        

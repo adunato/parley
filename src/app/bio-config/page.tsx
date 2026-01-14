@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
 import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
+import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
 import { useBioStore } from "@/lib/store/bioStore";
 
 export default function BioConfigPage() {
@@ -21,54 +22,72 @@ export default function BioConfigPage() {
             <Tabs defaultValue="graph" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="graph">Graph View</TabsTrigger>
-                    <TabsTrigger value="origins">Origins</TabsTrigger>
-                    <TabsTrigger value="education">Education</TabsTrigger>
-                    <TabsTrigger value="careers">Careers</TabsTrigger>
+                    <TabsTrigger value="childhood">Childhood</TabsTrigger>
+                    <TabsTrigger value="formative">Formative</TabsTrigger>
+                    <TabsTrigger value="professional">Professional</TabsTrigger>
+                    <TabsTrigger value="senior">Senior</TabsTrigger>
                     <TabsTrigger value="events">Life Events</TabsTrigger>
                     <TabsTrigger value="tags">Tags</TabsTrigger>
+                    <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="graph" className="space-y-4">
                     <div className="space-y-2">
                         <h2 className="text-xl font-semibold tracking-tight">Dependency Graph</h2>
-                        <p className="text-sm text-muted-foreground">Visualizes the flow from Origins to Careers based on tag requirements.</p>
+                        <p className="text-sm text-muted-foreground">Visualizes the flow from Childhood to Professional based on tag requirements.</p>
                     </div>
                     <BioGraphView />
                 </TabsContent>
 
-                <TabsContent value="origins" className="space-y-4">
+                <TabsContent value="childhood" className="space-y-4">
                     <BioDatasetEditor
-                        title="Origins"
+                        title="Childhood"
                         description="Starting socioeconomic and geographic backgrounds."
-                        data={store.origins}
-                        type="ORIGIN"
-                        onAdd={store.addOrigin}
-                        onUpdate={store.updateOrigin}
-                        onDelete={store.deleteOrigin}
+                        data={store.childhood}
+                        type="CHILDHOOD"
+                        phase="Childhood"
+                        onAdd={store.addChildhood}
+                        onUpdate={store.updateChildhood}
+                        onDelete={store.deleteChildhood}
                     />
                 </TabsContent>
 
-                <TabsContent value="education" className="space-y-4">
+                <TabsContent value="formative" className="space-y-4">
                     <BioDatasetEditor
-                        title="Education"
+                        title="Formative"
                         description="Academic and vocational history."
-                        data={store.education}
-                        type="EDUCATION"
-                        onAdd={store.addEducation}
-                        onUpdate={store.updateEducation}
-                        onDelete={store.deleteEducation}
+                        data={store.formative}
+                        type="FORMATIVE"
+                        phase="Formative"
+                        onAdd={store.addFormative}
+                        onUpdate={store.updateFormative}
+                        onDelete={store.deleteFormative}
                     />
                 </TabsContent>
 
-                <TabsContent value="careers" className="space-y-4">
+                <TabsContent value="professional" className="space-y-4">
                     <BioDatasetEditor
-                        title="Careers"
+                        title="Professional"
                         description="Professional roles and occupations."
-                        data={store.careers}
-                        type="CAREER"
-                        onAdd={store.addCareer}
-                        onUpdate={store.updateCareer}
-                        onDelete={store.deleteCareer}
+                        data={store.professional}
+                        type="PROFESSIONAL"
+                        phase="Professional"
+                        onAdd={store.addProfessional}
+                        onUpdate={store.updateProfessional}
+                        onDelete={store.deleteProfessional}
+                    />
+                </TabsContent>
+
+                <TabsContent value="senior" className="space-y-4">
+                    <BioDatasetEditor
+                        title="Senior"
+                        description="Retirement status or late-life role."
+                        data={store.senior}
+                        type="SENIOR"
+                        phase="Senior"
+                        onAdd={store.addSenior}
+                        onUpdate={store.updateSenior}
+                        onDelete={store.deleteSenior}
                     />
                 </TabsContent>
 
@@ -92,6 +111,14 @@ export default function BioConfigPage() {
                         onUpdate={store.updateTag}
                         onDelete={store.deleteTag}
                     />
+                </TabsContent>
+
+                <TabsContent value="settings" className="space-y-4">
+                    <div className="space-y-2">
+                        <h2 className="text-xl font-semibold tracking-tight">Generation Settings</h2>
+                        <p className="text-sm text-muted-foreground">Adjust age boundaries, simulation intervals, and event probabilities for each phase.</p>
+                    </div>
+                    <BioPhaseSettings />
                 </TabsContent>
             </Tabs>
         </div>

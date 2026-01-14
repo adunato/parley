@@ -49,8 +49,8 @@ export async function generateLifeEvents(
     });
 
     return {
-      lifeEvents: object.lifeEvents,
-      newTags: object.newTags || []
+      lifeEvents: object.lifeEvents as LifeEvent[],
+      newTags: (object.newTags || []) as Tag[]
     };
   } catch (error) {
     console.error("Error generating life events:", error);

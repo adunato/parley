@@ -6,27 +6,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
-import { EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
 import { GenerateEventsDialog } from './generate-events-dialog';
 import { Sparkles } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface BioEntityEditorProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     initialData?: EventNode | LifeEvent;
     onSave: (data: any) => void;
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'LIFE_EVENT';
+    type: 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR' | 'LIFE_EVENT';
+    phase?: AgePhase; // Suggested phase from tab
     existingIds: string[];
     mode?: 'create' | 'edit';
     container?: HTMLElement | null;
 }
 
-export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, existingIds, mode = 'edit', container }: BioEntityEditorProps) {
+export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type, phase, existingIds, mode = 'edit', container }: BioEntityEditorProps) {
     const [id, setId] = useState('');
     const [text, setText] = useState('');
     const [provides, setProvides] = useState<string[]>([]);
     const [requires, setRequires] = useState<string[]>([]);
     const [weights, setWeights] = useState<{ [tag: string]: number; "DEFAULT": number }>({ "DEFAULT": 1 });
+    const [selectedPhase, setSelectedPhase] = useState<AgePhase | undefined>(undefined);
+    const [selectedPhases, setSelectedPhases] = useState<AgePhase[]>([]);
     const [showGenerator, setShowGenerator] = useState(false);
 
     useEffect(() => {
@@ -41,6 +45,18 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             } else {
                 setRequires([]);
             }
+
+            if ('phase' in initialData) {
+                setSelectedPhase(initialData.phase);
+            } else {
+                setSelectedPhase(undefined);
+            }
+
+            if ('phases' in initialData) {
+                setSelectedPhases(initialData.phases || []);
+            } else {
+                setSelectedPhases([]);
+            }
         } else if (open) {
             // Reset for new
             setId('');
@@ -48,8 +64,10 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             setProvides([]);
             setRequires([]);
             setWeights({ "DEFAULT": 1 });
+            setSelectedPhase(phase);
+            setSelectedPhases(phase ? [phase] : []);
         }
-    }, [open, initialData]);
+    }, [open, initialData, phase]);
 
     const isDuplicateId = useMemo(() => {
         if (!id) return false;
@@ -76,19 +94,22 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         if (type === 'LIFE_EVENT') {
             onSave({
                 ...base,
-                requires: requires.length > 0 ? requires : undefined
+                requires: requires.length > 0 ? requires : undefined,
+                phases: selectedPhases.length > 0 ? selectedPhases : undefined
             } as LifeEvent);
         } else {
             onSave({
                 ...base,
                 slot: type as SlotType,
-                requires: requires.length > 0 ? requires : undefined
+                requires: requires.length > 0 ? requires : undefined,
+                phase: selectedPhase
             } as EventNode);
         }
         onOpenChange(false);
     };
 
     const isEditing = mode === 'edit' && !!initialData;
+    const allPhases = Object.keys(AGE_PHASES) as AgePhase[];
 
     return (
         <>
@@ -110,6 +131,38 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                 />
                                 {isDuplicateId && (
                                     <p className="text-xs text-red-500">ID already exists!</p>
+                                )}
+                            </div>
+                            
+                            {/* Phase Selection */}
+                            <div className="space-y-2">
+                                <Label>Age Phase{type === 'LIFE_EVENT' ? 's' : ''}</Label>
+                                {type === 'LIFE_EVENT' ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {allPhases.map(p => (
+                                            <Button
+                                                key={p}
+                                                type="button"
+                                                variant={selectedPhases.includes(p) ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedPhases(prev => 
+                                                        prev.includes(p)
+                                                            ? prev.filter(ph => ph !== p)
+                                                            : [...prev, p]
+                                                    );
+                                                }}
+                                            >
+                                                {p}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <Input 
+                                        value={selectedPhase || 'None'} 
+                                        disabled={true} 
+                                        className="bg-muted text-muted-foreground"
+                                    />
                                 )}
                             </div>
                         </div>

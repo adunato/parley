@@ -2,190 +2,116 @@
 
 ## **1\. Executive Summary**
 
-This document outlines the architecture for a **Bi-Directional Procedural Character Generator**. Unlike standard generators that select attributes at random (often resulting in incoherent characters, e.g., an uneducated teenager working as a Neurosurgeon), this system uses a **Constraint Satisfaction Engine**.
+This document outlines the architecture for a **Phased Phased Procedural Character Generator**. Unlike standard generators that select attributes at random (often resulting in incoherent characters), this system uses a **Phased Constraint Satisfaction Engine**.
 
-The system treats a character's life as a logical timeline. It supports two modes of operation:
+The system treats a character's life as a series of logical **Age Phases**. Within each phase, the system interleaves the selection of major life milestones ("The Spine") and the simulation of probabilistic events ("The Flesh"). This ensures that events occurring early in a character's life (e.g., during Childhood) can logically influence and unlock paths in later phases (e.g., Education or Career).
 
-1. **Forward Generation:** Creating a coherent life path from birth to present based on weighted probabilities (Social Class → Education → Career).  
-2. **Constraint Solving ("Pinning"):** Allowing a user to define a specific end-state (e.g., "A 45-year-old Astronaut") and automatically backfilling the necessary prerequisites (must have a degree, must be physically fit, must have air force or engineering experience) while pruning impossible history events.
+The system supports:
+1. **Forward Generation:** Creating a coherent life path phase-by-phase based on weighted probabilities and accumulated state.
+2. **Constraint Solving ("Pinning"):** Allowing a user to define a specific end-state (e.g., "Career: Surgeon") and automatically backfilling prerequisites via backward propagation before starting the phased generation.
 
 ## **2\. Core Concepts & Vocabulary**
-
-To maintain coherence, the system relies on three fundamental logic units.
 
 ### **2.1 Tags**
 
 **Tags** are the atomic units of a character's state. They act as the "memory" of the system.
-
 * *Examples:* WEALTHY, ORPHANED, DEGREE\_MEDICAL, CRIMINAL\_RECORD.  
 * *Function:* Tags trigger future events or block them. A character with the CRIMINAL\_RECORD tag might be blocked from the POLICE\_OFFICER career.
 
 ### **2.2 Weights (The Luck System)**
 
-**Weights** determine the probability of an event occurring based on the character's existing tags. This replaces simple percentage chances with dynamic context.
-
+**Weights** determine the probability of an event occurring based on the character's existing tags.
 * *Scenario:* "Getting into Ivy League University."  
-* *Default Weight:* 1 (Very rare).  
-* *Modifier:* If character has WEALTHY tag: Weight 50 (Very likely).  
-* *Modifier:* If character has POOR tag: Weight 0.5 (Extremely rare).
+* *Modifier:* If character has WEALTHY tag: Weight x50 (Very likely).  
+* *Modifier:* If character has POOR tag: Weight x0.5 (Extremely rare).
 
-### **2.3 Timeline Slots**
+### **2.3 Age Phases**
 
-The character's life is divided into rigid chronological buckets called **Slots**.
+The character's life is divided into chronological buckets called **Phases**.
+1. **Childhood** (Age 0-18): Primary Spine node: `ORIGIN`.
+2. **Formative** (Age 18-25): Primary Spine node: `EDUCATION`.
+3. **Professional** (Age 25-65): Primary Spine node: `CAREER`.
+4. **Senior** (Age 65+): Focuses on post-career events.
 
-1. **Origin** (Birth circumstances)  
-2. **Childhood** (Early development)  
-3. **Education** (High School / University / Trade)  
-4. **Career** (Adult profession)
+Each phase has configurable age boundaries, simulation intervals, and event trigger probabilities.
 
 ## **3\. System Architecture**
 
-The system is composed of four distinct layers, spanning from the visual configuration tools to the final narrative generation.
-
 graph TD
     UI[Frontend Configuration UI] -->|Update Data| Store[Zustand Store + Dexie]
-    Store -->|Inject Dataset| Engine[Layer 1 & 2: BioMachine]
+    Store -->|Inject Dataset & Config| Engine[BioMachine]
     
-    subgraph "Logic & Simulation"
-        Engine -->|Layer 1: The Spine| Spine[Origin -> Edu -> Job]
-        Engine -->|Layer 2: The Flesh| Flesh[Life Event Simulation]
+    subgraph "Interleaved Logic (Per Phase)"
+        Engine -->|Step 1| Spine[Resolve Spine Node for Phase]
+        Engine -->|Step 2| Flesh[Simulate Life Events for Phase]
+        Spine -->|Accumulate Tags| Flesh
+        Flesh -->|Accumulate Tags| NextPhase[Next Phase]
     end
     
-    Spine -->|JSON Payload| LLM[Layer 3: The Skin (LLM)]
-    Flesh -->|JSON Payload| LLM
+    Engine -->|JSON Payload| LLM[Layer 3: The Skin (LLM)]
     LLM --> Output[Final Text Biography]
 
 ### **Layer 0: Frontend Configuration (UI & State)**
-The system features a comprehensive set of React-based tools for managing the generative datasets.
-* **State Management:** `useBioStore` (Zustand) handles the current dataset, persistence via IndexedDB (Dexie), and cascading rename logic for tags.
-* **BioGraphView:** A visualization tool that maps out the logical connections between event nodes.
-* **Editors:** Dedicated interfaces for managing Origins, Education, Careers, Life Events, and Tags.
+* **State Management:** `useBioStore` (Zustand) handles the dataset, global phase configuration, and persistence.
+* **Phase-Aware Editors:** The configuration UI is organized by Age Phases. Spine nodes are assigned to exactly one phase, while Life Events can span multiple phases.
+* **Global Settings:** Users can adjust age boundaries and simulation frequencies globally.
 
-### **Layer 1: The Spine (Logic & Constraints)**
-This layer ensures the timeline makes sense. It uses a constraint-aware selection algorithm to resolve the timeline.
-* **Input:** User Pins (e.g., "Career: Surgeon") or "Random".
-* **Process:** It loads all possible events for all slots and applies filters to ensure logical continuity.
-* **Logic:**
-    * **Backward Propagation:** If a Career requires a tag (e.g., `DEGREE_MEDICAL`), the system filters the Education slot to only include nodes providing that tag.
-    * **Forward Selection Filtering:** Once an Origin is selected, the Education slot is further filtered to only include nodes whose requirements are met by the selected Origin's provided tags.
+### **Layer 1: The Phased Engine (BioMachine)**
+The engine executes a chronological loop through the defined Age Phases.
+* **Process:**
+    1. **Constraint Solving:** Before the loop, if an end-state is pinned, the engine prunes impossible nodes in earlier phases (Backward Propagation).
+    2. **Spine Resolution:** In each phase, if a slot type is assigned (e.g., `ORIGIN` for `Childhood`), the engine picks one valid node.
+    3. **Flesh Simulation:** The engine then runs multiple simulation iterations within the phase's age range.
+    4. **Tag Accumulation:** Tags gathered from both Spine nodes and Life Events immediately influence selections later in the same phase and in all subsequent phases.
 
-### **Layer 2: The Flesh (Simulation)**
-This layer adds richness. Once the logical spine is generated, this layer runs a probabilistic simulation for events that add flavor but don't strictly define the career path.
-* **Mechanism:** It iterates through the character's age (18 to current) in 5-year increments.
-* **Logic:** 70% chance of event per chunk. It uses the Tags generated in Layer 1 (and preceding Layer 2 events) to influence probabilities.
-
-### **Layer 3: The Skin (Narrative)**
-This layer converts the structured data into human-readable text using an LLM.
-* **Input:** A robust JSON object containing the `spine`, `flesh`, and `tags`.
-* **Process:** The `bio_writer` prompt instructs the LLM to write a biography based strictly on the provided facts.
+### **Layer 2: The Skin (Narrative)**
+Converts the structured JSON into human-readable text using an LLM.
 
 ## **4\. Data Logic & Schema**
 
-The system relies on strict JSON definitions for the "Spine" events and simulation data.
-
 ### **4.1 Schema Definition**
 
-#### **EventNode (Layer 1)**
-Each event in the logical timeline is defined as an `EventNode`.
-
+#### **EventNode (Spine)**
 ```typescript
 interface EventNode {
   id: string;
   slot: 'ORIGIN' | 'EDUCATION' | 'CAREER';
-  text: string;           // Narrative description
-  requires?: string[];    // Tags required to enter this node
-  provides?: string[];    // Tags granted by this node
-  weights: {
-    [tag: string]: number; // Modifiers (e.g., "RICH": 50)
-    "DEFAULT": number;     // Baseline probability
-  };
+  phase: AgePhase;        // Single assigned phase
+  text: string;
+  requires?: string[];
+  provides?: string[];
+  weights: { [tag: string]: number; "DEFAULT": number };
 }
 ```
 
-#### **LifeEvent (Layer 2)**
-Simulation events that populate the "Flesh" layer.
-
+#### **LifeEvent (Flesh)**
 ```typescript
 interface LifeEvent {
   id: string;
+  phases: AgePhase[];     // Can belong to multiple phases
   text: string;
   provides?: string[];
-  weights: {
-    [tag: string]: number;
-    "DEFAULT": number;
-  };
+  weights: { [tag: string]: number; "DEFAULT": number };
 }
 ```
 
-#### **BioState (Final Output)**
-The result of a generation request.
+## **5\. Algorithm Detail: Phased Generation**
 
-```typescript
-interface BioState {
-  spine: EventNode[];
-  flesh: LifeEvent[];
-  tags: Set<string>;
-  age: number;
-}
-```
-
-### **4.2 Example Data Flow**
-
-**Scenario:** User requests a **"Taxi Driver"**.
-
-1. **Career Node (Selected):**
-   {
-     "id": "taxi\_driver",
-     "requires": \["DRIVING\_LICENSE"\],
-     "provides": \["WORKING\_CLASS"\]
-   }
-
-2. **Constraint Check:** System scans **Education** slot for nodes providing DRIVING\_LICENSE.  
-3. **Education Node (Filtered In):**
-   {
-     "id": "high\_school\_graduate",
-     "provides": \["DIPLOMA", "DRIVING\_LICENSE"\]
-   }
-
-4. **Education Node (Filtered Out):**
-   {
-     "id": "boarding\_school\_no\_cars",
-     "provides": \["DIPLOMA", "LATIN\_SKILLS"\]
-     // Missing DRIVING\_LICENSE, so this path is pruned.
-   }
-
-## **5\. Algorithm Detail: Constraint Selection**
-
-To support "Pinning" (Reverse Generation) and maintain logical continuity, the system uses a combination of pre-filtering and just-in-time constraints.
-
-1. **Initialization:** Load the full dataset (Origins, Education, Careers, Events) from the store. 
-2. **Backward Propagation (Pre-filtering):**
-   * If a specific **Career** is pinned or if multiple careers are valid, the system identifies all `requires` tags from the valid career pool.
-   * The **Education** slot is filtered to only include nodes that provide at least one of these required tags.
-3. **Layer 1 Selection (The Spine):**
-   * **Step A: Select Origin.** A weighted random selection is performed on all valid Origins. 
-   * **Step B: Select Education.** The Education pool (pre-filtered in step 2) is further constrained: only nodes whose `requires` tags are met by the *selected* Origin are feasible. Weighted selection follows.
-   * **Step C: Select Career.** The Career pool is filtered: only nodes whose `requires` tags are met by the combined tags of the selected Origin and Education are feasible. Weighted selection follows.
-4. **Layer 2 Simulation (The Flesh):**
-   * The system iterates from age 18 to the target age.
-   * For each 5-year chunk, a probabilistic check occurs.
-   * Available `LifeEvent` options are filtered to exclude already-selected events.
-   * Selection uses the full tag set accumulated from the Spine and previous simulation events. 
+1. **Initialization:** Load data and configuration from the store.
+2. **Backward Propagation:** If a Career is pinned, filter the Education pool to only include nodes that satisfy the Career's requirements.
+3. **Phased Loop:** For each phase (Childhood → Formative → Professional → Senior):
+    * **Spine Selection:** Filter nodes of the corresponding slot type by the current phase and requirements. Pick one using weighted random selection.
+    * **Simulation:** Iterate from `Phase.startAge` to `min(Phase.endAge, targetAge)` using `Phase.simulationInterval`.
+    * **Event Selection:** In each iteration, roll for trigger chance. If successful, pick a Life Event from the pool associated with the current phase that meets requirements and hasn't occurred yet.
+4. **Final Result:** Compile the spine nodes and life events into a chronological `BioState`.
 
 ## **6\. Development Status**
 
 ### **Implemented**
-
-*   **Logic Engine (Layer 1):** `BioMachine.solveSpine()` implements constraint-aware selection with backward propagation.
-*   **Simulator (Layer 2):** `BioMachine.simulateFlesh()` tracks age and triggers probabilistic life events in 5-year chunks.
-*   **Configuration UI (Layer 0):** Full React suite for managing datasets, including the `BioGraphView` and `useBioStore` for persistence.
-*   **Data Ingestion:** System loads data from IndexedDB via the `BioStore`.
-*   **LLM Integration (Layer 3):** `bio_writer` prompt is available in the PromptStore.
-
-### **Planned / In Progress**
-
-*   **Advanced Constraints:** Full bidirectional propagation for complex pinning scenarios.
-*   **Live Preview:** Direct link between the dataset editor and the LLM generation for instant feedback.
+* **Interleaved Phased Engine:** `BioMachine.generate()` executes the chronological phase loop.
+* **Dynamic Configuration:** Global phase settings (ages, intervals) are stored and used by the engine.
+* **Phase-Aware UI:** Configuration tabs and editors updated to support phase assignment.
+* **Data Migration:** Store automatically migrates legacy data to the phased schema.
 
 ## **7\. Appendix: Sample Data Sets**
 

@@ -1,37 +1,80 @@
-
-import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent, Tag } from './types';
+import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent, Tag, AgePhase, AGE_PHASES, SlotType, PhaseConfig } from './types';
 
 // --- The Engine ---
 
 export class BioMachine {
 
-    private origins: EventNode[];
-    private education: EventNode[];
-    private careers: EventNode[];
+    private childhood: EventNode[];
+    private formative: EventNode[];
+    private professional: EventNode[];
+    private senior: EventNode[];
     private lifeEvents: LifeEvent[];
     private tags: Tag[];
+    private phaseConfig: Record<AgePhase, PhaseConfig>;
 
     constructor(data: BioData) {
-        this.origins = data.origins;
-        this.education = data.education;
-        this.careers = data.careers;
+        this.childhood = data.childhood;
+        this.formative = data.formative;
+        this.professional = data.professional;
+        this.senior = data.senior || []; // Default empty if not present
         this.lifeEvents = data.lifeEvents;
         this.tags = data.tags;
+        this.phaseConfig = data.phaseConfig || AGE_PHASES;
     }
 
     public generate(request: BioGenerationRequest): BioState {
         const age = request.age || 30; // Default age
 
-        // 1. Layer 1: The Spine (Constraint Solving)
-        const spine = this.solveSpine(request);
+        // --- 1. Pre-Filtering (Constraints & Pinning) ---
+        let validChildhood = [...this.childhood];
+        let validFormative = [...this.formative];
+        let validProfessional = [...this.professional];
+        let validSenior = [...this.senior];
 
-        // Collect tags from spine
+        // A. Pinning
+        if (request.targetChildhoodId) {
+            validChildhood = validChildhood.filter(node => node.id === request.targetChildhoodId);
+        }
+        if (request.targetProfessionalId) {
+            validProfessional = validProfessional.filter(node => node.id === request.targetProfessionalId);
+        }
+
+        // B. Backward Propagation (Professional -> Formative)
+        const requiredTagsFromProfessional = new Set<string>();
+        validProfessional.forEach(c => c.requires?.forEach(t => requiredTagsFromProfessional.add(t)));
+
+        if (requiredTagsFromProfessional.size > 0) {
+            validFormative = validFormative.filter(edu => {
+                // Keep if it provides ANY of the required tags OR if professional have no requirements that it fails to meet
+                if (!edu.provides) return false;
+                return edu.provides.some(tag => requiredTagsFromProfessional.has(tag));
+            });
+        }
+
+        // --- 2. Phase Loop Execution ---
+        
+        const spine: EventNode[] = [];
+        const flesh: LifeEvent[] = [];
         const tags = new Set<string>();
-        spine.forEach(node => node.provides?.forEach(t => tags.add(t)));
+        const selectedEventIds = new Set<string>();
 
-        // 2. Layer 2: The Flesh (Simulation)
-        const flesh = this.simulateFlesh(tags, age);
-        flesh.forEach(event => event.provides?.forEach(t => tags.add(t)));
+        const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
+
+        for (const phase of phases) {
+            // A. Resolve Spine for this phase
+            const spineNode = this.resolvePhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
+            if (spineNode) {
+                spine.push(spineNode);
+                spineNode.provides?.forEach(t => tags.add(t));
+            }
+
+            // B. Simulate Flesh for this phase
+            const events = this.simulatePhaseFlesh(phase, tags, age, selectedEventIds);
+            events.forEach(e => {
+                flesh.push(e);
+                e.provides?.forEach(t => tags.add(t));
+            });
+        }
 
         return {
             spine,
@@ -41,117 +84,82 @@ export class BioMachine {
         };
     }
 
-    // --- Layer 1: The Spine ---
+    // --- New Phased Logic ---
 
-    private solveSpine(request: BioGenerationRequest): EventNode[] {
-        let validOrigins = [...this.origins];
-        let validEducation = [...this.education];
-        let validCareers = [...this.careers];
+    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+        const config = this.phaseConfig[phase];
+        if (!config.spineSlot) return null;
 
-        // A. Pinning (Constraint Application)
-        if (request.targetOriginId) {
-            validOrigins = validOrigins.filter(node => node.id === request.targetOriginId);
-        }
-        if (request.targetCareerId) {
-            validCareers = validCareers.filter(node => node.id === request.targetCareerId);
-        }
-
-        // B. Backward Propagation (Career -> Education)
-        // Filter Education: Must provide at least one tag required by ANY valid career options
-        // Actually, strictly speaking: if a Career REQUIRES 'A', then Education MUST provide 'A'.
-        // If we have multiple valid careers, we keep education nodes that satisfy AT LEAST ONE of them.
-
-        const requiredTagsFromCareers = new Set<string>();
-        validCareers.forEach(c => c.requires?.forEach(t => requiredTagsFromCareers.add(t)));
-
-        if (requiredTagsFromCareers.size > 0) {
-            validEducation = validEducation.filter(edu => {
-                // Keep if it provides ANY of the required tags OR if careers have no requirements that it fails to meet
-                // Simplification for V1: If careers require tags, Education MUST provide them.
-                if (!edu.provides) return false;
-                return edu.provides.some(tag => requiredTagsFromCareers.has(tag));
-            });
+        let pool: EventNode[] = [];
+        
+        // Select correct pool
+        // If valid* arrays are passed (from pinning logic), use them. Otherwise use full instance data.
+        switch (config.spineSlot) {
+            case 'CHILDHOOD':
+                pool = validChildhood || this.childhood;
+                break;
+            case 'FORMATIVE':
+                pool = validFormative || this.formative;
+                break;
+            case 'PROFESSIONAL':
+                pool = validProfessional || this.professional;
+                break;
+            case 'SENIOR':
+                pool = validSenior || this.senior;
+                break;
         }
 
-        // C. Forward Propagation (Origin -> Education)
-        // BLOCKED: The logic below incorrectly aggregates requirements. If ONE education node requires a tag 
-        // that no origin provides, it filters out ALL origins, causing a crash.
-        // We will rely on Step D (Selection) to filter Education nodes based on the *selected* Origin instead.
+        // Filter by Phase (Strict Mode: Spine Node MUST match the phase)
+        pool = pool.filter(node => node.phase === phase);
 
-        /*
-        const requiredTagsFromEdu = new Set<string>();
-        validEducation.forEach(e => e.requires?.forEach(t => requiredTagsFromEdu.add(t)));
-    
-        if (requiredTagsFromEdu.size > 0) {
-            validOrigins = validOrigins.filter(origin => {
-                if (!origin.provides) return false;
-                return origin.provides.some(tag => requiredTagsFromEdu.has(tag));
-            });
-        }
-        */
-
-        // Re-Verify Forward (Origin -> Education)
-        // If we filtered Origins, we must ensure remaining Education still works with remaining Origins?
-        // For V1, let's assume loose coupling.
-
-        // D. Selection (Weighted Random)
-
-        // 1. Pick Origin
-        const selectedOrigin = this.selectWeighted(validOrigins, new Set());
-        if (!selectedOrigin) throw new Error("BioMachine: No valid Origin found.");
-
-        const currentTags = new Set<string>(selectedOrigin.provides || []);
-
-        // 2. Pick Education
-        const feasibleEducation = validEducation.filter(edu => {
-            if (!edu.requires) return true;
-            return edu.requires.every(req => currentTags.has(req));
+        // Filter by Requirements (Forward Constraint)
+        const feasible = pool.filter(node => {
+            if (!node.requires) return true;
+            return node.requires.every(req => currentTags.has(req));
         });
 
-        const eduPool = feasibleEducation.length > 0 ? feasibleEducation : validEducation;
-        const selectedEducation = this.selectWeighted(eduPool, currentTags);
-        // Fallback or Error? Education usually has defaults.
-        if (!selectedEducation) throw new Error("BioMachine: No valid Education found.");
-        selectedEducation.provides?.forEach(t => currentTags.add(t));
+        if (feasible.length === 0) return null; // Or throw error if critical?
 
-        // 3. Pick Career
-        const feasibleCareers = validCareers.filter(car => {
-            if (!car.requires) return true;
-            return car.requires.every(req => currentTags.has(req));
-        });
-
-        const careerPool = feasibleCareers.length > 0 ? feasibleCareers : validCareers;
-        const selectedCareer = this.selectWeighted(careerPool, currentTags);
-        if (!selectedCareer) throw new Error("BioMachine: No valid Career found.");
-
-        return [selectedOrigin, selectedEducation, selectedCareer];
+        return this.selectWeighted(feasible, currentTags);
     }
 
-    // --- Layer 2: The Flesh ---
-
-    private simulateFlesh(tags: Set<string>, age: number): LifeEvent[] {
+    public simulatePhaseFlesh(phase: AgePhase, currentTags: Set<string>, targetAge: number, previouslySelectedEventIds: Set<string>): LifeEvent[] {
+        const config = this.phaseConfig[phase];
         const events: LifeEvent[] = [];
-        const selectedEventIds = new Set<string>();
+        
+        // Determine Simulation Range
+        // Start at phase start. End at min(phase end, target age).
+        const start = config.startAge;
+        const end = Math.min(config.endAge, targetAge);
 
-        // Simulation Loop: iterate 5 year chunks from 18 to current age
-        for (let i = 18; i < age; i += 5) {
-            // Chance to trigger an event per chunk
-            if (Math.random() > 0.3) { // 70% chance of event
-                // Filter out already selected events AND check requirements
+        // If target age is below phase start, we skip this phase entirely (or handled by caller)
+        if (targetAge < start) return [];
+
+        for (let i = start; i < end; i += config.simulationInterval) {
+            // Chance to trigger
+            if (Math.random() > (1 - config.eventChance)) {
+                // Filter available events
                 const availableEvents = this.lifeEvents.filter(e => {
-                    if (selectedEventIds.has(e.id)) return false;
+                    // Global Uniqueness Check
+                    if (previouslySelectedEventIds.has(e.id)) return false;
+                    
+                    // Phase Check (Must be in allowed phases for this event)
+                    if (!e.phases || !e.phases.includes(phase)) return false;
+
+                    // Requirement Check
                     if (!e.requires) return true;
-                    return e.requires.every(req => tags.has(req));
+                    return e.requires.every(req => currentTags.has(req));
                 });
 
-                const event = this.selectWeighted(availableEvents, tags);
+                const event = this.selectWeighted(availableEvents, currentTags);
                 if (event) {
                     events.push(event);
-                    selectedEventIds.add(event.id);
-                    event.provides?.forEach(t => tags.add(t));
+                    previouslySelectedEventIds.add(event.id);
+                    event.provides?.forEach(t => currentTags.add(t));
                 }
             }
         }
+
         return events;
     }
 
