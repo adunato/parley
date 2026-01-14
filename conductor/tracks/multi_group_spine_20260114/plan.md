@@ -10,10 +10,10 @@ This plan refactors the `BioMachine` engine to support selecting multiple spine 
 - [x] Task: Conductor - User Manual Verification 'Core Engine Refactor' (Protocol in workflow.md)
 
 ## Phase 2: Constraint & Interaction [ ]
-- [ ] Task: TDD - Verify that "Flesh" simulation iterations receive the aggregate tags from all selected groups in the phase.
-- [ ] Task: TDD - Ensure Backward Propagation (Career -> Education pruning) remains functional with multi-group selection.
-- [ ] Task: TDD - Validate that "Pinning" (requesting a specific node ID) correctly forces selection in its respective group while allowing other groups to resolve normally.
-- [ ] Task: Conductor - User Manual Verification 'Constraint & Interaction' (Protocol in workflow.md)
+- [x] Task: TDD - Verify that "Flesh" simulation iterations receive the aggregate tags from all selected groups in the phase. 1f796f8
+- [x] Task: TDD - Ensure Backward Propagation (Career -> Education pruning) remains functional with multi-group selection. b83b11c
+- [x] Task: TDD - Validate that "Pinning" (requesting a specific node ID) correctly forces selection in its respective group while allowing other groups to resolve normally. b83b11c
+- [x] Task: Conductor - User Manual Verification 'Constraint & Interaction' (Protocol in workflow.md)
 
 ## Phase 3: Final Integration & UI Testing [ ]
 - [ ] Task: Run full regression tests for `BioMachine`.
