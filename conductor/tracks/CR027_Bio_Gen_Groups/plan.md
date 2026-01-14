@@ -25,7 +25,7 @@
 - [x] Task: Create the `ManageGroupsModal` to list, rename, and delete existing groups. 434770a
 - [x] Task: Add the "Group" column to the Age Phase grids to display the assigned group name. 434770a
 - [x] Task: Write integration tests for the grouping workflow (create group -> entities update -> display name). 434770a
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Grouping Workflow' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Grouping Workflow' (Protocol in workflow.md) [checkpoint: 5dcdf10]
 
 ## Phase 4: Bulk Delete & Cleanup
 *Goal: Implement multi-delete across all grids and final UI polish.*
