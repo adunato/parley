@@ -15,7 +15,7 @@
 - [x] Task: Add a checkbox column to the `DataTable` components within the editors. f20660a
 - [x] Task: Create a reusable `SelectionToolbar` component (Delete button, and slot for contextual actions). f20660a
 - [x] Task: Write tests for selection state (selecting one, selecting many, select all). f20660a
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: UI Selection Logic' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: UI Selection Logic' (Protocol in workflow.md) [checkpoint: 3ea2a8b]
 
 ## Phase 3: Grouping Workflow & Management
 *Goal: Implement the "Group" action, "Create Group" modal, and "Manage Groups" modal.*
