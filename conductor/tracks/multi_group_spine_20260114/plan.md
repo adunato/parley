@@ -9,7 +9,7 @@ This plan refactors the `BioMachine` engine to support selecting multiple spine 
 - [x] Task: TDD - Ensure intra-phase selection independence (selected tags are only applied to the state *after* all groups in the phase are processed). 56e431b
 - [x] Task: Conductor - User Manual Verification 'Core Engine Refactor' (Protocol in workflow.md)
 
-## Phase 2: Constraint & Interaction [ ]
+## Phase 2: Constraint & Interaction [checkpoint: 6e0c507]
 - [x] Task: TDD - Verify that "Flesh" simulation iterations receive the aggregate tags from all selected groups in the phase. 1f796f8
 - [x] Task: TDD - Ensure Backward Propagation (Career -> Education pruning) remains functional with multi-group selection. b83b11c
 - [x] Task: TDD - Validate that "Pinning" (requesting a specific node ID) correctly forces selection in its respective group while allowing other groups to resolve normally. b83b11c
