@@ -28,17 +28,17 @@ export function BioGraphGuide() {
                             <div className="flex flex-col gap-2 text-xs">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-500"></div>
-                                    <span className="font-semibold text-emerald-700">Origin (Green)</span>
+                                    <span className="font-semibold text-emerald-700">Childhood (Green)</span>
                                     <span className="text-muted-foreground">- Starting background</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-500"></div>
-                                    <span className="font-semibold text-blue-700">Education (Blue)</span>
-                                    <span className="text-muted-foreground">- Academic path</span>
+                                    <span className="font-semibold text-blue-700">Formative (Blue)</span>
+                                    <span className="text-muted-foreground">- Academic/Vocational path</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-purple-100 border border-purple-500"></div>
-                                    <span className="font-semibold text-purple-700">Career (Purple)</span>
+                                    <span className="font-semibold text-purple-700">Professional (Purple)</span>
                                     <span className="text-muted-foreground">- Professional role</span>
                                 </div>
                                 <div className="flex items-center gap-2">

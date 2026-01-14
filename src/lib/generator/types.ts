@@ -1,7 +1,6 @@
-
 // --- Types ---
 
-export type SlotType = 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR';
+export type SlotType = 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR';
 
 export type AgePhase = 'Childhood' | 'Formative' | 'Professional' | 'Senior';
 
@@ -21,7 +20,7 @@ export const AGE_PHASES: Record<AgePhase, PhaseConfig> = {
         endAge: 18,
         simulationInterval: 5,
         eventChance: 0.3,
-        spineSlot: 'ORIGIN'
+        spineSlot: 'CHILDHOOD'
     },
     Formative: {
         id: 'Formative',
@@ -29,7 +28,7 @@ export const AGE_PHASES: Record<AgePhase, PhaseConfig> = {
         endAge: 25,
         simulationInterval: 2,
         eventChance: 0.4,
-        spineSlot: 'EDUCATION'
+        spineSlot: 'FORMATIVE'
     },
     Professional: {
         id: 'Professional',
@@ -37,7 +36,7 @@ export const AGE_PHASES: Record<AgePhase, PhaseConfig> = {
         endAge: 65,
         simulationInterval: 5,
         eventChance: 0.5,
-        spineSlot: 'CAREER'
+        spineSlot: 'PROFESSIONAL'
     },
     Senior: {
         id: 'Senior',
@@ -74,8 +73,8 @@ export interface Tag {
 }
 
 export interface BioGenerationRequest {
-    targetCareerId?: string; // Pinning constraint
-    targetOriginId?: string; // Pinning constraint
+    targetProfessionalId?: string; // Pinning constraint
+    targetChildhoodId?: string; // Pinning constraint
     age?: number;
 }
 
@@ -88,9 +87,9 @@ export interface BioState {
 
 // Data Bundle definition (for dependency injection)
 export interface BioData {
-    origins: EventNode[];
-    education: EventNode[];
-    careers: EventNode[];
+    childhood: EventNode[];
+    formative: EventNode[];
+    professional: EventNode[];
     senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];

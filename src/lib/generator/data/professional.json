@@ -1,7 +1,7 @@
 [
     {
         "id": "investment_banker",
-        "slot": "CAREER",
+        "slot": "PROFESSIONAL",
         "text": "Secured a high-pressure job at an investment bank.",
         "provides": [
             "WEALTHY",
@@ -19,7 +19,7 @@
     },
     {
         "id": "electrician",
-        "slot": "CAREER",
+        "slot": "PROFESSIONAL",
         "text": "Started a contracting business fixing residential wiring.",
         "provides": [
             "STABLE_INCOME",

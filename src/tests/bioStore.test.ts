@@ -13,9 +13,10 @@ jest.mock('../lib/storage-adapter', () => ({
 describe('useBioStore', () => {
     beforeEach(() => {
         useBioStore.setState({
-            origins: [],
-            education: [],
-            careers: [],
+            childhood: [],
+            formative: [],
+            professional: [],
+            senior: [],
             lifeEvents: [],
             tags: [],
             _hasHydrated: true,
@@ -57,9 +58,10 @@ describe('useBioStore', () => {
         const newId = 'NEW_TAG';
 
         useBioStore.setState({
-            origins: [{ id: 'o1', slot: 'ORIGIN', text: 't', provides: [oldId], weights: { DEFAULT: 1 } }],
-            education: [{ id: 'e1', slot: 'EDUCATION', text: 't', requires: [oldId], provides: ['OTHER'], weights: { [oldId]: 5, DEFAULT: 1 } }],
-            careers: [{ id: 'c1', slot: 'CAREER', text: 't', requires: ['OTHER'], weights: { [oldId]: 10, DEFAULT: 1 } }],
+            childhood: [{ id: 'o1', slot: 'CHILDHOOD', text: 't', provides: [oldId], weights: { DEFAULT: 1 } }],
+            formative: [{ id: 'e1', slot: 'FORMATIVE', text: 't', requires: [oldId], provides: ['OTHER'], weights: { [oldId]: 5, DEFAULT: 1 } }],
+            professional: [{ id: 'c1', slot: 'PROFESSIONAL', text: 't', requires: ['OTHER'], weights: { [oldId]: 10, DEFAULT: 1 } }],
+            senior: [],
             lifeEvents: [{ id: 'ev1', text: 't', provides: [oldId], weights: { [oldId]: 0.5, DEFAULT: 1 } }],
             tags: [{ id: oldId }],
             _hasHydrated: true
@@ -69,10 +71,10 @@ describe('useBioStore', () => {
 
         const state = useBioStore.getState();
         expect(state.tags[0].id).toBe(newId);
-        expect(state.origins[0].provides).toContain(newId);
-        expect(state.education[0].requires).toContain(newId);
-        expect(state.education[0].weights[newId]).toBe(5);
-        expect(state.careers[0].weights[newId]).toBe(10);
+        expect(state.childhood[0].provides).toContain(newId);
+        expect(state.formative[0].requires).toContain(newId);
+        expect(state.formative[0].weights[newId]).toBe(5);
+        expect(state.professional[0].weights[newId]).toBe(10);
         expect(state.lifeEvents[0].provides).toContain(newId);
         expect(state.lifeEvents[0].weights[newId]).toBe(0.5);
     });
@@ -100,7 +102,7 @@ describe('useBioStore', () => {
         const tagId = 'TO_DELETE';
 
         useBioStore.setState({
-            origins: [{ id: 'o1', slot: 'ORIGIN', text: 't', provides: [tagId, 'KEEP'], weights: { DEFAULT: 1 } }],
+            childhood: [{ id: 'o1', slot: 'CHILDHOOD', text: 't', provides: [tagId, 'KEEP'], weights: { DEFAULT: 1 } }],
             lifeEvents: [{ id: 'ev1', text: 't', requires: [tagId], provides: [tagId], weights: { [tagId]: 1, DEFAULT: 1 } }],
             tags: [{ id: tagId }, { id: 'KEEP' }],
             _hasHydrated: true
@@ -110,8 +112,8 @@ describe('useBioStore', () => {
 
         const state = useBioStore.getState();
         expect(state.tags).toHaveLength(1);
-        expect(state.origins[0].provides).not.toContain(tagId);
-        expect(state.origins[0].provides).toContain('KEEP');
+        expect(state.childhood[0].provides).not.toContain(tagId);
+        expect(state.childhood[0].provides).toContain('KEEP');
         expect(state.lifeEvents[0].requires).not.toContain(tagId);
         expect(state.lifeEvents[0].provides).not.toContain(tagId);
         expect(state.lifeEvents[0].weights[tagId]).toBeUndefined();

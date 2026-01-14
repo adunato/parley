@@ -25,9 +25,9 @@ import { BioEntityEditor } from './bio-entity-editor';
 export function BioGraphView() {
     // 1. Get Data
     const bioData = useBioStore(useShallow(state => ({
-        origins: state.origins,
-        education: state.education,
-        careers: state.careers,
+        childhood: state.childhood,
+        formative: state.formative,
+        professional: state.professional,
         senior: state.senior,
         lifeEvents: state.lifeEvents,
         tags: state.tags
@@ -50,6 +50,8 @@ export function BioGraphView() {
 
     // 3. Layout Function
     const performLayout = () => {
+        // Need to pass updated data structure to graph utils. 
+        // Note: graph-utils will also need updating to expect childhood/formative/professional
         const layouted = buildBioGraph(bioData, layoutMode, centerId);
 
         // Inject onEdit and onReorganize callback
@@ -76,7 +78,7 @@ export function BioGraphView() {
     useEffect(() => {
         console.log(`[BioGraphView] Effect runs. Mode=${layoutMode}, Center=${centerId}`);
         performLayout();
-    }, [bioData.origins, bioData.education, bioData.careers, bioData.senior, bioData.lifeEvents, bioData.tags, layoutMode, centerId]);
+    }, [bioData.childhood, bioData.formative, bioData.professional, bioData.senior, bioData.lifeEvents, bioData.tags, layoutMode, centerId]);
 
     // Full Screen Handler
     const toggleFullScreen = () => {
@@ -108,13 +110,13 @@ export function BioGraphView() {
     const handleSaveEntity = (updatedItem: any) => {
         if (!editingEntity) return;
 
-        const type = editingEntity.type; // ORIGIN, EDUCATION, CAREER, SENIOR, LIFE_EVENT
+        const type = editingEntity.type; // CHILDHOOD, FORMATIVE, PROFESSIONAL, SENIOR, LIFE_EVENT
 
         // Create deep copy of current lists to modify
         const newData = {
-            origins: [...bioData.origins],
-            education: [...bioData.education],
-            careers: [...bioData.careers],
+            childhood: [...bioData.childhood],
+            formative: [...bioData.formative],
+            professional: [...bioData.professional],
             senior: [...(bioData.senior || [])],
             lifeEvents: [...bioData.lifeEvents],
             tags: [...bioData.tags]
@@ -132,9 +134,9 @@ export function BioGraphView() {
             }
         };
 
-        if (type === 'ORIGIN') updateList(newData.origins);
-        if (type === 'EDUCATION') updateList(newData.education);
-        if (type === 'CAREER') updateList(newData.careers);
+        if (type === 'CHILDHOOD') updateList(newData.childhood);
+        if (type === 'FORMATIVE') updateList(newData.formative);
+        if (type === 'PROFESSIONAL') updateList(newData.professional);
         if (type === 'SENIOR') updateList(newData.senior);
         if (type === 'LIFE_EVENT') updateList(newData.lifeEvents);
         if (type === 'TAG') updateList(newData.tags);
@@ -182,17 +184,7 @@ export function BioGraphView() {
                         </Button>
                     </Panel>
                 </ReactFlow>
-                {/* Ensure Editor and Guide render when in fullscreen too, as they are children of Provider but NOT children of this DIV in original code structure? 
-                    Wait, looking at original code structure:
-                    <BioGraphProvider>
-                        <div ref={container}> <ReactFlow> ... </ReactFlow> </div>
-                        <Editor />
-                        <Guide />
-                    </BioGraphProvider>
-                    
-                    If I fullscreen the DIV, Editor and Guide will be HIDDEN because they are outside the div.
-                    I must move Editor and Guide INSIDE the full screened div.
-                */}
+                
                 {editingEntity && (
                     <BioEntityEditor
                         open={!!editingEntity}

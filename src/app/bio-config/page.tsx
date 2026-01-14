@@ -34,53 +34,53 @@ export default function BioConfigPage() {
                 <TabsContent value="graph" className="space-y-4">
                     <div className="space-y-2">
                         <h2 className="text-xl font-semibold tracking-tight">Dependency Graph</h2>
-                        <p className="text-sm text-muted-foreground">Visualizes the flow from Origins to Careers based on tag requirements.</p>
+                        <p className="text-sm text-muted-foreground">Visualizes the flow from Childhood to Professional based on tag requirements.</p>
                     </div>
                     <BioGraphView />
                 </TabsContent>
 
                 <TabsContent value="childhood" className="space-y-4">
                     <BioDatasetEditor
-                        title="Childhood (Origins)"
+                        title="Childhood"
                         description="Starting socioeconomic and geographic backgrounds."
-                        data={store.origins}
-                        type="ORIGIN"
+                        data={store.childhood}
+                        type="CHILDHOOD"
                         phase="Childhood"
-                        onAdd={store.addOrigin}
-                        onUpdate={store.updateOrigin}
-                        onDelete={store.deleteOrigin}
+                        onAdd={store.addChildhood}
+                        onUpdate={store.updateChildhood}
+                        onDelete={store.deleteChildhood}
                     />
                 </TabsContent>
 
                 <TabsContent value="formative" className="space-y-4">
                     <BioDatasetEditor
-                        title="Formative (Education)"
+                        title="Formative"
                         description="Academic and vocational history."
-                        data={store.education}
-                        type="EDUCATION"
+                        data={store.formative}
+                        type="FORMATIVE"
                         phase="Formative"
-                        onAdd={store.addEducation}
-                        onUpdate={store.updateEducation}
-                        onDelete={store.deleteEducation}
+                        onAdd={store.addFormative}
+                        onUpdate={store.updateFormative}
+                        onDelete={store.deleteFormative}
                     />
                 </TabsContent>
 
                 <TabsContent value="professional" className="space-y-4">
                     <BioDatasetEditor
-                        title="Professional (Careers)"
+                        title="Professional"
                         description="Professional roles and occupations."
-                        data={store.careers}
-                        type="CAREER"
+                        data={store.professional}
+                        type="PROFESSIONAL"
                         phase="Professional"
-                        onAdd={store.addCareer}
-                        onUpdate={store.updateCareer}
-                        onDelete={store.deleteCareer}
+                        onAdd={store.addProfessional}
+                        onUpdate={store.updateProfessional}
+                        onDelete={store.deleteProfessional}
                     />
                 </TabsContent>
 
                 <TabsContent value="senior" className="space-y-4">
                     <BioDatasetEditor
-                        title="Senior (Status)"
+                        title="Senior"
                         description="Retirement status or late-life role."
                         data={store.senior}
                         type="SENIOR"

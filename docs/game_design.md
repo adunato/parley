@@ -26,13 +26,17 @@ Conversation in Parley goes beyond simple request-response. The "Hybrid Relation
 Players can generate complex, life-like characters with deep backstories in seconds. Instead of just random text, the system simulates a life path divided into **Age Phases** (Childhood, Formative, Professional, Senior):
 1.  **Phased Loop**: The system iterates chronologically through each age phase.
 2.  **Interleaved Selection**: Within each phase, it resolves the major life milestone ("The Spine") and then simulates probabilistic "Life Events" ("The Flesh") for that specific age range.
+    -   **Childhood (0-18)**: Sets the origin/background spine node.
+    -   **Formative (18-25)**: Sets the education/training spine node.
+    -   **Professional (25-65)**: Sets the career/role spine node.
+    -   **Senior (65+)**: Sets late-life status spine node.
 3.  **Logical Continuity**: Tags gathered early in life (e.g., "Childhood Trauma") influence and unlock paths in later phases (e.g., "Medical School" or "Special Ops Career").
 4.  **Narrative Synthesis**: Finally, an LLM weaves these structured facts into a cohesive textual biography.
 
 **Relevant Code Objects (Code implementation):**
 -   **Generator**: `BioMachine` in `src/lib/generator/BioMachine.ts`.
     -   `generate()`: Executes the interleaved phase loop.
-    -   `resolvePhaseSpine()`: Resolves milestones for a specific phase.
+    -   `resolvePhaseSpine()`: Resolves milestones for a specific phase (Childhood, Formative, Professional, Senior).
     -   `simulatePhaseFlesh()`: Simulates probabilistic events for a phase range.
 -   **Configuration**: `useBioStore` manages global phase boundaries and event probabilities.
 -   **Data Sources**: JSON files in `src/lib/generator/data/` define the nodes, requirements, and assigned phases.

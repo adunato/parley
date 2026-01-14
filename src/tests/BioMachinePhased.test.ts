@@ -3,15 +3,16 @@ import { BioData, AgePhase, AGE_PHASES, EventNode, LifeEvent } from '../lib/gene
 
 // Mock Data
 const mockData: BioData = {
-    origins: [
-        { id: 'origin_child', slot: 'ORIGIN', text: 'Origin', weights: { DEFAULT: 10 }, phase: 'Childhood', provides: ['TAG_O'] }
+    childhood: [
+        { id: 'origin_child', slot: 'CHILDHOOD', text: 'Origin', weights: { DEFAULT: 10 }, phase: 'Childhood', provides: ['TAG_O'] }
     ],
-    education: [
-        { id: 'edu_form', slot: 'EDUCATION', text: 'Edu', weights: { DEFAULT: 10 }, phase: 'Formative', provides: ['TAG_E'], requires: ['TAG_Event'] }
+    formative: [
+        { id: 'edu_form', slot: 'FORMATIVE', text: 'Edu', weights: { DEFAULT: 10 }, phase: 'Formative', provides: ['TAG_E'], requires: ['TAG_Event'] }
     ],
-    careers: [
-        { id: 'job_prof', slot: 'CAREER', text: 'Job', weights: { DEFAULT: 10 }, phase: 'Professional', provides: ['TAG_C'], requires: ['TAG_E'] }
+    professional: [
+        { id: 'job_prof', slot: 'PROFESSIONAL', text: 'Job', weights: { DEFAULT: 10 }, phase: 'Professional', provides: ['TAG_C'], requires: ['TAG_E'] }
     ],
+    senior: [],
     lifeEvents: [
         { id: 'event_child', text: 'Child Event', weights: { DEFAULT: 100 }, phases: ['Childhood'], provides: ['TAG_Event'] }, // High weight to ensure selection
         { id: 'event_form', text: 'Form Event', weights: { DEFAULT: 10 }, phases: ['Formative'] }
@@ -75,118 +76,41 @@ describe('BioMachine Phased Logic', () => {
          }
     });
 
-        it('should generate a full bio using phased loop with interleaved dependencies', () => {
+    it('should generate a full bio using phased loop with interleaved dependencies', () => {
+        // This tests that Childhood Events (providing TAG_Event) are processed BEFORE Formative Spine (requiring TAG_Event)
 
-            // This tests that Childhood Events (providing TAG_Event) are processed BEFORE Formative Spine (requiring TAG_Event)
+        const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9); // Force events
 
-            const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9); // Force events
+        const result = machine.generate({ age: 30 });
 
-            
+        spy.mockRestore();
 
-            const result = machine.generate({ age: 30 });
+        // In new logic, this should pass.
+        // In old logic, this should FAIL because Edu requires TAG_Event which comes from LifeEvent.
+        // Old logic: Spine (All) -> Flesh (All). Edu checks tags at start. TAG_Event not present.
 
-            
+        const hasEdu = result.spine.some(s => s.slot === 'FORMATIVE');
+        expect(hasEdu).toBe(true);
+    });
 
-            spy.mockRestore();
+    it('should respect pinning constraints (Backward Propagation)', () => {
 
-    
+        const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9); // Force events
 
-            // In new logic, this should pass.
+        // Add a dummy education that does NOT provide TAG_E
+        const badEdu: EventNode = { id: 'edu_bad', slot: 'FORMATIVE', text: 'Bad Edu', weights: { DEFAULT: 100 }, phase: 'Formative', provides: ['TAG_X'] }; // High weight
 
-            // In old logic, this should FAIL because Edu requires TAG_Event which comes from LifeEvent.
+        // Inject badEdu into machine
+        // @ts-ignore
+        machine.formative.push(badEdu);
 
-            // Old logic: Spine (All) -> Flesh (All). Edu checks tags at start. TAG_Event not present.
+        // Target job_prof (Requires TAG_E)
+        const result = machine.generate({ age: 30, targetProfessionalId: 'job_prof' });
 
-            
+        spy.mockRestore();
 
-            const hasEdu = result.spine.some(s => s.slot === 'EDUCATION');
-
-            expect(hasEdu).toBe(true);
-
-        });
-
-    
-
-            it('should respect pinning constraints (Backward Propagation)', () => {
-
-    
-
-                const spy = jest.spyOn(Math, 'random').mockReturnValue(0.9); // Force events
-
-    
-
-        
-
-    
-
-                // Add a dummy education that does NOT provide TAG_E
-
-    
-
-                const badEdu: EventNode = { id: 'edu_bad', slot: 'EDUCATION', text: 'Bad Edu', weights: { DEFAULT: 100 }, phase: 'Formative', provides: ['TAG_X'] }; // High weight
-
-    
-
-                
-
-    
-
-                // Inject badEdu into machine
-
-    
-
-                // @ts-ignore
-
-    
-
-                machine.education.push(badEdu);
-
-    
-
-                
-
-    
-
-                // Target job_prof (Requires TAG_E)
-
-    
-
-                const result = machine.generate({ age: 30, targetCareerId: 'job_prof' });
-
-    
-
-                
-
-    
-
-                spy.mockRestore();
-
-    
-
-        
-
-    
-
-                // Should NOT select edu_bad despite high weight, because it doesn't provide TAG_E required by job_prof
-
-    
-
-                const edu = result.spine.find(s => s.slot === 'EDUCATION');
-
-    
-
-                expect(edu?.id).toBe('edu_form');
-
-    
-
-            });
-
-    
-
-        });
-
-    
-
-        
-
-    
+        // Should NOT select edu_bad despite high weight, because it doesn't provide TAG_E required by job_prof
+        const edu = result.spine.find(s => s.slot === 'FORMATIVE');
+        expect(edu?.id).toBe('edu_form');
+    });
+});

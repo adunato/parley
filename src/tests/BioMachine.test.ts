@@ -3,15 +3,16 @@ import { BioData, EventNode, LifeEvent } from '../lib/generator/types';
 
 describe('BioMachine', () => {
     const mockData: BioData = {
-        origins: [
-            { id: 'origin_1', slot: 'ORIGIN', text: 'Origin 1', provides: ['TAG_A'], weights: { DEFAULT: 1 }, phase: 'Childhood' }
+        childhood: [
+            { id: 'origin_1', slot: 'CHILDHOOD', text: 'Origin 1', provides: ['TAG_A'], weights: { DEFAULT: 1 }, phase: 'Childhood' }
         ],
-        education: [
-            { id: 'edu_1', slot: 'EDUCATION', text: 'Edu 1', requires: ['TAG_A'], provides: ['TAG_B'], weights: { DEFAULT: 1 }, phase: 'Formative' }
+        formative: [
+            { id: 'edu_1', slot: 'FORMATIVE', text: 'Edu 1', requires: ['TAG_A'], provides: ['TAG_B'], weights: { DEFAULT: 1 }, phase: 'Formative' }
         ],
-        careers: [
-            { id: 'career_1', slot: 'CAREER', text: 'Career 1', requires: ['TAG_B'], weights: { DEFAULT: 1 }, phase: 'Professional' }
+        professional: [
+            { id: 'career_1', slot: 'PROFESSIONAL', text: 'Career 1', requires: ['TAG_B'], weights: { DEFAULT: 1 }, phase: 'Professional' }
         ],
+        senior: [],
         lifeEvents: [
             { id: 'event_no_req', text: 'No Req', weights: { DEFAULT: 1 }, phases: ['Childhood', 'Formative', 'Professional', 'Senior'] },
             { id: 'event_req_a', text: 'Req A', requires: ['TAG_A'], weights: { DEFAULT: 1 }, phases: ['Childhood', 'Formative', 'Professional', 'Senior'] },

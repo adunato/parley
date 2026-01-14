@@ -1,22 +1,21 @@
-
-import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent, Tag, AgePhase, AGE_PHASES, SlotType } from './types';
+import { BioGenerationRequest, BioState, BioData, EventNode, LifeEvent, Tag, AgePhase, AGE_PHASES, SlotType, PhaseConfig } from './types';
 
 // --- The Engine ---
 
 export class BioMachine {
 
-    private origins: EventNode[];
-    private education: EventNode[];
-    private careers: EventNode[];
+    private childhood: EventNode[];
+    private formative: EventNode[];
+    private professional: EventNode[];
     private senior: EventNode[];
     private lifeEvents: LifeEvent[];
     private tags: Tag[];
     private phaseConfig: Record<AgePhase, PhaseConfig>;
 
     constructor(data: BioData) {
-        this.origins = data.origins;
-        this.education = data.education;
-        this.careers = data.careers;
+        this.childhood = data.childhood;
+        this.formative = data.formative;
+        this.professional = data.professional;
         this.senior = data.senior || []; // Default empty if not present
         this.lifeEvents = data.lifeEvents;
         this.tags = data.tags;
@@ -27,29 +26,28 @@ export class BioMachine {
         const age = request.age || 30; // Default age
 
         // --- 1. Pre-Filtering (Constraints & Pinning) ---
-        let validOrigins = [...this.origins];
-        let validEducation = [...this.education];
-        let validCareers = [...this.careers];
+        let validChildhood = [...this.childhood];
+        let validFormative = [...this.formative];
+        let validProfessional = [...this.professional];
         let validSenior = [...this.senior];
 
         // A. Pinning
-        if (request.targetOriginId) {
-            validOrigins = validOrigins.filter(node => node.id === request.targetOriginId);
+        if (request.targetChildhoodId) {
+            validChildhood = validChildhood.filter(node => node.id === request.targetChildhoodId);
         }
-        if (request.targetCareerId) {
-            validCareers = validCareers.filter(node => node.id === request.targetCareerId);
+        if (request.targetProfessionalId) {
+            validProfessional = validProfessional.filter(node => node.id === request.targetProfessionalId);
         }
 
-        // B. Backward Propagation (Career -> Education)
-        const requiredTagsFromCareers = new Set<string>();
-        validCareers.forEach(c => c.requires?.forEach(t => requiredTagsFromCareers.add(t)));
+        // B. Backward Propagation (Professional -> Formative)
+        const requiredTagsFromProfessional = new Set<string>();
+        validProfessional.forEach(c => c.requires?.forEach(t => requiredTagsFromProfessional.add(t)));
 
-        if (requiredTagsFromCareers.size > 0) {
-            validEducation = validEducation.filter(edu => {
-                // Keep if it provides ANY of the required tags OR if careers have no requirements that it fails to meet
-                // Simplification for V1: If careers require tags, Education MUST provide them.
+        if (requiredTagsFromProfessional.size > 0) {
+            validFormative = validFormative.filter(edu => {
+                // Keep if it provides ANY of the required tags OR if professional have no requirements that it fails to meet
                 if (!edu.provides) return false;
-                return edu.provides.some(tag => requiredTagsFromCareers.has(tag));
+                return edu.provides.some(tag => requiredTagsFromProfessional.has(tag));
             });
         }
 
@@ -64,7 +62,7 @@ export class BioMachine {
 
         for (const phase of phases) {
             // A. Resolve Spine for this phase
-            const spineNode = this.resolvePhaseSpine(phase, tags, validOrigins, validEducation, validCareers, validSenior);
+            const spineNode = this.resolvePhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
             if (spineNode) {
                 spine.push(spineNode);
                 spineNode.provides?.forEach(t => tags.add(t));
@@ -88,7 +86,7 @@ export class BioMachine {
 
     // --- New Phased Logic ---
 
-    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validOrigins?: EventNode[], validEducation?: EventNode[], validCareers?: EventNode[], validSenior?: EventNode[]): EventNode | null {
+    public resolvePhaseSpine(phase: AgePhase, currentTags: Set<string>, validChildhood?: EventNode[], validFormative?: EventNode[], validProfessional?: EventNode[], validSenior?: EventNode[]): EventNode | null {
         const config = this.phaseConfig[phase];
         if (!config.spineSlot) return null;
 
@@ -97,14 +95,14 @@ export class BioMachine {
         // Select correct pool
         // If valid* arrays are passed (from pinning logic), use them. Otherwise use full instance data.
         switch (config.spineSlot) {
-            case 'ORIGIN':
-                pool = validOrigins || this.origins;
+            case 'CHILDHOOD':
+                pool = validChildhood || this.childhood;
                 break;
-            case 'EDUCATION':
-                pool = validEducation || this.education;
+            case 'FORMATIVE':
+                pool = validFormative || this.formative;
                 break;
-            case 'CAREER':
-                pool = validCareers || this.careers;
+            case 'PROFESSIONAL':
+                pool = validProfessional || this.professional;
                 break;
             case 'SENIOR':
                 pool = validSenior || this.senior;
@@ -112,9 +110,6 @@ export class BioMachine {
         }
 
         // Filter by Phase (Strict Mode: Spine Node MUST match the phase)
-        // If data doesn't have phase yet (legacy), maybe allow? 
-        // For now, assume data is migrated or we allow undefined for backward comp if needed.
-        // But spec says "Spine Events: Selected only if their single assigned phase matches the current phase."
         pool = pool.filter(node => node.phase === phase);
 
         // Filter by Requirements (Forward Constraint)

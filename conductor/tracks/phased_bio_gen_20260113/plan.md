@@ -45,3 +45,11 @@
 - [x] Task: Update `BioGraphView` to include Senior Spine nodes
 - [x] Task: Update Graph Legend/Guide to include Senior category and color
 - [x] Task: Conductor - User Manual Verification 'Visualization Updates' (Protocol in workflow.md)
+
+## Phase 8: Terminology Standardization
+- [x] Task: Rename Data Files (`origins.json` -> `childhood.json`, etc.) and update internal slot values
+- [x] Task: Update `SlotType` and interfaces in `types.ts`
+- [x] Task: Refactor `BioStore` to use `childhood`, `formative`, `professional` properties
+- [x] Task: Refactor `BioMachine` and Generator Logic
+- [x] Task: Update UI Components (`BioDatasetEditor`, `BioGraphView`, etc.) and Labels
+- [x] Task: Update Tests and Documentation

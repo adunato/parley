@@ -12,9 +12,10 @@ export function getTagRelationships(tagId: string, data: BioData): TagRelationsh
     const influences: string[] = [];
 
     const allEntities: (EventNode | LifeEvent)[] = [
-        ...data.origins,
-        ...data.education,
-        ...data.careers,
+        ...data.childhood,
+        ...data.formative,
+        ...data.professional,
+        ...(data.senior || []),
         ...data.lifeEvents
     ];
 

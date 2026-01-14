@@ -1,4 +1,3 @@
-
 import { AgePhase, AGE_PHASES } from '../lib/generator/types';
 
 describe('AgePhase Types and Constants', () => {
@@ -17,7 +16,7 @@ describe('AgePhase Types and Constants', () => {
             endAge: 18,
             simulationInterval: 5,
             eventChance: 0.3,
-            spineSlot: 'ORIGIN'
+            spineSlot: 'CHILDHOOD'
         });
 
         // Formative
@@ -27,7 +26,7 @@ describe('AgePhase Types and Constants', () => {
             endAge: 25,
             simulationInterval: 2,
             eventChance: 0.4,
-            spineSlot: 'EDUCATION'
+            spineSlot: 'FORMATIVE'
         });
 
         // Professional
@@ -37,7 +36,7 @@ describe('AgePhase Types and Constants', () => {
             endAge: 65,
             simulationInterval: 5,
             eventChance: 0.5,
-            spineSlot: 'CAREER'
+            spineSlot: 'PROFESSIONAL'
         });
 
         // Senior

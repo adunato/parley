@@ -10,7 +10,7 @@ import { useBioStore } from "@/lib/store/bioStore";
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR' | 'LIFE_EVENT'; // The target type for new items
+    type: 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR' | 'LIFE_EVENT'; // The target type for new items
     phase?: AgePhase; // The active phase context
     onAdd: (item: any) => void;
     onUpdate: (item: any) => void;

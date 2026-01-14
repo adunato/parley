@@ -210,19 +210,19 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
         });
     };
 
-    data.origins.forEach(o => addNode(o, 'ORIGIN'));
-    data.education.forEach(e => addNode(e, 'EDUCATION'));
-    data.careers.forEach(c => addNode(c, 'CAREER'));
+    data.childhood.forEach(o => addNode(o, 'CHILDHOOD'));
+    data.formative.forEach(e => addNode(e, 'FORMATIVE'));
+    data.professional.forEach(c => addNode(c, 'PROFESSIONAL'));
     data.senior?.forEach(s => addNode(s, 'SENIOR'));
     data.lifeEvents.forEach(e => addNode(e, 'LIFE_EVENT'));
 
-    // Edges: Origin -> Education
-    // Logic: If Origins provides tags that Education requires
-    data.origins.forEach(origin => {
+    // Edges: Childhood -> Formative
+    // Logic: If Childhood provides tags that Formative requires
+    data.childhood.forEach(origin => {
         if (!origin.provides) return;
         const originTags = new Set(origin.provides);
 
-        data.education.forEach(edu => {
+        data.formative.forEach(edu => {
             if (!edu.requires) {
                 return;
             }
@@ -247,12 +247,12 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
         });
     });
 
-    // Edges: Education -> Career
-    data.education.forEach(edu => {
+    // Edges: Formative -> Professional
+    data.formative.forEach(edu => {
         if (!edu.provides) return;
         const eduTags = new Set(edu.provides);
 
-        data.careers.forEach(career => {
+        data.professional.forEach(career => {
             if (!career.requires) return;
 
             const matching = career.requires.filter(t => eduTags.has(t));
@@ -275,8 +275,8 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
         });
     });
 
-    // Edges: Career -> Senior
-    data.careers.forEach(career => {
+    // Edges: Professional -> Senior
+    data.professional.forEach(career => {
         if (!career.provides) return;
         const careerTags = new Set(career.provides);
 
@@ -339,22 +339,22 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
         });
     };
 
-    // 1. Influence: Origin -> Education
-    addInfluenceEdges(data.origins, data.education);
+    // 1. Influence: Childhood -> Formative
+    addInfluenceEdges(data.childhood, data.formative);
 
-    // 2. Influence: Origin + Education -> Career
-    // (Careers can be influenced by background or education)
-    const careerSources = [...data.origins, ...data.education];
-    addInfluenceEdges(careerSources, data.careers);
+    // 2. Influence: Childhood + Formative -> Professional
+    // (Professional can be influenced by background or education)
+    const professionalSources = [...data.childhood, ...data.formative];
+    addInfluenceEdges(professionalSources, data.professional);
 
-    // 3. Influence: Career -> Senior
-    const seniorSources = [...data.origins, ...data.education, ...data.careers];
+    // 3. Influence: Professional -> Senior
+    const seniorSources = [...data.childhood, ...data.formative, ...data.professional];
     if (data.senior) {
         addInfluenceEdges(seniorSources, data.senior);
     }
 
-    // 4. Influence: Origin + Education + Career + Senior -> Life Events
-    const lifeEventSources = [...data.origins, ...data.education, ...data.careers, ...(data.senior || [])];
+    // 4. Influence: Childhood + Formative + Professional + Senior -> Life Events
+    const lifeEventSources = [...data.childhood, ...data.formative, ...data.professional, ...(data.senior || [])];
     addInfluenceEdges(lifeEventSources, data.lifeEvents);
 
     console.log(`[buildBioGraph] Mode=${layoutMode}, Center=${centerId}`);

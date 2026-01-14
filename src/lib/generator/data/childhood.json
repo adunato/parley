@@ -1,7 +1,7 @@
 [
     {
         "id": "working_class_urban",
-        "slot": "ORIGIN",
+        "slot": "CHILDHOOD",
         "text": "Born into a cramped apartment in an industrial district.",
         "provides": [
             "POOR",
@@ -14,7 +14,7 @@
     },
     {
         "id": "old_money",
-        "slot": "ORIGIN",
+        "slot": "CHILDHOOD",
         "text": "Born into a family with generational wealth and high expectations.",
         "provides": [
             "RICH",

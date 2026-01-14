@@ -26,16 +26,16 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
 
     // Type Colors
     const borderColor =
-        type === 'ORIGIN' ? 'border-emerald-500' :
-            type === 'EDUCATION' ? 'border-blue-500' :
-                type === 'CAREER' ? 'border-purple-500' :
+        type === 'CHILDHOOD' ? 'border-emerald-500' :
+            type === 'FORMATIVE' ? 'border-blue-500' :
+                type === 'PROFESSIONAL' ? 'border-purple-500' :
                     type === 'SENIOR' ? 'border-amber-500' :
                         type === 'LIFE_EVENT' ? 'border-orange-500' : 'border-gray-500';
 
     const headerBg =
-        type === 'ORIGIN' ? 'bg-emerald-50' :
-            type === 'EDUCATION' ? 'bg-blue-50' :
-                type === 'CAREER' ? 'bg-purple-50' :
+        type === 'CHILDHOOD' ? 'bg-emerald-50' :
+            type === 'FORMATIVE' ? 'bg-blue-50' :
+                type === 'PROFESSIONAL' ? 'bg-purple-50' :
                     type === 'SENIOR' ? 'bg-amber-50' :
                         type === 'LIFE_EVENT' ? 'bg-orange-50' : 'bg-gray-50';
 
@@ -47,7 +47,7 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             isDimmed ? "opacity-40 grayscale-[0.5]" : ""
         )}>
             {/* Input Handle (Left) */}
-            {type !== 'ORIGIN' && (
+            {type !== 'CHILDHOOD' && (
                 <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
             )}
 

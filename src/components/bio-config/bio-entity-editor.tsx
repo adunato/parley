@@ -16,7 +16,7 @@ interface BioEntityEditorProps {
     onOpenChange: (open: boolean) => void;
     initialData?: EventNode | LifeEvent;
     onSave: (data: any) => void;
-    type: 'ORIGIN' | 'EDUCATION' | 'CAREER' | 'SENIOR' | 'LIFE_EVENT';
+    type: 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR' | 'LIFE_EVENT';
     phase?: AgePhase; // Suggested phase from tab
     existingIds: string[];
     mode?: 'create' | 'edit';
