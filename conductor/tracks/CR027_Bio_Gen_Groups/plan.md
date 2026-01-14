@@ -11,10 +11,10 @@
 ## Phase 2: UI Selection Logic - Grid Enhancements
 *Goal: Add multi-select checkboxes and basic action bar to the existing grids.*
 
-- [ ] Task: Implement selection state logic in `BioDatasetEditor` and `TagDatasetEditor`.
-- [ ] Task: Add a checkbox column to the `DataTable` components within the editors.
-- [ ] Task: Create a reusable `SelectionToolbar` component (Delete button, and slot for contextual actions).
-- [ ] Task: Write tests for selection state (selecting one, selecting many, select all).
+- [x] Task: Implement selection state logic in `BioDatasetEditor` and `TagDatasetEditor`. f20660a
+- [x] Task: Add a checkbox column to the `DataTable` components within the editors. f20660a
+- [x] Task: Create a reusable `SelectionToolbar` component (Delete button, and slot for contextual actions). f20660a
+- [x] Task: Write tests for selection state (selecting one, selecting many, select all). f20660a
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: UI Selection Logic' (Protocol in workflow.md)
 
 ## Phase 3: Grouping Workflow & Management
