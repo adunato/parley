@@ -14,7 +14,8 @@ const mockData = {
     professional: professionalData as EventNode[],
     senior: [] as EventNode[],
     lifeEvents: eventsData as LifeEvent[],
-    tags: [] // Not needed for basic generation test
+    tags: [], // Not needed for basic generation test
+    groups: []
 };
 
 async function testGenerator() {

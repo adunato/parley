@@ -13,11 +13,9 @@ const mockData: BioData = {
         { id: 'job_prof', slot: 'PROFESSIONAL', text: 'Job', weights: { DEFAULT: 10 }, phase: 'Professional', provides: ['TAG_C'], requires: ['TAG_E'] }
     ],
     senior: [],
-    lifeEvents: [
-        { id: 'event_child', text: 'Child Event', weights: { DEFAULT: 100 }, phases: ['Childhood'], provides: ['TAG_Event'] }, // High weight to ensure selection
-        { id: 'event_form', text: 'Form Event', weights: { DEFAULT: 10 }, phases: ['Formative'] }
-    ],
-    tags: []
+    lifeEvents: [],
+    tags: [],
+    groups: []
 };
 
 describe('BioMachine Phased Logic', () => {

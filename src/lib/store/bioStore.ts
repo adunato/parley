@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup } from '../generator/types';
 
 // Default Data Imports
 import childhoodData from '../generator/data/childhood.json';
@@ -16,6 +16,7 @@ interface BioStoreState {
     senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
+    groups: BioGroup[];
     phaseConfig: Record<AgePhase, PhaseConfig>;
 
     // Actions
@@ -43,6 +44,10 @@ interface BioStoreState {
     updateTag: (item: Tag, oldId?: string) => void;
     deleteTag: (id: string) => void;
 
+    addGroup: (item: BioGroup) => void;
+    updateGroup: (item: BioGroup) => void;
+    deleteGroup: (id: string) => void;
+
     updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
 
     // Registers multiple tags if they don't already exist
@@ -55,6 +60,7 @@ interface BioStoreState {
         senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        groups: BioGroup[];
         phaseConfig?: Record<AgePhase, PhaseConfig>;
     }) => void;
 
@@ -66,6 +72,7 @@ interface BioStoreState {
         senior: EventNode[];
         lifeEvents: LifeEvent[];
         tags: Tag[];
+        groups: BioGroup[];
         phaseConfig: Record<AgePhase, PhaseConfig>;
     };
 
@@ -82,6 +89,7 @@ export const useBioStore = create<BioStoreState>()(
             senior: [],
             lifeEvents: [],
             tags: [],
+            groups: [],
             phaseConfig: AGE_PHASES,
 
             addChildhood: (item) => set((state) => ({ childhood: [...state.childhood, item] })),
@@ -185,6 +193,24 @@ export const useBioStore = create<BioStoreState>()(
                 };
             }),
 
+            addGroup: (item) => set((state) => ({ groups: [...state.groups, item] })),
+            updateGroup: (item) => set((state) => ({
+                groups: state.groups.map(i => i.id === item.id ? item : i)
+            })),
+            deleteGroup: (id) => set((state) => {
+                const unassignGroup = (list: EventNode[]) =>
+                    list.map(obj => obj.groupId === id ? { ...obj, groupId: undefined } : obj);
+
+                return {
+                    groups: state.groups.filter(i => i.id !== id),
+                    childhood: unassignGroup(state.childhood),
+                    formative: unassignGroup(state.formative),
+                    professional: unassignGroup(state.professional),
+                    senior: unassignGroup(state.senior),
+                    // Life Events do not support groups currently per requirements
+                };
+            }),
+
             updatePhaseConfig: (phase, updates) => set((state) => ({
                 phaseConfig: {
                     ...state.phaseConfig,
@@ -215,6 +241,7 @@ export const useBioStore = create<BioStoreState>()(
                 senior: get().senior,
                 lifeEvents: get().lifeEvents,
                 tags: get().tags,
+                groups: get().groups,
                 phaseConfig: get().phaseConfig
             }),
 
@@ -246,6 +273,7 @@ export const useBioStore = create<BioStoreState>()(
                     }
 
                     const { childhood, formative, professional, senior, tags } = state;
+                    if (!state.groups) state.groups = [];
                     
                     // 1. Seed default data if empty
                     if ((!childhood || childhood.length === 0) && (!formative || formative.length === 0) && (!professional || professional.length === 0) && (senior || []).length === 0) {
@@ -256,6 +284,7 @@ export const useBioStore = create<BioStoreState>()(
                         state.senior = [];
                         state.lifeEvents = eventsData;
                         state.tags = [];
+                        state.groups = [];
                     }
 
                     // 2. Harvest Tags Migration

@@ -18,8 +18,10 @@ describe('BioMachine', () => {
             { id: 'event_req_a', text: 'Req A', requires: ['TAG_A'], weights: { DEFAULT: 1 }, phases: ['Childhood', 'Formative', 'Professional', 'Senior'] },
             { id: 'event_req_c', text: 'Req C', requires: ['TAG_C'], weights: { DEFAULT: 1 }, phases: ['Childhood', 'Formative', 'Professional', 'Senior'] }
         ],
-        tags: []
-    };
+        { id: 't2', description: 'Tag 2' }
+    ],
+    groups: []
+};
 
     it('should filter life events based on requirements', () => {
         // Mock Math.random to always be high probability for event trigger (0.9 > 0.3)

@@ -39,7 +39,9 @@ const mockData: BioData = {
             weights: { TAG_B: 0.5, DEFAULT: 1 }
         }
     ],
-    tags: [{ id: 'TAG_A' }, { id: 'TAG_B' }]
+    tags: [{ id: 'TAG_A' },         { id: 't2', description: 'Tag 2' }
+    ],
+    groups: []
 };
 
 describe('tag-utils', () => {

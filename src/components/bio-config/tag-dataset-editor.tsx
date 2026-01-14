@@ -7,6 +7,7 @@ import { TagEntityEditor } from './tag-entity-editor';
 import { Tag, BioData } from '@/lib/generator/types';
 import { Badge } from "@/components/ui/badge";
 import { getTagRelationships } from '@/lib/generator/tag-utils';
+import { SelectionToolbar } from './selection-toolbar';
 
 interface TagDatasetEditorProps {
     tags: Tag[];
@@ -21,6 +22,7 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
     const [editingItem, setEditingItem] = useState<Tag | undefined>(undefined);
     const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const filteredData = tags.filter(item =>
         item.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,6 +30,24 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
     );
 
     const existingIds = tags.map(i => i.id);
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(new Set(filteredData.map(i => i.id)));
+        } else {
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleSelectRow = (id: string, checked: boolean) => {
+        const newSelected = new Set(selectedIds);
+        if (checked) {
+            newSelected.add(id);
+        } else {
+            newSelected.delete(id);
+        }
+        setSelectedIds(newSelected);
+    };
 
     const handleCreate = () => {
         setEditingItem(undefined);
@@ -59,6 +79,13 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
         }
     };
 
+    const handleBulkDelete = () => {
+        if (window.confirm(`Are you sure you want to delete ${selectedIds.size} tags?`)) {
+            selectedIds.forEach(id => onDelete(id));
+            setSelectedIds(new Set());
+        }
+    };
+
     const handleDelete = (id: string) => {
         const rels = getTagRelationships(id, bioData);
         const hasRefs = rels.providedBy.length > 0 || rels.requiredBy.length > 0 || rels.influences.length > 0;
@@ -66,9 +93,8 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
         if (hasRefs) {
             const confirmMsg = `This tag is referenced by ${rels.providedBy.length + rels.requiredBy.length + rels.influences.length} entities. Deleting it will leave these references dangling. Are you sure?`;
             if (!window.confirm(confirmMsg)) return;
-        } else {
-            if (!window.confirm('Are you sure you want to delete this tag?')) return;
         }
+        // Removed simple confirmation per requirements
         onDelete(id);
     };
 
@@ -85,19 +111,30 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                 </Button>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between gap-2">
                 <Input
                     placeholder="Search tags..."
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     className="max-w-sm"
                 />
-            </div>
+                            <SelectionToolbar 
+                                selectedCount={selectedIds.size} 
+                                onDelete={handleBulkDelete}
+                            />            </div>
 
             <div className="border rounded-md">
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead className="w-[40px]">
+                                <input 
+                                    type="checkbox"
+                                    checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
+                                    onChange={(e) => handleSelectAll(e.target.checked)}
+                                    className="translate-y-[2px]"
+                                />
+                            </TableHead>
                             <TableHead className="w-[150px]">ID</TableHead>
                             <TableHead>Provided by</TableHead>
                             <TableHead>Required by</TableHead>
@@ -108,7 +145,7 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                     No tags found.
                                 </TableCell>
                             </TableRow>
@@ -116,7 +153,15 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                             filteredData.map((tag) => {
                                 const rels = getTagRelationships(tag.id, bioData);
                                 return (
-                                    <TableRow key={tag.id}>
+                                    <TableRow key={tag.id} data-state={selectedIds.has(tag.id) ? "selected" : undefined}>
+                                        <TableCell>
+                                            <input 
+                                                type="checkbox"
+                                                checked={selectedIds.has(tag.id)}
+                                                onChange={(e) => handleSelectRow(tag.id, e.target.checked)}
+                                                className="translate-y-[2px]"
+                                            />
+                                        </TableCell>
                                         <TableCell className="font-mono text-xs">{tag.id}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">

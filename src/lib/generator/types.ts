@@ -56,6 +56,7 @@ export interface EventNode {
     provides?: string[];
     weights: { [tag: string]: number; "DEFAULT": number };
     phase?: AgePhase; // Associated Age Phase
+    groupId?: string; // Associated Group ID
 }
 
 export interface LifeEvent {
@@ -69,6 +70,12 @@ export interface LifeEvent {
 
 export interface Tag {
     id: string;
+    description?: string;
+}
+
+export interface BioGroup {
+    id: string;
+    name: string;
     description?: string;
 }
 
@@ -93,5 +100,6 @@ export interface BioData {
     senior: EventNode[];
     lifeEvents: LifeEvent[];
     tags: Tag[];
+    groups: BioGroup[];
     phaseConfig?: Record<AgePhase, PhaseConfig>;
 }
