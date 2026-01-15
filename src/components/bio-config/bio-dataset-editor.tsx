@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useBioStore } from "@/lib/store/bioStore";
 import { SelectionToolbar } from './selection-toolbar';
 import { v4 as uuidv4 } from 'uuid';
+import { stringToColor, stringToLightColor } from "@/lib/utils/colors";
 
 interface BioDatasetEditorProps {
     data: (EventNode | LifeEvent)[];
@@ -37,7 +38,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
         // Search Filter
         const matchesSearch = item.id.toLowerCase().includes(search.toLowerCase()) ||
             item.text.toLowerCase().includes(search.toLowerCase());
-        
+
         if (!matchesSearch) return false;
 
         // Phase Filter
@@ -77,9 +78,9 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
             id: uuidv4(),
             ...groupData
         };
-        
+
         useBioStore.getState().addGroup(newGroup);
-        
+
         // Update selected items with new group ID
         selectedIds.forEach(id => {
             const item = data.find(i => i.id === id);
@@ -87,7 +88,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                 onUpdate({ ...item, groupId: newGroup.id });
             }
         });
-        
+
         setSelectedIds(new Set());
         setIsGroupModalOpen(false);
     };
@@ -172,15 +173,15 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     onChange={e => setSearch(e.target.value)}
                     className="max-w-sm"
                 />
-                
-                <SelectionToolbar 
-                    selectedCount={selectedIds.size} 
+
+                <SelectionToolbar
+                    selectedCount={selectedIds.size}
                     onDelete={handleBulkDelete}
                 >
                     {type !== 'LIFE_EVENT' && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setIsGroupModalOpen(true)}
                             disabled={selectedIds.size === 0}
                         >
@@ -188,9 +189,9 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                             Group
                         </Button>
                     )}
-                    <Button 
-                        variant="ghost" 
-                        size="sm" 
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setIsManageGroupsModalOpen(true)}
                     >
                         <Settings className="w-4 h-4 mr-2" />
@@ -204,7 +205,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[40px]">
-                                <input 
+                                <input
                                     type="checkbox"
                                     checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
@@ -232,7 +233,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                             filteredData.map((item) => (
                                 <TableRow key={item.id} data-state={selectedIds.has(item.id) ? "selected" : undefined}>
                                     <TableCell>
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             checked={selectedIds.has(item.id)}
                                             onChange={(e) => handleSelectRow(item.id, e.target.checked)}
@@ -246,7 +247,18 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                                     {type !== 'LIFE_EVENT' && (
                                         <TableCell>
                                             {'groupId' in item && item.groupId ? (
-                                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                                <Badge
+                                                    variant="outline"
+                                                    style={{
+                                                        backgroundColor: stringToLightColor(item.groupId),
+                                                        color: '#1e293b', // Slate-800 for readability
+                                                        borderColor: stringToColor(item.groupId)
+                                                    }}
+                                                >
+                                                    <span
+                                                        className="mr-1.5 inline-block w-2 h-2 rounded-full"
+                                                        style={{ backgroundColor: stringToColor(item.groupId) }}
+                                                    />
                                                     {groups.find(g => g.id === item.groupId)?.name || 'Unknown Group'}
                                                 </Badge>
                                             ) : (
@@ -255,20 +267,20 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                                         </TableCell>
                                     )}
                                     {type === 'LIFE_EVENT' && (
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {('phase' in item && item.phase) && (
-                                                <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
-                                                    {item.phase}
-                                                </Badge>
-                                            )}
-                                            {('phases' in item && item.phases) && item.phases.map(p => (
-                                                <Badge key={p} variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
-                                                    {p}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                                {('phase' in item && item.phase) && (
+                                                    <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
+                                                        {item.phase}
+                                                    </Badge>
+                                                )}
+                                                {('phases' in item && item.phases) && item.phases.map(p => (
+                                                    <Badge key={p} variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200">
+                                                        {p}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </TableCell>
                                     )}
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
