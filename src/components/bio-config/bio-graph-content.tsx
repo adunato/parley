@@ -22,6 +22,7 @@ import { useBioGraphContext } from "./bio-graph-context";
 import { BioGraphGuide } from './bio-graph-guide';
 import { BioEntityEditor } from './bio-entity-editor';
 import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
+import { stringToColor } from "@/lib/utils/colors";
 
 export function BioGraphContent() {
     // 1. Get Data
@@ -53,7 +54,6 @@ export function BioGraphContent() {
     const {
         hiddenPhases,
         hiddenTypes,
-        highlightedGroupId,
         focusedNodeId,
         setConnectedNodeIds
     } = useBioGraphContext();
@@ -92,36 +92,49 @@ export function BioGraphContent() {
 
         setNodes(nodesWithEdit);
 
-        // Add Group Edges
+        // Add Group Edges (Persistent for ALL groups)
         let finalEdges = layouted.edges;
-        if (highlightedGroupId) {
-            const groupNodes = nodesWithEdit.filter(n => n.data.item.groupId === highlightedGroupId);
-            if (groupNodes.length > 1) {
-                // Sort by Type (Childhood -> Formative -> Professional -> Senior -> LifeEvent)
-                const typeOrder: Record<string, number> = { CHILDHOOD: 0, FORMATIVE: 1, PROFESSIONAL: 2, SENIOR: 3, LIFE_EVENT: 4 };
-                groupNodes.sort((a, b) => {
-                    const typeA = typeOrder[a.data.type as string] ?? 99;
-                    const typeB = typeOrder[b.data.type as string] ?? 99;
-                    if (typeA !== typeB) return typeA - typeB;
-                    // Secondary sort by ID needed? Maybe just index if same type?
-                    return a.id.localeCompare(b.id);
-                });
 
-                const groupEdges = [];
-                for (let i = 0; i < groupNodes.length - 1; i++) {
-                    groupEdges.push({
-                        id: `group-edge-${groupNodes[i].id}-${groupNodes[i + 1].id}`,
-                        source: groupNodes[i].id,
-                        target: groupNodes[i + 1].id,
-                        type: 'default',
-                        style: { stroke: '#2563eb', strokeWidth: 3, opacity: 0.5, strokeDasharray: '5,5' },
-                        animated: true,
-                        zIndex: 1000 // Ensure valid property or just ignored? ReactFlow Edge type has zIndex.
-                    });
-                }
-                finalEdges = [...finalEdges, ...groupEdges];
+        // We need visible nodes map for quick lookup
+        const visibleNodeIds = new Set(nodesWithEdit.map(n => n.id));
+        const groupMap = new Map<string, any[]>();
+
+        // Bin nodes by group
+        nodesWithEdit.forEach(n => {
+            const gid = n.data.item.groupId;
+            if (gid) {
+                if (!groupMap.has(gid)) groupMap.set(gid, []);
+                groupMap.get(gid)!.push(n);
             }
-        }
+        });
+
+        const typeOrder: Record<string, number> = { CHILDHOOD: 0, FORMATIVE: 1, PROFESSIONAL: 2, SENIOR: 3, LIFE_EVENT: 4 };
+
+        groupMap.forEach((groupNodes, groupId) => {
+            if (groupNodes.length < 2) return;
+
+            // Sort by Type then ID
+            groupNodes.sort((a, b) => {
+                const typeA = typeOrder[a.data.type as string] ?? 99;
+                const typeB = typeOrder[b.data.type as string] ?? 99;
+                if (typeA !== typeB) return typeA - typeB;
+                return a.id.localeCompare(b.id);
+            });
+
+            // Generate Chain Edges
+            const color = stringToColor(groupId);
+            for (let i = 0; i < groupNodes.length - 1; i++) {
+                finalEdges.push({
+                    id: `group-edge-${groupId}-${groupNodes[i].id}-${groupNodes[i + 1].id}`,
+                    source: groupNodes[i].id,
+                    target: groupNodes[i + 1].id,
+                    type: 'default', // Straight line
+                    style: { stroke: color, strokeWidth: 3, opacity: 0.6, strokeDasharray: '5,5' },
+                    animated: true,
+                    zIndex: 1000
+                });
+            }
+        });
 
         setEdges(finalEdges);
     };
@@ -133,7 +146,7 @@ export function BioGraphContent() {
     }, [
         bioData.childhood, bioData.formative, bioData.professional, bioData.senior, bioData.lifeEvents, bioData.tags,
         layoutMode, centerId,
-        hiddenPhases, hiddenTypes, highlightedGroupId // Add new dependencies
+        hiddenPhases, hiddenTypes
     ]);
 
     // 5. Effect: Connected Node Logic (Restored from Provider)

@@ -9,32 +9,35 @@ Enhance the Bio Graph visualization to support dynamic filtering of nodes and vi
     -   Ability to toggle visibility of Life Events (non-spine nodes).
     -   Layout should update dynamically to reflect the filtered dataset.
 2.  **Group Visualization**:
-    -   Ability to select a specific `BioGroup` to highlight.
-    -   Highlighted nodes should be visually distinct (e.g., border style).
-    -   Thick connection lines should link members of the highlighted group to denote their relationship.
+    -   **Persistent Visualization**: Groups should be always visible (no dropdown selection).
+    -   **Color Coding**: Each group is assigned a distinct (deterministic) color.
+    -   **Visual Indication**:
+        -   Nodes belonging to a group display a visual indicator (e.g., colored border/stripe) matching their group color.
+        -   Nodes in the same group are connected by colored "virtual edges" to show the relationship sequence.
 
 ## Technical Approach
 
 ### 1. Visualization Context
-Introduce `BioGraphFilterContext` (or extend `BioGraphContext` if appropriate) to manage the following state:
+Introduce `BioGraphFilterContext` to manage:
 -   `hiddenPhases`: `Set<AgePhase>`
 -   `hiddenTypes`: `Set<string>` (e.g., 'LIFE_EVENT')
--   `focusedGroupId`: `string | null`
+*Removed `focusedGroupId` as visualization is now global.*
 
 ### 2. Layout & Filtering
-Modify `BioGraphView` to pre-process the `BioData` before passing it to `buildBioGraph`.
--   If a phase is hidden, its array in `BioData` is emptied.
--   If a type is hidden, its array is emptied.
--   This ensures `dagre` recalculates the layout without the hidden nodes (preventing gaps).
+-   Pre-process `BioData` to remove hidden nodes before layout (same as before).
 
-### 3. Group Highlighting
-Update `buildBioGraph` to accept `focusedGroupId`.
--   **Node Styling**: If a node belongs to the focused group, add a specific class or style property.
--   **Virtual Edges**: Generate additional "Group Edges" connecting the focused nodes. These edges will have a distinct style (thick, colored) and `type: 'straight'` or `default`.
-    -   *Logic*: Sort group members by age/phase, then connect sequentially? Or connect all to a central point? Sequential (Chain) seems best for a "Bio" timeline.
+### 3. Group Highlighting (Refined)
+-   **Color Utility**: Implement a helper `getGroupColor(groupId: string)` that returns a consistent HSL/Hex color based on the ID string hash.
+-   **Edges**: In `BioGraphContent`, iterate through *all* defined groups.
+    -   Filter visible nodes belonging to that group.
+    -   Sort them by Phase/Age.
+    -   Generate edges between them with `style: { stroke: groupColor }`.
+-   **Node Styling**:
+    -   Pass `groupId` and `groupName` to `BioNode`.
+    -   `BioNode` uses `getGroupColor(groupId)` to render a colored marker (e.g., a left colored border or a colored badge).
 
 ## User Interface
--   **Filter Toolbar**: A new component `BioGraphFilterToolbar` placed within the React Flow `Panel`.
+-   **Filter Toolbar**:
     -   Checkboxes for Phases.
     -   Checkbox for "Life Events".
-    -   Dropdown/Select for Groups.
+    -   *Removed Group Selector*.

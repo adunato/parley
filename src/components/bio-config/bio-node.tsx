@@ -7,10 +7,12 @@ import { EventNode, LifeEvent } from "@/lib/generator/types";
 import { useBioGraphContext } from './bio-graph-context';
 import { Pencil, Eye, Network } from 'lucide-react'; // Import Network icon
 
+import { stringToColor } from "@/lib/utils/colors";
+
 // Custom Node Component
 export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void, onReorganize?: (id: string) => void }>) => {
     const { item, type } = data;
-    const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds, highlightedGroupId } = useBioGraphContext();
+    const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds } = useBioGraphContext();
 
     const handleMouseEnter = (tag: string) => setHighlightedTag(tag);
     const handleMouseLeave = () => setHighlightedTag(null);
@@ -24,7 +26,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             !('requires' in item && item.requires?.includes(highlightedTag)) &&
             !Object.keys(item.weights).includes(highlightedTag));
 
-    const isGroupHighlighted = highlightedGroupId && item.groupId === highlightedGroupId;
+    const groupId = 'groupId' in item ? item.groupId : undefined;
+    const groupColor = groupId ? stringToColor(groupId) : undefined;
 
     // Type Colors
     const borderColor =
@@ -42,13 +45,15 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                         type === 'LIFE_EVENT' ? 'bg-orange-50' : 'bg-gray-50';
 
     return (
-        <Card className={cn(
-            "w-[280px] shadow-md transition-all duration-200",
-            borderColor,
-            selected ? "ring-2 ring-primary ring-offset-2" : "",
-            isGroupHighlighted ? "ring-4 ring-blue-500 ring-offset-2 scale-105" : "", // Group Highlight
-            isDimmed ? "opacity-40 grayscale-[0.5]" : ""
-        )}>
+        <Card
+            className={cn(
+                "w-[280px] shadow-md transition-all duration-200",
+                borderColor,
+                selected ? "ring-2 ring-primary ring-offset-2" : "",
+                isDimmed ? "opacity-40 grayscale-[0.5]" : ""
+            )}
+            style={groupColor ? { borderLeftWidth: '6px', borderLeftColor: groupColor } : {}}
+        >
             {/* Input Handle (Left) */}
             {type !== 'CHILDHOOD' && (
                 <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
@@ -59,8 +64,19 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
                     <CardTitle className="text-sm font-mono font-bold truncate" title={item.id}>
                         {item.id}
                     </CardTitle>
-                    <div className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">
-                        {type}
+                    <div className="flex items-center gap-2">
+                        <div className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">
+                            {type}
+                        </div>
+                        {groupId && (
+                            <div
+                                className="text-[9px] px-1 rounded text-white font-bold truncate max-w-[80px]"
+                                style={{ backgroundColor: groupColor }}
+                                title={`Group: ${groupId}`}
+                            >
+                                G
+                            </div>
+                        )}
                     </div>
                 </div>
 

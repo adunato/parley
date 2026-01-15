@@ -1,7 +1,6 @@
 "use client";
 
 import { useBioGraphContext } from './bio-graph-context';
-import { useBioStore } from '@/lib/store/bioStore';
 import { AGE_PHASES } from '@/lib/generator/types';
 import { Label } from "@/components/ui/label";
 import {
@@ -16,11 +15,7 @@ export function BioGraphFilterToolbar() {
     const {
         hiddenPhases, togglePhaseVisibility,
         hiddenTypes, toggleTypeVisibility,
-        highlightedGroupId, setHighlightedGroupId
     } = useBioGraphContext();
-
-    // Subscribe to groups from store
-    const groups = useBioStore(state => state.groups);
 
     return (
         <div className="flex flex-col gap-2 p-3 bg-white/90 backdrop-blur-sm border rounded shadow text-sm w-[250px]">
@@ -52,25 +47,6 @@ export function BioGraphFilterToolbar() {
                     className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
                 />
                 <Label htmlFor="filter-life-events" className="text-xs font-normal cursor-pointer">Life Events</Label>
-            </div>
-
-            {/* Group Selector */}
-            <div className="mt-2 border-t pt-2">
-                <div className="font-semibold text-xs uppercase tracking-wider text-muted-foreground mb-1">Highlight Group</div>
-                <Select
-                    value={highlightedGroupId || "none"}
-                    onValueChange={(val) => setHighlightedGroupId(val === "none" ? null : val)}
-                >
-                    <SelectTrigger className="w-full h-8 text-xs">
-                        <SelectValue placeholder="Select a group..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="none">-- None --</SelectItem>
-                        {groups.map(g => (
-                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
             </div>
         </div>
     );

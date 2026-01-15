@@ -11,11 +11,12 @@
 - [x] Task: Write unit tests for the reducer/context logic. d734135
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Filter System' [checkpoint: pending]
 
-## Phase 2: Group Visualization
-*Goal: Visualize bio groups within the graph using highlighting and connections.*
+## Phase 2: Group Visualization (Refined)
+*Goal: Visualize bio groups using persistent, distinct colors.*
 
-- [x] Task: Implement `GroupConnection` logic in `buildBioGraph` (implemented in BioGraphContent injection). d734135
-- [x] Task: Update `FilterToolbar` to populate the Group selector from `bioData.groups`. d734135
-- [x] Task: Handle "No Group" selection to clear highlights. d734135
-- [x] Task: Verify visually that groups are distinct and connected. d734135
+- [ ] Task: Create `src/lib/utils/colors.ts` with `stringToHslColor` function.
+- [ ] Task: Update `BioGraphContext` and `BioGraphFilterToolbar` to remove `highlightedGroupId`.
+- [ ] Task: Update `BioGraphContent` to generate connection edges for *all* visible groups using generated colors.
+- [ ] Task: Update `BioNode` to display a persistent Group indicator (colored badge/border) if `groupId` is present.
+- [ ] Task: Verify that multiple groups are visible simultaneously with distinct colors.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Group Visualization' [checkpoint: pending]
