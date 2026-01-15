@@ -14,9 +14,9 @@
 ## Phase 2: Group Visualization (Refined)
 *Goal: Visualize bio groups using persistent, distinct colors.*
 
-- [ ] Task: Create `src/lib/utils/colors.ts` with `stringToHslColor` function.
-- [ ] Task: Update `BioGraphContext` and `BioGraphFilterToolbar` to remove `highlightedGroupId`.
-- [ ] Task: Update `BioGraphContent` to generate connection edges for *all* visible groups using generated colors.
-- [ ] Task: Update `BioNode` to display a persistent Group indicator (colored badge/border) if `groupId` is present.
-- [ ] Task: Verify that multiple groups are visible simultaneously with distinct colors.
+- [x] Task: Create `src/lib/utils/colors.ts` with `stringToHslColor` function. 45479ea
+- [x] Task: Update `BioGraphContext` and `BioGraphFilterToolbar` to remove `highlightedGroupId`. 45479ea
+- [x] Task: Update `BioGraphContent` to generate connection edges for *all* visible groups using generated colors. 45479ea
+- [x] Task: Update `BioNode` to display a persistent Group indicator (colored badge/border) if `groupId` is present. 45479ea
+- [x] Task: Verify that multiple groups are visible simultaneously with distinct colors. 45479ea
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Group Visualization' [checkpoint: pending]
