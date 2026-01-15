@@ -10,7 +10,8 @@ export function stringToColor(str: string): string {
     }
 
     // Hue: 0-360
-    const h = Math.abs(hash) % 360;
+    // Multiply by a large prime (137) to scatter hues for sequential strings (e.g. "Group A", "Group B")
+    const h = Math.abs(hash * 137) % 360;
     // Saturation: 65-85% (Vibrant but not neon)
     const s = 70 + (Math.abs(hash) % 20);
     // Lightness: 40-60% (Readable against white, visible borders)
