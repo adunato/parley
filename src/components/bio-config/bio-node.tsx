@@ -10,7 +10,7 @@ import { Pencil, Eye, Network } from 'lucide-react'; // Import Network icon
 // Custom Node Component
 export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | LifeEvent, type: string, onEdit?: (item: EventNode | LifeEvent) => void, onReorganize?: (id: string) => void }>) => {
     const { item, type } = data;
-    const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds } = useBioGraphContext();
+    const { highlightedTag, setHighlightedTag, focusedNodeId, setFocusedNodeId, connectedNodeIds, highlightedGroupId } = useBioGraphContext();
 
     const handleMouseEnter = (tag: string) => setHighlightedTag(tag);
     const handleMouseLeave = () => setHighlightedTag(null);
@@ -23,6 +23,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             !item.provides?.includes(highlightedTag) &&
             !('requires' in item && item.requires?.includes(highlightedTag)) &&
             !Object.keys(item.weights).includes(highlightedTag));
+
+    const isGroupHighlighted = highlightedGroupId && item.groupId === highlightedGroupId;
 
     // Type Colors
     const borderColor =
@@ -44,6 +46,7 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             "w-[280px] shadow-md transition-all duration-200",
             borderColor,
             selected ? "ring-2 ring-primary ring-offset-2" : "",
+            isGroupHighlighted ? "ring-4 ring-blue-500 ring-offset-2 scale-105" : "", // Group Highlight
             isDimmed ? "opacity-40 grayscale-[0.5]" : ""
         )}>
             {/* Input Handle (Left) */}
