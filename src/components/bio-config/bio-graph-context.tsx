@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from 'react';
 import { Edge } from 'reactflow';
+import { AgePhase } from '@/lib/generator/types';
 
 interface BioGraphContextType {
     highlightedTag: string | null;
@@ -9,65 +10,54 @@ interface BioGraphContextType {
     focusedNodeId: string | null;
     setFocusedNodeId: (id: string | null) => void;
     connectedNodeIds: Set<string>;
+    setConnectedNodeIds: (ids: Set<string>) => void; // Exposed
+
+    // Filter State
+    hiddenPhases: Set<AgePhase>;
+    togglePhaseVisibility: (phase: AgePhase) => void;
+    hiddenTypes: Set<string>;
+    toggleTypeVisibility: (type: string) => void;
+
+    // Grouping State
+    highlightedGroupId: string | null;
+    setHighlightedGroupId: (id: string | null) => void;
 }
 
 const BioGraphContext = createContext<BioGraphContextType | undefined>(undefined);
 
-export function BioGraphProvider({ children, edges = [] }: { children: ReactNode, edges?: Edge[] }) {
+export function BioGraphProvider({ children }: { children: ReactNode }) {
     const [highlightedTag, setHighlightedTag] = useState<string | null>(null);
     const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
     const [connectedNodeIds, setConnectedNodeIds] = useState<Set<string>>(new Set());
 
-    // Calculate connected nodes when focusedNodeId changes
-    useEffect(() => {
-        if (!focusedNodeId) {
-            setConnectedNodeIds(new Set());
-            return;
-        }
+    // Filter State
+    const [hiddenPhases, setHiddenPhases] = useState<Set<AgePhase>>(new Set());
+    const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+    const [highlightedGroupId, setHighlightedGroupId] = useState<string | null>(null);
 
-        const visited = new Set<string>();
-        visited.add(focusedNodeId);
-
-        // Build adjacency lists for fast traversal
-        const outgoing = new Map<string, string[]>(); // key -> [targets]
-        const incoming = new Map<string, string[]>(); // key -> [sources]
-
-        edges.forEach(edge => {
-            if (!outgoing.has(edge.source)) outgoing.set(edge.source, []);
-            if (!incoming.has(edge.target)) incoming.set(edge.target, []);
-
-            outgoing.get(edge.source)?.push(edge.target);
-            incoming.get(edge.target)?.push(edge.source);
+    const togglePhaseVisibility = useCallback((phase: AgePhase) => {
+        setHiddenPhases(prev => {
+            const next = new Set(prev);
+            if (next.has(phase)) {
+                next.delete(phase);
+            } else {
+                next.add(phase);
+            }
+            return next;
         });
+    }, []);
 
-        // Traverse Downstream (Descendants)
-        const queueDown = [focusedNodeId];
-        while (queueDown.length > 0) {
-            const current = queueDown.shift()!;
-            const targets = outgoing.get(current) || [];
-            targets.forEach(t => {
-                if (!visited.has(t)) {
-                    visited.add(t);
-                    queueDown.push(t);
-                }
-            });
-        }
-
-        // Traverse Upstream (Ancestors)
-        const queueUp = [focusedNodeId];
-        while (queueUp.length > 0) {
-            const current = queueUp.shift()!;
-            const sources = incoming.get(current) || [];
-            sources.forEach(s => {
-                if (!visited.has(s)) {
-                    visited.add(s);
-                    queueUp.push(s);
-                }
-            });
-        }
-
-        setConnectedNodeIds(visited);
-    }, [focusedNodeId, edges]);
+    const toggleTypeVisibility = useCallback((type: string) => {
+        setHiddenTypes(prev => {
+            const next = new Set(prev);
+            if (next.has(type)) {
+                next.delete(type);
+            } else {
+                next.add(type);
+            }
+            return next;
+        });
+    }, []);
 
     return (
         <BioGraphContext.Provider value={{
@@ -75,7 +65,14 @@ export function BioGraphProvider({ children, edges = [] }: { children: ReactNode
             setHighlightedTag,
             focusedNodeId,
             setFocusedNodeId,
-            connectedNodeIds
+            connectedNodeIds,
+            setConnectedNodeIds, // Exposed
+            hiddenPhases,
+            togglePhaseVisibility,
+            hiddenTypes,
+            toggleTypeVisibility,
+            highlightedGroupId,
+            setHighlightedGroupId
         }}>
             {children}
         </BioGraphContext.Provider>
