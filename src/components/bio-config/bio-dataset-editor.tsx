@@ -33,7 +33,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
     const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState(false);
     const [showGenerator, setShowGenerator] = useState(false);
 

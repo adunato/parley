@@ -31,7 +31,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
         senior: state.senior,
         lifeEvents: state.lifeEvents,
         tags: state.tags,
-        phaseConfig: state.phaseConfig
+        phaseConfig: state.phaseConfig,
+        groups: state.groups
     })));
     const childhood = bioData.childhood;
     const professional = bioData.professional;

@@ -32,7 +32,8 @@ export function BioGraphContent() {
         professional: state.professional,
         senior: state.senior,
         lifeEvents: state.lifeEvents,
-        tags: state.tags
+        tags: state.tags,
+        groups: state.groups
     })));
 
     // 2. React Flow State
@@ -240,7 +241,8 @@ export function BioGraphContent() {
             professional: [...bioData.professional],
             senior: [...(bioData.senior || [])],
             lifeEvents: [...bioData.lifeEvents],
-            tags: [...bioData.tags]
+            tags: [...bioData.tags],
+            groups: [...bioData.groups]
         };
 
         // Helper to update list
