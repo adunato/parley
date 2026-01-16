@@ -2,11 +2,11 @@
 
 This plan outlines the steps to implement LLM-powered generation for neutral Spine Nodes within the Bio Generator configuration UI, mirroring the existing Life Events generator.
 
-## Phase 1: Preparation & Testing Setup
+## Phase 1: Preparation & Testing Setup [checkpoint: 8d396a4]
 - [x] Task: Create feature branch `feature/gen_spine_events_20260116` 63f1630
 - [x] Task: Write failing tests for `BioDatasetEditor` to verify "Gen Events" button visibility in Age Phase tabs d49d7d1
 - [x] Task: Write failing tests for `GenerateEventsDialog` to support `EventNode` (Spine Node) types d49d7d1
-- [ ] Task: Conductor - User Manual Verification 'Preparation & Testing Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Preparation & Testing Setup' (Protocol in workflow.md) 8d396a4
 
 ## Phase 2: UI Implementation
 - [ ] Task: Update `BioDatasetEditor.tsx` to display the "Gen Events" button for all types, including Age Phases
