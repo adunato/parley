@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Copy, FolderPlus, Settings } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy, FolderPlus, Settings, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BioEntityEditor } from './bio-entity-editor';
 import { CreateGroupModal } from './create-group-modal';
 import { ManageGroupsModal } from './manage-groups-modal';
 import { AgePhase, EventNode, LifeEvent, SlotType } from '@/lib/generator/types';
+import { GenerateEventsDialog } from './generate-events-dialog';
 import { Badge } from "@/components/ui/badge";
 import { useBioStore } from "@/lib/store/bioStore";
 import { SelectionToolbar } from './selection-toolbar';
@@ -32,7 +33,9 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [isManageGroupsModalOpen, setIsManageGroupsModalOpen] = useState(false);
+    const [showGenerator, setShowGenerator] = useState(false);
 
     const filteredData = data.filter(item => {
         // Search Filter
@@ -178,6 +181,17 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     selectedCount={selectedIds.size}
                     onDelete={handleBulkDelete}
                 >
+                    {type === 'LIFE_EVENT' && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowGenerator(true)}
+                        >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Gen Events
+                        </Button>
+                    )}
+
                     {type !== 'LIFE_EVENT' && (
                         <Button
                             variant="ghost"
@@ -353,6 +367,12 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
             <ManageGroupsModal
                 open={isManageGroupsModalOpen}
                 onOpenChange={setIsManageGroupsModalOpen}
+            />
+
+            <GenerateEventsDialog
+                open={showGenerator}
+                onOpenChange={setShowGenerator}
+                sourceEntity={undefined}
             />
         </div>
     );

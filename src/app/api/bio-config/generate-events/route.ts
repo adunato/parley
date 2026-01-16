@@ -5,9 +5,9 @@ export async function POST(req: NextRequest) {
   try {
     const { sourceEntity, count, existingEvents, userPrompt } = await req.json();
 
-    if (!sourceEntity || !count) {
+    if (!count) {
       return NextResponse.json(
-        { error: 'Missing required parameters: sourceEntity and count' },
+        { error: 'Missing required parameter: count' },
         { status: 400 }
       );
     }
