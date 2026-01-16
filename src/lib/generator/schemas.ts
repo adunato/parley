@@ -15,3 +15,11 @@ export const lifeEventGenerationSchema = z.object({
     description: z.string().optional().describe("A brief description of what this tag represents")
   })).optional().describe("A list of new tags introduced by these events that were not in the source or context")
 });
+
+export const spineEventGenerationSchema = z.object({
+  events: z.array(lifeEventSchema).describe("A list of generated spine nodes (milestones)"),
+  newTags: z.array(z.object({
+    id: z.string().describe("The unique identifier of the tag"),
+    description: z.string().optional().describe("A brief description of what this tag represents")
+  })).optional().describe("A list of new tags introduced by these events that were not in the context")
+});
