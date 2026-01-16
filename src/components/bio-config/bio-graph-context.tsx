@@ -35,6 +35,23 @@ export function BioGraphProvider({ children }: { children: ReactNode }) {
     const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
     const [highlightedGroupId, setHighlightedGroupId] = useState<string | null>(null);
 
+    // Load initial state from localStorage
+    useEffect(() => {
+        try {
+            const savedPhases = localStorage.getItem('parley-bio-graph-hidden-phases');
+            if (savedPhases) {
+                setHiddenPhases(new Set(JSON.parse(savedPhases)));
+            }
+
+            const savedTypes = localStorage.getItem('parley-bio-graph-hidden-types');
+            if (savedTypes) {
+                setHiddenTypes(new Set(JSON.parse(savedTypes)));
+            }
+        } catch (error) {
+            console.error('Failed to load bio graph filter settings:', error);
+        }
+    }, []);
+
     const togglePhaseVisibility = useCallback((phase: AgePhase) => {
         setHiddenPhases(prev => {
             const next = new Set(prev);
@@ -43,6 +60,14 @@ export function BioGraphProvider({ children }: { children: ReactNode }) {
             } else {
                 next.add(phase);
             }
+            
+            // Persist
+            try {
+                localStorage.setItem('parley-bio-graph-hidden-phases', JSON.stringify(Array.from(next)));
+            } catch (e) {
+                console.error('Failed to save phase filter', e);
+            }
+            
             return next;
         });
     }, []);
@@ -55,6 +80,14 @@ export function BioGraphProvider({ children }: { children: ReactNode }) {
             } else {
                 next.add(type);
             }
+            
+            // Persist
+            try {
+                localStorage.setItem('parley-bio-graph-hidden-types', JSON.stringify(Array.from(next)));
+            } catch (e) {
+                console.error('Failed to save type filter', e);
+            }
+
             return next;
         });
     }, []);
