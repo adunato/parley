@@ -20,7 +20,8 @@ const TEXT_PROMPT_IDS = [
     'chat_summary',
     'analyst_system',
     'bio_writer',
-    'life_event_gen'
+    'life_event_gen',
+    'spine_event_gen'
 ];
 
 export function TextGenerationSettings({ prompts, onSave, onReset }: TextGenerationSettingsProps) {
