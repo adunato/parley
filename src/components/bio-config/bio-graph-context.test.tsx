@@ -30,22 +30,22 @@ describe('BioGraphContext', () => {
         );
 
         // Initial state
-        expect(screen.getByTestId('hidden-phases')).toBe('');
+        expect(screen.getByTestId('hidden-phases').textContent).toBe('');
 
         // Toggle Phase - Should add it
         fireEvent.click(screen.getByText('Toggle Childhood'));
-        expect(screen.getByTestId('hidden-phases')).toBe('Childhood');
+        expect(screen.getByTestId('hidden-phases').textContent).toBe('Childhood');
 
         // Toggle Phase - Should remove it
         fireEvent.click(screen.getByText('Toggle Childhood'));
-        expect(screen.getByTestId('hidden-phases')).toBe('');
+        expect(screen.getByTestId('hidden-phases').textContent).toBe('');
 
         // Toggle Type
         fireEvent.click(screen.getByText('Toggle LifeEvent'));
-        expect(screen.getByTestId('hidden-types')).toBe('LIFE_EVENT');
+        expect(screen.getByTestId('hidden-types').textContent).toBe('LIFE_EVENT');
 
         // Group
         fireEvent.click(screen.getByText('Set Group'));
-        expect(screen.getByTestId('highlighted-group')).toBe('g1');
+        expect(screen.getByTestId('highlighted-group').textContent).toBe('g1');
     });
 });

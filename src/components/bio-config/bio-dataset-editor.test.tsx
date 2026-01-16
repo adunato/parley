@@ -18,10 +18,12 @@ const mockRegisterTags = jest.fn();
 
 jest.mock("@/lib/store/bioStore", () => {
   const mockStore = () => ({
-    tags: []
+    tags: [],
+    groups: []
   });
   mockStore.getState = () => ({
-    registerTags: mockRegisterTags
+    registerTags: mockRegisterTags,
+    addGroup: jest.fn()
   });
   return { useBioStore: mockStore };
 });

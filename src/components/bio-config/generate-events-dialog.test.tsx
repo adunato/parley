@@ -115,4 +115,42 @@ describe("GenerateEventsDialog - Spine Node Support", () => {
         fireEvent.click(screen.getByText("Add"));
         expect(mockActions.addSenior).toHaveBeenCalled();
     });
+
+    it("registers new tags when 'Add' is clicked", async () => {
+        // Update fetch mock for this test
+        (global.fetch as jest.Mock).mockImplementationOnce(() =>
+            Promise.resolve({
+                json: () => Promise.resolve({
+                    events: [
+                        {
+                            id: "new-event",
+                            text: "New Event with Tags",
+                            weights: { "NEW_TAG": 2, "DEFAULT": 1 },
+                            provides: ["ANOTHER_NEW_TAG"]
+                        }
+                    ],
+                    newTags: [
+                        { id: "NEW_TAG", description: "Desc 1" },
+                        { id: "ANOTHER_NEW_TAG", description: "Desc 2" }
+                    ]
+                }),
+            })
+        );
+
+        render(
+            <GenerateEventsDialog 
+                open={true} 
+                onOpenChange={jest.fn()} 
+                type="LIFE_EVENT"
+            />
+        );
+
+        fireEvent.click(screen.getByText("Generate Events"));
+        await waitFor(() => screen.getByText("New Event with Tags"));
+        fireEvent.click(screen.getByText("Add"));
+
+        expect(mockActions.addTag).toHaveBeenCalledTimes(2);
+        expect(mockActions.addTag).toHaveBeenCalledWith(expect.objectContaining({ id: "NEW_TAG" }));
+        expect(mockActions.addTag).toHaveBeenCalledWith(expect.objectContaining({ id: "ANOTHER_NEW_TAG" }));
+    });
 });
