@@ -181,16 +181,14 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     selectedCount={selectedIds.size}
                     onDelete={handleBulkDelete}
                 >
-                    {type === 'LIFE_EVENT' && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setShowGenerator(true)}
-                        >
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Gen Events
-                        </Button>
-                    )}
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowGenerator(true)}
+                    >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Gen Events
+                    </Button>
 
                     {type !== 'LIFE_EVENT' && (
                         <Button
@@ -373,6 +371,8 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                 open={showGenerator}
                 onOpenChange={setShowGenerator}
                 sourceEntity={undefined}
+                type={type}
+                phase={phase}
             />
         </div>
     );

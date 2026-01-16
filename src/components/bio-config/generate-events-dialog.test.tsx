@@ -10,14 +10,19 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-const mockAddChildhood = jest.fn();
-const mockAddLifeEvent = jest.fn();
+const mockActions = {
+    addLifeEvent: jest.fn(),
+    addChildhood: jest.fn(),
+    addFormative: jest.fn(),
+    addProfessional: jest.fn(),
+    addSenior: jest.fn(),
+    addTag: jest.fn(),
+};
 
 jest.mock("@/lib/store/bioStore", () => ({
   useBioStore: (selector: any) => {
     const state = {
-      addLifeEvent: mockAddLifeEvent,
-      addChildhood: mockAddChildhood,
+      ...mockActions,
       lifeEvents: [],
       tags: []
     };
@@ -48,30 +53,66 @@ describe("GenerateEventsDialog - Spine Node Support", () => {
     });
 
     it("uses addChildhood when 'Add' is clicked for a CHILDHOOD context", async () => {
-        // This test will likely fail because the current component only knows addLifeEvent
-        // We'll need to pass the target type or infer it.
-        
         render(
             <GenerateEventsDialog 
                 open={true} 
                 onOpenChange={jest.fn()} 
-                // We'll probably need a new prop like 'targetType' or similar
-                // But let's see if we can use sourceEntity or if we need to add a prop.
+                type="CHILDHOOD"
+                phase="Childhood"
             />
         );
 
-        // Trigger generation
-        fireEvent.click(screen.getByText("Generate Events"));
-
-        await waitFor(() => {
-            expect(screen.getByText("Generated Spine Node")).toBeInTheDocument();
-        });
-
-        // Click Add
+        fireEvent.click(screen.getByText("Generate Milestones"));
+        await waitFor(() => screen.getByText("Generated Spine Node"));
         fireEvent.click(screen.getByText("Add"));
+        expect(mockActions.addChildhood).toHaveBeenCalled();
+    });
 
-        // Expect addChildhood to be called if we were in Childhood context
-        // Currently it will call addLifeEvent
-        expect(mockAddChildhood).toHaveBeenCalled();
+    it("uses addFormative when 'Add' is clicked for a FORMATIVE context", async () => {
+        render(
+            <GenerateEventsDialog 
+                open={true} 
+                onOpenChange={jest.fn()} 
+                type="FORMATIVE"
+                phase="Formative"
+            />
+        );
+
+        fireEvent.click(screen.getByText("Generate Milestones"));
+        await waitFor(() => screen.getByText("Generated Spine Node"));
+        fireEvent.click(screen.getByText("Add"));
+        expect(mockActions.addFormative).toHaveBeenCalled();
+    });
+
+    it("uses addProfessional when 'Add' is clicked for a PROFESSIONAL context", async () => {
+        render(
+            <GenerateEventsDialog 
+                open={true} 
+                onOpenChange={jest.fn()} 
+                type="PROFESSIONAL"
+                phase="Professional"
+            />
+        );
+
+        fireEvent.click(screen.getByText("Generate Milestones"));
+        await waitFor(() => screen.getByText("Generated Spine Node"));
+        fireEvent.click(screen.getByText("Add"));
+        expect(mockActions.addProfessional).toHaveBeenCalled();
+    });
+
+    it("uses addSenior when 'Add' is clicked for a SENIOR context", async () => {
+        render(
+            <GenerateEventsDialog 
+                open={true} 
+                onOpenChange={jest.fn()} 
+                type="SENIOR"
+                phase="Senior"
+            />
+        );
+
+        fireEvent.click(screen.getByText("Generate Milestones"));
+        await waitFor(() => screen.getByText("Generated Spine Node"));
+        fireEvent.click(screen.getByText("Add"));
+        expect(mockActions.addSenior).toHaveBeenCalled();
     });
 });
