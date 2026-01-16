@@ -20,7 +20,7 @@ const openrouter = createOpenAI({
  * @returns A list of generated LifeEvent entities and any new tags discovered.
  */
 export async function generateLifeEvents(
-  sourceEntity: EventNode | LifeEvent,
+  sourceEntity: EventNode | LifeEvent | undefined,
   count: number,
   existingEvents: LifeEvent[],
   userPrompt?: string
@@ -29,8 +29,11 @@ export async function generateLifeEvents(
   const model = openrouter('deepseek/deepseek-chat');
 
   const template = PromptStore.getPrompt('life_event_gen');
-  
-  const sourceEntityStr = `ID: ${sourceEntity.id}\nDescription: ${sourceEntity.text}\nTags it Provides: ${JSON.stringify(sourceEntity.provides || [])}`;
+
+  const sourceEntityStr = sourceEntity
+    ? `ID: ${sourceEntity.id}\nDescription: ${sourceEntity.text}\nTags it Provides: ${JSON.stringify(sourceEntity.provides || [])}`
+    : "None (Generate independent events)";
+
   const contextStr = existingEvents.length > 0 ? existingEvents.map(e => `- ${e.text} (ID: ${e.id})`).join('\n') : 'None';
   const userPromptStr = userPrompt ? `--- USER DIRECTION ---\n${userPrompt}\n` : '';
 

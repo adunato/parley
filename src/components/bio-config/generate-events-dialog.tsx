@@ -11,7 +11,7 @@ import { AlertCircle, CheckCircle2, Loader2, Plus, Sparkles } from 'lucide-react
 interface GenerateEventsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    sourceEntity: EventNode | LifeEvent;
+    sourceEntity?: EventNode | LifeEvent;
 }
 
 export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: GenerateEventsDialogProps) {
@@ -22,7 +22,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
     const [success, setSuccess] = useState<string | null>(null);
     const [generatedEvents, setGeneratedEvents] = useState<LifeEvent[]>([]);
     const [newTags, setNewTags] = useState<Tag[]>([]);
-    
+
     const addLifeEvent = useBioStore(state => state.addLifeEvent);
     const addTag = useBioStore(state => state.addTag);
     const existingLifeEvents = useBioStore(state => state.lifeEvents);
@@ -61,7 +61,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
     const handleAccept = (event: LifeEvent) => {
         // 1. Add the event
         addLifeEvent(event);
-        
+
         // 2. Add used tags if they are new
         const usedTagIds = new Set<string>();
         event.provides?.forEach(t => usedTagIds.add(t));
@@ -75,7 +75,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
         // 3. Feedback
         setGeneratedEvents(prev => prev.filter(e => e.id !== event.id));
         setSuccess(`Added "${event.text}" to dataset.`);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
     };
@@ -97,10 +97,14 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                         Generate Life Events
                     </DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        Generating events connected to: <span className="font-medium text-foreground">{sourceEntity.text}</span>
+                        {sourceEntity ? (
+                            <>Generating events connected to: <span className="font-medium text-foreground">{sourceEntity.text}</span></>
+                        ) : (
+                            "Generating independent life events."
+                        )}
                     </p>
                 </DialogHeader>
-                
+
                 <div className="space-y-6 py-4">
                     {/* Error Display */}
                     {error && (
@@ -124,22 +128,22 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Number of Events</Label>
-                                    <Input 
-                                        type="number" 
-                                        value={count} 
-                                        onChange={e => setCount(Math.max(1, Math.min(10, Number(e.target.value))))} 
-                                        min={1} 
-                                        max={10} 
+                                    <Input
+                                        type="number"
+                                        value={count}
+                                        onChange={e => setCount(Math.max(1, Math.min(10, Number(e.target.value))))}
+                                        min={1}
+                                        max={10}
                                     />
                                     <p className="text-xs text-muted-foreground">Between 1 and 10.</p>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Custom Instructions (Optional)</Label>
-                                <Textarea 
-                                    value={prompt} 
-                                    onChange={e => setPrompt(e.target.value)} 
-                                    placeholder="e.g. Focus on tragic outcomes, or events involving travel..." 
+                                <Textarea
+                                    value={prompt}
+                                    onChange={e => setPrompt(e.target.value)}
+                                    placeholder="e.g. Focus on tragic outcomes, or events involving travel..."
                                     className="min-h-[100px]"
                                 />
                             </div>
@@ -153,7 +157,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                                 <h3 className="font-semibold">Generated Events ({generatedEvents.length} remaining)</h3>
                                 <Button variant="ghost" size="sm" onClick={() => { setGeneratedEvents([]); setNewTags([]); }}>Clear & Restart</Button>
                             </div>
-                            
+
                             <div className="space-y-3">
                                 {generatedEvents.map(event => (
                                     <div key={event.id} className="border p-4 rounded-lg bg-card text-card-foreground shadow-sm flex flex-col gap-3">
@@ -213,14 +217,14 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                 </div>
 
                 <DialogFooter>
-                     {generatedEvents.length === 0 ? (
+                    {generatedEvents.length === 0 ? (
                         <Button onClick={handleGenerate} disabled={loading} className="w-full sm:w-auto">
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {loading ? 'Generating...' : 'Generate Events'}
                         </Button>
-                     ) : (
+                    ) : (
                         <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>
-                     )}
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
