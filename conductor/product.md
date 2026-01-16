@@ -9,6 +9,7 @@ Parley is a web-based text adventure game that leverages AI to create a dynamic 
 ## 3. Key Features
 *   **AI-Driven Storytelling:** The narrative engine dynamically generates story segments based on user input, ensuring a unique experience for every playthrough.
 *   **Procedural Character Generation:** Characters are created with detailed traits, backgrounds, and personalities, powered by procedural generation algorithms.
+*   **LLM-Powered World Bible Expansion:** Specialized tools allow for the procedural generation of background milestones and life events, enabling creators to rapidly expand the game's dataset.
 *   **Relationship Management:** A robust system tracks interactions with NPCs, influencing how they react and evolve alongside the player.
 
 ## 4. Gameplay Goals
