@@ -5,19 +5,25 @@ import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
 import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
-import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
+
 import { useBioStore } from "@/lib/store/bioStore";
-import { Download, Upload, FileJson } from "lucide-react";
+import { Download, Upload, FileJson, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRef } from "react";
-import { toast } from "sonner";
+import { useRef, useState } from "react";
+// import { toast } from "sonner"; // Removed due to missing dependency
 
 
 export default function BioConfigPage() {
     const store = useBioStore();
     const worldFileInputRef = useRef<HTMLInputElement>(null);
     const settingsFileInputRef = useRef<HTMLInputElement>(null);
+    const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+    const showFeedback = (message: string, type: 'success' | 'error') => {
+        setFeedback({ message, type });
+        setTimeout(() => setFeedback(null), 3000);
+    };
 
     const handleExportWorld = () => {
         const data = store.getAllData();
@@ -35,6 +41,7 @@ export default function BioConfigPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        showFeedback("World data exported successfully", "success");
     };
 
     const handleImportWorld = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,10 +62,10 @@ export default function BioConfigPage() {
                     ...json,
                     phaseConfig: store.phaseConfig
                 });
-                toast.success("World data imported successfully");
+                showFeedback("World data imported successfully", "success");
             } catch (error) {
                 console.error("Import failed:", error);
-                toast.error("Failed to import world data. Invalid JSON format.");
+                showFeedback("Failed to import world data. Invalid JSON format.", "error");
             }
         };
         reader.readAsText(file);
@@ -76,6 +83,7 @@ export default function BioConfigPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        showFeedback("Settings exported successfully", "success");
     };
 
     const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,10 +100,10 @@ export default function BioConfigPage() {
                 }
 
                 store.setPhaseConfig(json);
-                toast.success("Generation settings imported successfully");
+                showFeedback("Generation settings imported successfully", "success");
             } catch (error) {
                 console.error("Import failed:", error);
-                toast.error("Failed to import settings. Invalid JSON format.");
+                showFeedback("Failed to import settings. Invalid JSON format.", "error");
             }
         };
         reader.readAsText(file);
@@ -215,7 +223,14 @@ export default function BioConfigPage() {
 
                     <div className="pt-6 border-t">
                         <div className="space-y-4">
-                            <h3 className="text-lg font-medium">Data Management</h3>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-medium">Data Management</h3>
+                                {feedback && (
+                                    <div className={`text-sm px-3 py-1 rounded-full ${feedback.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {feedback.message}
+                                    </div>
+                                )}
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Card>
                                     <CardHeader className="pb-3">
