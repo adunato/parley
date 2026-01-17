@@ -84,7 +84,11 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const handleSave = () => {
         if (!id || !text || isDuplicateId) return;
 
+        // Preserve existing fields (like groupId) that aren't edited here
+        const existingData = initialData || {};
+
         const base = {
+            ...existingData,
             id,
             text,
             provides: provides.length > 0 ? provides : undefined,
