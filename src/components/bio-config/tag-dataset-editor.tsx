@@ -8,6 +8,8 @@ import { Tag, BioData } from '@/lib/generator/types';
 import { Badge } from "@/components/ui/badge";
 import { getTagRelationships } from '@/lib/generator/tag-utils';
 import { SelectionToolbar } from './selection-toolbar';
+import { useBioStore } from "@/lib/store/bioStore";
+import { Eraser } from "lucide-react";
 
 interface TagDatasetEditorProps {
     tags: Tag[];
@@ -98,6 +100,12 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
         onDelete(id);
     };
 
+    const handlePruneUnused = () => {
+        if (window.confirm("Are you sure you want to delete all unused tags? This cannot be undone.")) {
+            useBioStore.getState().pruneUnusedTags();
+        }
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-end">
@@ -118,17 +126,27 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                     onChange={e => setSearch(e.target.value)}
                     className="max-w-sm"
                 />
-                            <SelectionToolbar 
-                                selectedCount={selectedIds.size} 
-                                onDelete={handleBulkDelete}
-                            />            </div>
+                <SelectionToolbar
+                    selectedCount={selectedIds.size}
+                    onDelete={handleBulkDelete}
+                >
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handlePruneUnused}
+                        title="Prune Unused Tags"
+                    >
+                        <Eraser className="w-4 h-4 mr-2" />
+                        Prune Unused
+                    </Button>
+                </SelectionToolbar>            </div>
 
             <div className="border rounded-md">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[40px]">
-                                <input 
+                                <input
                                     type="checkbox"
                                     checked={filteredData.length > 0 && selectedIds.size === filteredData.length}
                                     onChange={(e) => handleSelectAll(e.target.checked)}
@@ -155,7 +173,7 @@ export function TagDatasetEditor({ tags, bioData, onAdd, onUpdate, onDelete }: T
                                 return (
                                     <TableRow key={tag.id} data-state={selectedIds.has(tag.id) ? "selected" : undefined}>
                                         <TableCell>
-                                            <input 
+                                            <input
                                                 type="checkbox"
                                                 checked={selectedIds.has(tag.id)}
                                                 onChange={(e) => handleSelectRow(tag.id, e.target.checked)}
