@@ -18,6 +18,11 @@ interface BioStoreState {
     tags: Tag[];
     groups: BioGroup[];
     phaseConfig: Record<AgePhase, PhaseConfig>;
+    graphSettings: {
+        horizontalSpacing: number;
+        verticalSpacing: number;
+        edgeLabelPosition: number; // 0-100
+    };
 
     // Actions
     addChildhood: (item: EventNode) => void;
@@ -52,6 +57,7 @@ interface BioStoreState {
 
     updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
     setPhaseConfig: (config: Record<AgePhase, PhaseConfig>) => void;
+    setGraphSettings: (settings: Partial<BioStoreState['graphSettings']>) => void;
 
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
@@ -97,6 +103,11 @@ export const useBioStore = create<BioStoreState>()(
             tags: [],
             groups: [],
             phaseConfig: AGE_PHASES,
+            graphSettings: {
+                horizontalSpacing: 300,
+                verticalSpacing: 200,
+                edgeLabelPosition: 50
+            },
 
             addChildhood: (item) => set((state) => ({ childhood: [...state.childhood, item] })),
             updateChildhood: (item) => set((state) => ({
@@ -324,6 +335,10 @@ export const useBioStore = create<BioStoreState>()(
             })),
 
             setPhaseConfig: (config) => set({ phaseConfig: config }),
+
+            setGraphSettings: (settings) => set((state) => ({
+                graphSettings: { ...state.graphSettings, ...settings }
+            })),
 
             registerTags: (tagIds) => set((state) => {
                 const existingTagIds = new Set(state.tags.map(t => t.id));
