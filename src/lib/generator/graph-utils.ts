@@ -45,6 +45,67 @@ export const getLayoutedElements = (
 
     dagre.layout(dagreGraph);
 
+    // --- Post-Processing: Compact the Right-Most Column ---
+    // The "Life Events" column (usually the furthest right) can get very tall and sparse
+    // if driven purely by Dagre's rank alignment or default spacing.
+    // We manually compact it to reduce the "river" effect of edges.
+
+    let maxX = -Infinity;
+    dagreGraph.nodes().forEach((v) => {
+        const n = dagreGraph.node(v);
+        if (n.x > maxX) maxX = n.x;
+    });
+
+    // Identify nodes in the right-most column (allow small tolerance for float layout)
+    const rightColNodes: string[] = [];
+    dagreGraph.nodes().forEach((v) => {
+        const n = dagreGraph.node(v);
+        if (Math.abs(n.x - maxX) < 10) {
+            rightColNodes.push(v);
+        }
+    });
+
+    // Only compact if it's a significant column (more than 1 node)
+    // and strictly the right-most one.
+    if (rightColNodes.length > 1) {
+        // 1. Sort by current Y to maintain relative order
+        rightColNodes.sort((a, b) => dagreGraph.node(a).y - dagreGraph.node(b).y);
+
+        // 2. Calculate the "visual center" of the REST of the graph
+        // This helps align the compacted column with the main content (Childhood/Formative/Prof).
+        let minRestY = Infinity;
+        let maxRestY = -Infinity;
+        let hasRestNodes = false;
+
+        dagreGraph.nodes().forEach((v) => {
+            if (!rightColNodes.includes(v)) {
+                const n = dagreGraph.node(v);
+                if (n.y < minRestY) minRestY = n.y;
+                if (n.y > maxRestY) maxRestY = n.y;
+                hasRestNodes = true;
+            }
+        });
+
+        const graphCenterY = hasRestNodes
+            ? (minRestY + maxRestY) / 2
+            : 0;
+
+        // 3. Compact the Layout
+        // We use a fixed tight gap instead of the global nodeSep
+        const TIGHT_GAP = 50;
+        const totalHeight = (rightColNodes.length * NODE_HEIGHT) + ((rightColNodes.length - 1) * TIGHT_GAP);
+
+        // Start Y position (centered around graphCenterY)
+        // Note: dagre node.y is the CENTER of the node, not top.
+        // The column spans from (centerY - H/2) to (centerY + H/2)
+        const startY = graphCenterY - (totalHeight / 2) + (NODE_HEIGHT / 2);
+
+        rightColNodes.forEach((id, idx) => {
+            const node = dagreGraph.node(id);
+            node.y = startY + idx * (NODE_HEIGHT + TIGHT_GAP);
+        });
+    }
+
     nodes.forEach((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
         node.targetPosition = direction === 'LR' ? Position.Left : Position.Top;
