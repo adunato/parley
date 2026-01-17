@@ -15,7 +15,7 @@ import { useBioStore } from '@/lib/store/bioStore';
 import { buildBioGraph } from '@/lib/generator/graph-utils';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Maximize, Minimize } from "lucide-react";
+import { RefreshCcw, Maximize, Minimize, SlidersHorizontal } from "lucide-react";
 
 import { BioNode } from "@/components/bio-config/bio-node";
 import { useBioGraphContext } from "./bio-graph-context";
@@ -26,7 +26,8 @@ import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
 import { ConnectionSelectionDialog, ConnectionDialogState } from './connection-selection-dialog';
 import { Connection } from 'reactflow';
 
-import { nodeTypes } from './graph-config';
+import { nodeTypes, edgeTypes } from './graph-config';
+import { BioGraphSettingsDialog } from './bio-graph-settings-dialog';
 
 export function BioGraphContent() {
     // 1. Get Data
@@ -40,7 +41,7 @@ export function BioGraphContent() {
         groups: state.groups
     })));
 
-
+    const graphSettings = useBioStore(state => state.graphSettings);
 
     // 2. React Flow State
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -56,6 +57,7 @@ export function BioGraphContent() {
     // Layout State
     const [layoutMode, setLayoutMode] = useState<'default' | 'centric'>('default');
     const [centerId, setCenterId] = useState<string | undefined>(undefined);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Connection Dialog State
     const [connectionDialog, setConnectionDialog] = useState<ConnectionDialogState | null>(null);
@@ -82,7 +84,7 @@ export function BioGraphContent() {
 
         // Note: Graph Utils will need update to handle highlightedGroupId later
         // For now, we just pass filtered data
-        const layouted = buildBioGraph(filteredData, layoutMode, centerId);
+        const layouted = buildBioGraph(filteredData, layoutMode, centerId, graphSettings);
 
         // Inject onEdit and onReorganize callback
         const nodesWithEdit = layouted.nodes.map(node => ({
@@ -112,7 +114,8 @@ export function BioGraphContent() {
     }, [
         bioData.childhood, bioData.formative, bioData.professional, bioData.senior, bioData.lifeEvents, bioData.tags,
         layoutMode, centerId,
-        hiddenPhases, hiddenTypes
+        hiddenPhases, hiddenTypes,
+        graphSettings // Re-run layout when settings change
     ]);
 
     // 5. Effect: Connected Node Logic (Restored from Provider)
@@ -340,6 +343,7 @@ export function BioGraphContent() {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 fitView
             >
                 <Background color="#ccc" gap={20} />
@@ -355,13 +359,16 @@ export function BioGraphContent() {
                 <MiniMap nodeStrokeWidth={3} zoomable pannable />
 
                 {/* Top Right: Layout Controls */}
-                <Panel position="top-right">
+                <Panel position="top-right" className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => {
                         setLayoutMode('default');
                         setCenterId(undefined);
                     }}>
                         <RefreshCcw className="w-4 h-4 mr-2" />
                         Reset Layout
+                    </Button>
+                    <Button size="icon" variant="outline" className="w-9 h-9" onClick={() => setIsSettingsOpen(true)} title="Graph Settings">
+                        <SlidersHorizontal className="w-4 h-4" />
                     </Button>
                 </Panel>
 
@@ -385,6 +392,8 @@ export function BioGraphContent() {
             )}
 
             <ConnectionSelectionDialog state={connectionDialog} />
+
+            <BioGraphSettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
 
             <BioGraphGuide />
         </div>

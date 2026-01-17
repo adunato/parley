@@ -2,16 +2,40 @@ import { Node, Edge, Position, MarkerType } from 'reactflow';
 import dagre from 'dagre';
 import { EventNode, BioData, LifeEvent } from '@/lib/generator/types';
 
+// Defaults used if settings are not provided
+const DEFAULT_H_SPACING = 300;
+const DEFAULT_V_SPACING = 200;
 const NODE_WIDTH = 300;
 const NODE_HEIGHT = 200;
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'LR') => {
+interface GraphSettings {
+    horizontalSpacing: number;
+    verticalSpacing: number;
+    edgeLabelPosition: number;
+}
+
+export const getLayoutedElements = (
+    nodes: Node[],
+    edges: Edge[],
+    direction = 'LR',
+    settings?: GraphSettings
+) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-    dagreGraph.setGraph({ rankdir: direction });
+    // Map settings to Dagre parameters
+    // LR: ranksep = horizontal, nodesep = vertical
+    const rankSep = settings?.horizontalSpacing ?? DEFAULT_H_SPACING;
+    const nodeSep = settings?.verticalSpacing ?? DEFAULT_V_SPACING;
+
+    dagreGraph.setGraph({
+        rankdir: direction,
+        ranksep: rankSep,
+        nodesep: nodeSep
+    });
 
     nodes.forEach((node) => {
+        // Dagre needs width/height to calculate centers correctly
         dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
@@ -26,7 +50,7 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'L
         node.targetPosition = direction === 'LR' ? Position.Left : Position.Top;
         node.sourcePosition = direction === 'LR' ? Position.Right : Position.Bottom;
 
-        // Shift position so it centers the node? Dagre gives center point.
+        // Shift position so it centers the node
         node.position = {
             x: nodeWithPosition.x - NODE_WIDTH / 2,
             y: nodeWithPosition.y - NODE_HEIGHT / 2,
@@ -37,7 +61,12 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'L
 };
 
 // --- Centric Layout Algorithm ---
-const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
+const getCentricLayout = (
+    nodes: Node[],
+    edges: Edge[],
+    centerId: string,
+    settings?: GraphSettings
+) => {
     // 1. Determine Levels via BFS/Traversal relative to Center (Level 0)
     // Upstream (Sources) = Negative Levels
     // Downstream (Targets) = Positive Levels
@@ -111,8 +140,8 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
         if (lvl > maxLvl) maxLvl = lvl;
     });
 
-    const LEVEL_X_SPACING = 400;
-    const NODE_Y_SPACING = 250;
+    const levelXSpacing = settings?.horizontalSpacing ?? DEFAULT_H_SPACING;
+    const nodeYSpacing = settings?.verticalSpacing ?? DEFAULT_V_SPACING;
 
     // Helper: Get Y position (or 0 if not set yet)
     const getY = (id: string) => nodeMap.get(id)?.position?.y || 0;
@@ -138,19 +167,16 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
             return getBarycenter(a) - getBarycenter(b);
         });
 
-        // Assign Ys centered around parents? No, stack them, but center the stack.
-        // Better: Stack them centered around 0 to keep alignment with main flow.
-        // The Sort ensures relative order matches parents.
         const count = ids.length;
-        const totalHeight = count * NODE_Y_SPACING;
-        const startY = -(totalHeight / 2) + (NODE_Y_SPACING / 2);
+        const totalHeight = count * nodeYSpacing;
+        const startY = -(totalHeight / 2) + (nodeYSpacing / 2);
 
         ids.forEach((id, index) => {
             const node = nodeMap.get(id);
             if (node) {
                 node.position = {
-                    x: lvl * LEVEL_X_SPACING,
-                    y: startY + (index * NODE_Y_SPACING)
+                    x: lvl * levelXSpacing,
+                    y: startY + (index * nodeYSpacing)
                 };
                 node.targetPosition = Position.Left;
                 node.sourcePosition = Position.Right;
@@ -174,15 +200,15 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
         });
 
         const count = ids.length;
-        const totalHeight = count * NODE_Y_SPACING;
-        const startY = -(totalHeight / 2) + (NODE_Y_SPACING / 2);
+        const totalHeight = count * nodeYSpacing;
+        const startY = -(totalHeight / 2) + (nodeYSpacing / 2);
 
         ids.forEach((id, index) => {
             const node = nodeMap.get(id);
             if (node) {
                 node.position = {
-                    x: lvl * LEVEL_X_SPACING,
-                    y: startY + (index * NODE_Y_SPACING)
+                    x: lvl * levelXSpacing,
+                    y: startY + (index * nodeYSpacing)
                 };
                 node.targetPosition = Position.Left;
                 node.sourcePosition = Position.Right;
@@ -193,7 +219,12 @@ const getCentricLayout = (nodes: Node[], edges: Edge[], centerId: string) => {
     return { nodes: activeNodes, edges: activeEdges };
 };
 
-export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' = 'default', centerId?: string) {
+export function buildBioGraph(
+    data: BioData,
+    layoutMode: 'default' | 'centric' = 'default',
+    centerId?: string,
+    settings?: GraphSettings
+) {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
@@ -216,37 +247,49 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
     data.senior?.forEach(s => addNode(s, 'SENIOR'));
     data.lifeEvents.forEach(e => addNode(e, 'LIFE_EVENT'));
 
+    // EDGE DATA for label positioning
+    const edgeData = { labelPosition: settings?.edgeLabelPosition };
+    const edgeType = 'configurable'; // Using custom edge type
+
+    // Helper to create edge
+    const createEdge = (sourceId: string, targetId: string, label: string, isInfluence = false) => {
+        return {
+            id: isInfluence ? `influence-${sourceId}-${targetId}` : `${sourceId}-${targetId}`,
+            source: sourceId,
+            target: targetId,
+            label: label,
+            type: edgeType,
+            animated: isInfluence,
+            data: edgeData, // Pass settings here
+            style: isInfluence
+                ? { stroke: '#f97316', strokeDasharray: '5,5', strokeWidth: 1.5 }
+                : { stroke: '#94a3b8', strokeWidth: 2 },
+            labelStyle: isInfluence
+                ? { fill: '#c2410c', fontSize: 10, fontWeight: 600 }
+                : { fill: '#1e293b', fontWeight: 800, fontSize: 11 },
+            labelShowBg: true,
+            labelBgStyle: isInfluence
+                ? { fill: '#fff7ed', stroke: '#fdba74', strokeWidth: 1 }
+                : { fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1 },
+            labelBgPadding: [4, 2] as [number, number],
+            labelBgBorderRadius: 4,
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+                color: isInfluence ? '#f97316' : '#94a3b8',
+            },
+        };
+    };
+
     // Edges: Childhood -> Formative
-    // Logic: If Childhood provides tags that Formative requires
     data.childhood.forEach(origin => {
         if (!origin.provides) return;
         const originTags = new Set(origin.provides);
 
         data.formative.forEach(edu => {
-            if (!edu.requires) {
-                return;
-            }
-
+            if (!edu.requires) return;
             const matching = edu.requires.filter(t => originTags.has(t));
             if (matching.length > 0) {
-                edges.push({
-                    id: `${origin.id}-${edu.id}`,
-                    source: origin.id,
-                    target: edu.id,
-                    label: matching.join(', '),
-                    type: 'smoothstep',
-                    animated: false,
-                    style: { stroke: '#94a3b8', strokeWidth: 2 },
-                    labelStyle: { fill: '#1e293b', fontWeight: 800, fontSize: 11 },
-                    labelShowBg: true,
-                    labelBgStyle: { fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1 },
-                    labelBgPadding: [4, 2],
-                    labelBgBorderRadius: 4,
-                    markerEnd: {
-                        type: MarkerType.ArrowClosed,
-                        color: '#94a3b8',
-                    },
-                });
+                edges.push(createEdge(origin.id, edu.id, matching.join(', ')));
             }
         });
     });
@@ -258,27 +301,9 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
 
         data.professional.forEach(career => {
             if (!career.requires) return;
-
             const matching = career.requires.filter(t => eduTags.has(t));
             if (matching.length > 0) {
-                edges.push({
-                    id: `${edu.id}-${career.id}`,
-                    source: edu.id,
-                    target: career.id,
-                    label: matching.join(', '),
-                    type: 'smoothstep',
-                    animated: false,
-                    style: { stroke: '#94a3b8', strokeWidth: 2 },
-                    labelStyle: { fill: '#1e293b', fontWeight: 800, fontSize: 11 },
-                    labelShowBg: true,
-                    labelBgStyle: { fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1 },
-                    labelBgPadding: [4, 2],
-                    labelBgBorderRadius: 4,
-                    markerEnd: {
-                        type: MarkerType.ArrowClosed,
-                        color: '#94a3b8',
-                    },
-                });
+                edges.push(createEdge(edu.id, career.id, matching.join(', ')));
             }
         });
     });
@@ -290,33 +315,14 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
 
         data.senior?.forEach(sen => {
             if (!sen.requires) return;
-
             const matching = sen.requires.filter(t => careerTags.has(t));
             if (matching.length > 0) {
-                edges.push({
-                    id: `${career.id}-${sen.id}`,
-                    source: career.id,
-                    target: sen.id,
-                    label: matching.join(', '),
-                    type: 'smoothstep',
-                    animated: false,
-                    style: { stroke: '#94a3b8', strokeWidth: 2 },
-                    labelStyle: { fill: '#1e293b', fontWeight: 800, fontSize: 11 },
-                    labelShowBg: true,
-                    labelBgStyle: { fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1 },
-                    labelBgPadding: [4, 2],
-                    labelBgBorderRadius: 4,
-                    markerEnd: {
-                        type: MarkerType.ArrowClosed,
-                        color: '#94a3b8',
-                    },
-                });
+                edges.push(createEdge(career.id, sen.id, matching.join(', ')));
             }
         });
     });
 
     // --- Helper: Add Influence Edges ---
-    // adds dotted orange edges if Source provides a tag that modifies Target's weight
     const addInfluenceEdges = (sources: EventNode[], targets: (EventNode | LifeEvent)[]) => {
         targets.forEach(target => {
             const weightTags = Object.keys(target.weights);
@@ -325,31 +331,11 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
 
             sources.forEach(source => {
                 if (!source.provides) return;
-
-                // Find tags provided by source that affect target's weight
                 const matching = source.provides.filter(t => weightTagsSet.has(t));
 
                 if (matching.length > 0) {
                     const label = matching.map(t => `${t} (x${target.weights[t]})`).join(', ');
-
-                    edges.push({
-                        id: `influence-${source.id}-${target.id}`,
-                        source: source.id,
-                        target: target.id,
-                        label: label,
-                        type: 'smoothstep',
-                        animated: true,
-                        style: { stroke: '#f97316', strokeDasharray: '5,5', strokeWidth: 1.5 }, // Orange, dotted
-                        labelStyle: { fill: '#c2410c', fontSize: 10, fontWeight: 600 },
-                        labelShowBg: true,
-                        labelBgStyle: { fill: '#fff7ed', stroke: '#fdba74', strokeWidth: 1 },
-                        labelBgPadding: [4, 2],
-                        labelBgBorderRadius: 4,
-                        markerEnd: {
-                            type: MarkerType.ArrowClosed,
-                            color: '#f97316',
-                        },
-                    });
+                    edges.push(createEdge(source.id, target.id, label, true));
                 }
             });
         });
@@ -359,7 +345,6 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
     addInfluenceEdges(data.childhood, data.formative);
 
     // 2. Influence: Childhood + Formative -> Professional
-    // (Professional can be influenced by background or education)
     const professionalSources = [...data.childhood, ...data.formative];
     addInfluenceEdges(professionalSources, data.professional);
 
@@ -373,11 +358,11 @@ export function buildBioGraph(data: BioData, layoutMode: 'default' | 'centric' =
     const lifeEventSources = [...data.childhood, ...data.formative, ...data.professional, ...(data.senior || [])];
     addInfluenceEdges(lifeEventSources, data.lifeEvents);
 
-    console.log(`[buildBioGraph] Mode=${layoutMode}, Center=${centerId}`);
+    console.log(`[buildBioGraph] Mode=${layoutMode}, Center=${centerId}, Settings=`, settings);
     if (layoutMode === 'centric' && centerId) {
         console.log(`[buildBioGraph] Calling getCentricLayout`);
-        return getCentricLayout(nodes, edges, centerId);
+        return getCentricLayout(nodes, edges, centerId, settings);
     }
 
-    return getLayoutedElements(nodes, edges);
+    return getLayoutedElements(nodes, edges, 'LR', settings);
 }
