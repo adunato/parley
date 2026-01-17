@@ -51,6 +51,7 @@ interface BioStoreState {
     connectGroups: (sourceGroupIds: string[], targetGroupIds: string[], options: ConnectionOptions) => void;
 
     updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
+    setPhaseConfig: (config: Record<AgePhase, PhaseConfig>) => void;
 
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
@@ -321,6 +322,8 @@ export const useBioStore = create<BioStoreState>()(
                     }
                 }
             })),
+
+            setPhaseConfig: (config) => set({ phaseConfig: config }),
 
             registerTags: (tagIds) => set((state) => {
                 const existingTagIds = new Set(state.tags.map(t => t.id));
