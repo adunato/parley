@@ -73,6 +73,11 @@ export interface Tag {
     description?: string;
 }
 
+export interface ConnectionOptions {
+    type: 'HARD' | 'SOFT';
+    tagName?: string;
+}
+
 export interface BioGroup {
     id: string;
     name: string;

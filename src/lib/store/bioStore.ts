@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup, ConnectionOptions } from '../generator/types';
 
 // Default Data Imports
 import childhoodData from '../generator/data/childhood.json';
@@ -47,6 +47,8 @@ interface BioStoreState {
     addGroup: (item: BioGroup) => void;
     updateGroup: (item: BioGroup) => void;
     deleteGroup: (id: string) => void;
+
+    connectGroups: (sourceGroupIds: string[], targetGroupIds: string[], options: ConnectionOptions) => void;
 
     updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
 
@@ -144,7 +146,7 @@ export const useBioStore = create<BioStoreState>()(
                 }
 
                 // Cascading Rename Logic
-                const renameInList = (list: any[], field: 'provides' | 'requires') => 
+                const renameInList = (list: any[], field: 'provides' | 'requires') =>
                     list.map(obj => ({
                         ...obj,
                         [field]: obj[field]?.map((t: string) => t === effectiveOldId ? item.id : t)
@@ -164,12 +166,12 @@ export const useBioStore = create<BioStoreState>()(
                     childhood: renameInList(state.childhood, 'provides'),
                     formative: renameInWeights(renameInList(renameInList(state.formative, 'provides'), 'requires')),
                     professional: renameInWeights(renameInList(state.professional, 'requires')),
-                    senior: renameInWeights(renameInList(state.senior, 'requires')), 
+                    senior: renameInWeights(renameInList(state.senior, 'requires')),
                     lifeEvents: renameInWeights(renameInList(renameInList(state.lifeEvents, 'provides'), 'requires'))
                 };
             }),
             deleteTag: (id) => set((state) => {
-                const removeFromList = (list: any[], field: 'provides' | 'requires') => 
+                const removeFromList = (list: any[], field: 'provides' | 'requires') =>
                     list.map(obj => ({
                         ...obj,
                         [field]: obj[field]?.filter((t: string) => t !== id)
@@ -211,6 +213,53 @@ export const useBioStore = create<BioStoreState>()(
                 };
             }),
 
+            connectGroups: (sourceGroupIds, targetGroupIds, options) => set((state) => {
+                const tagId = options.tagName || `BRIDGE_${Date.now()}`;
+                const newTag = { id: tagId, description: 'Auto-generated bridge tag' };
+
+                // Update Tags
+                const tags = state.tags.some(t => t.id === tagId) ? state.tags : [...state.tags, newTag];
+
+                const processList = (list: EventNode[]) => list.map(item => {
+                    if (!item.groupId) return item;
+
+                    const isSource = sourceGroupIds.includes(item.groupId);
+                    const isTarget = targetGroupIds.includes(item.groupId);
+
+                    if (!isSource && !isTarget) return item;
+
+                    let newItem = { ...item };
+
+                    if (isSource) {
+                        const provides = newItem.provides ? [...newItem.provides] : [];
+                        if (!provides.includes(tagId)) provides.push(tagId);
+                        newItem.provides = provides;
+                    }
+
+                    if (isTarget) {
+                        if (options.type === 'HARD') {
+                            const requires = newItem.requires ? [...newItem.requires] : [];
+                            if (!requires.includes(tagId)) requires.push(tagId);
+                            newItem.requires = requires;
+                        } else {
+                            const weights = { ...(newItem.weights || { DEFAULT: 10 }) };
+                            weights[tagId] = 50;
+                            newItem.weights = weights;
+                        }
+                    }
+
+                    return newItem;
+                });
+
+                return {
+                    tags,
+                    childhood: processList(state.childhood),
+                    formative: processList(state.formative),
+                    professional: processList(state.professional),
+                    senior: processList(state.senior)
+                };
+            }),
+
             updatePhaseConfig: (phase, updates) => set((state) => ({
                 phaseConfig: {
                     ...state.phaseConfig,
@@ -226,7 +275,7 @@ export const useBioStore = create<BioStoreState>()(
                 const newTags = tagIds
                     .filter(id => !existingTagIds.has(id))
                     .map(id => ({ id }));
-                
+
                 if (newTags.length === 0) return state;
                 return { tags: [...state.tags, ...newTags] };
             }),
@@ -254,7 +303,7 @@ export const useBioStore = create<BioStoreState>()(
             onRehydrateStorage: () => (state: any) => { // Using any to handle migration from old props
                 if (state) {
                     // Check if empty and migrate
-                    
+
                     // Legacy Migration: Map old props to new props if they exist in persistence
                     if (state.origins && !state.childhood) {
                         console.log("BioStore: Migrating 'origins' to 'childhood'");
@@ -274,7 +323,7 @@ export const useBioStore = create<BioStoreState>()(
 
                     const { childhood, formative, professional, senior, tags } = state;
                     if (!state.groups) state.groups = [];
-                    
+
                     // 1. Seed default data if empty
                     if ((!childhood || childhood.length === 0) && (!formative || formative.length === 0) && (!professional || professional.length === 0) && (senior || []).length === 0) {
                         console.log("BioStore: Migrating default data...");
@@ -291,7 +340,7 @@ export const useBioStore = create<BioStoreState>()(
                     if ((state.tags || []).length === 0 && (state.childhood?.length > 0 || state.formative?.length > 0)) {
                         console.log("BioStore: Harvesting tags from entities...");
                         const uniqueTags = new Set<string>();
-                        
+
                         const collect = (list: any[]) => {
                             if (!list) return;
                             list.forEach(item => {
