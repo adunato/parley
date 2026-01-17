@@ -20,9 +20,11 @@ import { RefreshCcw, Maximize, Minimize } from "lucide-react";
 import { BioNode } from "@/components/bio-config/bio-node";
 import { useBioGraphContext } from "./bio-graph-context";
 import { BioGraphGuide } from './bio-graph-guide';
+import { stringToColor } from "@/lib/utils/colors";
 import { BioEntityEditor } from './bio-entity-editor';
 import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
-import { stringToColor } from "@/lib/utils/colors";
+import { ConnectionSelectionDialog, ConnectionDialogState } from './connection-selection-dialog';
+import { Connection } from 'reactflow';
 
 export function BioGraphContent() {
     // 1. Get Data
@@ -50,6 +52,9 @@ export function BioGraphContent() {
     // Layout State
     const [layoutMode, setLayoutMode] = useState<'default' | 'centric'>('default');
     const [centerId, setCenterId] = useState<string | undefined>(undefined);
+
+    // Connection Dialog State
+    const [connectionDialog, setConnectionDialog] = useState<ConnectionDialogState | null>(null);
 
     // Context State
     const {
@@ -268,6 +273,99 @@ export function BioGraphContent() {
         setEditingEntity(null);
     };
 
+    // Handle Connection
+    const onConnect = (params: Connection) => {
+        if (!params.source || !params.target) return;
+        if (params.source === params.target) return; // Self-connection check
+
+        const sourceNode = nodes.find(n => n.id === params.source);
+        const targetNode = nodes.find(n => n.id === params.target);
+
+        if (!sourceNode || !targetNode) return;
+
+        const sourceItem = sourceNode.data.item;
+        const targetItem = targetNode.data.item;
+
+        // 1. Identify Candidate Tags
+        // Must be in Source.provides AND NOT in (Target.requires OR Target.weights)
+        const providedTags = sourceItem.provides || [];
+        const existingRequires = (targetItem.requires || []) as string[];
+        const existingWeights = Object.keys(targetItem.weights || {});
+
+        const candidates = providedTags.filter((tag: string) =>
+            !existingRequires.includes(tag) &&
+            !existingWeights.includes(tag)
+        );
+
+        if (candidates.length === 0) {
+            console.log("No connectable tags found", {
+                description: `${params.source} provides no tags that are missing from ${params.target}.`
+            });
+            return;
+        }
+
+        // 2. Open Dialog
+        setConnectionDialog({
+            open: true,
+            sourceId: params.source,
+            targetId: params.target,
+            candidateTags: candidates,
+            onCancel: () => setConnectionDialog(null),
+            onConfirm: (tag, category, weightValue) => {
+                handleApplyConnection(targetNode.data.type, targetItem.id, tag, category, weightValue);
+                setConnectionDialog(null);
+            }
+        });
+    };
+
+    const handleApplyConnection = (targetType: string, targetId: string, tag: string, category: 'requires' | 'weights', weightValue?: number) => {
+        // Create deep copy of current lists to modify
+        const newData = {
+            childhood: [...bioData.childhood],
+            formative: [...bioData.formative],
+            professional: [...bioData.professional],
+            senior: [...(bioData.senior || [])],
+            lifeEvents: [...bioData.lifeEvents],
+            tags: [...bioData.tags],
+            groups: [...bioData.groups]
+        };
+
+        // Helper to update list
+        const updateTarget = (list: any[]) => {
+            const idx = list.findIndex(i => i.id === targetId);
+            if (idx >= 0) {
+                const item = { ...list[idx] };
+
+                if (category === 'requires') {
+                    // Initialize if missing
+                    if (!item.requires) item.requires = [];
+                    // Add tag
+                    if (!item.requires.includes(tag)) {
+                        item.requires = [...item.requires, tag];
+                    }
+                } else if (category === 'weights') {
+                    // Initialize if missing
+                    if (!item.weights) item.weights = {};
+                    // Add weight
+                    item.weights = { ...item.weights, [tag]: weightValue || 10 };
+                }
+
+                list[idx] = item;
+            }
+        };
+
+        if (targetType === 'CHILDHOOD') updateTarget(newData.childhood);
+        if (targetType === 'FORMATIVE') updateTarget(newData.formative);
+        if (targetType === 'PROFESSIONAL') updateTarget(newData.professional);
+        if (targetType === 'SENIOR') updateTarget(newData.senior);
+        if (targetType === 'LIFE_EVENT') updateTarget(newData.lifeEvents);
+
+        setData(newData);
+        console.log("Connection Created", {
+            description: `Added ${tag} to ${targetId} as ${category}.`
+        });
+    };
+
     const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
 
     return (
@@ -280,6 +378,7 @@ export function BioGraphContent() {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
                 nodeTypes={nodeTypes}
                 fitView
             >
@@ -324,6 +423,8 @@ export function BioGraphContent() {
                     container={isFullScreen ? graphContainerRef.current : null}
                 />
             )}
+
+            <ConnectionSelectionDialog state={connectionDialog} />
 
             <BioGraphGuide />
         </div>
