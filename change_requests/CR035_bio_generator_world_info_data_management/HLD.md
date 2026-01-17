@@ -6,7 +6,7 @@ Draft
 ## Goals
 - Enable "Save As", Rename, Delete, and Create New functionality for Bio Generator world datasets.
 - Align the UI with `http://localhost:3000/world-info`.
-- Reposition Import/Export JSON functionality to the top of the settings page.
+- Incorporate Import/Export JSON functionality as part of the dataset management UI at the top of the settings page.
 - Enable dataset selection within the "Procedural Character Generator" dialog.
 - Ensure data updates across all bio-generator tabs upon dataset selection.
 
