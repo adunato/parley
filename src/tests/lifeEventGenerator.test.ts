@@ -1,19 +1,11 @@
 import { generateLifeEvents } from '../lib/generator/lifeEventGenerator';
-import { generateObject } from 'ai';
+import { generateObject } from '../lib/llm';
 import { EventNode } from '../lib/generator/types';
 import { PromptStore } from '../lib/store/promptStore';
 
-// Mock the AI SDK
-jest.mock('ai', () => ({
+// Mock the LLM service
+jest.mock('../lib/llm', () => ({
   generateObject: jest.fn(),
-}));
-
-// Mock the OpenAI provider
-jest.mock('@ai-sdk/openai', () => ({
-  createOpenAI: jest.fn(() => {
-    const provider = jest.fn();
-    return provider;
-  }),
 }));
 
 // Mock PromptStore
@@ -26,7 +18,7 @@ jest.mock('../lib/store/promptStore', () => ({
 describe('LifeEventGenerator Service', () => {
   const mockSource: EventNode = {
     id: 'noble_origin',
-    slot: 'ORIGIN',
+    slot: 'CHILDHOOD',
     text: 'Born into a noble family',
     provides: ['noble', 'wealthy'],
     weights: { 'DEFAULT': 1 }
@@ -61,7 +53,7 @@ describe('LifeEventGenerator Service', () => {
       prompt: expect.stringContaining('noble_origin'),
       system: expect.any(String)
     }));
-    
+
     expect(result).toEqual({
       lifeEvents: mockEvents,
       newTags: mockTags

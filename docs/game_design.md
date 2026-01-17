@@ -32,12 +32,17 @@ Players can generate complex, life-like characters with deep backstories in seco
     -   **Senior (65+)**: Sets late-life status spine node.
 3.  **Logical Continuity**: Tags gathered early in life (e.g., "Childhood Trauma") influence and unlock paths in later phases (e.g., "Medical School" or "Special Ops Career").
 4.  **Narrative Synthesis**: Finally, an LLM weaves these structured facts into a cohesive textual biography.
+5.  **LLM-Powered Configuration**: Creators can use the "Gen Events" tool in the Configuration UI to procedurally expand the "World Bible" by generating new Spine Nodes and Life Events tailored to specific phases or connected to existing items.
 
 **Relevant Code Objects (Code implementation):**
 -   **Generator**: `BioMachine` in `src/lib/generator/BioMachine.ts`.
     -   `generate()`: Executes the interleaved phase loop.
     -   `resolvePhaseSpine()`: Resolves milestones for a specific phase (Childhood, Formative, Professional, Senior).
     -   `simulatePhaseFlesh()`: Simulates probabilistic events for a phase range.
+-   **Data Generation**: 
+    - `generateLifeEvents` in `src/lib/generator/lifeEventGenerator.ts`.
+    - `generateSpineEvents` in `src/lib/generator/spineEventGenerator.ts`.
+    - UI: `GenerateEventsDialog` in `src/components/bio-config/generate-events-dialog.tsx`.
 -   **Configuration**: `useBioStore` manages global phase boundaries and event probabilities.
 -   **Data Sources**: JSON files in `src/lib/generator/data/` define the nodes, requirements, and assigned phases.
 -   **Prompt**: `bio_writer` in `src/lib/store/promptStore.ts` converts the structured `BioState` into natural language.

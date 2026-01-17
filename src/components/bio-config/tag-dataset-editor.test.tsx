@@ -5,11 +5,13 @@ import { TagDatasetEditor } from './tag-dataset-editor';
 import { BioData } from '@/lib/generator/types';
 
 const mockBioData: BioData = {
-    origins: [],
-    education: [],
-    careers: [],
+    childhood: [],
+    formative: [],
+    professional: [],
+    senior: [],
     lifeEvents: [],
-    tags: [{ id: 'TEST_TAG' }]
+    tags: [{ id: 'TEST_TAG' }],
+    groups: []
 };
 
 describe('TagDatasetEditor', () => {

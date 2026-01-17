@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateLifeEvents } from '@/lib/generator/lifeEventGenerator';
+import { generateSpineEvents } from '@/lib/generator/spineEventGenerator';
 
 export async function POST(req: NextRequest) {
   try {
-    const { sourceEntity, count, existingEvents, userPrompt } = await req.json();
+    const { sourceEntity, count, existingEvents, userPrompt, type, phase } = await req.json();
 
     if (!count) {
       return NextResponse.json(
@@ -12,6 +13,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (type && type !== 'LIFE_EVENT') {
+        // Spine Node Generation
+        const { events, newTags } = await generateSpineEvents(
+            phase || 'Childhood',
+            count,
+            existingEvents || [], // Reusing this field name from UI for existing items
+            userPrompt
+        );
+        return NextResponse.json({ events, newTags });
+    }
+
+    // Life Event Generation (Default)
     const { lifeEvents, newTags } = await generateLifeEvents(
       sourceEntity,
       count,
@@ -23,7 +36,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate life events' },
+      { error: 'Failed to generate events' },
       { status: 500 }
     );
   }

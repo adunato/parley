@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { EventNode, LifeEvent, Tag } from '@/lib/generator/types';
+import { EventNode, LifeEvent, Tag, AgePhase } from '@/lib/generator/types';
 import { useBioStore } from '@/lib/store/bioStore';
 import { AlertCircle, CheckCircle2, Loader2, Plus, Sparkles } from 'lucide-react';
 
@@ -12,18 +12,25 @@ interface GenerateEventsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     sourceEntity?: EventNode | LifeEvent;
+    type?: 'CHILDHOOD' | 'FORMATIVE' | 'PROFESSIONAL' | 'SENIOR' | 'LIFE_EVENT';
+    phase?: AgePhase;
 }
 
-export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: GenerateEventsDialogProps) {
+export function GenerateEventsDialog({ open, onOpenChange, sourceEntity, type, phase }: GenerateEventsDialogProps) {
     const [count, setCount] = useState(3);
     const [prompt, setPrompt] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [generatedEvents, setGeneratedEvents] = useState<LifeEvent[]>([]);
+    const [generatedEvents, setGeneratedEvents] = useState<(LifeEvent | EventNode)[]>([]);
     const [newTags, setNewTags] = useState<Tag[]>([]);
 
     const addLifeEvent = useBioStore(state => state.addLifeEvent);
+    const addChildhood = useBioStore(state => state.addChildhood);
+    const addFormative = useBioStore(state => state.addFormative);
+    const addProfessional = useBioStore(state => state.addProfessional);
+    const addSenior = useBioStore(state => state.addSenior);
+
     const addTag = useBioStore(state => state.addTag);
     const existingLifeEvents = useBioStore(state => state.lifeEvents);
     const existingTags = useBioStore(state => state.tags);
@@ -33,6 +40,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
         setError(null);
         setSuccess(null);
         try {
+            // Decide which API to call. For now, we'll use a single one but pass type/phase
             const res = await fetch('/api/bio-config/generate-events', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -40,7 +48,9 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                     sourceEntity,
                     count,
                     existingEvents: existingLifeEvents,
-                    userPrompt: prompt
+                    userPrompt: prompt,
+                    type,
+                    phase
                 })
             });
             const data = await res.json();
@@ -58,16 +68,28 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
         }
     };
 
-    const handleAccept = (event: LifeEvent) => {
-        // 1. Add the event
-        addLifeEvent(event);
+    const handleAccept = (event: LifeEvent | EventNode) => {
+        // 1. Add the event to the correct store
+        if (type === 'CHILDHOOD') {
+            addChildhood({ ...(event as EventNode), slot: 'CHILDHOOD', phase: phase || 'Childhood' });
+        } else if (type === 'FORMATIVE') {
+            addFormative({ ...(event as EventNode), slot: 'FORMATIVE', phase: phase || 'Formative' });
+        } else if (type === 'PROFESSIONAL') {
+            addProfessional({ ...(event as EventNode), slot: 'PROFESSIONAL', phase: phase || 'Professional' });
+        } else if (type === 'SENIOR') {
+            addSenior({ ...(event as EventNode), slot: 'SENIOR', phase: phase || 'Senior' });
+        } else {
+            addLifeEvent(event as LifeEvent);
+        }
 
         // 2. Add used tags if they are new
         const usedTagIds = new Set<string>();
         event.provides?.forEach(t => usedTagIds.add(t));
-        Object.keys(event.weights).forEach(t => {
-            if (t !== 'DEFAULT') usedTagIds.add(t);
-        });
+        if (event.weights) {
+            Object.keys(event.weights).forEach(t => {
+                if (t !== 'DEFAULT') usedTagIds.add(t);
+            });
+        }
 
         const tagsToAdd = newTags.filter(t => usedTagIds.has(t.id) && !existingTags.some(et => et.id === t.id));
         tagsToAdd.forEach(t => addTag(t));
@@ -79,6 +101,12 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(null), 3000);
     };
+
+    const isLifeEvent = type === 'LIFE_EVENT' || !type;
+    const titleText = isLifeEvent ? "Generate Life Events" : `Generate ${phase} Milestones`;
+    const descriptionText = sourceEntity
+        ? `Generating connected to: ${sourceEntity.text}`
+        : isLifeEvent ? "Generating independent life events." : `Generating new ${phase} spine nodes.`;
 
     return (
         <Dialog open={open} onOpenChange={(o) => {
@@ -94,14 +122,10 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-indigo-500" />
-                        Generate Life Events
+                        {titleText}
                     </DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        {sourceEntity ? (
-                            <>Generating events connected to: <span className="font-medium text-foreground">{sourceEntity.text}</span></>
-                        ) : (
-                            "Generating independent life events."
-                        )}
+                        {descriptionText}
                     </p>
                 </DialogHeader>
 
@@ -220,7 +244,7 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity }: Gener
                     {generatedEvents.length === 0 ? (
                         <Button onClick={handleGenerate} disabled={loading} className="w-full sm:w-auto">
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Generating...' : 'Generate Events'}
+                            {loading ? 'Generating...' : isLifeEvent ? 'Generate Events' : 'Generate Milestones'}
                         </Button>
                     ) : (
                         <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>

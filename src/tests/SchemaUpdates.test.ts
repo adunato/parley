@@ -5,7 +5,7 @@ describe('Schema Updates', () => {
     it('should support phase assignment on EventNode', () => {
         const node: EventNode = {
             id: 'test_node',
-            slot: 'ORIGIN',
+            slot: 'CHILDHOOD',
             text: 'Test Node',
             weights: { "DEFAULT": 1 },
             phase: 'Childhood' // This should be valid

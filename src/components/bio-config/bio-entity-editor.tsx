@@ -100,7 +100,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         } else {
             onSave({
                 ...base,
-                slot: type as SlotType,
+                slot: type as unknown as SlotType,
                 requires: requires.length > 0 ? requires : undefined,
                 phase: selectedPhase
             } as EventNode);
@@ -133,7 +133,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                     <p className="text-xs text-red-500">ID already exists!</p>
                                 )}
                             </div>
-                            
+
                             {/* Phase Selection */}
                             <div className="space-y-2">
                                 <Label>Age Phase{type === 'LIFE_EVENT' ? 's' : ''}</Label>
@@ -146,7 +146,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                                 variant={selectedPhases.includes(p) ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => {
-                                                    setSelectedPhases(prev => 
+                                                    setSelectedPhases(prev =>
                                                         prev.includes(p)
                                                             ? prev.filter(ph => ph !== p)
                                                             : [...prev, p]
@@ -158,9 +158,9 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                         ))}
                                     </div>
                                 ) : (
-                                    <Input 
-                                        value={selectedPhase || 'None'} 
-                                        disabled={true} 
+                                    <Input
+                                        value={selectedPhase || 'None'}
+                                        disabled={true}
                                         className="bg-muted text-muted-foreground"
                                     />
                                 )}
@@ -201,12 +201,12 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                     </div>
 
                     <DialogFooter className="flex justify-between sm:justify-between items-center">
-                         <div className="flex gap-2">
+                        <div className="flex gap-2">
                             {isEditing && (
-                               <Button variant="secondary" onClick={() => setShowGenerator(true)} type="button">
-                                   <Sparkles className="w-4 h-4 mr-2" />
-                                   Gen Events
-                               </Button>
+                                <Button variant="secondary" onClick={() => setShowGenerator(true)} type="button">
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    Gen Events
+                                </Button>
                             )}
                         </div>
                         <div className="flex gap-2">
@@ -218,10 +218,10 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             </Dialog>
 
             {isEditing && initialData && (
-                <GenerateEventsDialog 
-                    open={showGenerator} 
-                    onOpenChange={setShowGenerator} 
-                    sourceEntity={initialData} 
+                <GenerateEventsDialog
+                    open={showGenerator}
+                    onOpenChange={setShowGenerator}
+                    sourceEntity={initialData}
                 />
             )}
         </>

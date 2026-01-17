@@ -1,0 +1,8 @@
+{
+  "track_id": "gen_spine_events_20260116",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-01-16T19:29:00Z",
+  "updated_at": "2026-01-16T19:29:00Z",
+  "description": "Implement a new \"Gen Event\" functionality similar to the one existing in life events for the age phase tabs (spine events). For now, these will only be available from the age phases tabs (in the same toolbar used in the life event tab)."
+}

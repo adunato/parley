@@ -320,3 +320,9 @@ This tool provides a visual map of the "Spine".
 *   **Nodes:** Represent Origins, Education, or Careers.
 *   **Edges:** Represent logical requirements. If Career A requires Tag B, and Education C provides Tag B, an arrow will show the dependency.
 *   **Utility:** Use this to identify "Logical Dead Ends" (e.g., a Career that requires a tag that no Education node provides).
+
+#### **LLM-Powered Generation**
+To assist in expanding the dataset, the Bio Config page includes an LLM-powered "Gen Events" tool.
+-   **Context-Aware**: The tool uses the current phase (e.g., Childhood) and any selected source entity to generate semantically relevant milestones or life events.
+-   **Deduplication**: The generator is provided with the existing list of items to ensure new IDs and narratives are unique.
+-   **Tag Discovery**: If the LLM introduces new tags in the generated items, the system automatically detects and registers them in the global Tag Manager.

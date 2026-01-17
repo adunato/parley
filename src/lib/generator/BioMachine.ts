@@ -67,11 +67,11 @@ export class BioMachine {
             // Group-aware pruning:
             // Only prune groups that are capable of satisfying the requirement.
             // If a group has NO nodes that provide the required tags, it is "unrelated" and should be left alone.
-            
+
             // 1. Identify groups (and ungrouped)
             const groups: Record<string, EventNode[]> = {};
             const ungrouped: EventNode[] = [];
-            
+
             validFormative.forEach(node => {
                 const gid = node.groupId || 'UNGROUPED';
                 if (!groups[gid]) groups[gid] = [];
@@ -98,7 +98,7 @@ export class BioMachine {
         }
 
         // --- 2. Phase Loop Execution ---
-        
+
         const spine: EventNode[] = [];
         const flesh: LifeEvent[] = [];
         const tags = new Set<string>();
@@ -107,9 +107,13 @@ export class BioMachine {
         const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
 
         for (const phase of phases) {
+            // New Check: Skip phases that haven't started yet
+            const config = this.phaseConfig[phase];
+            if (age < config.startAge) continue;
+
             // A. Resolve Spine for this phase (Supports multiple groups)
             const phaseSpineNodes = this.resolveMultiGroupPhaseSpine(phase, tags, validChildhood, validFormative, validProfessional, validSenior);
-            
+
             // Selection Independence: Tags are collected separately and added AFTER all group selections for this phase
             const newSpineTags = new Set<string>();
             phaseSpineNodes.forEach(node => {
@@ -140,18 +144,18 @@ export class BioMachine {
      * Resolves spine nodes for a phase, allowing one node per group.
      */
     public resolveMultiGroupPhaseSpine(
-        phase: AgePhase, 
-        currentTags: Set<string>, 
-        validChildhood?: EventNode[], 
-        validFormative?: EventNode[], 
-        validProfessional?: EventNode[], 
+        phase: AgePhase,
+        currentTags: Set<string>,
+        validChildhood?: EventNode[],
+        validFormative?: EventNode[],
+        validProfessional?: EventNode[],
         validSenior?: EventNode[]
     ): EventNode[] {
         const config = this.phaseConfig[phase];
         if (!config.spineSlot) return [];
 
         let basePool: EventNode[] = [];
-        
+
         switch (config.spineSlot) {
             case 'CHILDHOOD': basePool = validChildhood || this.childhood; break;
             case 'FORMATIVE': basePool = validFormative || this.formative; break;
@@ -217,7 +221,7 @@ export class BioMachine {
     public simulatePhaseFlesh(phase: AgePhase, currentTags: Set<string>, targetAge: number, previouslySelectedEventIds: Set<string>): LifeEvent[] {
         const config = this.phaseConfig[phase];
         const events: LifeEvent[] = [];
-        
+
         // Determine Simulation Range
         // Start at phase start. End at min(phase end, target age).
         const start = config.startAge;
@@ -233,7 +237,7 @@ export class BioMachine {
                 const availableEvents = this.lifeEvents.filter(e => {
                     // Global Uniqueness Check
                     if (previouslySelectedEventIds.has(e.id)) return false;
-                    
+
                     // Phase Check (Must be in allowed phases for this event)
                     // If no phases are defined, we treat it as "all phases allowed"
                     if (e.phases && !e.phases.includes(phase)) return false;
