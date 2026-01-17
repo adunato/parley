@@ -1,14 +1,7 @@
-import { generateObject } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { lifeEventGenerationSchema } from './schemas';
 import { EventNode, LifeEvent, Tag } from './types';
 import { PromptStore } from '../store/promptStore';
-
-// Configure OpenRouter as the provider
-const openrouter = createOpenAI({
-  baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+import { generateObject } from '../llm';
 
 /**
  * Generates new Life Event entities using an LLM, based on a source entity and context.
@@ -25,8 +18,6 @@ export async function generateLifeEvents(
   existingEvents: LifeEvent[],
   userPrompt?: string
 ): Promise<{ lifeEvents: LifeEvent[]; newTags: Tag[] }> {
-  // Use a default model, preferably one good at following complex schemas
-  const model = openrouter('deepseek/deepseek-chat');
 
   const template = PromptStore.getPrompt('life_event_gen');
 
@@ -45,15 +36,22 @@ export async function generateLifeEvents(
 
   try {
     const { object } = await generateObject({
-      model,
+      modelName: 'deepseek/deepseek-chat',
       schema: lifeEventGenerationSchema,
       prompt,
       system: "You are a precise narrative data generator. You output valid JSON matching the requested schema exactly.",
     });
 
     return {
-      lifeEvents: object.lifeEvents as LifeEvent[],
-      newTags: (object.newTags || []) as Tag[]
+      lifeEvents: object.lifeEvents.map(e => ({
+        ...e,
+        requires: e.requires || undefined,
+        provides: e.provides || undefined,
+      })) as LifeEvent[],
+      newTags: (object.newTags || []).map(t => ({
+        ...t,
+        description: t.description || undefined
+      })) as Tag[]
     };
   } catch (error) {
     console.error("Error generating life events:", error);

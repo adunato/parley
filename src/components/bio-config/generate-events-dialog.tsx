@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { EventNode, LifeEvent, Tag } from '@/lib/generator/types';
+import { EventNode, LifeEvent, Tag, AgePhase } from '@/lib/generator/types';
 import { useBioStore } from '@/lib/store/bioStore';
 import { AlertCircle, CheckCircle2, Loader2, Plus, Sparkles } from 'lucide-react';
 
@@ -104,8 +104,8 @@ export function GenerateEventsDialog({ open, onOpenChange, sourceEntity, type, p
 
     const isLifeEvent = type === 'LIFE_EVENT' || !type;
     const titleText = isLifeEvent ? "Generate Life Events" : `Generate ${phase} Milestones`;
-    const descriptionText = sourceEntity 
-        ? `Generating connected to: ${sourceEntity.text}` 
+    const descriptionText = sourceEntity
+        ? `Generating connected to: ${sourceEntity.text}`
         : isLifeEvent ? "Generating independent life events." : `Generating new ${phase} spine nodes.`;
 
     return (

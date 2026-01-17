@@ -356,7 +356,13 @@ Existing Life Events in this category (DO NOT duplicate these):
    - If you use tags in 'provides', 'requires', or 'weights' that are NOT present in the SOURCE ENTITY or CONTEXT description, you MUST include them in the 'newTags' array.
    - For each new tag, provide a concise 'id' and a brief 'description'.
 6. Ensure the events are diverse and logical within a modern life simulation context.
-7. DO NOT generate NPCs, Locations, or any other entity types.`
+7. DO NOT generate NPCs, Locations, or any other entity types.
+
+IMPORTANT: Your output MUST be a valid JSON object with the following structure:
+{
+  "lifeEvents": [ ... array of life event objects ... ],
+  "newTags": [ ... array of new tag objects ... ]
+}`
     },
     spine_event_gen: {
         id: 'spine_event_gen',
@@ -387,7 +393,13 @@ Existing Milestones in this phase (DO NOT duplicate these):
    - If you use tags in 'provides', 'requires', or 'weights' that are NOT present in the CONTEXT description, you MUST include them in the 'newTags' array.
    - For each new tag, provide a concise 'id' and a brief 'description'.
 5. Ensure the milestones are diverse, logically sound for the {{phase}} phase, and "neutral" (avoiding overly specific character traits unless they are standard archetypes).
-6. DO NOT generate NPCs, Locations, or any other entity types.`
+6. DO NOT generate NPCs, Locations, or any other entity types.
+
+IMPORTANT: Your output MUST be a valid JSON object with the following structure:
+{
+  "spine_nodes": [ ... array of spine node objects ... ],
+  "newTags": [ ... array of new tag objects ... ]
+}`
     }
 };
 
