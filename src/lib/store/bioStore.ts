@@ -55,6 +55,9 @@ interface BioStoreState {
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
 
+    // Prune unused tags
+    pruneUnusedTags: () => void;
+
     setData: (data: {
         childhood: EventNode[];
         formative: EventNode[];
@@ -327,6 +330,33 @@ export const useBioStore = create<BioStoreState>()(
 
                 if (newTags.length === 0) return state;
                 return { tags: [...state.tags, ...newTags] };
+            }),
+
+            pruneUnusedTags: () => set((state) => {
+                const usedTags = new Set<string>();
+
+                const collect = (list: any[]) => {
+                    if (!list) return;
+                    list.forEach(item => {
+                        item.provides?.forEach((t: string) => usedTags.add(t));
+                        item.requires?.forEach((t: string) => usedTags.add(t));
+                        if (item.weights) {
+                            Object.keys(item.weights).forEach(t => {
+                                if (t !== "DEFAULT") usedTags.add(t);
+                            });
+                        }
+                    });
+                };
+
+                collect(state.childhood);
+                collect(state.formative);
+                collect(state.professional);
+                collect(state.senior);
+                collect(state.lifeEvents);
+
+                const newTags = state.tags.filter(t => usedTags.has(t.id));
+
+                return { tags: newTags };
             }),
 
             // Bulk Set (for migration)
