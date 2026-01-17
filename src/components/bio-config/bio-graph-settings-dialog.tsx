@@ -16,9 +16,10 @@ import { useShallow } from 'zustand/react/shallow';
 interface BioGraphSettingsDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    container?: HTMLElement | null;
 }
 
-export function BioGraphSettingsDialog({ open, onOpenChange }: BioGraphSettingsDialogProps) {
+export function BioGraphSettingsDialog({ open, onOpenChange, container }: BioGraphSettingsDialogProps) {
     const { graphSettings, setGraphSettings } = useBioStore(useShallow(state => ({
         graphSettings: state.graphSettings,
         setGraphSettings: state.setGraphSettings
@@ -31,7 +32,7 @@ export function BioGraphSettingsDialog({ open, onOpenChange }: BioGraphSettingsD
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px]" container={container}>
                 <DialogHeader>
                     <DialogTitle>Graph Layout Settings</DialogTitle>
                     <DialogDescription>

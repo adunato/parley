@@ -393,7 +393,11 @@ export function BioGraphContent() {
 
             <ConnectionSelectionDialog state={connectionDialog} />
 
-            <BioGraphSettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+            <BioGraphSettingsDialog
+                open={isSettingsOpen}
+                onOpenChange={setIsSettingsOpen}
+                container={isFullScreen ? graphContainerRef.current : null}
+            />
 
             <BioGraphGuide />
         </div>
