@@ -40,7 +40,7 @@ export function BioGraphContent() {
         groups: state.groups
     })));
 
-    const memoizedNodeTypes = useMemo(() => nodeTypes, []);
+
 
     // 2. React Flow State
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -339,7 +339,7 @@ export function BioGraphContent() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                nodeTypes={memoizedNodeTypes}
+                nodeTypes={nodeTypes}
                 fitView
             >
                 <Background color="#ccc" gap={20} />
