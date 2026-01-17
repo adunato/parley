@@ -100,51 +100,7 @@ export function BioGraphContent() {
 
         setNodes(nodesWithEdit);
 
-        // Add Group Edges (Persistent for ALL groups)
-        let finalEdges = layouted.edges;
-
-        // We need visible nodes map for quick lookup
-        const visibleNodeIds = new Set(nodesWithEdit.map(n => n.id));
-        const groupMap = new Map<string, any[]>();
-
-        // Bin nodes by group
-        nodesWithEdit.forEach(n => {
-            const gid = n.data.item.groupId;
-            if (gid) {
-                if (!groupMap.has(gid)) groupMap.set(gid, []);
-                groupMap.get(gid)!.push(n);
-            }
-        });
-
-        const typeOrder: Record<string, number> = { CHILDHOOD: 0, FORMATIVE: 1, PROFESSIONAL: 2, SENIOR: 3, LIFE_EVENT: 4 };
-
-        groupMap.forEach((groupNodes, groupId) => {
-            if (groupNodes.length < 2) return;
-
-            // Sort by Type then ID
-            groupNodes.sort((a, b) => {
-                const typeA = typeOrder[a.data.type as string] ?? 99;
-                const typeB = typeOrder[b.data.type as string] ?? 99;
-                if (typeA !== typeB) return typeA - typeB;
-                return a.id.localeCompare(b.id);
-            });
-
-            // Generate Chain Edges
-            const color = stringToColor(groupId);
-            for (let i = 0; i < groupNodes.length - 1; i++) {
-                finalEdges.push({
-                    id: `group-edge-${groupId}-${groupNodes[i].id}-${groupNodes[i + 1].id}`,
-                    source: groupNodes[i].id,
-                    target: groupNodes[i + 1].id,
-                    type: 'default', // Straight line
-                    style: { stroke: color, strokeWidth: 3, opacity: 0.6, strokeDasharray: '5,5' },
-                    animated: true,
-                    zIndex: 1000
-                });
-            }
-        });
-
-        setEdges(finalEdges);
+        setEdges(layouted.edges);
     };
 
     // 4. Effect: Re-layout on data change OR layout mode change OR filters change
