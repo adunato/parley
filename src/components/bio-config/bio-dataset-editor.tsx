@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Search, Copy, FolderPlus, Settings, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Copy, FolderPlus, Settings, Sparkles, Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BioEntityEditor } from './bio-entity-editor';
 import { CreateGroupModal } from './create-group-modal';

@@ -5,10 +5,111 @@ import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
 import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
+
 import { useBioStore } from "@/lib/store/bioStore";
+import { Download, Upload, FileJson, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRef, useState } from "react";
+// import { toast } from "sonner"; // Removed due to missing dependency
+
 
 export default function BioConfigPage() {
     const store = useBioStore();
+    const worldFileInputRef = useRef<HTMLInputElement>(null);
+    const settingsFileInputRef = useRef<HTMLInputElement>(null);
+    const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+    const showFeedback = (message: string, type: 'success' | 'error') => {
+        setFeedback({ message, type });
+        setTimeout(() => setFeedback(null), 3000);
+    };
+
+    const handleExportWorld = () => {
+        const data = store.getAllData();
+        // Exclude phaseConfig and internal flags
+        const exportData = {
+            ...data,
+            phaseConfig: undefined,
+            _hasHydrated: undefined
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `parley-bio-world-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showFeedback("World data exported successfully", "success");
+    };
+
+    const handleImportWorld = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                // Validate basic structure (optional but good practice)
+                if (!json.childhood && !json.tags) {
+                    throw new Error("Invalid world file format");
+                }
+
+                // Merge with existing config to preserve settings
+                store.setData({
+                    ...json,
+                    phaseConfig: store.phaseConfig
+                });
+                showFeedback("World data imported successfully", "success");
+            } catch (error) {
+                console.error("Import failed:", error);
+                showFeedback("Failed to import world data. Invalid JSON format.", "error");
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        if (worldFileInputRef.current) worldFileInputRef.current.value = "";
+    };
+
+    const handleExportSettings = () => {
+        const data = store.phaseConfig;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `parley-bio-settings-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showFeedback("Settings exported successfully", "success");
+    };
+
+    const handleImportSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                // Basic validation: check for keys like 'Childhood', 'Formative'
+                if (!json.Childhood || !json.Formative) {
+                    throw new Error("Invalid settings file format");
+                }
+
+                store.setPhaseConfig(json);
+                showFeedback("Generation settings imported successfully", "success");
+            } catch (error) {
+                console.error("Import failed:", error);
+                showFeedback("Failed to import settings. Invalid JSON format.", "error");
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        if (settingsFileInputRef.current) settingsFileInputRef.current.value = "";
+    };
 
     return (
         <div className="container mx-auto py-8 space-y-8">
@@ -119,6 +220,82 @@ export default function BioConfigPage() {
                         <p className="text-sm text-muted-foreground">Adjust age boundaries, simulation intervals, and event probabilities for each phase.</p>
                     </div>
                     <BioPhaseSettings />
+
+                    <div className="pt-6 border-t">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-medium">Data Management</h3>
+                                {feedback && (
+                                    <div className={`text-sm px-3 py-1 rounded-full ${feedback.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {feedback.message}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <FileJson className="w-4 h-4" />
+                                            World Data
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Export or Import the world definition (Events, Tags, Groups).
+                                            <br />
+                                            <span className="text-xs text-amber-600 dark:text-amber-400">Warning: Importing will overwrite all current world data.</span>
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex gap-3">
+                                        <Button variant="outline" className="flex-1" onClick={handleExportWorld}>
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Export World
+                                        </Button>
+                                        <Button variant="outline" className="flex-1" onClick={() => worldFileInputRef.current?.click()}>
+                                            <Upload className="w-4 h-4 mr-2" />
+                                            Import World
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            ref={worldFileInputRef}
+                                            className="hidden"
+                                            accept=".json"
+                                            onChange={handleImportWorld}
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <Settings className="w-4 h-4" />
+                                            Generation Settings
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Export or Import the simulation configuration (Ages, Chances).
+                                            <br />
+                                            <span className="text-xs text-amber-600 dark:text-amber-400">Warning: Importing will overwrite current settings.</span>
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex gap-3">
+                                        <Button variant="outline" className="flex-1" onClick={handleExportSettings}>
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Export Settings
+                                        </Button>
+                                        <Button variant="outline" className="flex-1" onClick={() => settingsFileInputRef.current?.click()}>
+                                            <Upload className="w-4 h-4 mr-2" />
+                                            Import Settings
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            ref={settingsFileInputRef}
+                                            className="hidden"
+                                            accept=".json"
+                                            onChange={handleImportSettings}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
