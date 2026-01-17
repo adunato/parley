@@ -5,72 +5,29 @@ import { BioDatasetEditor } from "@/components/bio-config/bio-dataset-editor";
 import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
+import { BioDatasetManager } from "@/components/bio-config/bio-dataset-manager";
 
 import { useBioStore } from "@/lib/store/bioStore";
-import { Download, Upload, FileJson, Settings } from "lucide-react";
+import { useBioLibraryStore } from "@/lib/store/bioLibraryStore";
+import { BioDatasetService } from "@/lib/services/bioDatasetService";
+import { useEffect, useRef, useState } from "react";
+import { Download, Upload, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRef, useState } from "react";
-// import { toast } from "sonner"; // Removed due to missing dependency
 
 
 export default function BioConfigPage() {
     const store = useBioStore();
-    const worldFileInputRef = useRef<HTMLInputElement>(null);
+    const { datasets, setCurrentDatasetId } = useBioLibraryStore();
+    const [isMigrating, setIsMigrating] = useState(false);
+
+    // UI State for specific exports
     const settingsFileInputRef = useRef<HTMLInputElement>(null);
     const [feedback, setFeedback] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
     const showFeedback = (message: string, type: 'success' | 'error') => {
         setFeedback({ message, type });
         setTimeout(() => setFeedback(null), 3000);
-    };
-
-    const handleExportWorld = () => {
-        const data = store.getAllData();
-        // Exclude phaseConfig and internal flags
-        const exportData = {
-            ...data,
-            phaseConfig: undefined,
-            _hasHydrated: undefined
-        };
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `parley-bio-world-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showFeedback("World data exported successfully", "success");
-    };
-
-    const handleImportWorld = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const json = JSON.parse(e.target?.result as string);
-                // Validate basic structure (optional but good practice)
-                if (!json.childhood && !json.tags) {
-                    throw new Error("Invalid world file format");
-                }
-
-                // Merge with existing config to preserve settings
-                store.setData({
-                    ...json,
-                    phaseConfig: store.phaseConfig
-                });
-                showFeedback("World data imported successfully", "success");
-            } catch (error) {
-                console.error("Import failed:", error);
-                showFeedback("Failed to import world data. Invalid JSON format.", "error");
-            }
-        };
-        reader.readAsText(file);
-        // Reset input
-        if (worldFileInputRef.current) worldFileInputRef.current.value = "";
     };
 
     const handleExportSettings = () => {
@@ -111,13 +68,70 @@ export default function BioConfigPage() {
         if (settingsFileInputRef.current) settingsFileInputRef.current.value = "";
     };
 
+    // Initial Migration / Setup
+    useEffect(() => {
+        const init = async () => {
+            // Wait for store hydration
+            if (!store._hasHydrated) return;
+
+            // If we have no datasets but we have data in the store (which we always do due to hydration/default),
+            // we should wrap it in a "Default Dataset" if it's the first run with this new system.
+            // Or if datasets length is 0.
+            if (datasets.length === 0 && !isMigrating) {
+                setIsMigrating(true);
+                try {
+                    console.log("Initializing Bio Dataset System...");
+                    const id = crypto.randomUUID();
+                    // We can use the service to "save" current state as a new dataset.
+                    // But service.saveDataset requires ID to exist in library.
+                    // So we manually construct it here or add a helper in Service.
+                    // Let's manually do it to ensure we capture current store state.
+
+                    await BioDatasetService.createNewDataset("Default World");
+                    // createNewDataset clears the store to empty.
+                    // BUT we wanted to preserve the existing data!
+                    // Ah, `createNewDataset` logic was: Add to Library -> Clear Store -> Set Current.
+                    // That's bad for migration.
+
+                    // Let's implement migration logic here specifically.
+
+                    // 1. Create Metadata
+                    const defaultDataset = {
+                        id,
+                        name: "Default World",
+                        lastModified: Date.now()
+                    };
+                    useBioLibraryStore.getState().addDataset(defaultDataset);
+                    useBioLibraryStore.getState().setCurrentDatasetId(id);
+
+                    // 2. Save current store content to this ID
+                    await BioDatasetService.saveDataset(id);
+
+                    console.log("Created Default World dataset from existing data.");
+                } catch (e) {
+                    console.error("Failed to initialize default dataset", e);
+                } finally {
+                    setIsMigrating(false);
+                }
+            }
+        };
+
+        init();
+    }, [store._hasHydrated, datasets.length]);
+
+
     return (
         <div className="container mx-auto py-8 space-y-8">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Bio Generator Configuration</h1>
-                <p className="text-muted-foreground">
-                    Manage the datasets used for procedural character generation (The World Bible).
-                </p>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">Bio Generator Configuration</h1>
+                    <p className="text-muted-foreground">
+                        Manage the datasets used for procedural character generation (The World Bible).
+                    </p>
+                </div>
+
+                {/* Dataset Manager */}
+                <BioDatasetManager />
             </div>
 
             <Tabs defaultValue="graph" className="space-y-4">
@@ -231,38 +245,7 @@ export default function BioConfigPage() {
                                     </div>
                                 )}
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Card>
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            <FileJson className="w-4 h-4" />
-                                            World Data
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Export or Import the world definition (Events, Tags, Groups).
-                                            <br />
-                                            <span className="text-xs text-amber-600 dark:text-amber-400">Warning: Importing will overwrite all current world data.</span>
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex gap-3">
-                                        <Button variant="outline" className="flex-1" onClick={handleExportWorld}>
-                                            <Download className="w-4 h-4 mr-2" />
-                                            Export World
-                                        </Button>
-                                        <Button variant="outline" className="flex-1" onClick={() => worldFileInputRef.current?.click()}>
-                                            <Upload className="w-4 h-4 mr-2" />
-                                            Import World
-                                        </Button>
-                                        <input
-                                            type="file"
-                                            ref={worldFileInputRef}
-                                            className="hidden"
-                                            accept=".json"
-                                            onChange={handleImportWorld}
-                                        />
-                                    </CardContent>
-                                </Card>
-
+                            <div className="max-w-md">
                                 <Card>
                                     <CardHeader className="pb-3">
                                         <CardTitle className="text-base flex items-center gap-2">

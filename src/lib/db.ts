@@ -14,6 +14,7 @@ export interface KeyValueData {
 
 export class ParleyDexie extends Dexie {
     projects!: Table<ProjectData>;
+    bio_datasets!: Table<ProjectData>; // Reusing ProjectData structure for convenience, or could define BioDatasetData
     keyvalues!: Table<KeyValueData>;
 
     constructor() {
@@ -21,6 +22,9 @@ export class ParleyDexie extends Dexie {
         this.version(1).stores({
             projects: 'id, name, lastModified',
             keyvalues: 'key'
+        });
+        this.version(2).stores({
+            bio_datasets: 'id, name, lastModified'
         });
     }
 }
