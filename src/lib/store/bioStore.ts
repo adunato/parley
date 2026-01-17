@@ -255,8 +255,14 @@ export const useBioStore = create<BioStoreState>()(
                     let newItem = { ...item };
 
                     if (isSource) {
+                        console.log(`[ConnectGroups] Found Source Node: ${item.id} (Group: ${item.groupId})`);
                         const provides = newItem.provides ? [...newItem.provides] : [];
-                        if (!provides.includes(tagId)) provides.push(tagId);
+                        if (!provides.includes(tagId)) {
+                            console.log(`[ConnectGroups] Adding tag ${tagId} to ${item.id}`);
+                            provides.push(tagId);
+                        } else {
+                            console.log(`[ConnectGroups] Node ${item.id} already has tag ${tagId}`);
+                        }
                         newItem.provides = provides;
                     }
 
