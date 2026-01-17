@@ -121,10 +121,10 @@ export default function BioConfigPage() {
 
 
     return (
-        <div className="container mx-auto py-8 space-y-8">
+        <div className="container mx-auto p-8 max-w-5xl space-y-8">
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <h1 className="text-3xl font-bold tracking-tight">Bio Generator Configuration</h1>
+                    <h1 className="type-h2 text-foreground">Bio Generator Configuration</h1>
                     <p className="text-muted-foreground">
                         Manage the datasets used for procedural character generation (The World Bible).
                     </p>

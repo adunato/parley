@@ -282,54 +282,52 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                             </div>
 
                             <RadioGroup value={mode} onValueChange={(v: any) => setMode(v)} className="flex gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="random" id="r-random" />
+                                    <Label htmlFor="r-random">Random</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="custom" id="r-custom" />
+                                    <Label htmlFor="r-custom">Custom</Label>
+                                </div>
+                            </RadioGroup>
 
-                                <RadioGroup value={mode} onValueChange={(v: any) => setMode(v)} className="flex gap-4">
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="random" id="r-random" />
-                                        <Label htmlFor="r-random">Random</Label>
+                            {mode === 'custom' && (
+                                <div className="space-y-3 pl-2 border-l-2 border-muted">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs text-muted-foreground">Target Childhood</Label>
+                                        <Select value={targetChildhood} onValueChange={setTargetChildhood}>
+                                            <SelectTrigger className="h-8">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="random">Random</SelectItem>
+                                                {childhood.map(o => (
+                                                    <SelectItem key={o.id} value={o.id}>{o.id.replace(/_/g, ' ')}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="custom" id="r-custom" />
-                                        <Label htmlFor="r-custom">Custom</Label>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs text-muted-foreground">Target Professional</Label>
+                                        <Select value={targetProfessional} onValueChange={setTargetProfessional}>
+                                            <SelectTrigger className="h-8">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="random">Random</SelectItem>
+                                                {professional.map(c => (
+                                                    <SelectItem key={c.id} value={c.id}>{c.id.replace(/_/g, ' ')}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                </RadioGroup>
+                                </div>
+                            )}
 
-                                {mode === 'custom' && (
-                                    <div className="space-y-3 pl-2 border-l-2 border-muted">
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-muted-foreground">Target Childhood</Label>
-                                            <Select value={targetChildhood} onValueChange={setTargetChildhood}>
-                                                <SelectTrigger className="h-8">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="random">Random</SelectItem>
-                                                    {childhood.map(o => (
-                                                        <SelectItem key={o.id} value={o.id}>{o.id.replace(/_/g, ' ')}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-xs text-muted-foreground">Target Professional</Label>
-                                            <Select value={targetProfessional} onValueChange={setTargetProfessional}>
-                                                <SelectTrigger className="h-8">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="random">Random</SelectItem>
-                                                    {professional.map(c => (
-                                                        <SelectItem key={c.id} value={c.id}>{c.id.replace(/_/g, ' ')}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <Button onClick={handleGenerateHistory} className="w-full" variant="secondary">
-                                    <BookOpen className="w-4 h-4 mr-2" /> Simulate History
-                                </Button>
+                            <Button onClick={handleGenerateHistory} className="w-full" variant="secondary">
+                                <BookOpen className="w-4 h-4 mr-2" /> Simulate History
+                            </Button>
                         </div>
 
                     </div>
