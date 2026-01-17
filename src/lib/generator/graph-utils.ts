@@ -93,11 +93,46 @@ export const getLayoutedElements = (
         // 2. Sort by Barycenter to minimize edge crossing/slant
         rightColNodes.sort((a, b) => (nodeBarycenters.get(a) || 0) - (nodeBarycenters.get(b) || 0));
 
-        // 3. Compact Layout
-        // We use a fixed tight gap proportional to the global nodeSep
-        // This ensures it scales with user settings but remains visually distinct
-        const verticalSpacing = settings?.verticalSpacing ?? DEFAULT_V_SPACING;
-        const TIGHT_GAP = verticalSpacing * 0.25;
+        // 3. Compact Layout with Adaptive Height
+        // Goal: Scale the right column to match the visual height of the main graph (Left side).
+        // This ensures that as the user increases vertical spacing, the right side expands proportionally.
+
+        let minRestY = Infinity;
+        let maxRestY = -Infinity;
+        dagreGraph.nodes().forEach((v) => {
+            if (!rightColNodes.includes(v)) {
+                const n = dagreGraph.node(v);
+                if (n.y < minRestY) minRestY = n.y;
+                if (n.y > maxRestY) maxRestY = n.y;
+            }
+        });
+
+        // Calculate the height of the rest of the graph (from top node center to bottom node center)
+        const restHeight = (maxRestY !== -Infinity && minRestY !== Infinity)
+            ? (maxRestY - minRestY)
+            : 0;
+
+        // Determine spacing needed to match that height
+        // Height = (Nodes * H) + ((Nodes-1) * Gap)
+        // Gap = (Height - (Nodes * H)) / (Nodes-1)
+
+        let calculatedGap = 50; // Default minimum
+        if (restHeight > 0 && rightColNodes.length > 1) {
+            // We target matching the "span" of the left side. 
+            // Note: restHeight is center-to-center span.
+            // Right side span should ideally match.
+            const totalNodeHeight = rightColNodes.length * NODE_HEIGHT;
+            const availableSpaceForGaps = restHeight - totalNodeHeight;
+
+            // If the left side is huge, this gap will grow.
+            // If left side is tiny, we might get negative gap, so we clamp.
+            const idealGap = availableSpaceForGaps / (rightColNodes.length - 1);
+
+            // Clamp: Minimum 50px (compact), No Maximum (can grow as needed)
+            calculatedGap = Math.max(idealGap, 50);
+        }
+
+        const TIGHT_GAP = calculatedGap;
         const totalHeight = (rightColNodes.length * NODE_HEIGHT) + ((rightColNodes.length - 1) * TIGHT_GAP);
 
         // Center the entire stack around the average barycenter of the group
