@@ -10,7 +10,14 @@ Draft
 
 ## Proposed Solution
 - Modify `src/lib/store/bioStore.ts` in the `connectGroups` action.
-- Ensure that the tag assignment logic (adding `provides` tag) iterates correctly over ALL nodes in the source group.
-- Ensure that the `requires` tag assignment iterates correctly over ALL nodes in the target group.
-- Verify the `processList` logic and `tagId` selection logic.
-- Add a test case to verify the fix.
+- Logic update: "Per-Node Projection".
+    - Iterate through ALL source nodes in the selected Source Groups.
+    - For each Source Node:
+        - Identify its primary tag (`provides[0]`). If none, create new and append to `provides`.
+        - Add this tag to ALL nodes in the Target Groups.
+            - If Hard: Add to `requires`.
+            - If Soft: Add to `weights`.
+    - This ensures that if Source Group has {A, B}, and Target Group has {X, Y}:
+        - X gets weights/reqs for A's tag AND B's tag.
+        - Y gets weights/reqs for A's tag AND B's tag.
+        - This supports mutually exclusive sources (like Origins) correctly influencing targets via weights.
