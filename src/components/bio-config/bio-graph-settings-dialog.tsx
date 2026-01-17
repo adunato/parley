@@ -62,7 +62,7 @@ export function BioGraphSettingsDialog({ open, onOpenChange, container }: BioGra
                         <Slider
                             id="v-spacing"
                             min={50}
-                            max={500}
+                            max={1000}
                             step={25}
                             value={[vSpacing]}
                             onValueChange={(vals) => setGraphSettings({ verticalSpacing: vals[0] })}

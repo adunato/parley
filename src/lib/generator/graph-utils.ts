@@ -45,6 +45,110 @@ export const getLayoutedElements = (
 
     dagre.layout(dagreGraph);
 
+    // --- Post-Processing: Compact the Right-Most Column ---
+    // The "Life Events" column (usually the furthest right) can get very tall and sparse.
+    // We visually compact it and align nodes with their sources (barycenter heuristic).
+
+    let maxX = -Infinity;
+    dagreGraph.nodes().forEach((v) => {
+        const n = dagreGraph.node(v);
+        if (n.x > maxX) maxX = n.x;
+    });
+
+    // Identify nodes in the right-most column
+    const rightColNodes: string[] = [];
+    dagreGraph.nodes().forEach((v) => {
+        const n = dagreGraph.node(v);
+        if (Math.abs(n.x - maxX) < 10) {
+            rightColNodes.push(v);
+        }
+    });
+
+    if (rightColNodes.length > 1) {
+        // Build map of incoming edges for barycenter calc
+        // dagreGraph.inEdges(v) returns the edges
+
+        // 1. Calculate Barycenter (Average Y of sources) for each node
+        const nodeBarycenters = new Map<string, number>();
+        let sumBarycenters = 0;
+        let countBarycenters = 0;
+
+        rightColNodes.forEach(nodeId => {
+            const inEdges = dagreGraph.inEdges(nodeId) || [];
+            if (inEdges.length > 0) {
+                const totalY = inEdges.reduce((sum, e) => sum + dagreGraph.node(e.v).y, 0);
+                const avgY = totalY / inEdges.length;
+                nodeBarycenters.set(nodeId, avgY);
+                sumBarycenters += avgY;
+                countBarycenters++;
+            } else {
+                // Fallback to current Y if no inputs
+                const currentY = dagreGraph.node(nodeId).y;
+                nodeBarycenters.set(nodeId, currentY);
+                sumBarycenters += currentY;
+                countBarycenters++;
+            }
+        });
+
+        // 2. Sort by Barycenter to minimize edge crossing/slant
+        rightColNodes.sort((a, b) => (nodeBarycenters.get(a) || 0) - (nodeBarycenters.get(b) || 0));
+
+        // 3. Compact Layout with Adaptive Height
+        // Goal: Scale the right column to match the visual height of the main graph (Left side).
+        // This ensures that as the user increases vertical spacing, the right side expands proportionally.
+
+        let minRestY = Infinity;
+        let maxRestY = -Infinity;
+        dagreGraph.nodes().forEach((v) => {
+            if (!rightColNodes.includes(v)) {
+                const n = dagreGraph.node(v);
+                if (n.y < minRestY) minRestY = n.y;
+                if (n.y > maxRestY) maxRestY = n.y;
+            }
+        });
+
+        // Calculate the height of the rest of the graph (from top node center to bottom node center)
+        const restHeight = (maxRestY !== -Infinity && minRestY !== Infinity)
+            ? (maxRestY - minRestY)
+            : 0;
+
+        // Determine spacing needed to match that height
+        // Height = (Nodes * H) + ((Nodes-1) * Gap)
+        // Gap = (Height - (Nodes * H)) / (Nodes-1)
+
+        let calculatedGap = 50; // Default minimum
+        if (restHeight > 0 && rightColNodes.length > 1) {
+            // We target matching the "span" of the left side. 
+            // Note: restHeight is center-to-center span.
+            // Right side span should ideally match.
+            const totalNodeHeight = rightColNodes.length * NODE_HEIGHT;
+            const availableSpaceForGaps = restHeight - totalNodeHeight;
+
+            // If the left side is huge, this gap will grow.
+            // If left side is tiny, we might get negative gap, so we clamp.
+            const idealGap = availableSpaceForGaps / (rightColNodes.length - 1);
+
+            // Clamp: Minimum 50px (compact), No Maximum (can grow as needed)
+            calculatedGap = Math.max(idealGap, 50);
+        }
+
+        const TIGHT_GAP = calculatedGap;
+        const totalHeight = (rightColNodes.length * NODE_HEIGHT) + ((rightColNodes.length - 1) * TIGHT_GAP);
+
+        // Center the entire stack around the average barycenter of the group
+        // This ensures the "clump" is roughly adjacent to the bulk of its source nodes
+        const groupCenterY = countBarycenters > 0
+            ? sumBarycenters / countBarycenters
+            : dagreGraph.graph().height! / 2;
+
+        const startY = groupCenterY - (totalHeight / 2) + (NODE_HEIGHT / 2);
+
+        rightColNodes.forEach((id, idx) => {
+            const node = dagreGraph.node(id);
+            node.y = startY + idx * (NODE_HEIGHT + TIGHT_GAP);
+        });
+    }
+
     nodes.forEach((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
         node.targetPosition = direction === 'LR' ? Position.Left : Position.Top;
