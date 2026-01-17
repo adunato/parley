@@ -55,9 +55,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             style={groupColor ? { borderLeftWidth: '6px', borderLeftColor: groupColor } : {}}
         >
             {/* Input Handle (Left) */}
-            {type !== 'CHILDHOOD' && (
-                <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
-            )}
+            {/* Input Handle (Left) */}
+            <Handle type="target" position={Position.Left} className="w-3 h-3 bg-muted-foreground" />
 
             <CardHeader className={cn("p-3 py-2 border-b flex flex-row items-center justify-between space-y-0", headerBg)}>
                 <div className="flex flex-col overflow-hidden">
@@ -207,9 +206,8 @@ export const BioNode = memo(({ data, selected }: NodeProps<{ item: EventNode | L
             </CardContent>
 
             {/* Output Handle (Right) - All Spine nodes can be sources */}
-            {type !== 'LIFE_EVENT' && (
-                <Handle type="source" position={Position.Right} className="w-3 h-3 bg-muted-foreground" />
-            )}
+            {/* Output Handle (Right) */}
+            <Handle type="source" position={Position.Right} className="w-3 h-3 bg-muted-foreground" />
         </Card>
     );
 });

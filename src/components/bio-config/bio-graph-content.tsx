@@ -26,6 +26,8 @@ import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
 import { ConnectionSelectionDialog, ConnectionDialogState } from './connection-selection-dialog';
 import { Connection } from 'reactflow';
 
+const nodeTypes = { bioNode: BioNode };
+
 export function BioGraphContent() {
     // 1. Get Data
     const bioData = useBioStore(useShallow(state => ({
@@ -366,7 +368,7 @@ export function BioGraphContent() {
         });
     };
 
-    const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
+    // 4. Effect: Re-layout on data change OR layout mode change OR filters change
 
     return (
         <div

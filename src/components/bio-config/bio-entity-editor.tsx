@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
 import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
@@ -121,6 +121,9 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                 <DialogContent container={container} className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
+                        <DialogDescription>
+                            {isEditing ? `Edit the details of this ${type.toLowerCase()} entity.` : `Create a new ${type.toLowerCase()} entity.`}
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
