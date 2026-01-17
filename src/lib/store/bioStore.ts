@@ -214,76 +214,98 @@ export const useBioStore = create<BioStoreState>()(
             }),
 
             connectGroups: (sourceGroupIds, targetGroupIds, options) => set((state) => {
-                let tagId = options.tagName;
-                let isNewTag = false;
+                const allLists = [state.childhood, state.formative, state.professional, state.senior];
+                const allItems = allLists.flat();
 
-                // Tag Logic:
-                // 1. If explicit tagName provided: use it.
-                // 2. If not: Check if source items have ANY common provides tag? 
-                //    Correction based on user req: "first available PROVIDES TAG if existing"
+                // Identify Source and Target Candidates based on Groups
+                const sourceItems = allItems.filter(item => item.groupId && sourceGroupIds.includes(item.groupId));
+                const targetItems = allItems.filter(item => item.groupId && targetGroupIds.includes(item.groupId));
 
-                if (!tagId) {
-                    // Try to find first available tag from any source item
-                    const allLists = [state.childhood, state.formative, state.professional, state.senior];
-                    for (const list of allLists) {
-                        const firstSourceItem = list.find(item => item.groupId && sourceGroupIds.includes(item.groupId) && item.provides && item.provides.length > 0);
-                        if (firstSourceItem && firstSourceItem.provides && firstSourceItem.provides.length > 0) {
-                            tagId = firstSourceItem.provides[0];
-                            break;
-                        }
+                if (sourceItems.length === 0 || targetItems.length === 0) return {};
+
+                // Map of SourceItemId -> BridgeTagId
+                const sourceTagMap = new Map<string, string>();
+                const newTags: Tag[] = [];
+
+                // 1. Determine Tag for EACH Source Item
+                sourceItems.forEach(item => {
+                    let tagId = '';
+                    // Rule 1: Use explicitly provided tag name if given (override all)
+                    if (options.tagName) {
+                        tagId = options.tagName;
                     }
-                }
-
-                if (!tagId) {
-                    tagId = `BRIDGE_${Date.now()}`;
-                    isNewTag = true;
-                }
-
-                const newTag = { id: tagId, description: 'Auto-generated bridge tag' };
-
-                // Update Tags
-                const tags = state.tags.some(t => t.id === tagId) ? state.tags : [...state.tags, newTag];
-
-                const processList = (list: EventNode[]) => list.map(item => {
-                    if (!item.groupId) return item;
-
-                    const isSource = sourceGroupIds.includes(item.groupId);
-                    const isTarget = targetGroupIds.includes(item.groupId);
-
-                    if (!isSource && !isTarget) return item;
-
-                    let newItem = { ...item };
-
-                    if (isSource) {
-                        const provides = newItem.provides ? [...newItem.provides] : [];
-                        if (!provides.includes(tagId)) provides.push(tagId);
-                        newItem.provides = provides;
+                    // Rule 2: Use existing first PROVIDES tag
+                    else if (item.provides && item.provides.length > 0) {
+                        tagId = item.provides[0];
                     }
 
-                    if (isTarget) {
-                        if (options.type === 'HARD') {
-                            const requires = newItem.requires ? [...newItem.requires] : [];
-                            if (!requires.includes(tagId)) requires.push(tagId);
-                            newItem.requires = requires;
-                        } else {
-                            const weights = { ...(newItem.weights || { DEFAULT: 10 }) };
-                            // User Req: "check if connection of selected type (e.g. weight) exist, then skip"
-                            if (weights[tagId] === undefined) {
-                                weights[tagId] = 50;
-                                newItem.weights = weights;
-                            }
-                        }
+                    // Rule 3: Generate New Tag
+                    if (!tagId) {
+                        tagId = `BRIDGE_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+                        newTags.push({ id: tagId, description: `Auto-generated bridge from ${item.text.substring(0, 20)}...` });
                     }
 
-                    return newItem;
+                    sourceTagMap.set(item.id, tagId);
                 });
 
+                // Update Tags List
+                let currentTags = [...state.tags];
+                if (newTags.length > 0) {
+                    currentTags = [...state.tags, ...newTags];
+                }
+
+                // Helper to update an item
+                const updateItem = (item: EventNode): EventNode => {
+                    let newItem = { ...item };
+                    let changed = false;
+
+                    // If it is a Source Item, ensure it provides its assigned tag
+                    if (sourceTagMap.has(item.id)) {
+                        const tagId = sourceTagMap.get(item.id)!;
+                        const provides = newItem.provides ? [...newItem.provides] : [];
+                        if (!provides.includes(tagId)) {
+                            provides.push(tagId);
+                            newItem.provides = provides;
+                            changed = true;
+                        }
+                    }
+
+                    // If it is a Target Item, it must accept connections from ALL Source Items in the selected source groups
+                    // (Conceptually: Target Group connects to Source Group)
+                    const isTarget = item.groupId && targetGroupIds.includes(item.groupId);
+                    if (isTarget) {
+                        // Project ALL source tags onto this target
+                        // Iterate over all unique tags generated/found from source items
+                        const allSourceTags = Array.from(new Set(sourceTagMap.values()));
+
+                        allSourceTags.forEach(tagId => {
+                            if (options.type === 'HARD') {
+                                const requires = newItem.requires ? [...newItem.requires] : [];
+                                if (!requires.includes(tagId)) {
+                                    requires.push(tagId);
+                                    newItem.requires = requires;
+                                    changed = true;
+                                }
+                            } else {
+                                const weights = { ...(newItem.weights || { DEFAULT: 10 }) };
+                                if (weights[tagId] === undefined) {
+                                    weights[tagId] = 50; // Default weight
+                                    newItem.weights = weights;
+                                    changed = true;
+                                }
+                            }
+                        });
+                    }
+
+                    return changed ? newItem : item;
+                };
+
                 return {
-                    tags,
-                    childhood: processList(state.childhood),
-                    formative: processList(state.formative),
-                    professional: processList(state.professional),
-                    senior: processList(state.senior)
+                    tags: currentTags,
+                    childhood: state.childhood.map(updateItem),
+                    formative: state.formative.map(updateItem),
+                    professional: state.professional.map(updateItem),
+                    senior: state.senior.map(updateItem)
                 };
             }),
 

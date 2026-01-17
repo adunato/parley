@@ -26,6 +26,8 @@ import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
 import { ConnectionSelectionDialog, ConnectionDialogState } from './connection-selection-dialog';
 import { Connection } from 'reactflow';
 
+import { nodeTypes } from './graph-config';
+
 export function BioGraphContent() {
     // 1. Get Data
     const bioData = useBioStore(useShallow(state => ({
@@ -37,6 +39,8 @@ export function BioGraphContent() {
         tags: state.tags,
         groups: state.groups
     })));
+
+    const memoizedNodeTypes = useMemo(() => nodeTypes, []);
 
     // 2. React Flow State
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -98,51 +102,7 @@ export function BioGraphContent() {
 
         setNodes(nodesWithEdit);
 
-        // Add Group Edges (Persistent for ALL groups)
-        let finalEdges = layouted.edges;
-
-        // We need visible nodes map for quick lookup
-        const visibleNodeIds = new Set(nodesWithEdit.map(n => n.id));
-        const groupMap = new Map<string, any[]>();
-
-        // Bin nodes by group
-        nodesWithEdit.forEach(n => {
-            const gid = n.data.item.groupId;
-            if (gid) {
-                if (!groupMap.has(gid)) groupMap.set(gid, []);
-                groupMap.get(gid)!.push(n);
-            }
-        });
-
-        const typeOrder: Record<string, number> = { CHILDHOOD: 0, FORMATIVE: 1, PROFESSIONAL: 2, SENIOR: 3, LIFE_EVENT: 4 };
-
-        groupMap.forEach((groupNodes, groupId) => {
-            if (groupNodes.length < 2) return;
-
-            // Sort by Type then ID
-            groupNodes.sort((a, b) => {
-                const typeA = typeOrder[a.data.type as string] ?? 99;
-                const typeB = typeOrder[b.data.type as string] ?? 99;
-                if (typeA !== typeB) return typeA - typeB;
-                return a.id.localeCompare(b.id);
-            });
-
-            // Generate Chain Edges
-            const color = stringToColor(groupId);
-            for (let i = 0; i < groupNodes.length - 1; i++) {
-                finalEdges.push({
-                    id: `group-edge-${groupId}-${groupNodes[i].id}-${groupNodes[i + 1].id}`,
-                    source: groupNodes[i].id,
-                    target: groupNodes[i + 1].id,
-                    type: 'default', // Straight line
-                    style: { stroke: color, strokeWidth: 3, opacity: 0.6, strokeDasharray: '5,5' },
-                    animated: true,
-                    zIndex: 1000
-                });
-            }
-        });
-
-        setEdges(finalEdges);
+        setEdges(layouted.edges);
     };
 
     // 4. Effect: Re-layout on data change OR layout mode change OR filters change
@@ -366,7 +326,7 @@ export function BioGraphContent() {
         });
     };
 
-    const nodeTypes = useMemo(() => ({ bioNode: BioNode }), []);
+    // 4. Effect: Re-layout on data change OR layout mode change OR filters change
 
     return (
         <div
@@ -379,7 +339,7 @@ export function BioGraphContent() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
-                nodeTypes={nodeTypes}
+                nodeTypes={memoizedNodeTypes}
                 fitView
             >
                 <Background color="#ccc" gap={20} />
