@@ -144,7 +144,7 @@ export function GroupConnectionPanel() {
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="SOFT" id="r-soft" />
                                 <Label htmlFor="r-soft" className="font-normal cursor-pointer">
-                                    <span className="font-semibold block">Boost</span>
+                                    <span className="font-semibold block">Weight</span>
                                     <span className="text-xs text-muted-foreground">Target is more likely</span>
                                 </Label>
                             </div>

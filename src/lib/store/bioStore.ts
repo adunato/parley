@@ -214,7 +214,31 @@ export const useBioStore = create<BioStoreState>()(
             }),
 
             connectGroups: (sourceGroupIds, targetGroupIds, options) => set((state) => {
-                const tagId = options.tagName || `BRIDGE_${Date.now()}`;
+                let tagId = options.tagName;
+                let isNewTag = false;
+
+                // Tag Logic:
+                // 1. If explicit tagName provided: use it.
+                // 2. If not: Check if source items have ANY common provides tag? 
+                //    Correction based on user req: "first available PROVIDES TAG if existing"
+
+                if (!tagId) {
+                    // Try to find first available tag from any source item
+                    const allLists = [state.childhood, state.formative, state.professional, state.senior];
+                    for (const list of allLists) {
+                        const firstSourceItem = list.find(item => item.groupId && sourceGroupIds.includes(item.groupId) && item.provides && item.provides.length > 0);
+                        if (firstSourceItem && firstSourceItem.provides && firstSourceItem.provides.length > 0) {
+                            tagId = firstSourceItem.provides[0];
+                            break;
+                        }
+                    }
+                }
+
+                if (!tagId) {
+                    tagId = `BRIDGE_${Date.now()}`;
+                    isNewTag = true;
+                }
+
                 const newTag = { id: tagId, description: 'Auto-generated bridge tag' };
 
                 // Update Tags
@@ -243,8 +267,11 @@ export const useBioStore = create<BioStoreState>()(
                             newItem.requires = requires;
                         } else {
                             const weights = { ...(newItem.weights || { DEFAULT: 10 }) };
-                            weights[tagId] = 50;
-                            newItem.weights = weights;
+                            // User Req: "check if connection of selected type (e.g. weight) exist, then skip"
+                            if (weights[tagId] === undefined) {
+                                weights[tagId] = 50;
+                                newItem.weights = weights;
+                            }
                         }
                     }
 
