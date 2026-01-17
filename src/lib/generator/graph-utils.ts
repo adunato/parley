@@ -46,9 +46,8 @@ export const getLayoutedElements = (
     dagre.layout(dagreGraph);
 
     // --- Post-Processing: Compact the Right-Most Column ---
-    // The "Life Events" column (usually the furthest right) can get very tall and sparse
-    // if driven purely by Dagre's rank alignment or default spacing.
-    // We manually compact it to reduce the "river" effect of edges.
+    // The "Life Events" column (usually the furthest right) can get very tall and sparse.
+    // We visually compact it and align nodes with their sources (barycenter heuristic).
 
     let maxX = -Infinity;
     dagreGraph.nodes().forEach((v) => {
@@ -56,7 +55,7 @@ export const getLayoutedElements = (
         if (n.x > maxX) maxX = n.x;
     });
 
-    // Identify nodes in the right-most column (allow small tolerance for float layout)
+    // Identify nodes in the right-most column
     const rightColNodes: string[] = [];
     dagreGraph.nodes().forEach((v) => {
         const n = dagreGraph.node(v);
@@ -65,40 +64,49 @@ export const getLayoutedElements = (
         }
     });
 
-    // Only compact if it's a significant column (more than 1 node)
-    // and strictly the right-most one.
     if (rightColNodes.length > 1) {
-        // 1. Sort by current Y to maintain relative order
-        rightColNodes.sort((a, b) => dagreGraph.node(a).y - dagreGraph.node(b).y);
+        // Build map of incoming edges for barycenter calc
+        // dagreGraph.inEdges(v) returns the edges
 
-        // 2. Calculate the "visual center" of the REST of the graph
-        // This helps align the compacted column with the main content (Childhood/Formative/Prof).
-        let minRestY = Infinity;
-        let maxRestY = -Infinity;
-        let hasRestNodes = false;
+        // 1. Calculate Barycenter (Average Y of sources) for each node
+        const nodeBarycenters = new Map<string, number>();
+        let sumBarycenters = 0;
+        let countBarycenters = 0;
 
-        dagreGraph.nodes().forEach((v) => {
-            if (!rightColNodes.includes(v)) {
-                const n = dagreGraph.node(v);
-                if (n.y < minRestY) minRestY = n.y;
-                if (n.y > maxRestY) maxRestY = n.y;
-                hasRestNodes = true;
+        rightColNodes.forEach(nodeId => {
+            const inEdges = dagreGraph.inEdges(nodeId) || [];
+            if (inEdges.length > 0) {
+                const totalY = inEdges.reduce((sum, e) => sum + dagreGraph.node(e.v).y, 0);
+                const avgY = totalY / inEdges.length;
+                nodeBarycenters.set(nodeId, avgY);
+                sumBarycenters += avgY;
+                countBarycenters++;
+            } else {
+                // Fallback to current Y if no inputs
+                const currentY = dagreGraph.node(nodeId).y;
+                nodeBarycenters.set(nodeId, currentY);
+                sumBarycenters += currentY;
+                countBarycenters++;
             }
         });
 
-        const graphCenterY = hasRestNodes
-            ? (minRestY + maxRestY) / 2
-            : 0;
+        // 2. Sort by Barycenter to minimize edge crossing/slant
+        rightColNodes.sort((a, b) => (nodeBarycenters.get(a) || 0) - (nodeBarycenters.get(b) || 0));
 
-        // 3. Compact the Layout
-        // We use a fixed tight gap instead of the global nodeSep
-        const TIGHT_GAP = 50;
+        // 3. Compact Layout
+        // We use a fixed tight gap proportional to the global nodeSep
+        // This ensures it scales with user settings but remains visually distinct
+        const verticalSpacing = settings?.verticalSpacing ?? DEFAULT_V_SPACING;
+        const TIGHT_GAP = verticalSpacing * 0.25;
         const totalHeight = (rightColNodes.length * NODE_HEIGHT) + ((rightColNodes.length - 1) * TIGHT_GAP);
 
-        // Start Y position (centered around graphCenterY)
-        // Note: dagre node.y is the CENTER of the node, not top.
-        // The column spans from (centerY - H/2) to (centerY + H/2)
-        const startY = graphCenterY - (totalHeight / 2) + (NODE_HEIGHT / 2);
+        // Center the entire stack around the average barycenter of the group
+        // This ensures the "clump" is roughly adjacent to the bulk of its source nodes
+        const groupCenterY = countBarycenters > 0
+            ? sumBarycenters / countBarycenters
+            : dagreGraph.graph().height! / 2;
+
+        const startY = groupCenterY - (totalHeight / 2) + (NODE_HEIGHT / 2);
 
         rightColNodes.forEach((id, idx) => {
             const node = dagreGraph.node(id);
