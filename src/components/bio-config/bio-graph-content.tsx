@@ -26,7 +26,7 @@ import { BioGraphFilterToolbar } from './bio-graph-filter-toolbar';
 import { ConnectionSelectionDialog, ConnectionDialogState } from './connection-selection-dialog';
 import { Connection } from 'reactflow';
 
-const nodeTypes = { bioNode: BioNode };
+import { nodeTypes } from './graph-config';
 
 export function BioGraphContent() {
     // 1. Get Data
