@@ -45,7 +45,7 @@ export function TagSelector({
 
   return (
     <div className="relative w-full">
-      <Popover open={open && value.length > 0 && filteredTags.length > 0} onOpenChange={setOpen}>
+      <Popover open={open && filteredTags.length > 0} onOpenChange={setOpen}>
         <PopoverAnchor asChild>
           <Input
             value={value}

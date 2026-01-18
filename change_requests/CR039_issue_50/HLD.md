@@ -1,7 +1,7 @@
 # Issue #50
 
 ## Status
-Draft
+Completed
 
 ## Goals
 - Address Issue #50: Improve TAG display and selection in bio-generator.
