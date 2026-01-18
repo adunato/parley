@@ -1,12 +1,13 @@
 'use client';
 
 import CharacterConfiguration from '@/components/character-configuration';
+import { ConfigPage } from '@/components/layout/config-page';
 
 export default function CharacterConfigPage() {
   return (
-    <div className="container mx-auto p-4">
+    <ConfigPage>
       <h1 className="type-h2 mb-4">Character Configuration</h1>
       <CharacterConfiguration />
-    </div>
+    </ConfigPage>
   );
 }
