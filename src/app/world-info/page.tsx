@@ -141,7 +141,7 @@ export default function WorldInfoPage() {
   return (
     <ConfigPage>
       <h1 className="type-h2 mb-4">World Information</h1>
-      <Card className="w-full max-w-2xl mx-0">
+      <Card className="w-full">
         <CardContent className="pt-6">
           <ProjectManager />
           <div className="grid gap-4 py-4">
