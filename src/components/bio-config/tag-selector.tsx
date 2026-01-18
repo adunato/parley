@@ -1,7 +1,7 @@
 import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from '@headlessui/react'
 import { useState, useMemo } from 'react'
 import { useBioStore } from "@/lib/store/bioStore"
-import { Check, ChevronsUpDown } from "lucide-react" 
+import { Check, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface TagSelectorProps {
@@ -27,14 +27,21 @@ export function TagSelector({
       : tags.filter((tag) => tag.id.toLowerCase().includes(search))
   }, [tags, query])
 
+  // Check if the current typed query exactly matches an existing tag
+  // If NOT, we will show the "Create" option
+  const exactMatch = tags.some((tag) => tag.id.toLowerCase() === query.toLowerCase())
+  const showCreateOption = query.length > 0 && !exactMatch
+
   return (
     <div className={cn("relative w-full", className)}>
       <Combobox
         value={value}
+        // 'immediate' prop ensures the dropdown opens on focus/click
+        immediate
         onChange={(newValue) => {
+          // If newValue is null (cleared), handle gracefully
           if (newValue) {
             onValueChange(newValue)
-            // Optional: reset query to the selected value or clear it
             setQuery(newValue) 
           }
         }}
@@ -42,7 +49,6 @@ export function TagSelector({
       >
         <div className="relative">
           <ComboboxInput
-            // Matches Shadcn Input styles exactly
             className={cn(
               "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
               "file:border-0 file:bg-transparent file:text-sm file:font-medium",
@@ -51,18 +57,16 @@ export function TagSelector({
               "disabled:cursor-not-allowed disabled:opacity-50"
             )}
             placeholder={placeholder}
+            // Update query as user types
             onChange={(event) => setQuery(event.target.value)}
-            displayValue={(tagId: string) => tagId} 
+            // Display the current value or the query if typing
+            displayValue={(val: string) => val}
           />
-          {/* Optional: Add an icon to mimic Select component if desired */}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-          </div>
         </div>
 
-        {filteredTags.length > 0 && (
+        {/* Render dropdown if we have matches OR if we need to show the "Create" option */}
+        {(filteredTags.length > 0 || showCreateOption) && (
           <ComboboxOptions
-            // Matches Shadcn Popover/Command styles
             className={cn(
               "absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none",
               "data-[closed]:animate-out data-[closed]:fade-out-0 data-[closed]:zoom-out-95",
@@ -73,7 +77,6 @@ export function TagSelector({
               <ComboboxOption
                 key={tag.id}
                 value={tag.id}
-                // Matches Shadcn CommandItem styles
                 className={({ focus }) =>
                   cn(
                     "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none",
@@ -96,6 +99,22 @@ export function TagSelector({
                 )}
               </ComboboxOption>
             ))}
+
+            {/* The "Create New" Option */}
+            {showCreateOption && (
+              <ComboboxOption
+                value={query}
+                className={({ focus }) =>
+                  cn(
+                    "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none border-t mt-1",
+                    focus ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  )
+                }
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create "{query}"
+              </ComboboxOption>
+            )}
           </ComboboxOptions>
         )}
       </Combobox>
