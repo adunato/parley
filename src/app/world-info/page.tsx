@@ -27,6 +27,7 @@ import {
 
 import { ProjectManager } from '@/components/world/ProjectManager';
 import { ProjectService } from '@/lib/services/projectService';
+import { ConfigPage } from '@/components/layout/config-page';
 
 export default function WorldInfoPage() {
   const {
@@ -138,7 +139,7 @@ export default function WorldInfoPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <ConfigPage>
       <h1 className="type-h2 mb-4">World Information</h1>
       <Card className="w-full max-w-2xl mx-0">
         <CardContent className="pt-6">
@@ -347,6 +348,6 @@ export default function WorldInfoPage() {
           </Dialog>
         </CardFooter>
       </Card>
-    </div >
+    </ConfigPage >
   );
 }

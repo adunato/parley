@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { SettingsTabs } from "@/components/settings/SettingsTabs";
+import { ConfigPage } from "@/components/layout/config-page";
 import { PromptConfig } from "@/lib/store/promptStore";
 import { useParleyStore } from "@/lib/store";
 
@@ -90,7 +91,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-8 max-w-5xl">
+    <ConfigPage>
       <h1 className="type-h2 mb-8 text-foreground">Settings</h1>
 
       <SettingsTabs
@@ -100,6 +101,6 @@ export default function SettingsPage() {
         onSavePrompt={handleSavePrompt}
         onResetPrompt={handleResetPrompt}
       />
-    </div>
+    </ConfigPage>
   );
 }

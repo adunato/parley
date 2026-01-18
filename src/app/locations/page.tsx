@@ -5,12 +5,13 @@ import { useEntityStore } from '@/lib/entityStore';
 import { useParleyStore } from '@/lib/store';
 import { WorldMapDisplay } from '@/components/world/WorldMapDisplay';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfigPage } from '@/components/layout/config-page';
 
 export default function LocationsPage() {
     const { locations, addLocation, updateLocation, deleteLocation, characters } = useEntityStore();
 
     return (
-        <div className="container mx-auto p-4">
+        <ConfigPage>
             <h1 className="type-h2 mb-6">Location Management</h1>
             <LocationManager
                 locations={locations || []}
@@ -32,6 +33,6 @@ export default function LocationsPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </ConfigPage>
     );
 }

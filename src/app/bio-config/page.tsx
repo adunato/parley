@@ -6,6 +6,7 @@ import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
 import { BioDatasetManager } from "@/components/bio-config/bio-dataset-manager";
+import { ConfigPage } from "@/components/layout/config-page";
 
 import { useBioStore } from "@/lib/store/bioStore";
 import { useBioLibraryStore } from "@/lib/store/bioLibraryStore";
@@ -121,7 +122,7 @@ export default function BioConfigPage() {
 
 
     return (
-        <div className="container mx-auto p-8 max-w-5xl space-y-8">
+        <ConfigPage>
             <div className="space-y-4">
                 <div className="space-y-2">
                     <h1 className="type-h2 text-foreground">Bio Generator Configuration</h1>
@@ -281,6 +282,6 @@ export default function BioConfigPage() {
                     </div>
                 </TabsContent>
             </Tabs>
-        </div>
+        </ConfigPage>
     );
 }
