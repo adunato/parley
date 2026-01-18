@@ -118,7 +118,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent container={container} className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent container={container} className="max-w-5xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{isEditing ? 'Edit Entity' : 'New Entity'} ({type})</DialogTitle>
                         <DialogDescription>

@@ -57,7 +57,7 @@ export function WeightEditor({ weights, onChange }: WeightEditorProps) {
                     if (tag === 'DEFAULT') return null;
                     return (
                         <div key={tag} className="flex items-center gap-2">
-                            <span className="text-sm font-mono w-24 truncate" title={tag}>{tag}</span>
+                            <span className="text-sm font-mono flex-1 min-w-0 truncate" title={tag}>{tag}</span>
                             <Input
                                 type="number"
                                 value={val}
