@@ -1,0 +1,104 @@
+[
+  {
+    "id": "POOR_ORIGIN"
+  },
+  {
+    "id": "WORKING_CLASS_ORIGIN"
+  },
+  {
+    "id": "MIDDLE_CLASS_ORIGIN"
+  },
+  {
+    "id": "RICH_ORIGIN"
+  },
+  {
+    "id": "WEALTHY_ORIGIN"
+  },
+  {
+    "id": "SIBLINGS_0"
+  },
+  {
+    "id": "SIBLINGS_1"
+  },
+  {
+    "id": "SIBLINGS_2"
+  },
+  {
+    "id": "DEGREE"
+  },
+  {
+    "id": "ADVANCED_DEGREE"
+  },
+  {
+    "id": "TRADES_SKILLS"
+  },
+  {
+    "id": "SHOP_SKILLS"
+  },
+  {
+    "id": "TECH_SKILLS"
+  },
+  {
+    "id": "SECONDARY_SCHOOL_TEACHER"
+  },
+  {
+    "id": "SECONDARY_SCHOOL_HEAD_TEACHER"
+  },
+  {
+    "id": "HIGH_SALARY"
+  },
+  {
+    "id": "MEDIUM_SALARY"
+  },
+  {
+    "id": "PARTNERED_EARLY"
+  },
+  {
+    "id": "DATING_EXPERIENCE"
+  },
+  {
+    "id": "INDEPENDENT_LIFESTYLE"
+  },
+  {
+    "id": "MARRIED"
+  },
+  {
+    "id": "STABLE_HOME"
+  },
+  {
+    "id": "SINGLE"
+  },
+  {
+    "id": "COMPLEX_HISTORY"
+  },
+  {
+    "id": "DUAL_INCOME"
+  },
+  {
+    "id": "STATE_SUPPORT_HISTORY"
+  },
+  {
+    "id": "PROPERTY_LADDER_AWARENESS"
+  },
+  {
+    "id": "RENTAL_HISTORY"
+  },
+  {
+    "id": "INDEPENDENCE"
+  },
+  {
+    "id": "SAVINGS"
+  },
+  {
+    "id": "HOMEOWNER"
+  },
+  {
+    "id": "MORTGAGE"
+  },
+  {
+    "id": "RENTER"
+  },
+  {
+    "id": "CITY_LIVING"
+  }
+]
