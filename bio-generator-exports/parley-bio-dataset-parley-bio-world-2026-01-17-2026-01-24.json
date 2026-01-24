@@ -166,7 +166,8 @@
         "WORKING_CLASS_ORIGIN": 50,
         "MIDDLE_CLASS_ORIGIN": 20,
         "RICH_ORIGIN": 10,
-        "WEALTHY_ORIGIN": 1
+        "WEALTHY_ORIGIN": 1,
+        "STATE_SUPPORT_HISTORY": 5
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
@@ -238,7 +239,8 @@
         "WORKING_CLASS_ORIGIN": 50,
         "MIDDLE_CLASS_ORIGIN": 10,
         "RICH_ORIGIN": 1,
-        "WEALTHY_ORIGIN": 1
+        "WEALTHY_ORIGIN": 1,
+        "STATE_SUPPORT_HISTORY": 5
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
@@ -270,6 +272,7 @@
       ],
       "weights": {
         "SIBLINGS_2": 1.5,
+        "SIBLINGS_1": 1.2,
         "DEFAULT": 1
       },
       "slot": "FORMATIVE",
