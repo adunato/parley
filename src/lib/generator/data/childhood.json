@@ -1,29 +1,135 @@
 [
-    {
-        "id": "working_class_urban",
-        "slot": "CHILDHOOD",
-        "text": "Born into a cramped apartment in an industrial district.",
-        "provides": [
-            "POOR",
-            "STREET_SMART"
-        ],
-        "weights": {
-            "DEFAULT": 50
-        },
-        "phase": "Childhood"
+  {
+    "id": "poor_origin",
+    "text": "Born in a poor family struggling to make ends meet",
+    "provides": [
+      "POOR_ORIGIN"
+    ],
+    "weights": {
+      "DEFAULT": 1
     },
-    {
-        "id": "old_money",
-        "slot": "CHILDHOOD",
-        "text": "Born into a family with generational wealth and high expectations.",
-        "provides": [
-            "RICH",
-            "CONNECTED",
-            "SNOB"
-        ],
-        "weights": {
-            "DEFAULT": 5
-        },
-        "phase": "Childhood"
-    }
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+  },
+  {
+    "id": "WORKING_CLASS_ORIGIN",
+    "text": "Born in a working class family",
+    "provides": [
+      "WORKING_CLASS_ORIGIN"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+  },
+  {
+    "id": "MIDDLE_CLASS_ORIGIN",
+    "text": "Born in a middle class family",
+    "provides": [
+      "MIDDLE_CLASS_ORIGIN"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+  },
+  {
+    "id": "RICH_ORIGIN",
+    "text": "Born in a well off family",
+    "provides": [
+      "RICH_ORIGIN"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+  },
+  {
+    "id": "WEALTHY_ORIGIN",
+    "text": "Born in a wealthy family",
+    "provides": [
+      "WEALTHY_ORIGIN"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+  },
+  {
+    "id": "no_siblings",
+    "text": "Had no siblings",
+    "provides": [
+      "SIBLINGS_0"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+  },
+  {
+    "id": "one_sibling",
+    "text": "Had one sibling",
+    "provides": [
+      "SIBLINGS_1"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+  },
+  {
+    "id": "two_siblings",
+    "text": "Had two siblings",
+    "provides": [
+      "SIBLINGS_2"
+    ],
+    "weights": {
+      "DEFAULT": 1
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+  },
+  {
+    "id": "housing_social",
+    "text": "Lived in government-supported social housing.",
+    "provides": [
+      "STATE_SUPPORT_HISTORY"
+    ],
+    "weights": {
+      "POOR_ORIGIN": 100,
+      "DEFAULT": 0
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "house_track"
+  },
+  {
+    "id": "housing_owned",
+    "text": "Lived in a family-owned property.",
+    "provides": [
+      "PROPERTY_LADDER_AWARENESS"
+    ],
+    "weights": {
+      "MIDDLE_CLASS_ORIGIN": 50,
+      "RICH_ORIGIN": 100,
+      "DEFAULT": 0
+    },
+    "slot": "CHILDHOOD",
+    "phase": "Childhood",
+    "groupId": "house_track"
+  }
 ]
