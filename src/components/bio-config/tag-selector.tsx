@@ -9,6 +9,7 @@ interface TagSelectorProps {
   onValueChange: (value: string) => void
   placeholder?: string
   className?: string
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 export function TagSelector({
@@ -16,6 +17,7 @@ export function TagSelector({
   onValueChange,
   placeholder,
   className,
+  onKeyDown
 }: TagSelectorProps) {
   const { tags } = useBioStore()
   const [query, setQuery] = useState('')
@@ -42,7 +44,7 @@ export function TagSelector({
           // If newValue is null (cleared), handle gracefully
           if (newValue) {
             onValueChange(newValue)
-            setQuery(newValue) 
+            setQuery(newValue)
           }
         }}
         onClose={() => setQuery(value || '')}
@@ -59,6 +61,7 @@ export function TagSelector({
             placeholder={placeholder}
             // Update query as user types
             onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={onKeyDown}
             // Display the current value or the query if typing
             displayValue={(val: string) => val}
           />
