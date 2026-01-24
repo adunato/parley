@@ -427,7 +427,8 @@
         "DUAL_INCOME"
       ],
       "weights": {
-        "DEFAULT": 10
+        "DEFAULT": 10,
+        "TECH_SKILLS": 5
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
@@ -446,7 +447,8 @@
       ],
       "weights": {
         "HIGH_SALARY": 10,
-        "DEFAULT": 1
+        "DEFAULT": 1,
+        "TRADES_SKILLS": 2
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
@@ -461,7 +463,10 @@
       ],
       "weights": {
         "INDEPENDENCE": 5,
-        "DEFAULT": 1
+        "DEFAULT": 1,
+        "SHOP_SKILLS": 2,
+        "TECH_SKILLS": 5,
+        "RENTAL_HISTORY": 5
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
