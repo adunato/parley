@@ -1,38 +1,205 @@
 [
-    {
-        "id": "ivy_league",
-        "slot": "FORMATIVE",
-        "text": "Accepted into a prestigious Ivy League university.",
-        "provides": [
-            "DEGREE_ADVANCED",
-            "ALUMNI_NETWORK",
-            "DEBT"
-        ],
-        "requires": [
-            "GOOD_GRADES"
-        ],
-        "weights": {
-            "RICH": 50,
-            "STRESSED": 20,
-            "POOR": 1,
-            "DEFAULT": 5
-        },
-        "phase": "Formative"
+  {
+    "id": "oxbridge_admission",
+    "text": "They were accepted into either Oxford University, a prestigious achievement that brought both pride and pressure. The rigorous academic environment pushed them to excel but also introduced them to a world of high expectations and intense competition.",
+    "provides": [
+      "DEGREE",
+      "ADVANCED_DEGREE"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 1,
+      "WORKING_CLASS_ORIGIN": 5,
+      "MIDDLE_CLASS_ORIGIN": 10,
+      "RICH_ORIGIN": 25,
+      "WEALTHY_ORIGIN": 50
     },
-    {
-        "id": "trade_school",
-        "slot": "FORMATIVE",
-        "text": "Opted for a trade school to start earning money quickly.",
-        "provides": [
-            "TRADESMAN_CERT",
-            "NO_DEBT"
-        ],
-        "weights": {
-            "STREET_SMART": 30,
-            "POOR": 20,
-            "RICH": 1,
-            "DEFAULT": 10
-        },
-        "phase": "Formative"
-    }
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "apprenticeship_electrician",
+    "text": "They took up an apprenticeship as an electrician, balancing work and study. The hands-on experience taught them practical problem-solving skills and the value of technical expertise.",
+    "provides": [
+      "TRADES_SKILLS"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 50,
+      "WORKING_CLASS_ORIGIN": 50,
+      "MIDDLE_CLASS_ORIGIN": 20,
+      "RICH_ORIGIN": 10,
+      "WEALTHY_ORIGIN": 1,
+      "STATE_SUPPORT_HISTORY": 5
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "university_philosophy",
+    "text": "They pursued a degree in philosophy, engaging deeply with theoretical concepts and ethical dilemmas. This academic journey cultivated their critical thinking and analytical skills.",
+    "provides": [
+      "DEGREE"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 5,
+      "WORKING_CLASS_ORIGIN": 10,
+      "MIDDLE_CLASS_ORIGIN": 30,
+      "RICH_ORIGIN": 50,
+      "WEALTHY_ORIGIN": 40
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "school_leaver_retail",
+    "text": "They joined a school leaver program in retail, combining work with professional qualifications. This experience honed their customer service skills and taught them the intricacies of business operations.",
+    "provides": [
+      "SHOP_SKILLS"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 50,
+      "WORKING_CLASS_ORIGIN": 50,
+      "MIDDLE_CLASS_ORIGIN": 25,
+      "RICH_ORIGIN": 1,
+      "WEALTHY_ORIGIN": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "skills_bootcamp_coding",
+    "text": "They attended a skills bootcamp in coding, immersing themselves in intensive learning. This fast-tracked their entry into the tech industry and sharpened their programming abilities.",
+    "provides": [
+      "TECH_SKILLS"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 10,
+      "WORKING_CLASS_ORIGIN": 20,
+      "MIDDLE_CLASS_ORIGIN": 50,
+      "RICH_ORIGIN": 10,
+      "WEALTHY_ORIGIN": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "direct_employment_construction",
+    "text": "They entered the workforce directly as a construction worker, gaining early experience in the building trade. This job taught them the importance of teamwork and physical endurance.",
+    "provides": [
+      "TRADES_SKILLS"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 50,
+      "WORKING_CLASS_ORIGIN": 50,
+      "MIDDLE_CLASS_ORIGIN": 10,
+      "RICH_ORIGIN": 1,
+      "WEALTHY_ORIGIN": 1,
+      "STATE_SUPPORT_HISTORY": 5
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "university_engineering",
+    "text": "They earned a degree in engineering, solving complex problems and designing innovative solutions. This academic pursuit developed their engineering acumen and innovative thinking.",
+    "provides": [
+      "DEGREE"
+    ],
+    "weights": {
+      "DEFAULT": 1,
+      "POOR_ORIGIN": 5,
+      "WORKING_CLASS_ORIGIN": 10,
+      "MIDDLE_CLASS_ORIGIN": 50,
+      "RICH_ORIGIN": 40,
+      "WEALTHY_ORIGIN": 30
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+  },
+  {
+    "id": "rel_hs_sweetheart",
+    "text": "Met a significant romantic partner in school and committed to a serious relationship early.",
+    "provides": [
+      "PARTNERED_EARLY"
+    ],
+    "weights": {
+      "SIBLINGS_2": 1.5,
+      "SIBLINGS_1": 1.2,
+      "DEFAULT": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "rel_track"
+  },
+  {
+    "id": "rel_casual_dating",
+    "text": "Dated actively and casually, meeting many different people without settling down.",
+    "provides": [
+      "DATING_EXPERIENCE"
+    ],
+    "weights": {
+      "RICH_ORIGIN": 2,
+      "DEFAULT": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "rel_track"
+  },
+  {
+    "id": "rel_single_focus",
+    "text": "Remained single to focus entirely on personal goals and studies.",
+    "provides": [
+      "INDEPENDENT_LIFESTYLE"
+    ],
+    "weights": {
+      "SIBLINGS_0": 2,
+      "DEFAULT": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "rel_track"
+  },
+  {
+    "id": "housing_student_halls",
+    "text": "Moved into university dormitories.",
+    "requires": [
+      "DEGREE"
+    ],
+    "provides": [
+      "RENTAL_HISTORY",
+      "INDEPENDENCE"
+    ],
+    "weights": {
+      "DEFAULT": 10
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "house_track"
+  },
+  {
+    "id": "housing_parents",
+    "text": "Continued living with parents to save money.",
+    "provides": [
+      "SAVINGS"
+    ],
+    "weights": {
+      "POOR_ORIGIN": 5,
+      "DEFAULT": 1
+    },
+    "slot": "FORMATIVE",
+    "phase": "Formative",
+    "groupId": "house_track"
+  }
 ]
