@@ -363,7 +363,8 @@
       "requires": [
         "DEGREE"
       ],
-      "phase": "Professional"
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
     },
     {
       "id": "secondary_school_head_teacher_copy",
@@ -384,7 +385,8 @@
       "requires": [
         "ADVANCED_DEGREE"
       ],
-      "phase": "Professional"
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
     },
     {
       "id": "rel_married_early",
@@ -613,6 +615,10 @@
     {
       "id": "house_track",
       "name": "Housing"
+    },
+    {
+      "id": "0874a80f-fef4-449f-8c24-bab4d2ac9428",
+      "name": "Career"
     }
   ],
   "phaseConfig": {
