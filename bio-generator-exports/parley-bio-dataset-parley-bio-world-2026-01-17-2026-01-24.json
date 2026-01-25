@@ -516,8 +516,7 @@
       "id": "housing_rented",
       "text": "Rented an apartment in a busy urban area.",
       "provides": [
-        "RENTER",
-        "CITY_LIVING"
+        "RENTER"
       ],
       "weights": {
         "INDEPENDENCE": 10,
@@ -547,6 +546,72 @@
       "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
     },
     {
+      "id": "senior_golden_years",
+      "text": "Celebrated decades of marriage with their long-term partner.",
+      "requires": [
+        "MARRIED"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "senior_independent",
+      "text": "Enjoyed the freedom of single life, socializing with friends and pursuing hobbies.",
+      "requires": [
+        "SINGLE"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "senior_stayed_put",
+      "text": "Remained in their long-term family home.",
+      "requires": [
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "STABLE_HOME": 5,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
+      "id": "senior_downsized",
+      "text": "Sold their property to move into a smaller, more manageable home.",
+      "requires": [
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "DEFAULT": 5
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
+      "id": "senior_renting",
+      "text": "Continued renting, facing rising costs but maintaining flexibility.",
+      "requires": [
+        "RENTER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
       "id": "senior_struggling",
       "text": "Retired on a state pension, having to be careful with daily expenses.",
       "weights": {
@@ -559,10 +624,13 @@
       "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
     },
     {
-      "id": "retired",
-      "text": "Retired",
+      "id": "senior_standard",
+      "text": "Retired with a standard pension, capable of maintaining a modest lifestyle.",
       "weights": {
-        "DEFAULT": 1
+        "DEFAULT": 1,
+        "MEDIUM_SALARY": 10,
+        "DUAL_INCOME": 5,
+        "MORTGAGE": 5
       },
       "slot": "SENIOR",
       "phase": "Senior",
@@ -669,9 +737,6 @@
     },
     {
       "id": "RENTER"
-    },
-    {
-      "id": "CITY_LIVING"
     },
     {
       "id": "TECH_CAREER"
