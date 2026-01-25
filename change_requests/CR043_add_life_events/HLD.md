@@ -9,12 +9,12 @@ Draft
 - Ensure these life events do not provide any new tags.
 
 ## Proposed Solution
-1.  **Script Creation**: specific script to process the JSON file.
-2.  **Generation Logic**:
-    - Iterate over `childhood`, `formative`, `professional`, and `senior` arrays in the JSON.
-    - For each entity, invoke the LLM (Deepseek) to generate 2-3 tailored life events.
-    - **Context**: Use the entity's description (`text`) and provided tags (`provides`) to ground the generation.
-    - **Attachment**: Assign high weights (e.g., 50+) to the generated events for the tags provided by the spine node, effectively "attaching" them.
-    - **Constraints**: Force `provides` to be empty/undefined for all generated events.
-3.  **Output**: Update the JSON file with the new `lifeEvents` list, merged with any existing ones (currently empty).
-4.  **Verification**: Manual inspection of the JSON to verify count (2-3 per node) and tag constraints.
+1.  **Manual Generation**: I (Antigravity) will manually author the JSON objects for the `lifeEvents` array.
+2.  **Content Strategy**: 
+    - For each entity in `childhood`, `formative`, `professional`, and `senior`:
+        - Create 2-3 `LifeEvent` objects.
+        - **Text**: Thematic to the spine entity.
+        - **Weights**: configured to trigger based on the spine entity's `provides` tags (e.g., if Spine Node A provides `TAG_A`, the Linked Event will have `{ "TAG_A": 50 }`).
+        - **Provides**: Empty (to avoid graph explosion).
+        - **Requires**: Empty (relying on weights for soft links) or matching the tag for Hard links if appropriate (Weights preferred for variety).
+3.  **Verification**: ensure the JSON is valid and the graph looks populated.
