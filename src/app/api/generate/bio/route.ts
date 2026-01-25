@@ -9,35 +9,52 @@ export async function POST(req: NextRequest) {
         let prompt = PromptStore.getPrompt('bio_writer');
 
         // Format the data for the prompt
-        const fleshEvents = flesh.map((e: any) => e.text).join('; ');
         const identityStr = `${identity.firstName} ${identity.lastName} from ${identity.location}, ${identity.country}`;
 
-        // Sort spine by phase order if needed, but usually they come in order or can be mapped by known phases
         const PHASES = ['CHILDHOOD', 'FORMATIVE', 'PROFESSIONAL', 'SENIOR'];
 
-        // Group spine nodes by phase to handle multiple entries per phase (e.g. concurrent tracks)
-        const spineByPhase: Record<string, string[]> = {};
+        // Group everything by phase
+        const eventsByPhase: Record<string, string[]> = {};
 
+        // 1. Process Spine
         spine.forEach((node: any) => {
             const phase = node.slot || 'UNKNOWN';
-            if (!spineByPhase[phase]) spineByPhase[phase] = [];
-            // Use text if available, otherwise fallback to id (but text should be there)
-            spineByPhase[phase].push(node.text || node.id);
+            if (!eventsByPhase[phase]) eventsByPhase[phase] = [];
+            eventsByPhase[phase].push(node.text || node.id);
         });
 
-        let spineStr = '';
+        // 2. Process Flesh (now with generatedPhase)
+        flesh.forEach((event: any) => {
+            // Use generatedPhase if available, otherwise fallback (or skip/put in UNKNOWN)
+            const phase = event.generatedPhase ? event.generatedPhase.toUpperCase() : 'UNKNOWN';
+            if (!eventsByPhase[phase]) eventsByPhase[phase] = [];
+            eventsByPhase[phase].push(event.text);
+        });
+
+        let lifeHistoryStr = '';
         PHASES.forEach(phase => {
-            if (spineByPhase[phase] && spineByPhase[phase].length > 0) {
-                // Capitalize first letter for display (e.g. CHILDHOOD -> Childhood)
+            if (eventsByPhase[phase] && eventsByPhase[phase].length > 0) {
+                // Capitalize for display
                 const displayPhase = phase.charAt(0).toUpperCase() + phase.slice(1).toLowerCase();
-                // Join multiple events in the same phase with a space
-                spineStr += `* ${displayPhase}: ${spineByPhase[phase].join(' ')}\n`;
+
+                lifeHistoryStr += `\n*${displayPhase}*\n`;
+                eventsByPhase[phase].forEach(txt => {
+                    lifeHistoryStr += `${txt}\n`;
+                });
             }
         });
 
+        // Add any Unknown phase items if they exist (optional, but good for debugging)
+        if (eventsByPhase['UNKNOWN'] && eventsByPhase['UNKNOWN'].length > 0) {
+            lifeHistoryStr += `\n*Unknown Phase*\n`;
+            eventsByPhase['UNKNOWN'].forEach(txt => {
+                lifeHistoryStr += `${txt}\n`;
+            });
+        }
+
         prompt = prompt.split('{{identity}}').join(identityStr);
-        prompt = prompt.split('{{spine}}').join(spineStr);
-        prompt = prompt.split('{{flesh}}').join(fleshEvents);
+        prompt = prompt.split('{{spine}}').join(lifeHistoryStr);
+        prompt = prompt.split('{{flesh}}').join('(Included above)');
         prompt = prompt.split('{{aiStyle}}').join(aiStyle || 'Standard');
 
         const WRAPPER_JSON = `{ "bio": string }`;

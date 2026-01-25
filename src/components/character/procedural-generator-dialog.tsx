@@ -382,8 +382,13 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                                         <p className="text-sm text-muted-foreground italic">No significant events recorded.</p>
                                                     ) : (
                                                         bioState.flesh.map((event, i) => (
-                                                            <div key={i} className="text-sm p-2 bg-accent/20 border border-border rounded text-foreground">
-                                                                • {event.text}
+                                                            <div key={i} className="text-sm p-2 bg-accent/20 border border-border rounded text-foreground flex items-start gap-2">
+                                                                {event.generatedPhase && (
+                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded border bg-background text-muted-foreground font-mono uppercase shrink-0 mt-0.5">
+                                                                        {event.generatedPhase}
+                                                                    </span>
+                                                                )}
+                                                                <span>• {event.text}</span>
                                                             </div>
                                                         ))
                                                     )}
