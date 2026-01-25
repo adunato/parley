@@ -367,9 +367,11 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                                 <h4 className="font-semibold mb-2 text-primary">The Spine (Core Path)</h4>
                                                 <div className="flex flex-col gap-2">
                                                     {bioState.spine.map((node, i) => (
-                                                        <div key={i} className="flex items-center gap-2 p-2 bg-card border rounded shadow-sm">
-                                                            <span className="text-xs font-bold w-20 uppercase text-muted-foreground">{node.slot}</span>
-                                                            <span className="font-medium text-card-foreground">{node.id.replace(/_/g, ' ')}</span>
+                                                        <div key={i} className="text-sm p-2 bg-accent/20 border border-border rounded text-foreground flex items-start gap-2">
+                                                            <span className="text-[10px] px-1.5 py-0.5 rounded border bg-background text-muted-foreground font-mono uppercase shrink-0 mt-0.5">
+                                                                {node.slot}
+                                                            </span>
+                                                            <span className="font-medium">{node.id.replace(/_/g, ' ')}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -383,12 +385,10 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
                                                     ) : (
                                                         bioState.flesh.map((event, i) => (
                                                             <div key={i} className="text-sm p-2 bg-accent/20 border border-border rounded text-foreground flex items-start gap-2">
-                                                                {event.generatedPhase && (
-                                                                    <span className="text-[10px] px-1.5 py-0.5 rounded border bg-background text-muted-foreground font-mono uppercase shrink-0 mt-0.5">
-                                                                        {event.generatedPhase}
-                                                                    </span>
-                                                                )}
-                                                                <span>• {event.text}</span>
+                                                                <span className="text-[10px] px-1.5 py-0.5 rounded border bg-background text-muted-foreground font-mono uppercase shrink-0 mt-0.5">
+                                                                    {event.generatedPhase || 'UNKNOWN'}
+                                                                </span>
+                                                                <span>{event.text}</span>
                                                             </div>
                                                         ))
                                                     )}
