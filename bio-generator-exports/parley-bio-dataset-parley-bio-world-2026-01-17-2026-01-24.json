@@ -637,7 +637,851 @@
       "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
     }
   ],
-  "lifeEvents": [],
+  "lifeEvents": [
+    {
+      "id": "le_child_poor_1",
+      "text": "Wore hand-me-down clothes that were slightly too big.",
+      "weights": {
+        "POOR_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_poor_2",
+      "text": "Helped parents shop for discount groceries late at night.",
+      "weights": {
+        "POOR_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_poor_3",
+      "text": "Spent the summer holidays playing in the local park instead of traveling.",
+      "weights": {
+        "POOR_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_working_1",
+      "text": "Watched their parents fix things around the house instead of calling a pro.",
+      "weights": {
+        "WORKING_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_working_2",
+      "text": "Had a strict routine of family dinner at the table every evening.",
+      "weights": {
+        "WORKING_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_working_3",
+      "text": "Went on a caravan holiday to the coast for a week.",
+      "weights": {
+        "WORKING_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_middle_1",
+      "text": "Took piano lessons every Saturday morning.",
+      "weights": {
+        "MIDDLE_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_middle_2",
+      "text": "Had a maths tutor to help prepare for exams.",
+      "weights": {
+        "MIDDLE_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_middle_3",
+      "text": "Went on a family camping trip to France.",
+      "weights": {
+        "MIDDLE_CLASS_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_rich_1",
+      "text": "Went horse riding at the local stables on weekends.",
+      "weights": {
+        "RICH_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_rich_2",
+      "text": "Had a large birthday party with a hired entertainer.",
+      "weights": {
+        "RICH_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_wealthy_1",
+      "text": "Spent the winter holidays skiing in the Alps.",
+      "weights": {
+        "WEALTHY_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_child_wealthy_2",
+      "text": "Attended a formal charity gala with their parents.",
+      "weights": {
+        "WEALTHY_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib0_1",
+      "text": "Invented elaborate imaginary friends to play with.",
+      "weights": {
+        "SIBLINGS_0": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib0_2",
+      "text": "Receieved undivided attention and presents at Christmas.",
+      "weights": {
+        "SIBLINGS_0": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib1_1",
+      "text": "Endless fights over who controlled the TV remote.",
+      "weights": {
+        "SIBLINGS_1": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib1_2",
+      "text": "Shared a bunk bed and late night whispers.",
+      "weights": {
+        "SIBLINGS_1": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib2_1",
+      "text": "Received fourth-hand clothes from two older siblings.",
+      "weights": {
+        "SIBLINGS_2": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_sib2_2",
+      "text": "Family dinners were always loud and chaotic.",
+      "weights": {
+        "SIBLINGS_2": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_social_1",
+      "text": "Waited at home for the housing officer's annual visit.",
+      "weights": {
+        "STATE_SUPPORT_HISTORY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_social_2",
+      "text": "Spent evenings at the subsidized community youth club.",
+      "weights": {
+        "STATE_SUPPORT_HISTORY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_owned_1",
+      "text": "Helped parents paint the garden fence on a Sunday.",
+      "weights": {
+        "PROPERTY_LADDER_AWARENESS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_owned_2",
+      "text": "Listened to parents discuss plans for a kitchen extension.",
+      "weights": {
+        "PROPERTY_LADDER_AWARENESS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Childhood"
+      ]
+    },
+    {
+      "id": "le_degree_1",
+      "text": "Pulled an all-nighter in the library to finish an essay.",
+      "weights": {
+        "DEGREE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_degree_2",
+      "text": "Caught 'Freshers Flu' during the first week of university.",
+      "weights": {
+        "DEGREE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_degree_3",
+      "text": "Joined an obscure student society just for the free pizza.",
+      "weights": {
+        "DEGREE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_adv_degree_1",
+      "text": "Presented research findings at a departmental seminar.",
+      "weights": {
+        "ADVANCED_DEGREE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_adv_degree_2",
+      "text": "Formal dinner in the college hall.",
+      "weights": {
+        "ADVANCED_DEGREE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_trades_1",
+      "text": "Burnt hand slightly on a soldering iron during training.",
+      "weights": {
+        "TRADES_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_trades_2",
+      "text": "Mastered the perfect dovetail joint in the workshop.",
+      "weights": {
+        "TRADES_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_trades_3",
+      "text": "Became the go-to person for fixing family appliances.",
+      "weights": {
+        "TRADES_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_shop_1",
+      "text": "Dealt with an unreasonably angry customer with a smile.",
+      "weights": {
+        "SHOP_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_shop_2",
+      "text": "Stayed late to help with the annual stock take.",
+      "weights": {
+        "SHOP_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_tech_1",
+      "text": "Built their own PC from parts ordered online.",
+      "weights": {
+        "TECH_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_tech_2",
+      "text": "Spent a weekend at a hackathon eating instant noodles.",
+      "weights": {
+        "TECH_SKILLS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_partnered_1",
+      "text": "Went on study dates in the local library.",
+      "weights": {
+        "PARTNERED_EARLY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_partnered_2",
+      "text": "Saved up money together for a first joint holiday.",
+      "weights": {
+        "PARTNERED_EARLY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_dating_1",
+      "text": "Went on an incredibly awkward first date.",
+      "weights": {
+        "DATING_EXPERIENCE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_dating_2",
+      "text": "Got ghosted after three seemingly good dates.",
+      "weights": {
+        "DATING_EXPERIENCE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_indep_life_1",
+      "text": "Went on a solo trip to a music festival.",
+      "weights": {
+        "INDEPENDENT_LIFESTYLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_indep_life_2",
+      "text": "Learned to cook elaborate meals for one.",
+      "weights": {
+        "INDEPENDENT_LIFESTYLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_rent_hist_1",
+      "text": "Argued with flatmates about whose turn it was to wash up.",
+      "weights": {
+        "RENTAL_HISTORY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_rent_hist_2",
+      "text": "Panicked cleaning before a landlord inspection.",
+      "weights": {
+        "RENTAL_HISTORY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_savings_1",
+      "text": "Put a portion of wages into a high-interest ISA.",
+      "weights": {
+        "SAVINGS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_savings_2",
+      "text": "Declined social outings to save money.",
+      "weights": {
+        "SAVINGS": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Formative"
+      ]
+    },
+    {
+      "id": "le_teacher_1",
+      "text": "Spent all Sunday marking student papers.",
+      "weights": {
+        "SECONDARY_SCHOOL_TEACHER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_teacher_2",
+      "text": "Stayed late to supervise the school play rehearsal.",
+      "weights": {
+        "SECONDARY_SCHOOL_TEACHER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_headteacher_1",
+      "text": "Held a budget meeting with the school governors.",
+      "weights": {
+        "SECONDARY_SCHOOL_HEAD_TEACHER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_headteacher_2",
+      "text": "Delivered a stern assembly about uniform standards.",
+      "weights": {
+        "SECONDARY_SCHOOL_HEAD_TEACHER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_tech_career_1",
+      "text": "Deployed a hotfix to production on a Friday evening.",
+      "weights": {
+        "TECH_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_tech_career_2",
+      "text": "Received a grant of stock options from a startup.",
+      "weights": {
+        "TECH_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_trades_career_1",
+      "text": "Called out to an emergency job at 2am.",
+      "weights": {
+        "TRADES_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_trades_career_2",
+      "text": "Work van broke down on the way to a job.",
+      "weights": {
+        "TRADES_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_retail_career_1",
+      "text": "Managed the chaotic Boxing Day sales shift.",
+      "weights": {
+        "RETAIL_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_retail_career_2",
+      "text": "Spent hours reorganizing the staff rota.",
+      "weights": {
+        "RETAIL_CAREER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_married_1",
+      "text": "Celebrated a quiet anniversary dinner at home.",
+      "weights": {
+        "MARRIED": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_married_2",
+      "text": "Argued about whose parents to visit for Christmas.",
+      "weights": {
+        "MARRIED": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_single_1",
+      "text": "Updated dating profile with new photos.",
+      "weights": {
+        "SINGLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_single_2",
+      "text": "Booked a spontaneous solo weekend getaway.",
+      "weights": {
+        "SINGLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_dual_inc_1",
+      "text": "Booked a luxury holiday to the Maldives.",
+      "weights": {
+        "DUAL_INCOME": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_dual_inc_2",
+      "text": "Hired a cleaner to help with housework.",
+      "weights": {
+        "DUAL_INCOME": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional"
+      ]
+    },
+    {
+      "id": "le_home_1",
+      "text": "Worried about rising mortgage interest rates.",
+      "weights": {
+        "MORTGAGE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional",
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_home_2",
+      "text": "Had to replace the boiler in the middle of winter.",
+      "weights": {
+        "HOMEOWNER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional",
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_home_3",
+      "text": "Renovated the garden for summer BBQs.",
+      "weights": {
+        "HOMEOWNER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional",
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_renter_prof_1",
+      "text": "Received a letter about a rent increase.",
+      "weights": {
+        "RENTER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional",
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_renter_prof_2",
+      "text": "Negotiated lease renewal terms with the landlord.",
+      "weights": {
+        "RENTER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Professional",
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_wealth_1",
+      "text": "Booked a 3-month world cruise.",
+      "weights": {
+        "HIGH_SALARY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_wealth_2",
+      "text": "Gifted a house deposit to a grandchild.",
+      "weights": {
+        "HIGH_SALARY": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_golden_1",
+      "text": "Threw a large party for their Golden Wedding Anniversary.",
+      "weights": {
+        "MARRIED": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_golden_2",
+      "text": "Walked hand-in-hand in the park every morning.",
+      "weights": {
+        "MARRIED": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_indep_1",
+      "text": "Joined a hiking club to meet new people.",
+      "weights": {
+        "SINGLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_indep_2",
+      "text": "Started learning a new language.",
+      "weights": {
+        "SINGLE": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_stay_1",
+      "text": "Sorted through decades of boxes in the attic.",
+      "weights": {
+        "HOMEOWNER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_stay_2",
+      "text": "Hosted the entire family for Christmas dinner.",
+      "weights": {
+        "HOMEOWNER": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_poor_1",
+      "text": "Worried about the cost of heating during winter.",
+      "weights": {
+        "RENTER": 50,
+        "POOR_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    },
+    {
+      "id": "le_senior_poor_2",
+      "text": "Used their bus pass to go into town for free.",
+      "weights": {
+        "RENTER": 50,
+        "POOR_ORIGIN": 50,
+        "DEFAULT": 0
+      },
+      "phases": [
+        "Senior"
+      ]
+    }
+  ],
   "tags": [
     {
       "id": "POOR_ORIGIN"

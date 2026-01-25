@@ -273,7 +273,11 @@ export class BioMachine {
             // Apply modifiers from tags
             currentTags.forEach(tag => {
                 if (opt.weights[tag] !== undefined) {
-                    weight *= opt.weights[tag];
+                    if (weight === 0) {
+                        weight = opt.weights[tag];
+                    } else {
+                        weight *= opt.weights[tag];
+                    }
                 }
             });
 
