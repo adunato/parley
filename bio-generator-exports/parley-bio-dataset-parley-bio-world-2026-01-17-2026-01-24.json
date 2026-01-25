@@ -147,7 +147,7 @@
         "POOR_ORIGIN": 1,
         "WORKING_CLASS_ORIGIN": 5,
         "MIDDLE_CLASS_ORIGIN": 10,
-        "RICH_ORIGIN": 25,
+        "RICH_ORIGIN": 20,
         "WEALTHY_ORIGIN": 50
       },
       "slot": "FORMATIVE",
@@ -162,10 +162,10 @@
       ],
       "weights": {
         "DEFAULT": 1,
-        "POOR_ORIGIN": 50,
-        "WORKING_CLASS_ORIGIN": 50,
-        "MIDDLE_CLASS_ORIGIN": 20,
-        "RICH_ORIGIN": 10,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 10,
+        "RICH_ORIGIN": 2,
         "WEALTHY_ORIGIN": 1,
         "STATE_SUPPORT_HISTORY": 5
       },
@@ -183,9 +183,9 @@
         "DEFAULT": 1,
         "POOR_ORIGIN": 5,
         "WORKING_CLASS_ORIGIN": 10,
-        "MIDDLE_CLASS_ORIGIN": 30,
-        "RICH_ORIGIN": 50,
-        "WEALTHY_ORIGIN": 40
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 20,
+        "WEALTHY_ORIGIN": 20
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
@@ -199,9 +199,9 @@
       ],
       "weights": {
         "DEFAULT": 1,
-        "POOR_ORIGIN": 50,
-        "WORKING_CLASS_ORIGIN": 50,
-        "MIDDLE_CLASS_ORIGIN": 25,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 10,
         "RICH_ORIGIN": 1,
         "WEALTHY_ORIGIN": 1
       },
@@ -218,9 +218,9 @@
       "weights": {
         "DEFAULT": 1,
         "POOR_ORIGIN": 10,
-        "WORKING_CLASS_ORIGIN": 20,
-        "MIDDLE_CLASS_ORIGIN": 50,
-        "RICH_ORIGIN": 10,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 5,
         "WEALTHY_ORIGIN": 1
       },
       "slot": "FORMATIVE",
@@ -235,9 +235,9 @@
       ],
       "weights": {
         "DEFAULT": 1,
-        "POOR_ORIGIN": 50,
-        "WORKING_CLASS_ORIGIN": 50,
-        "MIDDLE_CLASS_ORIGIN": 10,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 5,
         "RICH_ORIGIN": 1,
         "WEALTHY_ORIGIN": 1,
         "STATE_SUPPORT_HISTORY": 5
@@ -256,9 +256,9 @@
         "DEFAULT": 1,
         "POOR_ORIGIN": 5,
         "WORKING_CLASS_ORIGIN": 10,
-        "MIDDLE_CLASS_ORIGIN": 50,
-        "RICH_ORIGIN": 40,
-        "WEALTHY_ORIGIN": 30
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 20,
+        "WEALTHY_ORIGIN": 20
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
@@ -271,8 +271,8 @@
         "PARTNERED_EARLY"
       ],
       "weights": {
-        "SIBLINGS_2": 1.5,
-        "SIBLINGS_1": 1.2,
+        "SIBLINGS_2": 2,
+        "SIBLINGS_1": 2,
         "DEFAULT": 1
       },
       "slot": "FORMATIVE",
@@ -286,7 +286,7 @@
         "DATING_EXPERIENCE"
       ],
       "weights": {
-        "RICH_ORIGIN": 2,
+        "RICH_ORIGIN": 5,
         "DEFAULT": 1
       },
       "slot": "FORMATIVE",
@@ -300,7 +300,7 @@
         "INDEPENDENT_LIFESTYLE"
       ],
       "weights": {
-        "SIBLINGS_0": 2,
+        "SIBLINGS_0": 5,
         "DEFAULT": 1
       },
       "slot": "FORMATIVE",
@@ -351,9 +351,9 @@
       "weights": {
         "DEFAULT": 1,
         "POOR_ORIGIN": 10,
-        "WORKING_CLASS_ORIGIN": 30,
-        "MIDDLE_CLASS_ORIGIN": 50,
-        "RICH_ORIGIN": 10,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 5,
         "WEALTHY_ORIGIN": 1
       },
       "slot": "PROFESSIONAL",
@@ -372,10 +372,10 @@
       "weights": {
         "DEFAULT": 1,
         "POOR_ORIGIN": 1,
-        "WORKING_CLASS_ORIGIN": 10,
-        "MIDDLE_CLASS_ORIGIN": 50,
-        "RICH_ORIGIN": 30,
-        "WEALTHY_ORIGIN": 10
+        "WORKING_CLASS_ORIGIN": 5,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 10,
+        "WEALTHY_ORIGIN": 5
       },
       "slot": "PROFESSIONAL",
       "requires": [
@@ -394,7 +394,7 @@
         "STABLE_HOME"
       ],
       "weights": {
-        "DEFAULT": 10
+        "DEFAULT": 1
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
@@ -411,7 +411,7 @@
         "COMPLEX_HISTORY"
       ],
       "weights": {
-        "DEFAULT": 10
+        "DEFAULT": 1
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
@@ -428,7 +428,7 @@
         "DUAL_INCOME"
       ],
       "weights": {
-        "DEFAULT": 10,
+        "DEFAULT": 1,
         "TECH_SKILLS": 5
       },
       "slot": "PROFESSIONAL",
@@ -447,9 +447,9 @@
         "MORTGAGE"
       ],
       "weights": {
-        "HIGH_SALARY": 10,
+        "HIGH_SALARY": 20,
         "DEFAULT": 1,
-        "TRADES_SKILLS": 2
+        "TRADES_SKILLS": 5
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
@@ -463,11 +463,11 @@
         "CITY_LIVING"
       ],
       "weights": {
-        "INDEPENDENCE": 5,
+        "INDEPENDENCE": 10,
         "DEFAULT": 1,
-        "SHOP_SKILLS": 2,
-        "TECH_SKILLS": 5,
-        "RENTAL_HISTORY": 5
+        "SHOP_SKILLS": 5,
+        "TECH_SKILLS": 10,
+        "RENTAL_HISTORY": 10
       },
       "slot": "PROFESSIONAL",
       "phase": "Professional",
