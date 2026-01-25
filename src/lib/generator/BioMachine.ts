@@ -249,7 +249,8 @@ export class BioMachine {
 
                 const event = this.selectWeighted(availableEvents, currentTags);
                 if (event) {
-                    events.push(event);
+                    const eventWithPhase = { ...event, generatedPhase: phase };
+                    events.push(eventWithPhase);
                     previouslySelectedEventIds.add(event.id);
                     event.provides?.forEach(t => currentTags.add(t));
                 }

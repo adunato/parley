@@ -66,6 +66,7 @@ export interface LifeEvent {
     provides?: string[];
     weights: { [tag: string]: number; "DEFAULT": number };
     phases?: AgePhase[]; // Associated Age Phases
+    generatedPhase?: AgePhase; // The phase in which this event was generated
 }
 
 export interface Tag {
