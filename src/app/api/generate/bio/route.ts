@@ -9,18 +9,33 @@ export async function POST(req: NextRequest) {
         let prompt = PromptStore.getPrompt('bio_writer');
 
         // Format the data for the prompt
-        const identityStr = `${identity.firstName} ${identity.lastName} from ${identity.location}, ${identity.country}`;
-        const spineChildhood = spine.find((n: any) => n.slot === 'CHILDHOOD')?.id || 'Unknown';
-        const spineFormative = spine.find((n: any) => n.slot === 'FORMATIVE')?.id || 'Unknown';
-        const spineProfessional = spine.find((n: any) => n.slot === 'PROFESSIONAL')?.id || 'Unknown';
-        const spineSenior = spine.find((n: any) => n.slot === 'SENIOR')?.id || '';
         const fleshEvents = flesh.map((e: any) => e.text).join('; ');
+        const identityStr = `${identity.firstName} ${identity.lastName} from ${identity.location}, ${identity.country}`;
+
+        // Sort spine by phase order if needed, but usually they come in order or can be mapped by known phases
+        const PHASES = ['CHILDHOOD', 'FORMATIVE', 'PROFESSIONAL', 'SENIOR'];
+
+        // Group spine nodes by phase to handle multiple entries per phase (e.g. concurrent tracks)
+        const spineByPhase: Record<string, string[]> = {};
+
+        spine.forEach((node: any) => {
+            const phase = node.slot || 'UNKNOWN';
+            if (!spineByPhase[phase]) spineByPhase[phase] = [];
+            // Use text if available, otherwise fallback to id (but text should be there)
+            spineByPhase[phase].push(node.text || node.id);
+        });
+
+        let spineStr = '';
+        PHASES.forEach(phase => {
+            if (spineByPhase[phase] && spineByPhase[phase].length > 0) {
+                // Capitalize first letter for display (e.g. CHILDHOOD -> Childhood)
+                const displayPhase = phase.charAt(0).toUpperCase() + phase.slice(1).toLowerCase();
+                // Join multiple events in the same phase with a space
+                spineStr += `* ${displayPhase}: ${spineByPhase[phase].join(' ')}\n`;
+            }
+        });
 
         prompt = prompt.split('{{identity}}').join(identityStr);
-        
-        let spineStr = `Childhood: ${spineChildhood}\n* Formative: ${spineFormative}\n* Professional: ${spineProfessional}`;
-        if (spineSenior) spineStr += `\n* Senior: ${spineSenior}`;
-        
         prompt = prompt.split('{{spine}}').join(spineStr);
         prompt = prompt.split('{{flesh}}').join(fleshEvents);
         prompt = prompt.split('{{aiStyle}}').join(aiStyle || 'Standard');

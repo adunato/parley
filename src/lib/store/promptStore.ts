@@ -312,11 +312,11 @@ JSON Output:
         template: `You are writing a biography for a character in a {{aiStyle}} story.
 
 **Facts (Do NOT contradict these):**
-* Name: {{identity}}
-* Origin: {{spine}}
-* Education: {{spine}}
-* Career: {{spine}}
-* Life Events: {{flesh}}
+* Identity: {{identity}}
+* Life History:
+{{spine}}
+* Key Life Events:
+{{flesh}}
 
 Write a 2-paragraph background story weaving these facts together naturally. Focus on their psychology and current state.`
     },
