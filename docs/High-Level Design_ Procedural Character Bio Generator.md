@@ -243,6 +243,11 @@ The "actual chance" of an event is its share of the total weight in the current 
 
 **Probability = (Event Weight) / (Sum of All Weights in the Feasible Pool)**
 
+*   **Weight Calculation Logic (Unlocked vs Modified):**
+    *   **Scaling:** If the Base Weight is > 0, Tag Modifiers **multiply** it. (e.g., Base 10 * Modifier 2 = 20).
+    *   **Unlocking:** If the Base Weight is **0** (Conditional Event), a Tag Modifier **replaces** it. (e.g., Base 0 * Modifier 50 = **50**).
+    *   This allows events to be "Invisible" by default (`DEFAULT: 0`) and only appear for characters with specific tags.
+
 *   **Competing Events Example:**
     *   Imagine a selection pool with two events: **Ivy League** (Default Weight: 5) and **Trade School** (Default Weight: 20).
     *   **Total Weight:** 5 + 20 = 25.
@@ -252,7 +257,7 @@ The "actual chance" of an event is its share of the total weight in the current 
     *   **New Ivy League Weight:** 5 × 10 = 50.
     *   **New Total Weight:** 50 + 20 = 70.
     *   **New Ivy League Chance:** 50/70 = **71.4%**.
-*   **Default Weight:** This is the baseline "gravity" of an option before any modifiers are applied. It represents how common an event is in a vacuum.
+*   **Default Weight:** This is the baseline "gravity" of an option before any modifiers are applied. It represents how common an event is in a vacuum. Setting this to `0` creates a Conditional Event.
 
 ---
 
