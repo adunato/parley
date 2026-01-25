@@ -367,6 +367,58 @@
       "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
     },
     {
+      "id": "career_tech",
+      "text": "Built a successful career in software development, capitalizing on the digital boom.",
+      "provides": [
+        "HIGH_SALARY",
+        "TECH_CAREER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "TECH_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "career_electrician",
+      "text": "Established a reputation as a reliable and skilled electrician, eventually running their own small business.",
+      "provides": [
+        "MEDIUM_SALARY",
+        "TRADES_CAREER",
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "TRADES_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "career_retail_manager",
+      "text": "Worked their way up from the shop floor to regional management, mastering the logistics of retail.",
+      "provides": [
+        "MEDIUM_SALARY",
+        "RETAIL_CAREER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "SHOP_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
       "id": "secondary_school_head_teacher_copy",
       "text": "Becomes a Head Teacher at the local Secondary School.",
       "provides": [
@@ -481,6 +533,30 @@
   ],
   "senior": [
     {
+      "id": "senior_wealthy",
+      "text": "Enjoyed a comfortable retirement, traveling frequently and supporting grandchildren.",
+      "weights": {
+        "HIGH_SALARY": 10,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "requires": [
+        "HOMEOWNER"
+      ]
+    },
+    {
+      "id": "senior_struggling",
+      "text": "Retired on a state pension, having to be careful with daily expenses.",
+      "weights": {
+        "RENTER": 10,
+        "POOR_ORIGIN": 5,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior"
+    },
+    {
       "id": "retired",
       "text": "Retired",
       "weights": {
@@ -593,6 +669,15 @@
     },
     {
       "id": "CITY_LIVING"
+    },
+    {
+      "id": "TECH_CAREER"
+    },
+    {
+      "id": "TRADES_CAREER"
+    },
+    {
+      "id": "RETAIL_CAREER"
     }
   ],
   "groups": [
