@@ -1,0 +1,22 @@
+[
+  {
+    "id": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d",
+    "name": "Siblings"
+  },
+  {
+    "id": "529c7e26-ef84-4204-8f09-138834e5b731",
+    "name": "Origins"
+  },
+  {
+    "id": "1569db4c-5a99-462d-80c3-28dadc016275",
+    "name": "Education"
+  },
+  {
+    "id": "rel_track",
+    "name": "Relationships"
+  },
+  {
+    "id": "house_track",
+    "name": "Housing"
+  }
+]

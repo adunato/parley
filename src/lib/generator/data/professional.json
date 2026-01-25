@@ -1,36 +1,134 @@
 [
     {
-        "id": "investment_banker",
-        "slot": "PROFESSIONAL",
-        "text": "Secured a high-pressure job at an investment bank.",
+        "id": "secondary_school_teacher",
+        "text": "Becomes a Teacher at the local Secondary School.",
         "provides": [
-            "WEALTHY",
-            "BURNOUT",
-            "HIGH_STATUS"
-        ],
-        "requires": [
-            "DEGREE_ADVANCED"
+            "SECONDARY_SCHOOL_TEACHER",
+            "MEDIUM_SALARY"
         ],
         "weights": {
-            "ALUMNI_NETWORK": 100,
-            "DEFAULT": 10
+            "DEFAULT": 1,
+            "POOR_ORIGIN": 10,
+            "WORKING_CLASS_ORIGIN": 30,
+            "MIDDLE_CLASS_ORIGIN": 50,
+            "RICH_ORIGIN": 10,
+            "WEALTHY_ORIGIN": 1
         },
+        "slot": "PROFESSIONAL",
+        "requires": [
+            "DEGREE"
+        ],
         "phase": "Professional"
     },
     {
-        "id": "electrician",
-        "slot": "PROFESSIONAL",
-        "text": "Started a contracting business fixing residential wiring.",
+        "id": "secondary_school_head_teacher_copy",
+        "text": "Becomes a Head Teacher at the local Secondary School.",
         "provides": [
-            "STABLE_INCOME",
-            "PHYSICAL_TOLL"
-        ],
-        "requires": [
-            "TRADESMAN_CERT"
+            "SECONDARY_SCHOOL_HEAD_TEACHER",
+            "HIGH_SALARY"
         ],
         "weights": {
-            "DEFAULT": 50
+            "DEFAULT": 1,
+            "POOR_ORIGIN": 1,
+            "WORKING_CLASS_ORIGIN": 10,
+            "MIDDLE_CLASS_ORIGIN": 50,
+            "RICH_ORIGIN": 30,
+            "WEALTHY_ORIGIN": 10
         },
+        "slot": "PROFESSIONAL",
+        "requires": [
+            "ADVANCED_DEGREE"
+        ],
         "phase": "Professional"
+    },
+    {
+        "id": "rel_married_early",
+        "text": "Got married and started a committed domestic life.",
+        "requires": [
+            "PARTNERED_EARLY"
+        ],
+        "provides": [
+            "MARRIED",
+            "STABLE_HOME"
+        ],
+        "weights": {
+            "DEFAULT": 10
+        },
+        "slot": "PROFESSIONAL",
+        "phase": "Professional",
+        "groupId": "rel_track"
+    },
+    {
+        "id": "rel_serial_monogamy",
+        "text": "Moved through a series of significant but ultimately temporary relationships.",
+        "requires": [
+            "DATING_EXPERIENCE"
+        ],
+        "provides": [
+            "SINGLE",
+            "COMPLEX_HISTORY"
+        ],
+        "weights": {
+            "DEFAULT": 10
+        },
+        "slot": "PROFESSIONAL",
+        "phase": "Professional",
+        "groupId": "rel_track"
+    },
+    {
+        "id": "rel_power_couple",
+        "text": "Formed a partnership based on shared ambition and career focus.",
+        "requires": [
+            "INDEPENDENT_LIFESTYLE"
+        ],
+        "provides": [
+            "MARRIED",
+            "DUAL_INCOME"
+        ],
+        "weights": {
+            "DEFAULT": 10,
+            "TECH_SKILLS": 5
+        },
+        "slot": "PROFESSIONAL",
+        "phase": "Professional",
+        "groupId": "rel_track"
+    },
+    {
+        "id": "housing_bought",
+        "text": "Purchased a property with a mortgage.",
+        "requires": [
+            "SAVINGS",
+            "PROPERTY_LADDER_AWARENESS"
+        ],
+        "provides": [
+            "HOMEOWNER",
+            "MORTGAGE"
+        ],
+        "weights": {
+            "HIGH_SALARY": 10,
+            "DEFAULT": 1,
+            "TRADES_SKILLS": 2
+        },
+        "slot": "PROFESSIONAL",
+        "phase": "Professional",
+        "groupId": "house_track"
+    },
+    {
+        "id": "housing_rented",
+        "text": "Rented an apartment in a busy urban area.",
+        "provides": [
+            "RENTER",
+            "CITY_LIVING"
+        ],
+        "weights": {
+            "INDEPENDENCE": 5,
+            "DEFAULT": 1,
+            "SHOP_SKILLS": 2,
+            "TECH_SKILLS": 5,
+            "RENTAL_HISTORY": 5
+        },
+        "slot": "PROFESSIONAL",
+        "phase": "Professional",
+        "groupId": "house_track"
     }
 ]

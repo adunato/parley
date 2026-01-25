@@ -1,0 +1,815 @@
+{
+  "childhood": [
+    {
+      "id": "poor_origin",
+      "text": "Born in a poor family struggling to make ends meet",
+      "provides": [
+        "POOR_ORIGIN"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+    },
+    {
+      "id": "WORKING_CLASS_ORIGIN",
+      "text": "Born in a working class family",
+      "provides": [
+        "WORKING_CLASS_ORIGIN"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+    },
+    {
+      "id": "MIDDLE_CLASS_ORIGIN",
+      "text": "Born in a middle class family",
+      "provides": [
+        "MIDDLE_CLASS_ORIGIN"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+    },
+    {
+      "id": "RICH_ORIGIN",
+      "text": "Born in a well off family",
+      "provides": [
+        "RICH_ORIGIN"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+    },
+    {
+      "id": "WEALTHY_ORIGIN",
+      "text": "Born in a wealthy family",
+      "provides": [
+        "WEALTHY_ORIGIN"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "529c7e26-ef84-4204-8f09-138834e5b731"
+    },
+    {
+      "id": "no_siblings",
+      "text": "Had no siblings",
+      "provides": [
+        "SIBLINGS_0"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+    },
+    {
+      "id": "one_sibling",
+      "text": "Had one sibling",
+      "provides": [
+        "SIBLINGS_1"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+    },
+    {
+      "id": "two_siblings",
+      "text": "Had two siblings",
+      "provides": [
+        "SIBLINGS_2"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d"
+    },
+    {
+      "id": "housing_social",
+      "text": "Lived in government-supported social housing.",
+      "provides": [
+        "STATE_SUPPORT_HISTORY"
+      ],
+      "weights": {
+        "POOR_ORIGIN": 100,
+        "DEFAULT": 0
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "house_track"
+    },
+    {
+      "id": "housing_owned",
+      "text": "Lived in a family-owned property.",
+      "provides": [
+        "PROPERTY_LADDER_AWARENESS"
+      ],
+      "weights": {
+        "MIDDLE_CLASS_ORIGIN": 50,
+        "RICH_ORIGIN": 100,
+        "DEFAULT": 0
+      },
+      "slot": "CHILDHOOD",
+      "phase": "Childhood",
+      "groupId": "house_track"
+    }
+  ],
+  "formative": [
+    {
+      "id": "oxbridge_admission",
+      "text": "They were accepted into either Oxford University, a prestigious achievement that brought both pride and pressure. The rigorous academic environment pushed them to excel but also introduced them to a world of high expectations and intense competition.",
+      "provides": [
+        "DEGREE",
+        "ADVANCED_DEGREE"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 1,
+        "WORKING_CLASS_ORIGIN": 5,
+        "MIDDLE_CLASS_ORIGIN": 10,
+        "RICH_ORIGIN": 20,
+        "WEALTHY_ORIGIN": 50
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "apprenticeship_electrician",
+      "text": "They took up an apprenticeship as an electrician, balancing work and study. The hands-on experience taught them practical problem-solving skills and the value of technical expertise.",
+      "provides": [
+        "TRADES_SKILLS"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 10,
+        "RICH_ORIGIN": 2,
+        "WEALTHY_ORIGIN": 1,
+        "STATE_SUPPORT_HISTORY": 5
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "university_philosophy",
+      "text": "They pursued a degree in philosophy, engaging deeply with theoretical concepts and ethical dilemmas. This academic journey cultivated their critical thinking and analytical skills.",
+      "provides": [
+        "DEGREE"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 5,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 20,
+        "WEALTHY_ORIGIN": 20
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "school_leaver_retail",
+      "text": "They joined a school leaver program in retail, combining work with professional qualifications. This experience honed their customer service skills and taught them the intricacies of business operations.",
+      "provides": [
+        "SHOP_SKILLS"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 10,
+        "RICH_ORIGIN": 1,
+        "WEALTHY_ORIGIN": 1
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "skills_bootcamp_coding",
+      "text": "They attended a skills bootcamp in coding, immersing themselves in intensive learning. This fast-tracked their entry into the tech industry and sharpened their programming abilities.",
+      "provides": [
+        "TECH_SKILLS"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 10,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 5,
+        "WEALTHY_ORIGIN": 1
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "direct_employment_construction",
+      "text": "They entered the workforce directly as a construction worker, gaining early experience in the building trade. This job taught them the importance of teamwork and physical endurance.",
+      "provides": [
+        "TRADES_SKILLS"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 20,
+        "WORKING_CLASS_ORIGIN": 20,
+        "MIDDLE_CLASS_ORIGIN": 5,
+        "RICH_ORIGIN": 1,
+        "WEALTHY_ORIGIN": 1,
+        "STATE_SUPPORT_HISTORY": 5
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "university_engineering",
+      "text": "They earned a degree in engineering, solving complex problems and designing innovative solutions. This academic pursuit developed their engineering acumen and innovative thinking.",
+      "provides": [
+        "DEGREE"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 5,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 20,
+        "WEALTHY_ORIGIN": 20
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "1569db4c-5a99-462d-80c3-28dadc016275"
+    },
+    {
+      "id": "rel_hs_sweetheart",
+      "text": "Met a significant romantic partner in school and committed to a serious relationship early.",
+      "provides": [
+        "PARTNERED_EARLY"
+      ],
+      "weights": {
+        "SIBLINGS_2": 3,
+        "SIBLINGS_1": 2,
+        "DEFAULT": 1,
+        "SIBLINGS_0": 1
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "rel_casual_dating",
+      "text": "Dated actively and casually, meeting many different people without settling down.",
+      "provides": [
+        "DATING_EXPERIENCE"
+      ],
+      "weights": {
+        "RICH_ORIGIN": 5,
+        "DEFAULT": 1
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "rel_single_focus",
+      "text": "Remained single to focus entirely on personal goals and studies.",
+      "provides": [
+        "INDEPENDENT_LIFESTYLE"
+      ],
+      "weights": {
+        "SIBLINGS_0": 5,
+        "DEFAULT": 1,
+        "SIBLINGS_1": 2,
+        "SIBLINGS_2": 1
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "housing_student_halls",
+      "text": "Moved into university dormitories.",
+      "requires": [
+        "DEGREE"
+      ],
+      "provides": [
+        "RENTAL_HISTORY",
+        "INDEPENDENCE"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "house_track"
+    },
+    {
+      "id": "housing_parents",
+      "text": "Continued living with parents to save money.",
+      "provides": [
+        "SAVINGS"
+      ],
+      "weights": {
+        "POOR_ORIGIN": 5,
+        "DEFAULT": 1,
+        "PROPERTY_LADDER_AWARENESS": 10
+      },
+      "slot": "FORMATIVE",
+      "phase": "Formative",
+      "groupId": "house_track"
+    }
+  ],
+  "professional": [
+    {
+      "id": "secondary_school_teacher",
+      "text": "Becomes a Teacher at the local Secondary School.",
+      "provides": [
+        "SECONDARY_SCHOOL_TEACHER",
+        "MEDIUM_SALARY"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 10,
+        "WORKING_CLASS_ORIGIN": 10,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 5,
+        "WEALTHY_ORIGIN": 1
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "DEGREE"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "career_tech",
+      "text": "Built a successful career in software development, capitalizing on the digital boom.",
+      "provides": [
+        "HIGH_SALARY",
+        "TECH_CAREER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "TECH_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "career_electrician",
+      "text": "Established a reputation as a reliable and skilled electrician, eventually running their own small business.",
+      "provides": [
+        "MEDIUM_SALARY",
+        "TRADES_CAREER",
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "TRADES_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "career_retail_manager",
+      "text": "Worked their way up from the shop floor to regional management, mastering the logistics of retail.",
+      "provides": [
+        "MEDIUM_SALARY",
+        "RETAIL_CAREER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "SHOP_SKILLS"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "secondary_school_head_teacher_copy",
+      "text": "Becomes a Head Teacher at the local Secondary School.",
+      "provides": [
+        "SECONDARY_SCHOOL_HEAD_TEACHER",
+        "HIGH_SALARY"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "POOR_ORIGIN": 1,
+        "WORKING_CLASS_ORIGIN": 5,
+        "MIDDLE_CLASS_ORIGIN": 20,
+        "RICH_ORIGIN": 10,
+        "WEALTHY_ORIGIN": 5
+      },
+      "slot": "PROFESSIONAL",
+      "requires": [
+        "ADVANCED_DEGREE"
+      ],
+      "phase": "Professional",
+      "groupId": "0874a80f-fef4-449f-8c24-bab4d2ac9428"
+    },
+    {
+      "id": "rel_married_early",
+      "text": "Got married and started a committed domestic life.",
+      "requires": [
+        "PARTNERED_EARLY"
+      ],
+      "provides": [
+        "MARRIED",
+        "STABLE_HOME"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "PROFESSIONAL",
+      "phase": "Professional",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "rel_serial_monogamy",
+      "text": "Moved through a series of significant but ultimately temporary relationships.",
+      "requires": [
+        "DATING_EXPERIENCE"
+      ],
+      "provides": [
+        "SINGLE",
+        "COMPLEX_HISTORY"
+      ],
+      "weights": {
+        "DEFAULT": 1
+      },
+      "slot": "PROFESSIONAL",
+      "phase": "Professional",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "rel_power_couple",
+      "text": "Formed a partnership based on shared ambition and career focus.",
+      "requires": [
+        "INDEPENDENT_LIFESTYLE"
+      ],
+      "provides": [
+        "MARRIED",
+        "DUAL_INCOME"
+      ],
+      "weights": {
+        "DEFAULT": 1,
+        "TECH_SKILLS": 5
+      },
+      "slot": "PROFESSIONAL",
+      "phase": "Professional",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "housing_bought",
+      "text": "Purchased a property with a mortgage.",
+      "requires": [
+        "SAVINGS",
+        "PROPERTY_LADDER_AWARENESS"
+      ],
+      "provides": [
+        "HOMEOWNER",
+        "MORTGAGE"
+      ],
+      "weights": {
+        "HIGH_SALARY": 20,
+        "DEFAULT": 1,
+        "TRADES_SKILLS": 5
+      },
+      "slot": "PROFESSIONAL",
+      "phase": "Professional",
+      "groupId": "house_track"
+    },
+    {
+      "id": "housing_rented",
+      "text": "Rented an apartment in a busy urban area.",
+      "provides": [
+        "RENTER"
+      ],
+      "weights": {
+        "INDEPENDENCE": 10,
+        "DEFAULT": 1,
+        "SHOP_SKILLS": 5,
+        "TECH_SKILLS": 10,
+        "RENTAL_HISTORY": 10
+      },
+      "slot": "PROFESSIONAL",
+      "phase": "Professional",
+      "groupId": "house_track"
+    }
+  ],
+  "senior": [
+    {
+      "id": "senior_wealthy",
+      "text": "Enjoyed a comfortable retirement, traveling frequently and supporting grandchildren.",
+      "weights": {
+        "HIGH_SALARY": 10,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "requires": [
+        "HOMEOWNER"
+      ],
+      "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
+    },
+    {
+      "id": "senior_golden_years",
+      "text": "Celebrated decades of marriage with their long-term partner.",
+      "requires": [
+        "MARRIED"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "senior_independent",
+      "text": "Enjoyed the freedom of single life, socializing with friends and pursuing hobbies.",
+      "requires": [
+        "SINGLE"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "rel_track"
+    },
+    {
+      "id": "senior_stayed_put",
+      "text": "Remained in their long-term family home.",
+      "requires": [
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "STABLE_HOME": 5,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
+      "id": "senior_downsized",
+      "text": "Sold their property to move into a smaller, more manageable home.",
+      "requires": [
+        "HOMEOWNER"
+      ],
+      "weights": {
+        "DEFAULT": 5
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
+      "id": "senior_renting",
+      "text": "Continued renting, facing rising costs but maintaining flexibility.",
+      "requires": [
+        "RENTER"
+      ],
+      "weights": {
+        "DEFAULT": 10
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "house_track"
+    },
+    {
+      "id": "senior_struggling",
+      "text": "Retired on a state pension, having to be careful with daily expenses.",
+      "weights": {
+        "RENTER": 10,
+        "POOR_ORIGIN": 5,
+        "DEFAULT": 1
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
+    },
+    {
+      "id": "senior_standard",
+      "text": "Retired with a standard pension, capable of maintaining a modest lifestyle.",
+      "weights": {
+        "DEFAULT": 1,
+        "MEDIUM_SALARY": 10,
+        "DUAL_INCOME": 5,
+        "MORTGAGE": 5
+      },
+      "slot": "SENIOR",
+      "phase": "Senior",
+      "groupId": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c"
+    }
+  ],
+  "lifeEvents": [],
+  "tags": [
+    {
+      "id": "POOR_ORIGIN"
+    },
+    {
+      "id": "WORKING_CLASS_ORIGIN"
+    },
+    {
+      "id": "MIDDLE_CLASS_ORIGIN"
+    },
+    {
+      "id": "RICH_ORIGIN"
+    },
+    {
+      "id": "WEALTHY_ORIGIN"
+    },
+    {
+      "id": "SIBLINGS_0"
+    },
+    {
+      "id": "SIBLINGS_1"
+    },
+    {
+      "id": "SIBLINGS_2"
+    },
+    {
+      "id": "DEGREE"
+    },
+    {
+      "id": "ADVANCED_DEGREE"
+    },
+    {
+      "id": "TRADES_SKILLS"
+    },
+    {
+      "id": "SHOP_SKILLS"
+    },
+    {
+      "id": "TECH_SKILLS"
+    },
+    {
+      "id": "SECONDARY_SCHOOL_TEACHER"
+    },
+    {
+      "id": "SECONDARY_SCHOOL_HEAD_TEACHER"
+    },
+    {
+      "id": "HIGH_SALARY"
+    },
+    {
+      "id": "MEDIUM_SALARY"
+    },
+    {
+      "id": "PARTNERED_EARLY"
+    },
+    {
+      "id": "DATING_EXPERIENCE"
+    },
+    {
+      "id": "INDEPENDENT_LIFESTYLE"
+    },
+    {
+      "id": "MARRIED"
+    },
+    {
+      "id": "STABLE_HOME"
+    },
+    {
+      "id": "SINGLE"
+    },
+    {
+      "id": "COMPLEX_HISTORY"
+    },
+    {
+      "id": "DUAL_INCOME"
+    },
+    {
+      "id": "STATE_SUPPORT_HISTORY"
+    },
+    {
+      "id": "PROPERTY_LADDER_AWARENESS"
+    },
+    {
+      "id": "RENTAL_HISTORY"
+    },
+    {
+      "id": "INDEPENDENCE"
+    },
+    {
+      "id": "SAVINGS"
+    },
+    {
+      "id": "HOMEOWNER"
+    },
+    {
+      "id": "MORTGAGE"
+    },
+    {
+      "id": "RENTER"
+    },
+    {
+      "id": "TECH_CAREER"
+    },
+    {
+      "id": "TRADES_CAREER"
+    },
+    {
+      "id": "RETAIL_CAREER"
+    }
+  ],
+  "groups": [
+    {
+      "id": "9b741d4e-e2c9-4b5e-92d4-9407ae25f30d",
+      "name": "Siblings"
+    },
+    {
+      "id": "529c7e26-ef84-4204-8f09-138834e5b731",
+      "name": "Origins"
+    },
+    {
+      "id": "1569db4c-5a99-462d-80c3-28dadc016275",
+      "name": "Education"
+    },
+    {
+      "id": "rel_track",
+      "name": "Relationships"
+    },
+    {
+      "id": "house_track",
+      "name": "Housing"
+    },
+    {
+      "id": "0874a80f-fef4-449f-8c24-bab4d2ac9428",
+      "name": "Career"
+    },
+    {
+      "id": "7bdf8f61-8ef2-4b5d-8bbb-36a908ca4f5c",
+      "name": "Retirement"
+    }
+  ],
+  "phaseConfig": {
+    "Childhood": {
+      "id": "Childhood",
+      "startAge": 0,
+      "endAge": 18,
+      "simulationInterval": 5,
+      "eventChance": 0.3,
+      "spineSlot": "CHILDHOOD"
+    },
+    "Formative": {
+      "id": "Formative",
+      "startAge": 18,
+      "endAge": 25,
+      "simulationInterval": 2,
+      "eventChance": 0.4,
+      "spineSlot": "FORMATIVE"
+    },
+    "Professional": {
+      "id": "Professional",
+      "startAge": 25,
+      "endAge": 65,
+      "simulationInterval": 5,
+      "eventChance": 0.5,
+      "spineSlot": "PROFESSIONAL"
+    },
+    "Senior": {
+      "id": "Senior",
+      "startAge": 65,
+      "endAge": 100,
+      "simulationInterval": 5,
+      "eventChance": 0.4,
+      "spineSlot": "SENIOR"
+    }
+  }
+}

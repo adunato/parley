@@ -8,6 +8,7 @@ import childhoodData from '../generator/data/childhood.json';
 import formativeData from '../generator/data/formative.json';
 import professionalData from '../generator/data/professional.json';
 import eventsData from '../generator/data/events.json';
+import groupsData from '../generator/data/groups.json';
 
 interface BioStoreState {
     childhood: EventNode[];
@@ -430,7 +431,7 @@ export const useBioStore = create<BioStoreState>()(
                         state.senior = [];
                         state.lifeEvents = eventsData;
                         state.tags = [];
-                        state.groups = [];
+                        state.groups = groupsData;
                     }
 
                     // 2. Harvest Tags Migration
@@ -505,6 +506,17 @@ export const useBioStore = create<BioStoreState>()(
                     fixSlot(state.childhood, 'ORIGIN', 'CHILDHOOD');
                     fixSlot(state.formative, 'EDUCATION', 'FORMATIVE');
                     fixSlot(state.professional, 'CAREER', 'PROFESSIONAL');
+
+                    // 5. Ensure Default Groups exist (CR042)
+                    if (state.groups) {
+                        const existingGroupIds = new Set(state.groups.map((g: any) => g.id));
+                        groupsData.forEach((g: any) => {
+                            if (!existingGroupIds.has(g.id)) {
+                                console.log(`BioStore: Adding missing group '${g.name}'`);
+                                state.groups.push(g);
+                            }
+                        });
+                    }
 
                     state._hasHydrated = true;
                 }
