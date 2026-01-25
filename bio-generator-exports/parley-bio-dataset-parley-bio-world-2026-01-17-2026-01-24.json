@@ -271,9 +271,10 @@
         "PARTNERED_EARLY"
       ],
       "weights": {
-        "SIBLINGS_2": 2,
+        "SIBLINGS_2": 3,
         "SIBLINGS_1": 2,
-        "DEFAULT": 1
+        "DEFAULT": 1,
+        "SIBLINGS_0": 1
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
@@ -301,7 +302,9 @@
       ],
       "weights": {
         "SIBLINGS_0": 5,
-        "DEFAULT": 1
+        "DEFAULT": 1,
+        "SIBLINGS_1": 2,
+        "SIBLINGS_2": 1
       },
       "slot": "FORMATIVE",
       "phase": "Formative",
