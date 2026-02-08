@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup, ConnectionOptions } from '../generator/types';
+import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup, ConnectionOptions, SymbolicMapping } from '../generator/types';
 
 // Default Data Imports
 import childhoodData from '../generator/data/childhood.json';
@@ -60,11 +60,18 @@ interface BioStoreState {
     setPhaseConfig: (config: Record<AgePhase, PhaseConfig>) => void;
     setGraphSettings: (settings: Partial<BioStoreState['graphSettings']>) => void;
 
+
     // Registers multiple tags if they don't already exist
     registerTags: (tagIds: string[]) => void;
 
     // Prune unused tags
     pruneUnusedTags: () => void;
+
+    // Symbolic Mappings
+    symbolicMappings: SymbolicMapping[];
+    addSymbolicMapping: (mapping: SymbolicMapping) => void;
+    updateSymbolicMapping: (oldKey: { category: string, key: string }, mapping: SymbolicMapping) => void;
+    deleteSymbolicMapping: (category: string, key: string) => void;
 
     setData: (data: {
         childhood: EventNode[];
@@ -75,6 +82,7 @@ interface BioStoreState {
         tags: Tag[];
         groups: BioGroup[];
         phaseConfig?: Record<AgePhase, PhaseConfig>;
+        symbolicMappings?: SymbolicMapping[];
     }) => void;
 
     // Computed
@@ -87,6 +95,7 @@ interface BioStoreState {
         tags: Tag[];
         groups: BioGroup[];
         phaseConfig: Record<AgePhase, PhaseConfig>;
+        symbolicMappings: SymbolicMapping[];
     };
 
     _hasHydrated: boolean;
@@ -109,6 +118,7 @@ export const useBioStore = create<BioStoreState>()(
                 verticalSpacing: 200,
                 edgeLabelPosition: 50
             },
+            symbolicMappings: [],
 
             addChildhood: (item) => set((state) => ({ childhood: [...state.childhood, item] })),
             updateChildhood: (item) => set((state) => ({
@@ -377,6 +387,23 @@ export const useBioStore = create<BioStoreState>()(
 
                 return { tags: newTags };
             }),
+
+
+            addSymbolicMapping: (mapping) => set((state) => ({
+                symbolicMappings: [...(state.symbolicMappings || []), mapping]
+            })),
+
+            updateSymbolicMapping: (oldKey, mapping) => set((state) => ({
+                symbolicMappings: (state.symbolicMappings || []).map(m =>
+                    (m.category === oldKey.category && m.key === oldKey.key) ? mapping : m
+                )
+            })),
+
+            deleteSymbolicMapping: (category, key) => set((state) => ({
+                symbolicMappings: (state.symbolicMappings || []).filter(m =>
+                    !(m.category === category && m.key === key)
+                )
+            })),
 
             // Bulk Set (for migration)
             setData: (data) => set({ ...data, phaseConfig: data.phaseConfig || AGE_PHASES }),

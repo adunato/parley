@@ -6,6 +6,7 @@ import { TagDatasetEditor } from "@/components/bio-config/tag-dataset-editor";
 import { BioGraphView } from "@/components/bio-config/bio-graph-view";
 import { BioPhaseSettings } from "@/components/bio-config/bio-phase-settings";
 import { BioDatasetManager } from "@/components/bio-config/bio-dataset-manager";
+import { BioMappingEditor } from "@/components/bio-config/bio-mapping-editor";
 import { ConfigPage } from "@/components/layout/config-page";
 
 import { useBioStore } from "@/lib/store/bioStore";
@@ -144,6 +145,7 @@ export default function BioConfigPage() {
                     <TabsTrigger value="senior">Senior</TabsTrigger>
                     <TabsTrigger value="events">Life Events</TabsTrigger>
                     <TabsTrigger value="tags">Tags</TabsTrigger>
+                    <TabsTrigger value="mappings">Mappings</TabsTrigger>
                     <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
 
@@ -227,6 +229,10 @@ export default function BioConfigPage() {
                         onUpdate={store.updateTag}
                         onDelete={store.deleteTag}
                     />
+                </TabsContent>
+
+                <TabsContent value="mappings" className="space-y-4">
+                    <BioMappingEditor />
                 </TabsContent>
 
                 <TabsContent value="settings" className="space-y-4">

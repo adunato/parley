@@ -88,6 +88,7 @@ export interface BioGroup {
 export interface BioGenerationRequest {
     targetProfessionalId?: string; // Pinning constraint
     targetChildhoodId?: string; // Pinning constraint
+    pinnedNodeIds?: string[]; // Generic pinning constraint
     age?: number;
 }
 

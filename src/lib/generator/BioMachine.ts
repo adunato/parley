@@ -26,75 +26,118 @@ export class BioMachine {
         const age = request.age || 30; // Default age
 
         // --- 1. Pre-Filtering (Constraints & Pinning) ---
-        let validChildhood = [...this.childhood];
-        let validFormative = [...this.formative];
-        let validProfessional = [...this.professional];
-        let validSenior = [...this.senior];
+        // Initialize valid sets with all available data
+        const validSets: Record<AgePhase, EventNode[]> = {
+            'Childhood': [...this.childhood],
+            'Formative': [...this.formative],
+            'Professional': [...this.professional],
+            'Senior': [...this.senior]
+        };
 
-        // A. Pinning
-        if (request.targetChildhoodId) {
-            const target = this.childhood.find(n => n.id === request.targetChildhoodId);
-            if (target) {
-                const targetGroupId = target.groupId; // Can be undefined
-                validChildhood = validChildhood.filter(node => {
-                    // If both share the same group (or both are ungrouped), filter out everything except the target
-                    if (node.groupId === targetGroupId) {
-                        return node.id === target.id;
+        const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
+        const pinnedIds = new Set(request.pinnedNodeIds || []);
+
+        // Legacy Support: Add legacy targets to pinned set
+        if (request.targetChildhoodId) pinnedIds.add(request.targetChildhoodId);
+        if (request.targetProfessionalId) pinnedIds.add(request.targetProfessionalId);
+
+        // A. Apply Pinning Constraints (Hard Filter)
+        // If a node in a phase is pinned, remove all other nodes for that phase (unless they are in different groups? No, pinning forces selection)
+        // Actually, pinning logic needs to be group-aware or slot-aware.
+        // Current simplified logic: If a pinned node exists for a phase, it becomes the ONLY option for its group.
+
+        // We need to know which phase a pinned node belongs to.
+        // We iterate through all phases and filter the validSets.
+        phases.forEach(phase => {
+            const potentialNodes = validSets[phase];
+            const pinnedNodesInPhase = potentialNodes.filter(n => pinnedIds.has(n.id));
+
+            if (pinnedNodesInPhase.length > 0) {
+                // We have pinned nodes in this phase.
+                // We must restrict the valid set to ONLY these pinned nodes, 
+                // OR we only restrict the groups that these nodes belong to?
+                // For now, let's assume pinning is strict: If you pin something, you only get that. 
+                // But wait, what if you pin a Career but not an Origin? Origin should be full pool.
+                // What if you pin TWO Careers (e.g. multi-classing)? 
+                // The prompt implies 1-1 mapping for now.
+
+                // Strategy: For each Group in this phase that has a pinned node, restrict that Group to the pinned node(s).
+                // If a Group has NO pinned nodes, it remains full size (unless later restricted by backward prop).
+
+                const groupsWithPins = new Set(pinnedNodesInPhase.map(n => n.groupId || 'UNGROUPED'));
+
+                validSets[phase] = potentialNodes.filter(node => {
+                    const gid = node.groupId || 'UNGROUPED';
+                    if (groupsWithPins.has(gid)) {
+                        return pinnedIds.has(node.id);
                     }
-                    // Keep other groups
                     return true;
                 });
             }
-        }
-        if (request.targetProfessionalId) {
-            const target = this.professional.find(n => n.id === request.targetProfessionalId);
-            if (target) {
-                const targetGroupId = target.groupId;
-                validProfessional = validProfessional.filter(node => {
-                    if (node.groupId === targetGroupId) {
-                        return node.id === target.id;
-                    }
-                    return true;
+        });
+
+        // B. Generalized Backward Propagation
+        let activeRequirements = new Set<string>();
+
+        // Iterate phases in reverse: Senior -> Professional -> Formative -> Childhood
+        for (let i = phases.length - 1; i > 0; i--) {
+            const currentPhase = phases[i];
+            const prevPhase = phases[i - 1];
+
+            const currentNodes = validSets[currentPhase];
+
+            // 1. Add requirements from Pinned Nodes in this phase to the active set
+            const pinnedNodes = currentNodes.filter(n => pinnedIds.has(n.id));
+            pinnedNodes.forEach(n => n.requires?.forEach(t => activeRequirements.add(t)));
+
+            // If no active requirements, continue
+            if (activeRequirements.size === 0) continue;
+
+            // 2. Check if Previous Phase CAN satisfy any active requirements
+            const prevNodes = validSets[prevPhase];
+            const satisfiedByPrev = new Set<string>();
+
+            prevNodes.forEach(n => n.provides?.forEach(t => {
+                if (activeRequirements.has(t)) satisfiedByPrev.add(t);
+            }));
+
+            if (satisfiedByPrev.size > 0) {
+                // The previous phase acts as a Provider for these tags.
+                // We must restrict the previous phase to nodes that Provide one of the satisfied tags
+                // (Greedy satisfaction: If you can satisfy it, you must).
+
+                const groups: Record<string, EventNode[]> = {};
+                prevNodes.forEach(n => {
+                    const gid = n.groupId || 'UNGROUPED';
+                    if (!groups[gid]) groups[gid] = [];
+                    groups[gid].push(n);
                 });
+
+                let newPrevValid: EventNode[] = [];
+
+                Object.entries(groups).forEach(([gid, nodes]) => {
+                    // Does this group provide any needed tag?
+                    const groupProvidesTags = new Set<string>();
+                    nodes.forEach(n => n.provides?.forEach(t => groupProvidesTags.add(t)));
+
+                    const providesNeeded = [...groupProvidesTags].some(t => satisfiedByPrev.has(t));
+
+                    if (providesNeeded) {
+                        // Filter to nodes that provide at least one satisfied tag
+                        const helpfulNodes = nodes.filter(n => n.provides?.some(t => satisfiedByPrev.has(t)));
+                        newPrevValid.push(...helpfulNodes);
+                    } else {
+                        // This group is irrelevant (orthogonal). Keep all.
+                        newPrevValid.push(...nodes);
+                    }
+                });
+
+                validSets[prevPhase] = newPrevValid;
+
+                // Requirement met! Remove from active set for subsequent iterations (deeper past)
+                satisfiedByPrev.forEach(t => activeRequirements.delete(t));
             }
-        }
-
-        // B. Backward Propagation (Professional -> Formative)
-        const requiredTagsFromProfessional = new Set<string>();
-        validProfessional.forEach(c => c.requires?.forEach(t => requiredTagsFromProfessional.add(t)));
-
-        if (requiredTagsFromProfessional.size > 0) {
-            // Group-aware pruning:
-            // Only prune groups that are capable of satisfying the requirement.
-            // If a group has NO nodes that provide the required tags, it is "unrelated" and should be left alone.
-
-            // 1. Identify groups (and ungrouped)
-            const groups: Record<string, EventNode[]> = {};
-            const ungrouped: EventNode[] = [];
-
-            validFormative.forEach(node => {
-                const gid = node.groupId || 'UNGROUPED';
-                if (!groups[gid]) groups[gid] = [];
-                groups[gid].push(node);
-            });
-
-            let newValidFormative: EventNode[] = [];
-
-            Object.entries(groups).forEach(([gid, nodes]) => {
-                // Check if this group can potentially satisfy ANY requirement
-                const canSatisfy = nodes.some(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
-
-                if (canSatisfy) {
-                    // This group is relevant. Prune it to only include satisfying nodes.
-                    const satisfyingNodes = nodes.filter(n => n.provides?.some(t => requiredTagsFromProfessional.has(t)));
-                    newValidFormative.push(...satisfyingNodes);
-                } else {
-                    // This group is irrelevant to the requirement. Keep all nodes.
-                    newValidFormative.push(...nodes);
-                }
-            });
-
-            validFormative = newValidFormative;
+            // If NOT satisfied by prev, activeRequirements carries over to the next iteration (older phase)
         }
 
         // --- 2. Phase Loop Execution ---
@@ -104,7 +147,11 @@ export class BioMachine {
         const tags = new Set<string>();
         const selectedEventIds = new Set<string>();
 
-        const phases: AgePhase[] = ['Childhood', 'Formative', 'Professional', 'Senior'];
+        // We use the updated validSets
+        const validChildhood = validSets['Childhood'];
+        const validFormative = validSets['Formative'];
+        const validProfessional = validSets['Professional'];
+        const validSenior = validSets['Senior'];
 
         for (const phase of phases) {
             // New Check: Skip phases that haven't started yet
@@ -156,6 +203,7 @@ export class BioMachine {
 
         let basePool: EventNode[] = [];
 
+        // Select the pool based on passed valid sets or default instance data
         switch (config.spineSlot) {
             case 'CHILDHOOD': basePool = validChildhood || this.childhood; break;
             case 'FORMATIVE': basePool = validFormative || this.formative; break;
