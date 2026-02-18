@@ -85,3 +85,9 @@ export interface CharacterGroup {
   characters: string[];
   description: string;
 }
+
+export interface Profession {
+  id: string;
+  name: string;
+  description: string;
+}

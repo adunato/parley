@@ -99,6 +99,12 @@ export interface BioState {
     age: number;
 }
 
+export interface SymbolicMapping {
+    category: string;
+    key: string;
+    nodeId: string;
+}
+
 // Data Bundle definition (for dependency injection)
 export interface BioData {
     childhood: EventNode[];
@@ -109,4 +115,5 @@ export interface BioData {
     tags: Tag[];
     groups: BioGroup[];
     phaseConfig?: Record<AgePhase, PhaseConfig>;
+    symbolicMappings?: SymbolicMapping[];
 }
