@@ -11,6 +11,7 @@ export interface BasicInfo {
   firstImpression: string;
   appearance: string;
   avatar?: string;
+  siblings?: string;
 }
 
 export interface Personality {

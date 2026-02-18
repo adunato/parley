@@ -77,22 +77,56 @@ export function BioMappingEditor() {
             <div className="p-4 border rounded-md bg-muted/20 space-y-4">
                 <h3 className="font-medium text-sm">Add New Mapping</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+                    {/* Category Dropdown */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium">Category</label>
-                        <Input
-                            placeholder="e.g. PROFESSIONS"
+                        <Select
                             value={newCategory}
-                            onChange={e => setNewCategory(e.target.value.toUpperCase())}
-                        />
+                            onValueChange={(val) => {
+                                setNewCategory(val);
+                                setNewKey(''); // Reset key when category changes
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="PROFESSION">Profession</SelectItem>
+                                <SelectItem value="SIBLINGS">Siblings</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
+
+                    {/* Key Dropdown (Dynamic) */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium">Key</label>
-                        <Input
-                            placeholder="e.g. Doctor"
+                        <Select
                             value={newKey}
-                            onChange={e => setNewKey(e.target.value)}
-                        />
+                            onValueChange={setNewKey}
+                            disabled={!newCategory}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={!newCategory ? "Select Category first" : "Select Key"} />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                                {newCategory === 'PROFESSION' && data.professions.map(p => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                        {p.name}
+                                    </SelectItem>
+                                ))}
+                                {newCategory === 'SIBLINGS' && (
+                                    <>
+                                        <SelectItem value="No Siblings">No Siblings</SelectItem>
+                                        <SelectItem value="One Sibling">One Sibling</SelectItem>
+                                        <SelectItem value="Two Siblings">Two Siblings</SelectItem>
+                                    </>
+                                )}
+                            </SelectContent>
+                        </Select>
                     </div>
+
+                    {/* Target Node Dropdown (Filtered) */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium">Target Node</label>
                         <Select value={newNodeId} onValueChange={setNewNodeId}>
@@ -100,15 +134,17 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder="Select a bio node..." />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {allNodes.map(node => (
-                                    <SelectItem key={node.id} value={node.id}>
-                                        <span className="font-mono text-xs mr-2">[{node.slot}]</span>
-                                        {node.text.substring(0, 40)}...
-                                    </SelectItem>
-                                ))}
+                                {allNodes
+                                    .map(node => (
+                                        <SelectItem key={node.id} value={node.id}>
+                                            <span className="font-mono text-xs mr-2">[{node.slot}]</span>
+                                            {node.text.substring(0, 40)}...
+                                        </SelectItem>
+                                    ))}
                             </SelectContent>
                         </Select>
                     </div>
+
                     <Button onClick={handleAdd} disabled={!newCategory || !newKey || !newNodeId}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Mapping
