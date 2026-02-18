@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
 import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup, ConnectionOptions, SymbolicMapping } from '../generator/types';
+import { Profession } from '../types';
 
 // Default Data Imports
 import childhoodData from '../generator/data/childhood.json';
@@ -18,6 +19,7 @@ interface BioStoreState {
     lifeEvents: LifeEvent[];
     tags: Tag[];
     groups: BioGroup[];
+    professions: Profession[]; // New Profession Entity
     phaseConfig: Record<AgePhase, PhaseConfig>;
     graphSettings: {
         horizontalSpacing: number;
@@ -56,6 +58,11 @@ interface BioStoreState {
 
     connectGroups: (sourceGroupIds: string[], targetGroupIds: string[], options: ConnectionOptions) => void;
 
+    // Profession Actions
+    addProfession: (item: Profession) => void;
+    updateProfession: (item: Profession) => void;
+    deleteProfession: (id: string) => void;
+
     updatePhaseConfig: (phase: AgePhase, updates: Partial<PhaseConfig>) => void;
     setPhaseConfig: (config: Record<AgePhase, PhaseConfig>) => void;
     setGraphSettings: (settings: Partial<BioStoreState['graphSettings']>) => void;
@@ -81,6 +88,7 @@ interface BioStoreState {
         lifeEvents: LifeEvent[];
         tags: Tag[];
         groups: BioGroup[];
+        professions?: Profession[];
         phaseConfig?: Record<AgePhase, PhaseConfig>;
         symbolicMappings?: SymbolicMapping[];
     }) => void;
@@ -94,6 +102,7 @@ interface BioStoreState {
         lifeEvents: LifeEvent[];
         tags: Tag[];
         groups: BioGroup[];
+        professions: Profession[];
         phaseConfig: Record<AgePhase, PhaseConfig>;
         symbolicMappings: SymbolicMapping[];
     };
@@ -112,6 +121,7 @@ export const useBioStore = create<BioStoreState>()(
             lifeEvents: [],
             tags: [],
             groups: [],
+            professions: [],
             phaseConfig: AGE_PHASES,
             graphSettings: {
                 horizontalSpacing: 300,
@@ -238,6 +248,14 @@ export const useBioStore = create<BioStoreState>()(
                     // Life Events do not support groups currently per requirements
                 };
             }),
+
+            addProfession: (item) => set((state) => ({ professions: [...(state.professions || []), item] })),
+            updateProfession: (item) => set((state) => ({
+                professions: (state.professions || []).map(i => i.id === item.id ? item : i)
+            })),
+            deleteProfession: (id) => set((state) => ({
+                professions: (state.professions || []).filter(i => i.id !== id)
+            })),
 
             connectGroups: (sourceGroupIds, targetGroupIds, options) => set((state) => {
                 const allLists = [state.childhood, state.formative, state.professional, state.senior];
@@ -406,7 +424,7 @@ export const useBioStore = create<BioStoreState>()(
             })),
 
             // Bulk Set (for migration)
-            setData: (data) => set({ ...data, phaseConfig: data.phaseConfig || AGE_PHASES }),
+            setData: (data) => set({ ...data, professions: data.professions || [], phaseConfig: data.phaseConfig || AGE_PHASES }),
 
             getAllData: () => ({
                 childhood: get().childhood,
@@ -416,6 +434,7 @@ export const useBioStore = create<BioStoreState>()(
                 lifeEvents: get().lifeEvents,
                 tags: get().tags,
                 groups: get().groups,
+                professions: get().professions || [],
                 phaseConfig: get().phaseConfig
             }),
 

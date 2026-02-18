@@ -42,11 +42,11 @@ describe('BioEntityEditor', () => {
         // Fill in required fields
         fireEvent.change(screen.getByPlaceholderText('my_entity_id'), { target: { value: 'test-event' } });
         fireEvent.change(screen.getByPlaceholderText('Description of the event...'), { target: { value: 'Test description' } });
-        
+
         // Add a requirement (this depends on TagListEditor implementation, but we can check the onSave call)
         // For simplicity, let's just trigger the save and see if requires is in the payload if we had set it.
         // Actually, let's just verify it's NOT excluded anymore.
-        
+
         fireEvent.click(screen.getByText('Save'));
 
         expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
@@ -61,7 +61,7 @@ describe('BioEntityEditor', () => {
                 open={true}
                 onOpenChange={mockOnOpenChange}
                 onSave={mockOnSave}
-                type="ORIGIN"
+                type="CHILDHOOD"
                 existingIds={[]}
                 mode="create"
             />
@@ -74,7 +74,7 @@ describe('BioEntityEditor', () => {
         // Phase selection (Select component)
         // By default it should show "Select phase" placeholder or a default
         // In the implementation, it's a Select.
-        
+
         fireEvent.click(screen.getByText('Save'));
 
         expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
@@ -95,14 +95,14 @@ describe('BioEntityEditor', () => {
         );
 
         expect(screen.getByText('Age Phases')).toBeInTheDocument();
-        
+
         // Should find toggle buttons
         const childhoodBtn = screen.getByRole('button', { name: 'Childhood' });
         const seniorBtn = screen.getByRole('button', { name: 'Senior' });
 
         fireEvent.click(childhoodBtn);
         fireEvent.click(seniorBtn);
-        
+
         // Fill other fields
         fireEvent.change(screen.getByPlaceholderText('my_entity_id'), { target: { value: 'multi-phase-event' } });
         fireEvent.change(screen.getByPlaceholderText('Description of the event...'), { target: { value: 'Desc' } });

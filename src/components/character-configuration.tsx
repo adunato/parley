@@ -1,4 +1,5 @@
 import { useParleyStore } from "@/lib/store"
+import { useBioStore } from "@/lib/store/bioStore";
 import { Character, Persona as PlayerPersona, Relationship } from "@/lib/types"
 import { useEffect, useState, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -44,6 +45,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
     const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations } = useEntityStore()
+    const { professions } = useBioStore();
 
     // Selection state
     const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -799,12 +801,24 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="role" className="type-ui-label text-muted-foreground">Role</Label>
-                                            <Input
-                                                id="role"
+                                            <Label htmlFor="role" className="type-ui-label text-muted-foreground">Profession</Label>
+                                            <Select
                                                 value={displayCharacter.basicInfo.role || ""}
-                                                onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
-                                            />
+                                                onValueChange={(value) => handleInputChange("basicInfo", "role", value)}
+                                            >
+                                                <SelectTrigger id="role">
+                                                    <SelectValue placeholder="Select a profession" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {professions && professions.length > 0 ? (
+                                                        professions.map((p) => (
+                                                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                                        ))
+                                                    ) : (
+                                                        <SelectItem value="none" disabled>No professions configured</SelectItem>
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
