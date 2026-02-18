@@ -13,6 +13,7 @@ import { NameGenerator, SupportedCountry, GenderOption, Identity } from '@/lib/g
 import { BioMachine } from '@/lib/generator/BioMachine';
 import { BioState, BioGenerationRequest, EventNode } from '@/lib/generator/types';
 import { useBioStore } from '@/lib/store/bioStore';
+import { useEntityStore } from '@/lib/entityStore';
 import { useBioLibraryStore } from '@/lib/store/bioLibraryStore';
 import { BioDatasetService } from '@/lib/services/bioDatasetService';
 import { useShallow } from 'zustand/react/shallow';
@@ -49,7 +50,7 @@ interface ProceduralGeneratorDialogProps {
     characterId: string;
 }
 
-export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: ProceduralGeneratorDialogProps) {
+export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, characterId }: ProceduralGeneratorDialogProps) {
     // Store
     const bioData = useBioStore(useShallow(state => ({
         childhood: state.childhood,
@@ -59,10 +60,14 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
         lifeEvents: state.lifeEvents,
         tags: state.tags,
         phaseConfig: state.phaseConfig,
-        groups: state.groups
+        groups: state.groups,
+        symbolicMappings: state.symbolicMappings
     })));
     const childhood = bioData.childhood;
     const professional = bioData.professional;
+
+    const { characters } = useEntityStore();
+    const currentCharacter = useMemo(() => characters.find(c => c.id === characterId), [characters, characterId]);
 
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
@@ -107,6 +112,45 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply }: Proce
         }
         setHasLoaded(true);
     }, []);
+
+    // Context-Aware Initialization
+    useEffect(() => {
+        if (!open || !currentCharacter || !hasLoaded) return;
+
+        // 1. Sync Age and Gender (if not already set or random)
+        if (currentCharacter.basicInfo.age && currentCharacter.basicInfo.age > 0) {
+            setAge(currentCharacter.basicInfo.age);
+        }
+
+        // Check if we should override? Maybe only if the user hasn't generated an identity yet?
+        // For now, let's trust the "Basic Info as Seed" philosophy: Pre-fill identity settings if they match.
+        // Actually, the requirement was specifically about Profession mapping.
+
+        // 2. Profession Mapping
+        const userRole = currentCharacter.basicInfo.role;
+        if (userRole) {
+            const mapping = bioData.symbolicMappings.find(m =>
+                m.category === 'PROFESSION' && m.key === userRole
+            );
+
+            if (mapping) {
+                // Auto-set the target professional and switch to Custom mode
+                setTargetProfessional(mapping.nodeId);
+                setMode('custom');
+                // Optional: Toast or visual indicator?
+            }
+        }
+
+        // 3. Siblings Mapping (Future/Next Step)
+        const userSiblings = currentCharacter.basicInfo.siblings;
+        if (userSiblings) {
+            const mapping = bioData.symbolicMappings.find(m =>
+                m.category === 'SIBLINGS' && m.key === userSiblings
+            );
+            // Logic to handle sibling mapping would go here, likely affecting bio prompts or specific nodes
+        }
+
+    }, [open, currentCharacter, hasLoaded, bioData.symbolicMappings]);
 
     useEffect(() => {
         if (!hasLoaded) return;

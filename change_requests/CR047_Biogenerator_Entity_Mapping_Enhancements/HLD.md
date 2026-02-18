@@ -27,11 +27,20 @@ Draft
   - Restrict strictly to **Spine Nodes** (Childhood, Formative, Professional, Senior).
   - Explicitly exclude Life Events (Flesh).
 
-### 2. Update Data Models
+### 2. Context-Aware Generation (New)
+- **Goal**: Seamlessly bridge Manual Input (Basic Info) with Procedural Generation.
+- **Workflow**:
+    1.  User selects an attribute in **Basic Info** (e.g., Profession: "High School Teacher").
+    2.  User opens **Procedural Generator**.
+    3.  System checks for a **Symbolic Mapping** matching the attribute (e.g., `PROFESSION` + `High School Teacher` -> `Node: EDUCATION_TEACHER`).
+    4.  If found, the Generator automatically:
+        -   Switches specific setting to **Custom**.
+        -   Pre-selects the mapped **Target Node**.
+- **User Value**: Reduces friction; the generator "knows" what you already decided.
+
+### 3. Update Data Models
 - **Siblings Attribute**:
-  - Add `siblings` field to `BasicInfo` (or `Character` root?) to store this attribute.
-  - OR: Ensure `BioGenerationRequest` can carry this constraint.
-  - *Constraint*: We need to verify if "Siblings" is a new persistent attribute or just a generation parameter. Given the user said "code a new character attribute", we assumes it should be added to `BasicInfo`.
+  - Add `siblings` field to `BasicInfo`.
 
 ### 3. Implementation Details
 - **BioStore**: Ensure `professions` are accessible to the Editor.

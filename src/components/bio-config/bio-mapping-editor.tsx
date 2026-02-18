@@ -135,9 +135,6 @@ export function BioMappingEditor() {
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
                                 {allNodes
-                                    .filter(n => n.slot !== 'LIFE_EVENT') // Exclude Life Events (though allNodes currently doesn't include them based on lines 16-20, let's correspond to HLD)
-                                    // Actually lines 16-20 only include spine nodes. Life events are in data.lifeEvents.
-                                    // So allNodes is already safe, but double check.
                                     .map(node => (
                                         <SelectItem key={node.id} value={node.id}>
                                             <span className="font-mono text-xs mr-2">[{node.slot}]</span>
