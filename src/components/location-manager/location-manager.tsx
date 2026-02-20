@@ -275,7 +275,13 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                 </thead>
                                 <tbody className="divide-y">
                                     {(editForm.professionSlots || []).map((slot) => {
-                                        const availableCharacters = characters.filter(c => c.basicInfo.role === slot.professionId);
+                                        const availableCharacters = characters.filter(c => {
+                                            if (c.basicInfo.role !== slot.professionId) return false;
+                                            if (c.id === slot.characterId) return true;
+                                            if (c.locationId) return false;
+                                            if (editForm.professionSlots?.some(s => s.characterId === c.id)) return false;
+                                            return true;
+                                        });
                                         const assignedChar = characters.find(c => c.id === slot.characterId);
 
                                         return (
@@ -309,12 +315,9 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                                                 onChange={(e) => handleSlotCharacterChange(slot.id, e.target.value)}
                                                             >
                                                                 <option value="unassigned">-- Unassigned --</option>
-                                                                {availableCharacters.map(c => {
-                                                                    const isAssignedElsewhere = c.locationId && c.locationId !== editForm.id;
-                                                                    const isAssignedToOtherSlotHere = editForm.professionSlots?.some(s => s.id !== slot.id && s.characterId === c.id);
-                                                                    const label = `${c.basicInfo.name} ${isAssignedElsewhere ? '(Move from other)' : isAssignedToOtherSlotHere ? '(Move from other slot)' : ''}`;
-                                                                    return <option key={c.id} value={c.id}>{label}</option>
-                                                                })}
+                                                                {availableCharacters.map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.basicInfo.name}</option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                     ) : (
