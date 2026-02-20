@@ -27,6 +27,22 @@ interface LocationManagerProps {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+// Helper component for avatar fallback
+const AvatarFallback = ({ name }: { name: string }) => {
+    const initials = name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground font-medium text-xs">
+            {initials}
+        </div>
+    );
+};
+
 export function LocationManager({ locations, characters, onAdd, onUpdate, onDelete }: LocationManagerProps) {
     const { worldMapImage } = useParleyStore();
     const updateCharacter = useEntityStore(state => state.updateCharacter);
@@ -303,7 +319,11 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                                         <div className="flex items-center gap-2">
                                                             {assignedChar && (
                                                                 <div className="w-6 h-6 rounded-full border border-border overflow-hidden bg-muted flex-shrink-0">
-                                                                    <img src={assignedChar.basicInfo.avatar} alt={assignedChar.basicInfo.name} className="w-full h-full object-cover" />
+                                                                    {assignedChar.basicInfo.avatar ? (
+                                                                        <img src={assignedChar.basicInfo.avatar} alt={assignedChar.basicInfo.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <AvatarFallback name={assignedChar.basicInfo.name} />
+                                                                    )}
                                                                 </div>
                                                             )}
                                                             {!assignedChar && (
@@ -476,11 +496,15 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                                         return (
                                                             <div key={slot.id} className="flex items-center gap-2 group">
                                                                 <div className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-muted flex-shrink-0">
-                                                                    <img
-                                                                        src={char.basicInfo.avatar}
-                                                                        alt={char.basicInfo.name}
-                                                                        className="w-full h-full object-cover"
-                                                                    />
+                                                                    {char.basicInfo.avatar ? (
+                                                                        <img
+                                                                            src={char.basicInfo.avatar}
+                                                                            alt={char.basicInfo.name}
+                                                                            className="w-full h-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <AvatarFallback name={char.basicInfo.name} />
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex flex-col">
                                                                     <span className="text-sm font-medium">{char.basicInfo.name}</span>
