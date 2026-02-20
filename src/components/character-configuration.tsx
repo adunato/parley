@@ -44,7 +44,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations, updateLocation } = useEntityStore()
     const { professions } = useBioStore();
 
     // Selection state
@@ -192,16 +192,41 @@ export default function CharacterConfiguration() {
         }
     };
 
-    const handleLocationChange = (locationId: string) => {
+    const handleRoleChange = (newRoleId: string) => {
+        if (!localCharacter) return;
+
+        let shouldUnassign = false;
+        if (localCharacter.locationId) {
+            const currentLocation = locations.find(l => l.id === localCharacter.locationId);
+            if (currentLocation) {
+                // Check if the character is assigned to a slot that requires the OLD profession
+                const assignedSlot = currentLocation.professionSlots?.find(s => s.characterId === localCharacter.id);
+                if (assignedSlot && assignedSlot.professionId !== newRoleId) {
+                    shouldUnassign = true;
+                    // Unassign from location's slot
+                    const newSlots = currentLocation.professionSlots!.map(s =>
+                        s.id === assignedSlot.id ? { ...s, characterId: undefined } : s
+                    );
+                    updateLocation({ ...currentLocation, professionSlots: newSlots });
+                    alert(`Unassigned from ${currentLocation.name} because the new profession does not match the slot's required profession.`);
+                }
+            }
+        }
+
         setLocalCharacter((prev) => {
             if (!prev) return null;
-            const updated = { ...prev, locationId: locationId === "unassigned" ? undefined : locationId };
+            const newCharacter = { ...prev };
+            newCharacter.basicInfo = { ...newCharacter.basicInfo, role: newRoleId };
+            if (shouldUnassign) {
+                newCharacter.locationId = undefined;
+            }
+
             isDirtyRef.current = true;
             setSaveStatus('saving');
-            debouncedSave(updated);
-            return updated;
+            debouncedSave(newCharacter);
+            return newCharacter;
         });
-    }
+    };
 
     const handleAddCharacter = () => {
         if (localCharacter && isDirtyRef.current) {
@@ -804,7 +829,7 @@ export default function CharacterConfiguration() {
                                             <Label htmlFor="role" className="type-ui-label text-muted-foreground">Profession</Label>
                                             <Select
                                                 value={displayCharacter.basicInfo.role || ""}
-                                                onValueChange={(value) => handleInputChange("basicInfo", "role", value)}
+                                                onValueChange={handleRoleChange}
                                             >
                                                 <SelectTrigger id="role">
                                                     <SelectValue placeholder="Select a profession" />
@@ -829,23 +854,13 @@ export default function CharacterConfiguration() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="location" className="type-ui-label text-muted-foreground">Location</Label>
-                                            <Select
-                                                value={displayCharacter.locationId || "unassigned"}
-                                                onValueChange={handleLocationChange}
-                                            >
-                                                <SelectTrigger id="location">
-                                                    <SelectValue placeholder="Select a location" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                                                    {locations.map((loc) => (
-                                                        <SelectItem key={loc.id} value={loc.id}>
-                                                            {loc.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <Label className="type-ui-label text-muted-foreground">Location</Label>
+                                            <div className="flex h-9 w-full items-center rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm text-muted-foreground">
+                                                {displayCharacter.locationId ? locations.find(l => l.id === displayCharacter.locationId)?.name || 'Unknown Location' : 'Unassigned'}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Locations are assigned through the Location Configuration page via profession slots.
+                                            </p>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="reputation" className="type-ui-label text-muted-foreground">Reputation</Label>

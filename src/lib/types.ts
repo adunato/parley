@@ -69,6 +69,12 @@ export interface ChatSummary {
   timestamp: Date;
 }
 
+export interface ProfessionSlot {
+  id: string; // Unique ID for the slot
+  professionId: string; // The required profession
+  characterId?: string; // The character assigned to this slot (optional)
+}
+
 export interface Location {
   id: string;
   name: string;
@@ -78,6 +84,7 @@ export interface Location {
     x: number;
     y: number;
   };
+  professionSlots?: ProfessionSlot[];
 }
 
 export interface CharacterGroup {
