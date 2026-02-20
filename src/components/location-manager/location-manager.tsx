@@ -258,56 +258,86 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                         <Plus className="w-4 h-4 mr-2" /> Add Slot
                     </Button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {(editForm.professionSlots || []).length === 0 && (
-                        <p className="text-sm text-muted-foreground italic text-center py-4">No profession slots defined yet.</p>
+                        <p className="text-sm text-muted-foreground italic text-center py-8 border rounded bg-background/50">No profession slots defined yet.</p>
                     )}
-                    {(editForm.professionSlots || []).map((slot, index) => {
-                        const availableCharacters = characters.filter(c => c.basicInfo.role === slot.professionId);
-                        return (
-                            <div key={slot.id} className="flex flex-col gap-2 p-3 border rounded-md relative bg-background/50">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
-                                    onClick={() => handleRemoveSlot(slot.id)}
-                                >
-                                    <X className="w-4 h-4" />
-                                </Button>
-                                <div className="pr-8">
-                                    <Label className="text-xs text-muted-foreground mb-1 block">Required Profession</Label>
-                                    <select
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={slot.professionId}
-                                        onChange={(e) => handleSlotFieldChange(slot.id, 'professionId', e.target.value)}
-                                    >
-                                        <option value="" disabled>Select a profession...</option>
-                                        {(professions || []).map(p => (
-                                            <option key={p.id} value={p.id}>{p.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {slot.professionId && (
-                                    <div>
-                                        <Label className="text-xs text-muted-foreground mb-1 block">Assigned Character</Label>
-                                        <select
-                                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                            value={slot.characterId || 'unassigned'}
-                                            onChange={(e) => handleSlotCharacterChange(slot.id, e.target.value)}
-                                        >
-                                            <option value="unassigned">-- Unassigned --</option>
-                                            {availableCharacters.map(c => {
-                                                const isAssignedElsewhere = c.locationId && c.locationId !== editForm.id;
-                                                const isAssignedToOtherSlotHere = editForm.professionSlots?.some(s => s.id !== slot.id && s.characterId === c.id);
-                                                const label = `${c.basicInfo.name} ${isAssignedElsewhere ? '(Move from other location)' : isAssignedToOtherSlotHere ? '(Move from other slot)' : ''}`;
-                                                return <option key={c.id} value={c.id}>{label}</option>
-                                            })}
-                                        </select>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
+
+                    {(editForm.professionSlots || []).length > 0 && (
+                        <div className="rounded-md border bg-background/50 overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/50 text-muted-foreground">
+                                    <tr>
+                                        <th className="px-3 py-2 text-left font-medium">Required Profession</th>
+                                        <th className="px-3 py-2 text-left font-medium">Assigned Character</th>
+                                        <th className="px-3 py-2 text-right font-medium w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {(editForm.professionSlots || []).map((slot) => {
+                                        const availableCharacters = characters.filter(c => c.basicInfo.role === slot.professionId);
+                                        const assignedChar = characters.find(c => c.id === slot.characterId);
+
+                                        return (
+                                            <tr key={slot.id} className="group">
+                                                <td className="px-3 py-2 align-middle">
+                                                    <select
+                                                        className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                        value={slot.professionId}
+                                                        onChange={(e) => handleSlotFieldChange(slot.id, 'professionId', e.target.value)}
+                                                    >
+                                                        <option value="" disabled>Select a profession...</option>
+                                                        {(professions || []).map(p => (
+                                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                                <td className="px-3 py-2 align-middle">
+                                                    {slot.professionId ? (
+                                                        <div className="flex items-center gap-2">
+                                                            {assignedChar && (
+                                                                <div className="w-6 h-6 rounded-full border border-border overflow-hidden bg-muted flex-shrink-0">
+                                                                    <img src={assignedChar.basicInfo.avatar} alt={assignedChar.basicInfo.name} className="w-full h-full object-cover" />
+                                                                </div>
+                                                            )}
+                                                            {!assignedChar && (
+                                                                <div className="w-6 h-6 rounded-full border border-dashed border-border bg-muted/50 flex-shrink-0" />
+                                                            )}
+                                                            <select
+                                                                className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                                value={slot.characterId || 'unassigned'}
+                                                                onChange={(e) => handleSlotCharacterChange(slot.id, e.target.value)}
+                                                            >
+                                                                <option value="unassigned">-- Unassigned --</option>
+                                                                {availableCharacters.map(c => {
+                                                                    const isAssignedElsewhere = c.locationId && c.locationId !== editForm.id;
+                                                                    const isAssignedToOtherSlotHere = editForm.professionSlots?.some(s => s.id !== slot.id && s.characterId === c.id);
+                                                                    const label = `${c.basicInfo.name} ${isAssignedElsewhere ? '(Move from other)' : isAssignedToOtherSlotHere ? '(Move from other slot)' : ''}`;
+                                                                    return <option key={c.id} value={c.id}>{label}</option>
+                                                                })}
+                                                            </select>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-muted-foreground italic pl-8 hover:cursor-not-allowed">Select profession first</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2 align-middle text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
+                                                        onClick={() => handleRemoveSlot(slot.id)}
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </TabsContent>
             <TabsContent value="map" className="space-y-4 pt-4">
