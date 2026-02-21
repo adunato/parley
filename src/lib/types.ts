@@ -19,6 +19,7 @@ export interface BasicInfo {
   avatar?: string;
   siblings?: string;
   originLocation?: OriginLocation;
+  mappedAttributes?: Record<string, string>; // categoryId -> attributeId
 }
 
 export interface Personality {
@@ -107,4 +108,17 @@ export interface Profession {
   description: string;
   minAge: number;
   maxAge: number;
+}
+
+export interface GameAttributeCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface GameAttribute {
+  id: string;
+  categoryId: string; // References GameAttributeCategory.id
+  name: string;
+  description: string;
 }

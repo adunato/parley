@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from './storage-adapter';
-import { Character, Persona, Relationship, CharacterGroup, Location } from './types';
+import { Character, Persona, Relationship, CharacterGroup, Location, GameAttributeCategory, GameAttribute } from './types';
 
 type EntityStore = {
   characters: Character[];
@@ -30,6 +30,17 @@ type EntityStore = {
   cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
   clearCumulativeRelationshipDelta: () => void; // Called on new chat
+
+  gameAttributeCategories: GameAttributeCategory[];
+  addGameAttributeCategory: (category: GameAttributeCategory) => void;
+  updateGameAttributeCategory: (category: GameAttributeCategory) => void;
+  deleteGameAttributeCategory: (id: string) => void;
+
+  gameAttributes: GameAttribute[];
+  addGameAttribute: (attribute: GameAttribute) => void;
+  updateGameAttribute: (attribute: GameAttribute) => void;
+  deleteGameAttribute: (id: string) => void;
+
   clearAllData: () => void;
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
@@ -137,9 +148,30 @@ export const useEntityStore = create<EntityStore>()(
           characterGroups: [],
           locations: [],
           selectedChatLocation: undefined,
+          gameAttributeCategories: [],
+          gameAttributes: [],
         });
         useEntityStore.persist.clearStorage();
       },
+
+      gameAttributeCategories: [],
+      addGameAttributeCategory: (category) => set((state) => ({ gameAttributeCategories: [...(state.gameAttributeCategories || []), category] })),
+      updateGameAttributeCategory: (updatedCategory) => set((state) => ({
+        gameAttributeCategories: (state.gameAttributeCategories || []).map((cat) => cat.id === updatedCategory.id ? updatedCategory : cat)
+      })),
+      deleteGameAttributeCategory: (id) => set((state) => ({
+        gameAttributeCategories: (state.gameAttributeCategories || []).filter((cat) => cat.id !== id)
+      })),
+
+      gameAttributes: [],
+      addGameAttribute: (attribute) => set((state) => ({ gameAttributes: [...(state.gameAttributes || []), attribute] })),
+      updateGameAttribute: (updatedAttribute) => set((state) => ({
+        gameAttributes: (state.gameAttributes || []).map((attr) => attr.id === updatedAttribute.id ? updatedAttribute : attr)
+      })),
+      deleteGameAttribute: (id) => set((state) => ({
+        gameAttributes: (state.gameAttributes || []).filter((attr) => attr.id !== id)
+      })),
+
       _hasHydrated: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
@@ -179,6 +211,27 @@ export const useEntityStore = create<EntityStore>()(
                 appearance: "",
               }
             }));
+          }
+
+          // Ensure default game attribute categories exist
+          const defaultCategories: GameAttributeCategory[] = [
+            { id: 'origins', name: 'Origins', description: 'Social Class / Starting Socioeconomic Background' },
+            { id: 'education', name: 'Education', description: 'Education Level / Path' },
+            { id: 'housing', name: 'Housing', description: 'Property / Housing Status' },
+            { id: 'siblings', name: 'Siblings', description: 'Family size / Structure' },
+            { id: 'relationships', name: 'Relationships', description: 'Relationship History / Trajectory' }
+          ];
+
+          const currentCategories = state.gameAttributeCategories || [];
+          const missingCategories = defaultCategories.filter(
+            defCat => !currentCategories.some(cat => cat.id === defCat.id)
+          );
+
+          if (missingCategories.length > 0) {
+            state.gameAttributeCategories = [...currentCategories, ...missingCategories];
+          }
+          if (!state.gameAttributes) {
+            state.gameAttributes = [];
           }
         }
       },
