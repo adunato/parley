@@ -32,6 +32,8 @@ export function ProfessionModal({
         id: "",
         name: "",
         description: "",
+        minAge: 16,
+        maxAge: 75,
     });
     const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +46,8 @@ export function ProfessionModal({
                     id: "",
                     name: "",
                     description: "",
+                    minAge: 16,
+                    maxAge: 75,
                 });
             }
             setError(null);
@@ -59,6 +63,10 @@ export function ProfessionModal({
         }
         if (!formData.name.trim()) {
             setError("Name is required");
+            return;
+        }
+        if (formData.minAge > formData.maxAge) {
+            setError("Minimum age cannot be greater than maximum age");
             return;
         }
 
@@ -127,6 +135,31 @@ export function ProfessionModal({
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             placeholder="A brave fighter."
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="minAge">Minimum Age</Label>
+                            <Input
+                                id="minAge"
+                                type="number"
+                                value={formData.minAge}
+                                onChange={(e) => setFormData({ ...formData, minAge: parseInt(e.target.value) || 0 })}
+                                min={0}
+                                max={150}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="maxAge">Maximum Age</Label>
+                            <Input
+                                id="maxAge"
+                                type="number"
+                                value={formData.maxAge}
+                                onChange={(e) => setFormData({ ...formData, maxAge: parseInt(e.target.value) || 0 })}
+                                min={0}
+                                max={150}
+                            />
+                        </div>
                     </div>
 
                     {error && <div className="text-sm text-destructive">{error}</div>}
