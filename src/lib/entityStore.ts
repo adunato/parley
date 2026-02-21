@@ -181,58 +181,99 @@ export const useEntityStore = create<EntityStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHasHydrated(true);
-          // Ensure all characters have a relationships array
-          if (state.characters) {
-            state.characters = state.characters.map(character => ({
-              ...character,
-              relationships: (character.relationships || []).map((rel: any) => ({
-                ...rel,
-                satisfaction: rel.satisfaction ?? 50,
-                commitment: rel.commitment ?? 50,
-                intimacy: rel.intimacy ?? 50,
-                trust: rel.trust ?? 50,
-                passion: rel.passion ?? 50
-              })),
-              idealMatch: character.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }
-            }));
-          }
-          if (state.playerPersonas) {
-            state.playerPersonas = state.playerPersonas.map(persona => ({
-              ...persona,
-              basicInfo: persona.basicInfo || {
-                name: persona.id, // Use ID as name if basicInfo is missing
-                age: 0,
-                gender: "",
-                role: "",
-                faction: "",
-                reputation: "",
-                background: "",
-                firstImpression: "",
-                appearance: "",
+
+          // Use setTimeout to ensure we call setState after the store is fully initialized and hydrated,
+          // otherwise React won't be notified of these migrations/default values.
+          setTimeout(() => {
+            useEntityStore.setState((prev) => {
+              const updates: Partial<EntityStore> = {};
+              let needsUpdate = false;
+
+              // Ensure all characters have a relationships array and idealMatch
+              if (prev.characters) {
+                const updatedCharacters = prev.characters.map(character => {
+                  let changed = false;
+                  const newChar = { ...character };
+
+                  if (!character.relationships) {
+                    newChar.relationships = [];
+                    changed = true;
+                  } else {
+                    newChar.relationships = character.relationships.map((rel: any) => ({
+                      ...rel,
+                      satisfaction: rel.satisfaction ?? 50,
+                      commitment: rel.commitment ?? 50,
+                      intimacy: rel.intimacy ?? 50,
+                      trust: rel.trust ?? 50,
+                      passion: rel.passion ?? 50
+                    }));
+                    // For simplicity, just assume we might have updated
+                    changed = true;
+                  }
+
+                  if (!character.idealMatch) {
+                    newChar.idealMatch = { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
+                    changed = true;
+                  }
+
+                  return changed ? newChar : character;
+                });
+
+                updates.characters = updatedCharacters;
+                needsUpdate = true;
               }
-            }));
-          }
 
-          // Ensure default game attribute categories exist
-          const defaultCategories: GameAttributeCategory[] = [
-            { id: 'origins', name: 'Origins', description: 'Social Class / Starting Socioeconomic Background' },
-            { id: 'education', name: 'Education', description: 'Education Level / Path' },
-            { id: 'housing', name: 'Housing', description: 'Property / Housing Status' },
-            { id: 'siblings', name: 'Siblings', description: 'Family size / Structure' },
-            { id: 'relationships', name: 'Relationships', description: 'Relationship History / Trajectory' }
-          ];
+              if (prev.playerPersonas) {
+                const updatedPersonas = prev.playerPersonas.map(persona => {
+                  if (!persona.basicInfo) {
+                    return {
+                      ...persona,
+                      basicInfo: {
+                        name: persona.id,
+                        age: 0,
+                        gender: "",
+                        role: "",
+                        faction: "",
+                        reputation: "",
+                        background: "",
+                        firstImpression: "",
+                        appearance: "",
+                      }
+                    };
+                  }
+                  return persona;
+                });
+                updates.playerPersonas = updatedPersonas;
+                needsUpdate = true;
+              }
 
-          const currentCategories = state.gameAttributeCategories || [];
-          const missingCategories = defaultCategories.filter(
-            defCat => !currentCategories.some(cat => cat.id === defCat.id)
-          );
+              // Ensure default game attribute categories exist
+              const defaultCategories: GameAttributeCategory[] = [
+                { id: 'origins', name: 'Origins', description: 'Social Class / Starting Socioeconomic Background' },
+                { id: 'education', name: 'Education', description: 'Education Level / Path' },
+                { id: 'housing', name: 'Housing', description: 'Property / Housing Status' },
+                { id: 'siblings', name: 'Siblings', description: 'Family size / Structure' },
+                { id: 'relationships', name: 'Relationships', description: 'Relationship History / Trajectory' }
+              ];
 
-          if (missingCategories.length > 0) {
-            state.gameAttributeCategories = [...currentCategories, ...missingCategories];
-          }
-          if (!state.gameAttributes) {
-            state.gameAttributes = [];
-          }
+              const currentCategories = prev.gameAttributeCategories || [];
+              const missingCategories = defaultCategories.filter(
+                defCat => !currentCategories.some(cat => cat.id === defCat.id)
+              );
+
+              if (missingCategories.length > 0) {
+                updates.gameAttributeCategories = [...currentCategories, ...missingCategories];
+                needsUpdate = true;
+              }
+
+              if (!prev.gameAttributes) {
+                updates.gameAttributes = [];
+                needsUpdate = true;
+              }
+
+              return needsUpdate ? updates : {};
+            });
+          }, 0);
         }
       },
     }
