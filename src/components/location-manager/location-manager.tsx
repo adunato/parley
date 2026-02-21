@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Trash2, Edit2, Plus, Save, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useParleyStore } from '@/lib/store';
+import { useEntityStore } from '@/lib/entityStore';
+import { useBioStore } from '@/lib/store/bioStore';
 import { WorldMapPicker } from '@/components/world/WorldMapPicker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -25,8 +27,26 @@ interface LocationManagerProps {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+// Helper component for avatar fallback
+const AvatarFallback = ({ name }: { name: string }) => {
+    const initials = name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground font-medium text-xs">
+            {initials}
+        </div>
+    );
+};
+
 export function LocationManager({ locations, characters, onAdd, onUpdate, onDelete }: LocationManagerProps) {
     const { worldMapImage } = useParleyStore();
+    const updateCharacter = useEntityStore(state => state.updateCharacter);
+    const { professions } = useBioStore();
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Location>>({});
     const [isCreating, setIsCreating] = useState(false);
@@ -119,11 +139,111 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
         handleInputChange('image', undefined);
     };
 
+    const handleAddSlot = () => {
+        setEditForm(prev => {
+            const newSlot = { id: uuidv4(), professionId: '' };
+            const updated = { ...prev, professionSlots: [...(prev.professionSlots || []), newSlot] };
+            if (editingId && !isCreating && updated.id) {
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedUpdate(updated as Location);
+            }
+            return updated;
+        });
+    };
+
+    const handleRemoveSlot = (slotId: string) => {
+        setEditForm(prev => {
+            const slots = prev.professionSlots || [];
+            const slotToRemove = slots.find(s => s.id === slotId);
+
+            if (slotToRemove && slotToRemove.characterId) {
+                const oldChar = characters.find(c => c.id === slotToRemove.characterId);
+                if (oldChar) {
+                    updateCharacter({ ...oldChar, locationId: undefined });
+                }
+            }
+
+            const newSlots = slots.filter(s => s.id !== slotId);
+            const updated = { ...prev, professionSlots: newSlots };
+            if (editingId && !isCreating && updated.id) {
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedUpdate(updated as Location);
+            }
+            return updated;
+        });
+    };
+
+    const handleSlotFieldChange = (slotId: string, field: 'professionId', value: string) => {
+        setEditForm(prev => {
+            const slots = prev.professionSlots || [];
+            const slotIdx = slots.findIndex(s => s.id === slotId);
+            if (slotIdx === -1) return prev;
+
+            const newSlots = [...slots];
+            newSlots[slotIdx] = { ...newSlots[slotIdx], [field]: value };
+
+            // If profession changes, we might want to unassign character if it no longer matches,
+            // but for simplicity, we'll unassign immediately if the profession changes.
+            if (field === 'professionId') {
+                const oldCharId = newSlots[slotIdx].characterId;
+                if (oldCharId) {
+                    const oldChar = characters.find(c => c.id === oldCharId);
+                    if (oldChar) updateCharacter({ ...oldChar, locationId: undefined });
+                    newSlots[slotIdx].characterId = undefined;
+                }
+            }
+
+            const updated = { ...prev, professionSlots: newSlots };
+            if (editingId && !isCreating && updated.id) {
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedUpdate(updated as Location);
+            }
+            return updated;
+        });
+    };
+
+    const handleSlotCharacterChange = (slotId: string, newCharacterId: string | 'unassigned') => {
+        const finalCharId = newCharacterId === 'unassigned' ? undefined : newCharacterId;
+
+        setEditForm(prev => {
+            const slots = prev.professionSlots || [];
+            const slotIdx = slots.findIndex(s => s.id === slotId);
+            if (slotIdx === -1) return prev;
+
+            const oldCharId = slots[slotIdx].characterId;
+
+            if (oldCharId && oldCharId !== finalCharId) {
+                const oldChar = characters.find(c => c.id === oldCharId);
+                if (oldChar) updateCharacter({ ...oldChar, locationId: undefined });
+            }
+
+            if (finalCharId) {
+                const newChar = characters.find(c => c.id === finalCharId);
+                if (newChar) updateCharacter({ ...newChar, locationId: prev.id });
+            }
+
+            const newSlots = [...slots];
+            newSlots[slotIdx] = { ...newSlots[slotIdx], characterId: finalCharId };
+
+            const updated = { ...prev, professionSlots: newSlots };
+            if (editingId && !isCreating && updated.id) {
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedUpdate(updated as Location);
+            }
+            return updated;
+        });
+    };
+
     // Logic for rendering the Edit Form content (reused for both Create and Edit modes)
     const renderEditForm = () => (
         <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="staffing">Staffing</TabsTrigger>
                 <TabsTrigger value="map">Map & Appearance</TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="space-y-4 pt-4">
@@ -145,6 +265,102 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                         placeholder="Describe the atmosphere, smells, and sights..."
                         rows={5}
                     />
+                </div>
+            </TabsContent>
+            <TabsContent value="staffing" className="space-y-4 pt-4">
+                <div className="flex items-center justify-between mb-2">
+                    <Label className="type-ui-label text-muted-foreground">Profession Slots</Label>
+                    <Button variant="outline" size="sm" onClick={handleAddSlot}>
+                        <Plus className="w-4 h-4 mr-2" /> Add Slot
+                    </Button>
+                </div>
+                <div className="space-y-2">
+                    {(editForm.professionSlots || []).length === 0 && (
+                        <p className="text-sm text-muted-foreground italic text-center py-8 border rounded bg-background/50">No profession slots defined yet.</p>
+                    )}
+
+                    {(editForm.professionSlots || []).length > 0 && (
+                        <div className="rounded-md border bg-background/50 overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/50 text-muted-foreground">
+                                    <tr>
+                                        <th className="px-3 py-2 text-left font-medium">Required Profession</th>
+                                        <th className="px-3 py-2 text-left font-medium">Assigned Character</th>
+                                        <th className="px-3 py-2 text-right font-medium w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {(editForm.professionSlots || []).map((slot) => {
+                                        const availableCharacters = characters.filter(c => {
+                                            if (c.basicInfo.role !== slot.professionId) return false;
+                                            if (c.id === slot.characterId) return true;
+                                            if (c.locationId) return false;
+                                            if (editForm.professionSlots?.some(s => s.characterId === c.id)) return false;
+                                            return true;
+                                        });
+                                        const assignedChar = characters.find(c => c.id === slot.characterId);
+
+                                        return (
+                                            <tr key={slot.id} className="group">
+                                                <td className="px-3 py-2 align-middle">
+                                                    <select
+                                                        className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                        value={slot.professionId}
+                                                        onChange={(e) => handleSlotFieldChange(slot.id, 'professionId', e.target.value)}
+                                                    >
+                                                        <option value="" disabled>Select a profession...</option>
+                                                        {(professions || []).map(p => (
+                                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                                <td className="px-3 py-2 align-middle">
+                                                    {slot.professionId ? (
+                                                        <div className="flex items-center gap-2">
+                                                            {assignedChar && (
+                                                                <div className="w-6 h-6 rounded-full border border-border overflow-hidden bg-muted flex-shrink-0">
+                                                                    {assignedChar.basicInfo.avatar ? (
+                                                                        <img src={assignedChar.basicInfo.avatar} alt={assignedChar.basicInfo.name} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <AvatarFallback name={assignedChar.basicInfo.name} />
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {!assignedChar && (
+                                                                <div className="w-6 h-6 rounded-full border border-dashed border-border bg-muted/50 flex-shrink-0" />
+                                                            )}
+                                                            <select
+                                                                className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                                value={slot.characterId || 'unassigned'}
+                                                                onChange={(e) => handleSlotCharacterChange(slot.id, e.target.value)}
+                                                            >
+                                                                <option value="unassigned">-- Unassigned --</option>
+                                                                {availableCharacters.map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.basicInfo.name}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-muted-foreground italic pl-8 hover:cursor-not-allowed">Select profession first</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2 align-middle text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
+                                                        onClick={() => handleRemoveSlot(slot.id)}
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </TabsContent>
             <TabsContent value="map" className="space-y-4 pt-4">
@@ -271,22 +487,32 @@ export function LocationManager({ locations, characters, onAdd, onUpdate, onDele
                                     <div>
                                         <h4 className="type-ui-label text-muted-foreground mb-2">Characters Here</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {characters.filter(c => c.locationId === location.id).length > 0 ? (
-                                                <div className="flex -space-x-2">
-                                                    {characters.filter(c => c.locationId === location.id).map(char => (
-                                                        <div key={char.id} className="relative group">
-                                                            <div className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-muted">
-                                                                <img
-                                                                    src={char.basicInfo.avatar}
-                                                                    alt={char.basicInfo.name}
-                                                                    className="w-full h-full object-cover"
-                                                                />
+                                            {location.professionSlots?.some(s => s.characterId) ? (
+                                                <div className="flex flex-col gap-2 w-full">
+                                                    {location.professionSlots.filter(s => s.characterId).map(slot => {
+                                                        const char = characters.find(c => c.id === slot.characterId);
+                                                        const prof = professions?.find(p => p.id === slot.professionId);
+                                                        if (!char) return null;
+                                                        return (
+                                                            <div key={slot.id} className="flex items-center gap-2 group">
+                                                                <div className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-muted flex-shrink-0">
+                                                                    {char.basicInfo.avatar ? (
+                                                                        <img
+                                                                            src={char.basicInfo.avatar}
+                                                                            alt={char.basicInfo.name}
+                                                                            className="w-full h-full object-cover"
+                                                                        />
+                                                                    ) : (
+                                                                        <AvatarFallback name={char.basicInfo.name} />
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-medium">{char.basicInfo.name}</span>
+                                                                    <span className="text-xs text-muted-foreground">{prof?.name || 'Unknown'}</span>
+                                                                </div>
                                                             </div>
-                                                            <div className="absolute bottom-full mb-2 hidden group-hover:block whitespace-nowrap bg-black/80 text-white text-xs px-2 py-1 rounded">
-                                                                {char.basicInfo.name}
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             ) : (
                                                 <span className="type-body-xs text-muted-foreground italic">No characters assigned</span>
