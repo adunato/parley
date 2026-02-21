@@ -816,7 +816,25 @@ export default function CharacterConfiguration() {
                                                 type="number"
                                                 value={displayCharacter.basicInfo.age || 0}
                                                 onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
+                                                error={(() => {
+                                                    const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
+                                                    if (!role) return false;
+                                                    const age = displayCharacter.basicInfo.age || 0;
+                                                    return age < role.minAge || age > role.maxAge;
+                                                })()}
                                             />
+                                            {(() => {
+                                                const age = displayCharacter.basicInfo.age || 0;
+                                                const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
+                                                if (role && (age < role.minAge || age > role.maxAge)) {
+                                                    return (
+                                                        <p className="text-xs text-destructive mt-1">
+                                                            Age must be between {role.minAge} and {role.maxAge} for this profession.
+                                                        </p>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>

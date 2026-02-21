@@ -82,13 +82,15 @@ export function ProfessionList({ data, onAdd, onUpdate, onDelete }: ProfessionLi
                             <TableHead className="w-[150px]">ID</TableHead>
                             <TableHead className="w-[200px]">Name</TableHead>
                             <TableHead>Description</TableHead>
+                            <TableHead className="w-[100px] text-center">Min Age</TableHead>
+                            <TableHead className="w-[100px] text-center">Max Age</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                     No professions found.
                                 </TableCell>
                             </TableRow>
@@ -100,6 +102,8 @@ export function ProfessionList({ data, onAdd, onUpdate, onDelete }: ProfessionLi
                                     <TableCell className="text-muted-foreground text-sm truncate max-w-[400px]" title={item.description}>
                                         {item.description}
                                     </TableCell>
+                                    <TableCell className="text-center">{item.minAge}</TableCell>
+                                    <TableCell className="text-center">{item.maxAge}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
                                             <Button

@@ -61,10 +61,12 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
         tags: state.tags,
         phaseConfig: state.phaseConfig,
         groups: state.groups,
-        symbolicMappings: state.symbolicMappings
+        symbolicMappings: state.symbolicMappings,
+        professions: state.professions
     })));
     const childhood = bioData.childhood;
     const professional = bioData.professional;
+    const professions = bioData.professions;
 
     const { characters } = useEntityStore();
     const currentCharacter = useMemo(() => characters.find(c => c.id === characterId), [characters, characterId]);
@@ -102,10 +104,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
                 if (parsed.country) setCountry(parsed.country);
                 if (parsed.selectedState) setSelectedState(parsed.selectedState);
                 if (parsed.selectedGender) setSelectedGender(parsed.selectedGender);
-                if (parsed.age) setAge(parsed.age);
                 if (parsed.mode) setMode(parsed.mode);
-                if (parsed.targetChildhood) setTargetChildhood(parsed.targetChildhood);
-                if (parsed.targetProfessional) setTargetProfessional(parsed.targetProfessional);
             } catch (e) {
                 console.error("Failed to parse saved settings", e);
             }
@@ -137,8 +136,29 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
                 // Auto-set the target professional and switch to Custom mode
                 setTargetProfessional(mapping.nodeId);
                 setMode('custom');
-                // Optional: Toast or visual indicator?
             }
+
+            // Also check age against profession bounds
+            const roleDef = professions.find(p => p.id === userRole);
+            if (roleDef) {
+                if (currentCharacter.basicInfo.age && currentCharacter.basicInfo.age > 0) {
+                    // Keep age if within bounds, otherwise randomize within bounds
+                    if (currentCharacter.basicInfo.age < roleDef.minAge || currentCharacter.basicInfo.age > roleDef.maxAge) {
+                        setAge(Math.floor(Math.random() * (roleDef.maxAge - roleDef.minAge + 1)) + roleDef.minAge);
+                    } else {
+                        setAge(currentCharacter.basicInfo.age);
+                    }
+                } else {
+                    setAge(Math.floor(Math.random() * (roleDef.maxAge - roleDef.minAge + 1)) + roleDef.minAge);
+                }
+            } else {
+                if (!currentCharacter.basicInfo.age || currentCharacter.basicInfo.age === 0) {
+                    setAge(Math.floor(Math.random() * (75 - 16 + 1)) + 16);
+                }
+            }
+
+        } else if (!currentCharacter.basicInfo.age || currentCharacter.basicInfo.age === 0) {
+            setAge(Math.floor(Math.random() * (75 - 16 + 1)) + 16);
         }
 
         // 3. Siblings Mapping (Future/Next Step)
@@ -158,13 +178,10 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
             country,
             selectedState,
             selectedGender,
-            age,
-            mode,
-            targetChildhood,
-            targetProfessional
+            mode
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }, [hasLoaded, country, selectedState, selectedGender, age, mode, targetChildhood, targetProfessional]);
+    }, [hasLoaded, country, selectedState, selectedGender, mode]);
 
     // Handlers
     const handleGenerateIdentity = () => {
@@ -308,7 +325,40 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
 
                             <div className="space-y-2">
                                 <Label>Age</Label>
-                                <Input type="number" value={age} onChange={e => setAge(Number(e.target.value))} min={18} max={90} />
+                                <Input
+                                    type="number"
+                                    value={age}
+                                    onChange={e => setAge(Number(e.target.value))}
+                                    min={18} max={90}
+                                    error={(() => {
+                                        if (mode === 'custom' && targetProfessional !== 'random') {
+                                            const mapping = bioData.symbolicMappings.find(m => m.category === 'PROFESSION' && m.nodeId === targetProfessional);
+                                            if (mapping) {
+                                                const roleDef = professions.find(p => p.id === mapping.key);
+                                                if (roleDef) {
+                                                    return age < roleDef.minAge || age > roleDef.maxAge;
+                                                }
+                                            }
+                                        }
+                                        return false;
+                                    })()}
+                                />
+                                {(() => {
+                                    if (mode === 'custom' && targetProfessional !== 'random') {
+                                        const mapping = bioData.symbolicMappings.find(m => m.category === 'PROFESSION' && m.nodeId === targetProfessional);
+                                        if (mapping) {
+                                            const roleDef = professions.find(p => p.id === mapping.key);
+                                            if (roleDef && (age < roleDef.minAge || age > roleDef.maxAge)) {
+                                                return (
+                                                    <p className="text-xs text-destructive mt-1">
+                                                        Age must be between {roleDef.minAge} and {roleDef.maxAge} for this profession structure.
+                                                    </p>
+                                                );
+                                            }
+                                        }
+                                    }
+                                    return null;
+                                })()}
                             </div>
 
                             <Button onClick={handleGenerateIdentity} className="w-full" variant="secondary">
