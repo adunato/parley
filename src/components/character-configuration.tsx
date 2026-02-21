@@ -3,7 +3,6 @@ import { useBioStore } from "@/lib/store/bioStore";
 import { Character, Persona as PlayerPersona, Relationship } from "@/lib/types"
 import { useEffect, useState, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { ProceduralGeneratorDialog } from "@/components/character/procedural-generator-dialog";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -40,12 +39,13 @@ import RelationshipDisplay from "@/components/relationship-display";
 import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
 import { NameGenerator, SupportedCountry } from "@/lib/generator/NameGenerator";
+import { faker } from '@faker-js/faker';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations, updateLocation } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations, updateLocation, gameAttributeCategories, gameAttributes } = useEntityStore()
     const { professions } = useBioStore();
 
     // Selection state
@@ -64,7 +64,6 @@ export default function CharacterConfiguration() {
     const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
     const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
-    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false); // Procedural Generator State
     const [isGeneratingRelationship, setIsGeneratingRelationship] = useState(false); // Relationship Generator State
     const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
@@ -145,31 +144,6 @@ export default function CharacterConfiguration() {
     }
 
     // Helper to update field even if nested
-    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string; originLocation?: Character['basicInfo']['originLocation'] }) => {
-        if (!localCharacter) return;
-
-        // We need to batch these updates or handle them sequentially
-        // For simplicity, let's just make a new object and set it once
-        setLocalCharacter((prev) => {
-            if (!prev) return null;
-            const newChar = {
-                ...prev,
-                basicInfo: {
-                    ...prev.basicInfo,
-                    name: data.name,
-                    age: data.age,
-                    gender: data.gender,
-                    background: data.background,
-                    role: data.role,
-                    ...(data.originLocation ? { originLocation: data.originLocation } : {})
-                }
-            };
-            isDirtyRef.current = true;
-            setSaveStatus('saving');
-            debouncedSave(newChar);
-            return newChar;
-        });
-    };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -230,6 +204,24 @@ export default function CharacterConfiguration() {
         });
     };
 
+    const handleMappedAttributeChange = (categoryId: string, attributeId: string) => {
+        setLocalCharacter((prev) => {
+            if (!prev) return null;
+            const newCharacter = { ...prev };
+            newCharacter.basicInfo = {
+                ...newCharacter.basicInfo,
+                mappedAttributes: {
+                    ...(newCharacter.basicInfo.mappedAttributes || {}),
+                    [categoryId]: attributeId === "none" ? undefined : attributeId
+                }
+            };
+            isDirtyRef.current = true;
+            setSaveStatus('saving');
+            debouncedSave(newCharacter);
+            return newCharacter;
+        });
+    };
+
     const handleAddCharacter = () => {
         if (localCharacter && isDirtyRef.current) {
             debouncedSave.flush();
@@ -248,6 +240,7 @@ export default function CharacterConfiguration() {
                 background: "",
                 firstImpression: "",
                 appearance: "",
+                mappedAttributes: {},
             },
             personality: { openness: 0, conscientiousness: 0, extraversion: 0, agreeableness: 0, neuroticism: 0 },
             idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
@@ -392,6 +385,41 @@ export default function CharacterConfiguration() {
             addPlayerPersona(newPersona);
             alert(`Converted ${newPersona.basicInfo.name} to a new persona: ${newPersona.id}`);
         }
+    };
+
+    // Granular Generators
+    const handleGenerateName = () => {
+        if (!localCharacter) return;
+        const country = localCharacter.basicInfo.originLocation?.country as SupportedCountry || 'USA';
+        const gender = localCharacter.basicInfo.gender === 'Female' ? 'female' : localCharacter.basicInfo.gender === 'Male' ? 'male' : undefined;
+        const newName = NameGenerator.generateFullName(country, gender);
+        handleInputChange("basicInfo", "name", newName);
+    };
+
+    const handleGenerateAge = () => {
+        if (!localCharacter) return;
+        const role = professions.find(p => p.id === localCharacter.basicInfo.role);
+        const minAge = role ? role.minAge : 18;
+        const maxAge = role ? role.maxAge : 65;
+        const newAge = faker.number.int({ min: minAge, max: maxAge });
+        handleInputChange("basicInfo", "age", newAge);
+    };
+
+    const handleGenerateGender = () => {
+        if (!localCharacter) return;
+        const genders = ['Male', 'Female', 'Non-Binary'];
+        const weights = [0.48, 0.48, 0.04];
+        const rand = Math.random();
+        let cumulative = 0;
+        let newGender = 'Male';
+        for (let i = 0; i < genders.length; i++) {
+            cumulative += weights[i];
+            if (rand <= cumulative) {
+                newGender = genders[i];
+                break;
+            }
+        }
+        handleInputChange("basicInfo", "gender", newGender);
     };
 
     // Generation Handlers (Character & Avatar)
@@ -608,25 +636,72 @@ export default function CharacterConfiguration() {
                                         <div className="flex items-center gap-3">
                                             <h1 className="type-h2 text-foreground">{displayCharacter.basicInfo.name}</h1>
 
-                                            {/* Always allow image upload */}
-                                            <label className="cursor-pointer">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageUpload}
-                                                    className="hidden"
-                                                />
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="w-6 h-6 hover:bg-transparent text-muted-foreground hover:text-foreground"
-                                                    asChild
-                                                >
-                                                    <div>
-                                                        <Upload className="w-4 h-4" />
-                                                    </div>
-                                                </Button>
-                                            </label>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                {/* Always allow image upload */}
+                                                <label className="cursor-pointer">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="w-8 h-8 rounded-full bg-background border shadow-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                        asChild
+                                                    >
+                                                        <div>
+                                                            <Upload className="w-4 h-4" />
+                                                        </div>
+                                                    </Button>
+                                                </label>
+
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
+                                                            <TooltipTrigger asChild>
+                                                                <DialogTrigger asChild>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="w-8 h-8 rounded-full bg-background border border-primary/30 shadow-sm text-primary hover:bg-primary/10"
+                                                                        onClick={handleGenerateAvatarDescription}
+                                                                        disabled={isGeneratingAvatar}
+                                                                    >
+                                                                        <Sparkles className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DialogTrigger>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Generate Avatar with AI</p>
+                                                            </TooltipContent>
+                                                            <DialogContent className="sm:max-w-[425px]">
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Generate Avatar</DialogTitle>
+                                                                    <DialogDescription>
+                                                                        Review and edit the generated image description before generating.
+                                                                    </DialogDescription>
+                                                                </DialogHeader>
+                                                                <div className="grid gap-4 py-4">
+                                                                    <Textarea
+                                                                        id="avatarPrompt"
+                                                                        value={dialogAvatarPrompt}
+                                                                        onChange={(e) => setDialogAvatarPrompt(e.target.value)}
+                                                                        className="min-h-[150px]"
+                                                                        rows={6}
+                                                                    />
+                                                                </div>
+                                                                <DialogFooter>
+                                                                    <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
+                                                                        {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
+                                                                    </Button>
+                                                                </DialogFooter>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                         </div>
                                         <p className="type-ui-label text-muted-foreground">
                                             {displayCharacter.basicInfo.role || "NO ROLE"} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
@@ -665,112 +740,11 @@ export default function CharacterConfiguration() {
                                         <span className="text-lg">×</span>
                                     </Button>
 
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    onClick={handleGenerateCharacter}
-                                                    disabled={isGeneratingCharacter}
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
-                                                >
-                                                    <Sparkles className="h-4 w-4" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>Auto-Generate Details</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <Dialog open={isCharacterPromptDialogOpen} onOpenChange={setIsCharacterPromptDialogOpen}>
-                                                <TooltipTrigger asChild>
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
-                                                        >
-                                                            <Type className="h-4 w-4" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Generate with Prompt</p>
-                                                </TooltipContent>
-                                                <DialogContent className="sm:max-w-[425px]">
-                                                    <DialogHeader>
-                                                        <DialogTitle>Generate Character with Custom Prompt</DialogTitle>
-                                                        <DialogDescription>
-                                                            Enter your desired prompt for character creation here.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="grid gap-4 py-4">
-                                                        <Textarea
-                                                            id="customCharacterPrompt"
-                                                            value={dialogCharacterPrompt}
-                                                            onChange={(e) => setDialogCharacterPrompt(e.target.value)}
-                                                            className="min-h-[150px]"
-                                                            rows={6}
-                                                            placeholder="e.g., 'A wise old wizard with a long beard and a penchant for riddles.'"
-                                                        />
-                                                    </div>
-                                                    <DialogFooter>
-                                                        <Button onClick={handleGenerateCharacterWithPrompt} disabled={isGeneratingCharacter}>
-                                                            {isGeneratingCharacter ? 'Generating...' : 'Generate'}
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <Dialog open={isAvatarPromptDialogOpen} onOpenChange={setIsAvatarPromptDialogOpen}>
-                                                <TooltipTrigger asChild>
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="h-8 w-8 rounded-full border-dashed border-primary/50 text-primary hover:bg-primary/5"
-                                                            onClick={handleGenerateAvatarDescription}
-                                                            disabled={isGeneratingAvatar}
-                                                        >
-                                                            <Upload className="h-4 w-4" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Generate Avatar</p>
-                                                </TooltipContent>
-                                                <DialogContent className="sm:max-w-[425px]">
-                                                    <DialogHeader>
-                                                        <DialogTitle>Tweak Avatar Description</DialogTitle>
-                                                        <DialogDescription>
-                                                            Review and edit the generated image description before generating the avatar.
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="grid gap-4 py-4">
-                                                        <Textarea
-                                                            id="avatarPrompt"
-                                                            value={dialogAvatarPrompt}
-                                                            onChange={(e) => setDialogAvatarPrompt(e.target.value)}
-                                                            className="min-h-[150px]"
-                                                            rows={6}
-                                                            placeholder="e.g., 'A detailed portrait of a young woman with fiery red hair and emerald eyes, wearing a leather jacket.'"
-                                                        />
-                                                    </div>
-                                                    <DialogFooter>
-                                                        <Button onClick={handleGenerateAvatar} disabled={isGeneratingAvatar}>
-                                                            {isGeneratingAvatar ? 'Generating...' : 'Generate Avatar'}
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                    <Button onClick={handleGenerateCharacter} disabled={isGeneratingCharacter} className="ml-2 gap-2 shadow-sm relative overflow-hidden group">
+                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                        <Wand2 className="w-4 h-4" />
+                                        {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -782,49 +756,70 @@ export default function CharacterConfiguration() {
                                 <Card className="border-border shadow-sm">
                                     <div className="pt-6 relative">
                                         <SectionHeader title="Basic Information" />
-                                        <div className="absolute right-4 top-2">
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => setIsProceduralGeneratorOpen(true)}
-                                                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                                        >
-                                                            <Sparkles className="w-4 h-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Open Procedural Generator</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </div>
                                     </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="name" className="type-ui-label text-muted-foreground">Name</Label>
-                                            <Input
-                                                id="name"
-                                                value={displayCharacter.basicInfo.name}
-                                                onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
-                                            />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="name"
+                                                    value={displayCharacter.basicInfo.name}
+                                                    onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
+                                                    className="flex-1"
+                                                />
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={handleGenerateName}
+                                                                className="shrink-0 h-9 w-9"
+                                                            >
+                                                                <Wand2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Name</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="age" className="type-ui-label text-muted-foreground">Age</Label>
-                                            <Input
-                                                id="age"
-                                                type="number"
-                                                value={displayCharacter.basicInfo.age || 0}
-                                                onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
-                                                error={(() => {
-                                                    const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
-                                                    if (!role) return false;
-                                                    const age = displayCharacter.basicInfo.age || 0;
-                                                    return age < role.minAge || age > role.maxAge;
-                                                })()}
-                                            />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="age"
+                                                    type="number"
+                                                    value={displayCharacter.basicInfo.age || 0}
+                                                    onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
+                                                    className="flex-1"
+                                                    error={(() => {
+                                                        const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
+                                                        if (!role) return false;
+                                                        const age = displayCharacter.basicInfo.age || 0;
+                                                        return age < role.minAge || age > role.maxAge;
+                                                    })()}
+                                                />
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={handleGenerateAge}
+                                                                className="shrink-0 h-9 w-9"
+                                                            >
+                                                                <Wand2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Age</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                             {(() => {
                                                 const age = displayCharacter.basicInfo.age || 0;
                                                 const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
@@ -840,11 +835,31 @@ export default function CharacterConfiguration() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
-                                            <Input
-                                                id="gender"
-                                                value={displayCharacter.basicInfo.gender || ""}
-                                                onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
-                                            />
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="gender"
+                                                    value={displayCharacter.basicInfo.gender || ""}
+                                                    onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
+                                                    className="flex-1"
+                                                />
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={handleGenerateGender}
+                                                                className="shrink-0 h-9 w-9"
+                                                            >
+                                                                <Wand2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Generate Gender</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="origin-country" className="type-ui-label text-muted-foreground">Country of Origin</Label>
@@ -973,6 +988,46 @@ export default function CharacterConfiguration() {
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                {/* Life Path Settings (Generic Attributes) */}
+                                {gameAttributeCategories && gameAttributeCategories.length > 0 && (
+                                    <Card className="border-border shadow-sm">
+                                        <div className="pt-6">
+                                            <SectionHeader title="Life Path Settings" />
+                                        </div>
+                                        <CardContent className="space-y-4">
+                                            <div className="type-body-sm text-muted-foreground mb-4">
+                                                These attributes act as absolute constraints when regenerating the character's life story using the Bio Generator.
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {gameAttributeCategories.map(category => {
+                                                    const options = gameAttributes?.filter(a => a.categoryId === category.id) || [];
+                                                    return (
+                                                        <div key={category.id} className="space-y-2">
+                                                            <Label htmlFor={`cat-${category.id}`} className="type-ui-label text-muted-foreground">
+                                                                {category.name}
+                                                            </Label>
+                                                            <Select
+                                                                value={displayCharacter.basicInfo.mappedAttributes?.[category.id] || "none"}
+                                                                onValueChange={(val) => handleMappedAttributeChange(category.id, val)}
+                                                            >
+                                                                <SelectTrigger id={`cat-${category.id}`}>
+                                                                    <SelectValue placeholder={`Select ${category.name}`} />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="none">-- Let Generator Decide --</SelectItem>
+                                                                    {options.map(opt => (
+                                                                        <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
 
                                 {/* Personality (OCEAN) */}
                                 <Card className="border-border shadow-sm">
@@ -1177,13 +1232,6 @@ export default function CharacterConfiguration() {
                     </div>
                 )}
             </div>
-
-            <ProceduralGeneratorDialog
-                open={isProceduralGeneratorOpen}
-                onOpenChange={setIsProceduralGeneratorOpen}
-                onApply={handleApplyProceduralData}
-                characterId={displayCharacter?.id || ''}
-            />
         </div >
     )
 }
