@@ -1,4 +1,3 @@
-
 import { Client } from "@stable-canvas/comfyui-client";
 import fs from 'fs';
 import { Character } from '@/lib/types';
@@ -6,15 +5,13 @@ import WebSocket from "ws";
 import fetch from "node-fetch";
 import path from 'path';
 
-const client = new Client({
-  api_host: "127.0.0.1:8188",
-  WebSocket: WebSocket as any,
-  fetch: fetch as any,
-});
-
-client.connect();
-
-export async function generateImage(imageDescription: string, overrides: Record<string, any> = {}) {
+export async function generateImage(imageDescription: string, overrides: Record<string, any> = {}, address: string = "127.0.0.1:8188") {
+  const client = new Client({
+    api_host: address,
+    WebSocket: WebSocket as any,
+    fetch: fetch as any,
+  });
+  client.connect();
   const workflow = JSON.parse(fs.readFileSync('./image_workflows/character_avatar.json', 'utf8'));
 
   const nodes = Object.values(workflow) as any[];
@@ -92,15 +89,18 @@ export async function generateImage(imageDescription: string, overrides: Record<
     }
   } catch (error: any) {
     if (error.cause && error.cause.code === 'ECONNREFUSED') {
-      throw new Error("ComfyUI is not running or not accessible at 127.0.0.1:8188");
+      throw new Error(`ComfyUI is not running or not accessible at ${address}`);
     }
     throw error;
+  } finally {
+    client.disconnect();
   }
 }
 
-export async function getAvailableModels(): Promise<string[]> {
+export async function getAvailableModels(address: string = "127.0.0.1:8188"): Promise<string[]> {
   try {
-    const response = await fetch("http://127.0.0.1:8188/object_info/CheckpointLoaderSimple");
+    const formattedAddress = address.startsWith('http') ? address : `http://${address}`;
+    const response = await fetch(`${formattedAddress}/object_info/CheckpointLoaderSimple`);
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }

@@ -1,9 +1,10 @@
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAvailableModels } from '@/lib/comfyui';
 
-export async function GET() {
-    const models = await getAvailableModels();
+export async function GET(req: NextRequest) {
+    const address = req.nextUrl.searchParams.get('address') || '127.0.0.1:8188';
+    const models = await getAvailableModels(address);
     // Map strings to Model interface structure for consistency if needed, 
     // but for now sending raw strings or mapped objects is fine.
     // The frontend expects a list of models to populate the dropdown.

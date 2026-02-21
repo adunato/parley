@@ -265,7 +265,8 @@ export default function PersonaConfiguration() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     imageDescription: dialogAvatarPrompt,
-                    overrides: avatarGenerationSettings
+                    overrides: avatarGenerationSettings,
+                    comfyuiAddress: avatarGenerationSettings.comfyuiAddress
                 }),
             });
             const imageData = await imageResponse.json();

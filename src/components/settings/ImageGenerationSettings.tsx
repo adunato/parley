@@ -107,18 +107,30 @@ export function ImageGenerationSettings({ prompts, comfyuiModels, onSave, onRese
                             className="font-sans min-h-[100px]"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="model" className="type-ui-label text-muted-foreground">Model Checkpoint Name</Label>
-                        <Combobox<Model>
-                            items={comfyuiModels}
-                            value={avatarGenerationSettings.model}
-                            onValueChange={(value) => setAvatarGenerationSettings({ ...avatarGenerationSettings, model: value })}
-                            placeholder="Select a checkpoint..."
-                            filterFn={(item, query) =>
-                                item.id.toLowerCase().includes(query.toLowerCase())
-                            }
-                            itemToString={(item) => item.id}
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="model" className="type-ui-label text-muted-foreground">Model Checkpoint Name</Label>
+                            <Combobox<Model>
+                                items={comfyuiModels}
+                                value={avatarGenerationSettings.model}
+                                onValueChange={(value) => setAvatarGenerationSettings({ ...avatarGenerationSettings, model: value })}
+                                placeholder="Select a checkpoint..."
+                                filterFn={(item, query) =>
+                                    item.id.toLowerCase().includes(query.toLowerCase())
+                                }
+                                itemToString={(item) => item.id}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="comfyui-address" className="type-ui-label text-muted-foreground">ComfyUI Address</Label>
+                            <Input
+                                id="comfyui-address"
+                                value={avatarGenerationSettings.comfyuiAddress}
+                                onChange={(e) => setAvatarGenerationSettings({ ...avatarGenerationSettings, comfyuiAddress: e.target.value })}
+                                placeholder="127.0.0.1:8188"
+                                className="font-mono"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>

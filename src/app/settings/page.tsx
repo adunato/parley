@@ -17,15 +17,15 @@ export default function SettingsPage() {
   const [comfyuiModels, setComfyuiModels] = useState<Model[]>([]);
   const [prompts, setPrompts] = useState<Record<string, PromptConfig>>({});
   const [loading, setLoading] = useState(true);
-  const { setSystemPromptTemplate } = useParleyStore();
+  const { setSystemPromptTemplate, avatarGenerationSettings } = useParleyStore();
 
-  async function fetchModels() {
+  async function fetchModels(address: string) {
     try {
       const response = await fetch("/api/models");
       const data = await response.json();
       setModels(data);
 
-      const comfyResponse = await fetch("/api/models/comfyui");
+      const comfyResponse = await fetch(`/api/models/comfyui?address=${encodeURIComponent(address)}`);
       const comfyData = await comfyResponse.json();
       setComfyuiModels(comfyData.models.map((m: string) => ({ id: m, name: m, provider: 'ComfyUI' })));
     } catch (error) {
@@ -48,11 +48,11 @@ export default function SettingsPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      await Promise.all([fetchModels(), fetchPrompts()]);
+      await Promise.all([fetchModels(avatarGenerationSettings.comfyuiAddress), fetchPrompts()]);
       setLoading(false);
     }
     loadData();
-  }, []);
+  }, [avatarGenerationSettings.comfyuiAddress]);
 
   const handleSavePrompt = async (id: string, template: string) => {
     try {
