@@ -22,14 +22,16 @@ Draft
   * **Current In-Game Entities (`Character` type)**:
     * The `Character` type currently explicitly supports `Role` (mapped to Professions) and `originLocation` (Country/State/Town, which is distinct from the bio-generator's social class "Origins"). It optionally has a `siblings` field, but it lacks strict typings/configuration.
   * **Delta Analysis (Missing In-Game Entities)**:
-    * To fully utilize the bio-generator deterministically, the game needs the following explicit in-game entities:
-      1. **Social Origin / Upbringing** (Mapping to bio-generator's `Origins` group).
-      2. **Education Level / Path** (Mapping to bio-generator's `Education` group).
-      3. **Housing / Wealth Status** (Mapping to bio-generator's `Housing` track).
-      4. **Sibling Configuration** (Formalizing the `siblings` field to map to the `Siblings` group).
+    * To fully utilize the bio-generator deterministically, the game needs explicit in-game entities for every logical grouping present in the bio-generator. Note that the bio-generator itself can be extended with new groups via `bioStore`.
+    * Currently, we depend on the following bio-generator `groups.json` tracks that are not formally explicitly modeled in the game state other than as strings:
+      1. **Origins** (Social Class / Starting Socioeconomic Background)
+      2. **Education** (Education Level / Path)
+      3. **Housing** (Property / Housing Status)
+      4. **Siblings** (Family size)
+      5. **Relationships** (Relationship History / Trajectory)
   * **Proposed Implementation Steps**:
-    1. **Data Model Updates**: Expand `src/lib/types.ts` to include these missing attributes in the `BasicInfo` interface or as separate entities (similar to `Profession`).
-    2. **Configuration Pages**: Create lightweight configuration pages (or expand existing ones) to manage these new in-game entities so the user can define available Origins, Education Paths, etc.
+    1. **Data Model Updates**: Expand `src/lib/types.ts` to formally include these missing attributes in the `BasicInfo` (or character-level) structure.
+    2. **Dynamic Configuration Pages**: Create configuration pages allowing the user to manage the values for these new in-game entities (similar to how Professions are managed). By creating a generic pattern, the user can define available Origins, Education Paths, Relationship Histories, etc.
     3. **Character Configuration UI**: Expose these new in-game attributes as explicit dropdowns/fields within the "Character Configuration" page.
-    4. **Deterministic Generation**: When the user clicks "Generate Background", the UI will pass the selected in-game attributes through the `SymbolicMapping` registry to resolve their corresponding bio-generator `nodeId`s. These IDs will be sent as `pinnedNodeIds` to the bio-generator, ensuring the generated narrative perfectly respects the explicitly configured in-game state.
+    4. **Deterministic Generation**: When the user clicks "Generate Background", the UI will pass the selected in-game attributes (Origins, Siblings, Housing, Education, Relationships) through the `SymbolicMapping` registry to resolve their corresponding bio-generator `nodeId`s. These IDs will be sent as `pinnedNodeIds` to the bio-generator, ensuring the generated narrative perfectly respects the explicitly configured in-game state.
 
