@@ -5,9 +5,34 @@ import WebSocket from "ws";
 import fetch from "node-fetch";
 import path from 'path';
 
+function formatAddress(rawProtocolAndHost: string, requireHttp: boolean = false): string {
+  let clean = rawProtocolAndHost.trim();
+
+  while (clean.endsWith('/')) {
+    clean = clean.slice(0, -1);
+  }
+
+  const hasHttp = clean.startsWith('http://') || clean.startsWith('https://');
+
+  if (requireHttp) {
+    if (!hasHttp) {
+      return `http://${clean}`;
+    }
+    return clean;
+  } else {
+    if (clean.startsWith('http://')) {
+      return clean.replace('http://', '');
+    } else if (clean.startsWith('https://')) {
+      return clean.replace('https://', '');
+    }
+    return clean;
+  }
+}
+
 export async function generateImage(imageDescription: string, overrides: Record<string, any> = {}, address: string = "127.0.0.1:8188") {
+  const hostOnlyAddress = formatAddress(address, false);
   const client = new Client({
-    api_host: address,
+    api_host: hostOnlyAddress,
     WebSocket: WebSocket as any,
     fetch: fetch as any,
   });
@@ -89,7 +114,7 @@ export async function generateImage(imageDescription: string, overrides: Record<
     }
   } catch (error: any) {
     if (error.cause && error.cause.code === 'ECONNREFUSED') {
-      throw new Error(`ComfyUI is not running or not accessible at ${address}`);
+      throw new Error(`ComfyUI is not running or not accessible at ${hostOnlyAddress}`);
     }
     throw error;
   } finally {
@@ -99,7 +124,7 @@ export async function generateImage(imageDescription: string, overrides: Record<
 
 export async function getAvailableModels(address: string = "127.0.0.1:8188"): Promise<string[]> {
   try {
-    const formattedAddress = address.startsWith('http') ? address : `http://${address}`;
+    const formattedAddress = formatAddress(address, true);
     const response = await fetch(`${formattedAddress}/object_info/CheckpointLoaderSimple`);
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
