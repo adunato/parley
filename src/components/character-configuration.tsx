@@ -392,7 +392,8 @@ export default function CharacterConfiguration() {
         if (!localCharacter) return;
         const country = localCharacter.basicInfo.originLocation?.country as SupportedCountry || 'USA';
         const gender = localCharacter.basicInfo.gender === 'Female' ? 'female' : localCharacter.basicInfo.gender === 'Male' ? 'male' : undefined;
-        const newName = NameGenerator.generateFullName(country, gender);
+        const identity = NameGenerator.generateIdentity(country, gender);
+        const newName = identity.firstName + ' ' + identity.lastName;
         handleInputChange("basicInfo", "name", newName);
     };
 
@@ -426,23 +427,58 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; } = {};
+            const context: any = {};
+            const info = localCharacter ? localCharacter.basicInfo : {} as any;
 
-            // Context-Awareness: Inject existing data if available
-            if (localCharacter) {
-                const context: any = {};
-                const info = localCharacter.basicInfo;
-
-                if (info.name && info.name !== "New Character") context.name = info.name;
-                if (info.role) context.role = info.role;
-                if (info.background) context.background = info.background;
-                if (info.gender) context.gender = info.gender;
-                if (info.age && info.age > 0) context.age = info.age;
-
-                if (Object.keys(context).length > 0) {
-                    body.existingContext = context;
-                }
+            // SEQUENCE STEP 1: Base Tabular Constraints
+            // Resolve foundational properties if missing
+            let name = info.name;
+            if (!name || name === "New Character") {
+                const country = info.originLocation?.country as SupportedCountry || 'USA';
+                const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
+                const identity = NameGenerator.generateIdentity(country, genderHelper);
+                name = identity.firstName + ' ' + identity.lastName;
             }
+            context.name = name;
+
+            let gender = info.gender;
+            if (!gender) {
+                const genders = ['Male', 'Female'];
+                gender = genders[Math.floor(Math.random() * genders.length)];
+            }
+            context.gender = gender;
+
+            let age = info.age;
+            if (!age || age <= 0) {
+                const role = professions.find(p => p.id === info.role);
+                const minAge = role ? role.minAge : 18;
+                const maxAge = role ? role.maxAge : 65;
+                age = faker.number.int({ min: minAge, max: maxAge });
+            }
+            context.age = age;
+
+            // Gather explicit UI states
+            if (info.role) context.role = info.role;
+            if (info.background) context.background = info.background;
+            if (info.mappedAttributes && Object.keys(info.mappedAttributes).length > 0) {
+                context.mappedAttributes = info.mappedAttributes;
+            }
+
+            body.existingContext = context;
+
+            // Inject BioData and Symbolic Mappings for deterministic generation
+            const bioStoreData = useBioStore.getState().getAllData();
+            body.bioData = {
+                childhood: bioStoreData.childhood,
+                formative: bioStoreData.formative,
+                professional: bioStoreData.professional,
+                senior: bioStoreData.senior,
+                lifeEvents: bioStoreData.lifeEvents,
+                tags: bioStoreData.tags,
+                phaseConfig: bioStoreData.phaseConfig
+            };
+            body.symbolicMappings = bioStoreData.symbolicMappings;
 
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
