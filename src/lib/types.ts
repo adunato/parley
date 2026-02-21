@@ -1,5 +1,11 @@
 // src/lib/types.ts
 
+export interface OriginLocation {
+  country?: string;
+  stateRegion?: string;
+  town?: string;
+}
+
 export interface BasicInfo {
   name: string;
   age: number;
@@ -12,6 +18,7 @@ export interface BasicInfo {
   appearance: string;
   avatar?: string;
   siblings?: string;
+  originLocation?: OriginLocation;
 }
 
 export interface Personality {

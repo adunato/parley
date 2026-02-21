@@ -39,6 +39,7 @@ import { Menu } from "lucide-react";
 import RelationshipDisplay from "@/components/relationship-display";
 import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
+import { NameGenerator, SupportedCountry } from "@/lib/generator/NameGenerator";
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -120,7 +121,7 @@ export default function CharacterConfiguration() {
     const handleInputChange = (
         section: keyof Character | "basicInfo" | "personality" | "idealMatch",
         field: string,
-        value: string | number | string[] | undefined
+        value: string | number | string[] | Record<string, any> | undefined
     ) => {
         setLocalCharacter((prev) => {
             if (!prev) return null
@@ -144,7 +145,7 @@ export default function CharacterConfiguration() {
     }
 
     // Helper to update field even if nested
-    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string }) => {
+    const handleApplyProceduralData = (data: { name: string; age: number; gender: string; background: string; origin: string; role: string; originLocation?: Character['basicInfo']['originLocation'] }) => {
         if (!localCharacter) return;
 
         // We need to batch these updates or handle them sequentially
@@ -159,7 +160,8 @@ export default function CharacterConfiguration() {
                     age: data.age,
                     gender: data.gender,
                     background: data.background,
-                    role: data.role
+                    role: data.role,
+                    ...(data.originLocation ? { originLocation: data.originLocation } : {})
                 }
             };
             isDirtyRef.current = true;
@@ -842,6 +844,58 @@ export default function CharacterConfiguration() {
                                                 id="gender"
                                                 value={displayCharacter.basicInfo.gender || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="origin-country" className="type-ui-label text-muted-foreground">Country of Origin</Label>
+                                            <Select
+                                                value={displayCharacter.basicInfo.originLocation?.country || ""}
+                                                onValueChange={(val) => {
+                                                    const currentLoc = displayCharacter.basicInfo.originLocation || {};
+                                                    handleInputChange("basicInfo", "originLocation", { ...currentLoc, country: val, stateRegion: "" });
+                                                }}
+                                            >
+                                                <SelectTrigger id="origin-country">
+                                                    <SelectValue placeholder="Select Country" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {NameGenerator.getSupportedCountries().map(c => (
+                                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {displayCharacter.basicInfo.originLocation?.country && NameGenerator.getStates(displayCharacter.basicInfo.originLocation.country as SupportedCountry).length > 0 && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="origin-state" className="type-ui-label text-muted-foreground">State / Region</Label>
+                                                <Select
+                                                    value={displayCharacter.basicInfo.originLocation?.stateRegion || ""}
+                                                    onValueChange={(val) => {
+                                                        const currentLoc = displayCharacter.basicInfo.originLocation || {};
+                                                        handleInputChange("basicInfo", "originLocation", { ...currentLoc, stateRegion: val === "none" ? "" : val });
+                                                    }}
+                                                >
+                                                    <SelectTrigger id="origin-state">
+                                                        <SelectValue placeholder="Select State/Region" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-[200px]">
+                                                        <SelectItem value="none">None</SelectItem>
+                                                        {NameGenerator.getStates(displayCharacter.basicInfo.originLocation.country as SupportedCountry).map(s => (
+                                                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        )}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="origin-town" className="type-ui-label text-muted-foreground">Town</Label>
+                                            <Input
+                                                id="origin-town"
+                                                value={displayCharacter.basicInfo.originLocation?.town || ""}
+                                                onChange={(e) => {
+                                                    const currentLoc = displayCharacter.basicInfo.originLocation || {};
+                                                    handleInputChange("basicInfo", "originLocation", { ...currentLoc, town: e.target.value });
+                                                }}
                                             />
                                         </div>
                                         <div className="space-y-2">

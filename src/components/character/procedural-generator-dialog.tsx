@@ -46,7 +46,7 @@ function DatasetSelector() {
 interface ProceduralGeneratorDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onApply: (data: { name: string; age: number; gender: string; background: string; origin: string; role: string; avatar?: string }) => void;
+    onApply: (data: { name: string; age: number; gender: string; background: string; origin: string; role: string; avatar?: string; originLocation?: { country?: string; stateRegion?: string; town?: string } }) => void;
     characterId: string;
 }
 
@@ -74,6 +74,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
     // State
     const [country, setCountry] = useState<SupportedCountry>('USA');
     const [selectedState, setSelectedState] = useState<string>('random');
+    const [town, setTown] = useState<string>('');
     const [selectedGender, setSelectedGender] = useState<'random' | GenderOption>('random');
     const [age, setAge] = useState<number>(30);
     const [mode, setMode] = useState<'random' | 'custom'>('random');
@@ -116,9 +117,37 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
     useEffect(() => {
         if (!open || !currentCharacter || !hasLoaded) return;
 
-        // 1. Sync Age and Gender (if not already set or random)
+        // 1. Sync Age, Gender, and Origin (if not already set or random)
         if (currentCharacter.basicInfo.age && currentCharacter.basicInfo.age > 0) {
             setAge(currentCharacter.basicInfo.age);
+        }
+        if (currentCharacter.basicInfo.gender && currentCharacter.basicInfo.gender.toLowerCase() !== "random") {
+            const lowerGender = currentCharacter.basicInfo.gender.toLowerCase();
+            if (lowerGender === 'male' || lowerGender === 'female') {
+                setSelectedGender(lowerGender as GenderOption);
+            }
+        }
+        if (currentCharacter.basicInfo.originLocation) {
+            const loc = currentCharacter.basicInfo.originLocation;
+            if (loc.country) setCountry(loc.country as SupportedCountry);
+            if (loc.stateRegion) setSelectedState(loc.stateRegion);
+            if (loc.town) setTown(loc.town);
+
+            // Generate a default identity locally based on existing values if we have a real name
+            if (currentCharacter.basicInfo.name && currentCharacter.basicInfo.name !== "New Character" && !identity) {
+                const names = currentCharacter.basicInfo.name.split(' ');
+                const first = names[0] || '';
+                const last = names.length > 1 ? names.slice(1).join(' ') : '';
+                setIdentity({
+                    firstName: first,
+                    lastName: last,
+                    gender: currentCharacter.basicInfo.gender.charAt(0).toUpperCase() + currentCharacter.basicInfo.gender.slice(1),
+                    country: loc.country || 'USA',
+                    state: loc.stateRegion || '',
+                    town: loc.town || '',
+                    location: loc.town ? `${loc.town}, ${loc.stateRegion || loc.country}` : (loc.stateRegion || loc.country || '')
+                });
+            }
         }
 
         // Check if we should override? Maybe only if the user hasn't generated an identity yet?
@@ -177,6 +206,7 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
         const settings = {
             country,
             selectedState,
+            town,
             selectedGender,
             mode
         };
@@ -188,6 +218,16 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
         const genderArg = selectedGender === 'random' ? undefined : selectedGender;
         const stateArg = selectedState === 'random' ? undefined : selectedState;
         const id = NameGenerator.generateIdentity(country, genderArg, stateArg);
+
+        // Use user's town input over generated one if they typed something specific
+        if (town !== '' && town !== id.town) {
+            id.town = town;
+            id.location = `${town}, ${id.state || id.country}`;
+        } else {
+            setTown(id.town);
+            setSelectedState(id.state ? id.state : 'random');
+        }
+
         setIdentity(id);
     };
 
@@ -241,7 +281,12 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
             age: age,
             background: generatedBioText,
             origin: origin,
-            role: role.charAt(0).toUpperCase() + role.slice(1)
+            role: role.charAt(0).toUpperCase() + role.slice(1),
+            originLocation: {
+                country: identity.country,
+                stateRegion: identity.state,
+                town: identity.town
+            }
         });
         onOpenChange(false);
     };
@@ -304,6 +349,15 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, onApply, charact
                                     </div>
                                 );
                             }, [country, selectedState])}
+
+                            <div className="space-y-2">
+                                <Label>Town</Label>
+                                <Input
+                                    value={town}
+                                    onChange={(e) => setTown(e.target.value)}
+                                    placeholder="e.g. Springfield (or leave blank for random)"
+                                />
+                            </div>
 
                             <div className="space-y-2">
                                 <Label>Gender</Label>

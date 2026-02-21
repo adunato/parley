@@ -17,6 +17,8 @@ export interface Identity {
     location: string;
     country: string;
     gender: string;
+    town: string;
+    state: string;
 }
 
 export type SupportedCountry = 'USA' | 'UK' | 'Japan' | 'France' | 'Germany' | 'Italy' | 'Spain' | 'Russia' | 'China';
@@ -53,17 +55,19 @@ export class NameGenerator {
         // but typically "City, Country" or "City, State" is fine.
         // For international consistency, we'll try "City, Region" if available, or just City.
 
-        let locationString = city;
+        let locationString = '';
+        let finalStateInfo = '';
         if (country === 'USA' || country === 'UK' || country === 'Germany') {
             // Countries where state/county is commonly cited
             // If state is provided, use it. Otherwise random.
             // Note: Faker's state() returns a random state from the locale. 
             // If we have a specific state, we use it.
-            const selectedState = state || randomState;
-            locationString = `${city}, ${selectedState}`;
+            finalStateInfo = state || randomState;
+            locationString = `${city}, ${finalStateInfo}`;
         } else {
             if (state) {
                 locationString = `${city}, ${state}`;
+                finalStateInfo = state;
             } else {
                 locationString = `${city}, ${country}`;
             }
@@ -74,7 +78,9 @@ export class NameGenerator {
             lastName,
             location: locationString,
             country,
-            gender: sex.charAt(0).toUpperCase() + sex.slice(1) // 'Male' or 'Female'
+            gender: sex.charAt(0).toUpperCase() + sex.slice(1), // 'Male' or 'Female'
+            town: city,
+            state: finalStateInfo || randomState || ''
         };
     }
 
