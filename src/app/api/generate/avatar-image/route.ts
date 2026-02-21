@@ -4,13 +4,13 @@ import { generateImage } from '@/lib/comfyui';
 
 export async function POST(req: NextRequest) {
   try {
-    const { imageDescription, overrides } = await req.json();
+    const { imageDescription, overrides, comfyuiAddress } = await req.json();
 
     if (!imageDescription) {
       return NextResponse.json({ error: 'Image description is required' }, { status: 400 });
     }
 
-    const imageData = await generateImage(imageDescription, overrides);
+    const imageData = await generateImage(imageDescription, overrides, comfyuiAddress);
 
     return NextResponse.json({ imageData }, { status: 200 });
   } catch (error) {

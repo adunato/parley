@@ -16,6 +16,7 @@ export interface AvatarGenerationSettings {
     negativePrompt: string;
     model: string;
     seed: number;
+    comfyuiAddress: string;
 }
 
 interface ParleyStore {
@@ -107,6 +108,7 @@ export const useParleyStore = create<ParleyStore>()(
                     negativePrompt: 'bad quality, low resolution, blurry',
                     model: 'epicrealismXL_vxiiiAb3ast.safetensors',
                     seed: -1, // -1 means random
+                    comfyuiAddress: '127.0.0.1:8188',
                 },
                 setAvatarGenerationSettings: (settings) => set((state) => ({
                     avatarGenerationSettings: { ...state.avatarGenerationSettings, ...settings }
