@@ -11,34 +11,20 @@ Draft
 * Address how back-end Life Path (bio-generator) output is mapped into the character configuration.
 
 ## Proposed Solution
-* **UI Integration**:
-  * Modify the `CharacterConfiguration` component to embed generative functionalities directly next to relevant fields (e.g., small "wand" icons next to inputs for Name, Origin, etc.).
-  * Remove or refine the overarching "Auto generate" and "Generate with Prompt" buttons that conflict with granular generation.
+* **Generation Options Integration**:
+  * **Whole Character Generation**: Add a prominent "Generate Character" button that triggers the generation of all text-based fields (using populated fields as constraints/context where provided) except for the Avatar.
+  * **Granular Generation**: Embed generative functionalities directly next to individual fields (e.g., small "wand" icons next to Name, Origin, Age) to allow regenerating a single field dynamically while considering the rest of the profile as context.
   * Adjust the "Generate Avatar" button and its icon to be placed closer to the avatar display component.
-* **Granular Generation**:
-  * Build specific single-field generation functions (or targeted updates to existing generators) that use the current state of other character fields as context (e.g., generating a fitting name based on the selected origin location).
 * **Generator Logic Application**:
-  * Ensure the logic flow relies on `faker` for structured tabular data (name, age, attributes) and the LLM endpoint for unstructured prose (personality, background).
-* **Life Path Settings Integration (Open Question)**:
-  * See options below.
+  * Utilize `faker` library for structured, deterministic tabular data (name, age, attributes) and the LLM endpoint for unstructured prose (personality, background).
+* **Bio-Generator Incorporation (Option B: Implicit Mapping with Exposed Spine)**:
+  * Integrate the bio-generator directly into the Character Configuration page by exposing the **Spine Nodes** as selectable configuration options, while hiding the generated **Flesh Nodes**.
+  * **Detailed Analysis of Exposed Fields**:
+    * Spine nodes in the underlying data are defined as `EventNode`s assigned to specific `AgePhase`s (Childhood, Formative, Professional, Senior) and are categorized by `groupId` (e.g., Social Class, Siblings, Housing).
+    * The Character Configuration UI will include a "Life Path (Spine)" section.
+    * This section will dynamically render dropdown selectors for each available `groupId` of spine nodes (derived from `bioStore`'s `childhood`, `formative`, `professional`, and `senior` datasets).
+    * Example exposed fields: *Childhood: Social Class (Poor, Middle Class, etc.), Siblings (0, 1, 2)*; *Formative: Education Path*; etc.
+    * The user can manually pin these spine nodes via the dropdowns. 
+    * A "Generate Background" action will feed these pinned spine node IDs into the bio-generator (`pinnedNodeIds`). The generator will silently create the "Flesh" events in the background and use the complete graph (Spine + Flesh) to prompt the LLM. 
+    * The LLM's resulting narrative will be populated directly into the character's `Background` and `Personality` text areas, abstracting the complex event graph away from the user while retaining precise structural control.
 
-## Open Questions & Options
-
-### How to incorporate bio-generator / Life Path Settings logic into the page?
-
-**Option A: Explicit Mapping (Graph Visibility)**
-* **Description:** Expose the underlying spine/flesh nodes directly within the Character Configuration UI, perhaps in a dedicated "Life Path" tab or collapsible panel.
-* **Pros:** Complete transparency for advanced users; fine-grained control over the character's journey.
-* **Cons:** Increases UI complexity significantly; might be overwhelming for regular character creation and strays from a clean configuration page.
-
-**Option B: Implicit Mapping (Transparent Generation)**
-* **Description:** Hide the spine/flesh nodes entirely from the Character Configuration UI. The user clicks "Generate Background" (or similar), and the generator works in the backend. Only the final mapped fields (e.g., education, siblings) and narrative text are updated in the UI.
-* **Pros:** Cleanest, most user-friendly UI. Abstracts away the complexity of the node graph from the standard character creation flow.
-* **Cons:** Less granular control over individual life events during the character creation phase; the user accepts the whole package.
-
-**Option C: Hybrid (Simplified Life Path Selections)**
-* **Description:** Provide high-level "Life Path Settings" drop-downs or toggles (e.g., "Wealthy Upbringing", "Tragic Event") that act as seeds. The backend bio-generator uses these to guide the graph/node generation implicitly, mapping the output down to standard fields.
-* **Pros:** Balances user agency with UI simplicity and clear cause-effect mapping.
-* **Cons:** Requires mapping these high-level seeds to the more complex underlying node rules.
-
-Please review the options above and specify which approach you prefer for the Life Path Settings integration.
