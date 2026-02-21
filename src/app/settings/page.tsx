@@ -45,6 +45,7 @@ export default function SettingsPage() {
     }
   }
 
+  // Initial load
   useEffect(() => {
     async function loadData() {
       setLoading(true);
@@ -52,6 +53,15 @@ export default function SettingsPage() {
       setLoading(false);
     }
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Refetch models silently when comfyuiAddress changes
+  useEffect(() => {
+    if (!loading) { // Don't run this concurrently with the initial load
+      fetchModels(avatarGenerationSettings.comfyuiAddress);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatarGenerationSettings.comfyuiAddress]);
 
   const handleSavePrompt = async (id: string, template: string) => {
