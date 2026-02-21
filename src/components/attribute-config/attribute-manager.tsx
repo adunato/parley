@@ -96,17 +96,15 @@ export function AttributeManager() {
     const currentTabId = activeTab || gameAttributeCategories[0].id;
 
     return (
-        <div className="space-y-6 flex flex-col items-center">
-            <Tabs value={currentTabId} onValueChange={handleTabChange} className="w-full">
-                <div className="flex justify-center mb-6">
-                    <TabsList className="grid h-auto w-full max-w-[800px]" style={{ gridTemplateColumns: `repeat(${gameAttributeCategories.length}, 1fr)` }}>
-                        {gameAttributeCategories.map((category) => (
-                            <TabsTrigger key={category.id} value={category.id} className="py-3">
-                                {category.name}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </div>
+        <div className="space-y-6">
+            <Tabs value={currentTabId} onValueChange={handleTabChange} className="w-full space-y-4">
+                <TabsList>
+                    {gameAttributeCategories.map((category) => (
+                        <TabsTrigger key={category.id} value={category.id}>
+                            {category.name}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
 
                 {gameAttributeCategories.map((category) => {
                     const categoryAttributes = (gameAttributes || []).filter(a => a.categoryId === category.id);
