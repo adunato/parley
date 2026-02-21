@@ -6,8 +6,9 @@ import { GameAttribute, GameAttributeCategory } from '@/lib/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, Check, X, Search } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function AttributeManager() {
     const {
@@ -27,10 +28,20 @@ export function AttributeManager() {
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
 
+    const [activeTab, setActiveTab] = useState<string>(gameAttributeCategories?.[0]?.id || "");
+    const [search, setSearch] = useState("");
+
+    const handleTabChange = (val: string) => {
+        setActiveTab(val);
+        setSearch(""); // Reset search on tab change
+        handleEditCancel();
+        handleCreateCancel();
+    };
+
     const handleEditStart = (attr: GameAttribute) => {
         setEditingId(attr.id);
         setEditName(attr.name);
-        setEditDesc(attr.description);
+        setEditDesc(attr.description || "");
         setNewItemCategory(null);
     };
 
@@ -77,130 +88,163 @@ export function AttributeManager() {
         handleCreateCancel();
     };
 
+    if (!gameAttributeCategories || gameAttributeCategories.length === 0) {
+        return null; // Ensure we have categories hydrated
+    }
+
+    // Default to the first category if not set on load
+    const currentTabId = activeTab || gameAttributeCategories[0].id;
+
     return (
-        <div className="space-y-12">
-            {(gameAttributeCategories || []).map((category) => {
-                const categoryAttributes = (gameAttributes || []).filter(a => a.categoryId === category.id);
+        <div className="space-y-6 flex flex-col items-center">
+            <Tabs value={currentTabId} onValueChange={handleTabChange} className="w-full">
+                <div className="flex justify-center mb-6">
+                    <TabsList className="grid h-auto w-full max-w-[800px]" style={{ gridTemplateColumns: `repeat(${gameAttributeCategories.length}, 1fr)` }}>
+                        {gameAttributeCategories.map((category) => (
+                            <TabsTrigger key={category.id} value={category.id} className="py-3">
+                                {category.name}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
 
-                return (
-                    <div key={category.id} className="space-y-4">
-                        <div className="flex items-center justify-between border-b pb-2">
-                            <div>
-                                <h2 className="text-xl font-semibold">{category.name}</h2>
-                                <p className="text-sm text-muted-foreground">{category.description}</p>
+                {gameAttributeCategories.map((category) => {
+                    const categoryAttributes = (gameAttributes || []).filter(a => a.categoryId === category.id);
+                    const filteredAttributes = categoryAttributes.filter(a =>
+                        a.name.toLowerCase().includes(search.toLowerCase()) ||
+                        (a.description && a.description.toLowerCase().includes(search.toLowerCase()))
+                    );
+
+                    return (
+                        <TabsContent key={category.id} value={category.id} className="mt-0 space-y-4">
+                            <div className="flex justify-between items-end mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="relative max-w-sm">
+                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder={`Search ${category.name.toLowerCase()}...`}
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="pl-8 w-[300px]"
+                                        />
+                                    </div>
+                                </div>
+                                <Button onClick={() => handleCreateStart(category.id)}>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    New {category.name}
+                                </Button>
                             </div>
-                            <Button size="sm" onClick={() => handleCreateStart(category.id)} variant="outline">
-                                <Plus className="w-4 h-4 mr-2" /> Add {category.name}
-                            </Button>
-                        </div>
 
-                        <div className="border rounded-md">
-                            <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="w-[30%]">Name</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead className="w-[100px] text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {categoryAttributes.length === 0 && newItemCategory !== category.id && (
+                            <div className="border rounded-md">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={3} className="text-center text-muted-foreground h-24">
-                                                No attributes defined for {category.name}.
-                                            </TableCell>
+                                            <TableHead className="w-[30%]">Name</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead className="w-[100px] text-right">Actions</TableHead>
                                         </TableRow>
-                                    )}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredAttributes.length === 0 && newItemCategory !== category.id && (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center text-muted-foreground h-24">
+                                                    No attributes found for {category.name}.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
 
-                                    {categoryAttributes.map((attr) => (
-                                        <TableRow key={attr.id}>
-                                            {editingId === attr.id ? (
-                                                <>
-                                                    <TableCell>
-                                                        <Input
-                                                            value={editName}
-                                                            onChange={(e) => setEditName(e.target.value)}
-                                                            placeholder="Name"
-                                                            autoFocus
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Input
-                                                            value={editDesc}
-                                                            onChange={(e) => setEditDesc(e.target.value)}
-                                                            placeholder="Description"
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <div className="flex justify-end gap-2">
-                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleEditSave(attr)}>
-                                                                <Check className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={handleEditCancel}>
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <TableCell className="font-medium align-middle">{attr.name}</TableCell>
-                                                    <TableCell className="text-muted-foreground align-middle">{attr.description}</TableCell>
-                                                    <TableCell className="text-right align-middle">
-                                                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleEditStart(attr)}>
-                                                                <Edit2 className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteGameAttribute(attr.id)}>
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </>
-                                            )}
-                                        </TableRow>
-                                    ))}
+                                        {filteredAttributes.map((attr) => (
+                                            <TableRow key={attr.id}>
+                                                {editingId === attr.id ? (
+                                                    <>
+                                                        <TableCell className="align-top py-4">
+                                                            <Input
+                                                                value={editName}
+                                                                onChange={(e) => setEditName(e.target.value)}
+                                                                placeholder="Name"
+                                                                autoFocus
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="align-top py-4">
+                                                            <Input
+                                                                value={editDesc}
+                                                                onChange={(e) => setEditDesc(e.target.value)}
+                                                                placeholder="Description"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="text-right align-top py-4">
+                                                            <div className="flex justify-end gap-1">
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleEditSave(attr)}>
+                                                                    <Check className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={handleEditCancel}>
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TableCell className="font-medium align-middle">{attr.name}</TableCell>
+                                                        <TableCell className="text-muted-foreground text-sm align-middle max-w-[400px]">
+                                                            {attr.description}
+                                                        </TableCell>
+                                                        <TableCell className="text-right align-middle">
+                                                            <div className="flex justify-end gap-1">
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleEditStart(attr)}>
+                                                                    <Pencil className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteGameAttribute(attr.id)}>
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </>
+                                                )}
+                                            </TableRow>
+                                        ))}
 
-                                    {/* New Item Input Row */}
-                                    {newItemCategory === category.id && (
-                                        <TableRow className="bg-muted/20">
-                                            <TableCell>
-                                                <Input
-                                                    value={newName}
-                                                    onChange={(e) => setNewName(e.target.value)}
-                                                    placeholder="New Item Name"
-                                                    autoFocus
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    value={newDesc}
-                                                    onChange={(e) => setNewDesc(e.target.value)}
-                                                    placeholder="Description (optional)"
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') handleCreateSave(category.id);
-                                                        if (e.key === 'Escape') handleCreateCancel();
-                                                    }}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleCreateSave(category.id)}>
-                                                        <Check className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={handleCreateCancel}>
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </div>
-                );
-            })}
+                                        {/* New Item Input Row */}
+                                        {newItemCategory === category.id && (
+                                            <TableRow className="bg-muted/20">
+                                                <TableCell className="align-top py-4">
+                                                    <Input
+                                                        value={newName}
+                                                        onChange={(e) => setNewName(e.target.value)}
+                                                        placeholder="New Item Name"
+                                                        autoFocus
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="align-top py-4">
+                                                    <Input
+                                                        value={newDesc}
+                                                        onChange={(e) => setNewDesc(e.target.value)}
+                                                        placeholder="Description (optional)"
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleCreateSave(category.id);
+                                                            if (e.key === 'Escape') handleCreateCancel();
+                                                        }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="text-right align-top py-4">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleCreateSave(category.id)}>
+                                                            <Check className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={handleCreateCancel}>
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </TabsContent>
+                    );
+                })}
+            </Tabs>
         </div>
     );
 }
