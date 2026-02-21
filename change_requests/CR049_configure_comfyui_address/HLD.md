@@ -1,7 +1,7 @@
 # Configure ComfyUI Local Instance Address
 
 ## Status
-Draft
+Approved
 
 ## Goals
 - Allow the configuration of the ComfyUI local instance address directly from the application's image generation settings.
