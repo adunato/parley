@@ -8,11 +8,12 @@ import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
 import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
 import { GenerateEventsDialog } from './generate-events-dialog';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/lib/store/bioStore";
 import { useEntityStore } from "@/lib/entityStore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CreateEntityModal } from './create-entity-modal';
 
 interface BioEntityEditorProps {
     open: boolean;
@@ -40,6 +41,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const [mappingCategory, setMappingCategory] = useState<string | 'NONE'>('NONE');
     const [mappingKey, setMappingKey] = useState<string>('');
     const [initialMapping, setInitialMapping] = useState<{ category: string, key: string } | null>(null);
+    const [isCreateEntityModalOpen, setIsCreateEntityModalOpen] = useState(false);
 
     const { symbolicMappings, getAllMappableEntities, addSymbolicMapping, deleteSymbolicMapping } = useBioStore();
     const { gameAttributeCategories } = useEntityStore();
@@ -54,6 +56,11 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     });
 
     const entitiesForCategory = mappableEntities.filter(e => e.categoryId === mappingCategory);
+
+    const handleEntityCreated = (categoryId: string, entityId: string) => {
+        setMappingCategory(categoryId);
+        setMappingKey(entityId);
+    };
 
     useEffect(() => {
         if (open && initialData) {
@@ -254,7 +261,19 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-xs">Key</Label>
+                                        <div className="flex justify-between items-center h-4">
+                                            <Label className="text-xs">Key</Label>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 px-1.5 text-[10px]"
+                                                onClick={() => setIsCreateEntityModalOpen(true)}
+                                                type="button"
+                                            >
+                                                <Plus className="w-3 h-3 mr-1" />
+                                                New
+                                            </Button>
+                                        </div>
                                         <Select
                                             value={mappingKey}
                                             onValueChange={setMappingKey}
@@ -339,6 +358,13 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                     sourceEntity={initialData}
                 />
             )}
+
+            <CreateEntityModal
+                open={isCreateEntityModalOpen}
+                onOpenChange={setIsCreateEntityModalOpen}
+                defaultCategory={mappingCategory}
+                onCreated={handleEntityCreated}
+            />
         </>
     );
 }
