@@ -77,6 +77,17 @@ export function BioMappingEditor() {
         return node ? `${node.text.substring(0, 50)}... (${node.id})` : id;
     };
 
+    const getEntityNameByKey = (categoryId: string, key: string) => {
+        const entity = mappableEntities.find(e => e.categoryId === categoryId && e.id === key);
+        return entity ? entity.name : key;
+    };
+
+    const getCategoryName = (categoryId: string) => {
+        if (categoryId === 'profession') return 'Profession';
+        const found = gameAttributeCategories?.find(c => c.id === categoryId);
+        return found ? found.name : categoryId;
+    };
+
     return (
         <div className="space-y-6">
             <div className="space-y-2">
@@ -179,7 +190,7 @@ export function BioMappingEditor() {
                 {Object.entries(groupedMappings).map(([category, mappings]) => (
                     <div key={category} className="border rounded-md">
                         <div className="bg-muted/50 px-4 py-2 border-b font-medium text-sm flex justify-between items-center">
-                            <span>{category}</span>
+                            <span>{getCategoryName(category)}</span>
                             <Badge variant="secondary" className="text-xs">{mappings.length} items</Badge>
                         </div>
                         <Table>
@@ -193,7 +204,7 @@ export function BioMappingEditor() {
                             <TableBody>
                                 {mappings.map(mapping => (
                                     <TableRow key={mapping.key}>
-                                        <TableCell className="font-medium">{mapping.key}</TableCell>
+                                        <TableCell className="font-medium">{getEntityNameByKey(category, mapping.key)}</TableCell>
                                         <TableCell className="text-sm">
                                             {getNodeLabel(mapping.nodeId)}
                                         </TableCell>
