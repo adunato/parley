@@ -40,6 +40,7 @@ import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
 import { NameGenerator, SupportedCountry } from "@/lib/generator/NameGenerator";
 import { faker } from '@faker-js/faker';
+import { ProceduralGeneratorDialog } from './character/procedural-generator-dialog';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -68,6 +69,7 @@ export default function CharacterConfiguration() {
     const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
     const [relationshipContext, setRelationshipContext] = useState("");
+    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
 
     // Debounced save function
     const debouncedSave = useDebouncedCallback((character: Character) => {
@@ -461,6 +463,11 @@ export default function CharacterConfiguration() {
             // Gather explicit UI states
             if (info.role) context.role = info.role;
             if (info.background) context.background = info.background;
+            if (info.originLocation) context.originLocation = info.originLocation;
+            if (info.siblings) context.siblings = info.siblings;
+            if (info.faction) context.faction = info.faction;
+            if (info.reputation) context.reputation = info.reputation;
+
             if (info.mappedAttributes && Object.keys(info.mappedAttributes).length > 0) {
                 context.mappedAttributes = info.mappedAttributes;
             }
@@ -780,6 +787,10 @@ export default function CharacterConfiguration() {
                                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
                                         <Wand2 className="w-4 h-4" />
                                         {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
+                                    </Button>
+                                    <Button variant="outline" onClick={() => setIsProceduralGeneratorOpen(true)} className="ml-2 gap-2 shadow-sm">
+                                        <Wand2 className="w-4 h-4" />
+                                        Advanced Generator
                                     </Button>
                                 </div>
                             </div>
@@ -1256,7 +1267,7 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
                             </div>
-                        </div>
+                        </div >
                     </>
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
@@ -1266,8 +1277,27 @@ export default function CharacterConfiguration() {
                             <p className="type-body-sm text-muted-foreground">Select a character from the list or add a new one</p>
                         </div>
                     </div>
-                )}
-            </div>
+                )
+                }
+            </div >
+
+            {displayCharacter && (
+                <ProceduralGeneratorDialog
+                    open={isProceduralGeneratorOpen}
+                    onOpenChange={setIsProceduralGeneratorOpen}
+                    characterId={displayCharacter.id}
+                    onApply={(data) => {
+                        if (data.name) handleInputChange("basicInfo", "name", data.name);
+                        if (data.age) handleInputChange("basicInfo", "age", data.age);
+                        if (data.gender) handleInputChange("basicInfo", "gender", data.gender);
+                        if (data.background) handleInputChange("basicInfo", "background", data.background);
+                        if (data.role) handleInputChange("basicInfo", "role", data.role);
+                        if (data.originLocation) handleInputChange("basicInfo", "originLocation", data.originLocation);
+                        isDirtyRef.current = true;
+                        setSaveStatus('saving');
+                    }}
+                />
+            )}
         </div >
-    )
+    );
 }
