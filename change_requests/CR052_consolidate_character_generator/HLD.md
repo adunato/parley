@@ -35,3 +35,34 @@ Draft
     3. **Character Configuration UI**: Expose these new in-game attributes as explicit dropdowns/fields within the "Character Configuration" page.
     4. **Deterministic Generation**: When the user clicks "Generate Background", the UI will pass the selected in-game attributes (Origins, Siblings, Housing, Education, Relationships) through the `SymbolicMapping` registry to resolve their corresponding bio-generator `nodeId`s. These IDs will be sent as `pinnedNodeIds` to the bio-generator, ensuring the generated narrative perfectly respects the explicitly configured in-game state.
 
+### Addendum: Harmonizing Professions and Game Attributes
+To simplify the BioGenerator's `SymbolicMapping` logic and treat `Professions` and `GameAttributes` organically as the same generic entity type during mapping, we will implement a unified `GameEntityRef` interface. 
+
+Currently, `GameAttribute` (generic) and `Profession` (specific) are entirely disjointed arrays.
+
+**Proposed Data Model Structure:**
+1. **Introduce a Base Interface**:
+```typescript
+export interface BaseGameEntity {
+  id: string;
+  name: string;
+  description: string;
+  categoryId: string; // 'profession' or a uuid from GameAttributeCategory
+}
+```
+2. **Extend specialized types**:
+```typescript
+export interface Profession extends BaseGameEntity {
+  categoryId: 'profession'; // Hardcoded category identifier
+  minAge: number;
+  maxAge: number;
+}
+
+export interface GameAttribute extends BaseGameEntity {
+  // Uses dynamic categoryId from GameAttributeCategory
+}
+```
+3. **Refactoring `SymbolicMapping`**:
+Instead of the `SymbolicMapping` UI (in `bio-mapping-editor.tsx`) having to pull from `gameAttributes` AND conditionally pull from `professions`, we can create a unified getter in `useEntityStore` like `getAllMappableEntities()`, which returns an array of `BaseGameEntity`. 
+The `category` property inside `SymbolicMapping` will simply correspond to `entity.categoryId`, and the `key` will correspond to `entity.id`. 
+This allows the mapping UI to organically list "Professions" as just another category dropdown alongside "Origins", "Housing", etc., without any hacky conditional rendering logic.
