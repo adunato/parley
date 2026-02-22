@@ -125,11 +125,16 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder={!newCategory ? "Select Category first" : "Select Key"} />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {entitiesForCategory.map(entity => (
-                                    <SelectItem key={entity.id} value={entity.id}>
-                                        {entity.name}
-                                    </SelectItem>
-                                ))}
+                                {entitiesForCategory.map(entity => {
+                                    const isAlreadyMapped = (symbolicMappings || []).some(
+                                        m => m.category === newCategory && m.key === entity.id
+                                    );
+                                    return (
+                                        <SelectItem key={entity.id} value={entity.id} disabled={isAlreadyMapped}>
+                                            {entity.name} {isAlreadyMapped && "(Mapped)"}
+                                        </SelectItem>
+                                    );
+                                })}
                             </SelectContent>
                         </Select>
                     </div>
