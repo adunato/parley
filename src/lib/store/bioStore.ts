@@ -457,6 +457,24 @@ export const useBioStore = create<BioStoreState>()(
                 if (state) {
                     // Check if empty and migrate
 
+                    // Inject missing categoryId for legacy stored professions
+                    setTimeout(() => {
+                        useBioStore.setState((prev) => {
+                            if (!prev.professions) return {};
+
+                            let needsUpdate = false;
+                            const updatedProfessions = prev.professions.map(p => {
+                                if (p.categoryId !== 'profession') {
+                                    needsUpdate = true;
+                                    return { ...p, categoryId: 'profession' } as Profession;
+                                }
+                                return p;
+                            });
+
+                            return needsUpdate ? { professions: updatedProfessions } : {};
+                        });
+                    }, 0);
+
                     // Legacy Migration: Map old props to new props if they exist in persistence
                     if (state.origins && !state.childhood) {
                         console.log("BioStore: Migrating 'origins' to 'childhood'");
