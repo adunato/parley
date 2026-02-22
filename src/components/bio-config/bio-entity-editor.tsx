@@ -10,6 +10,9 @@ import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/gene
 import { GenerateEventsDialog } from './generate-events-dialog';
 import { Sparkles } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { useBioStore } from "@/lib/store/bioStore";
+import { useEntityStore } from "@/lib/entityStore";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface BioEntityEditorProps {
     open: boolean;
@@ -32,6 +35,25 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const [selectedPhase, setSelectedPhase] = useState<AgePhase | undefined>(undefined);
     const [selectedPhases, setSelectedPhases] = useState<AgePhase[]>([]);
     const [showGenerator, setShowGenerator] = useState(false);
+
+    // Mapping State
+    const [mappingCategory, setMappingCategory] = useState<string | 'NONE'>('NONE');
+    const [mappingKey, setMappingKey] = useState<string>('');
+    const [initialMapping, setInitialMapping] = useState<{ category: string, key: string } | null>(null);
+
+    const { symbolicMappings, getAllMappableEntities, addSymbolicMapping, deleteSymbolicMapping } = useBioStore();
+    const { gameAttributeCategories } = useEntityStore();
+    const mappableEntities = getAllMappableEntities();
+
+    // Compute available categories dynamically
+    const activeCategoryIds = Array.from(new Set(mappableEntities.map(e => e.categoryId)));
+    const categoryOptions = activeCategoryIds.map(catId => {
+        if (catId === 'profession') return { id: 'profession', name: 'Profession' };
+        const found = gameAttributeCategories?.find(c => c.id === catId);
+        return { id: catId, name: found ? found.name : catId };
+    });
+
+    const entitiesForCategory = mappableEntities.filter(e => e.categoryId === mappingCategory);
 
     useEffect(() => {
         if (open && initialData) {
@@ -57,6 +79,18 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             } else {
                 setSelectedPhases([]);
             }
+
+            // Restore Mapping If Present
+            const existingMapping = symbolicMappings?.find(m => m.nodeId === initialData.id);
+            if (existingMapping) {
+                setMappingCategory(existingMapping.category);
+                setMappingKey(existingMapping.key);
+                setInitialMapping({ category: existingMapping.category, key: existingMapping.key });
+            } else {
+                setMappingCategory('NONE');
+                setMappingKey('');
+                setInitialMapping(null);
+            }
         } else if (open) {
             // Reset for new
             setId('');
@@ -66,8 +100,11 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             setWeights({ "DEFAULT": 1 });
             setSelectedPhase(phase);
             setSelectedPhases(phase ? [phase] : []);
+            setMappingCategory('NONE');
+            setMappingKey('');
+            setInitialMapping(null);
         }
-    }, [open, initialData, phase]);
+    }, [open, initialData, phase, symbolicMappings]);
 
     const isDuplicateId = useMemo(() => {
         if (!id) return false;
@@ -108,6 +145,23 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                 requires: requires.length > 0 ? requires : undefined,
                 phase: selectedPhase
             } as EventNode);
+
+            // Handle Mapping Logic
+            // If there was an old mapping mapping and we changed it or removed it, delete old.
+            if (initialMapping && (initialMapping.category !== mappingCategory || initialMapping.key !== mappingKey)) {
+                deleteSymbolicMapping(initialMapping.category, initialMapping.key);
+            }
+
+            // If we have a new mapping properly selected, save it.
+            if (mappingCategory !== 'NONE' && mappingKey) {
+                // Remove existing if it was attached to this exact target (though shouldn't happen natively if UI enforces)
+                useBioStore.getState().deleteSymbolicMapping(mappingCategory, mappingKey);
+                addSymbolicMapping({
+                    category: mappingCategory,
+                    key: mappingKey,
+                    nodeId: id
+                });
+            }
         }
         onOpenChange(false);
     };
@@ -173,6 +227,60 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                                 )}
                             </div>
                         </div>
+
+                        {type !== 'LIFE_EVENT' && (
+                            <div className="p-3 border rounded-md bg-muted/20 space-y-3">
+                                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Symbolic Mapping</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Category</Label>
+                                        <Select
+                                            value={mappingCategory}
+                                            onValueChange={(val) => {
+                                                setMappingCategory(val);
+                                                setMappingKey(''); // Reset key when category changes
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select Category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NONE" className="italic text-muted-foreground">Unmapped</SelectItem>
+                                                {categoryOptions.map(cat => (
+                                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs">Key</Label>
+                                        <Select
+                                            value={mappingKey}
+                                            onValueChange={setMappingKey}
+                                            disabled={mappingCategory === 'NONE'}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={mappingCategory === 'NONE' ? "No category" : "Select Key"} />
+                                            </SelectTrigger>
+                                            <SelectContent className="max-h-[200px]">
+                                                {entitiesForCategory.map(entity => {
+                                                    // We must gray out entities that are *already* mapped to *another* node
+                                                    const isAlreadyMapped = (symbolicMappings || []).some(
+                                                        m => m.category === mappingCategory && m.key === entity.id && m.nodeId !== id
+                                                    );
+                                                    return (
+                                                        <SelectItem key={entity.id} value={entity.id} disabled={isAlreadyMapped}>
+                                                            {entity.name} {isAlreadyMapped && "(Mapped)"}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label>Narrative Text</Label>
