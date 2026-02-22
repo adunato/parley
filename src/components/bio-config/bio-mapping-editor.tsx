@@ -136,8 +136,11 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder={!newCategory ? "Select Category first" : "Select Key"} />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                            {entity.name}
-                                        </SelectItem>
+                                {entitiesForCategory.map(entity => (
+                                    <SelectItem key={entity.id} value={entity.id}>
+                                        {entity.name}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -150,10 +153,12 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder="Select a bio node..." />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {allNodes
-                                                <span className="font-mono text-xs mr-2">[{node.slot}]</span>
-                                                {node.text.substring(0, 40)}...
-                                            </SelectItem>
+                                {allNodes.map(node => (
+                                    <SelectItem key={node.id} value={node.id}>
+                                        <span className="font-mono text-xs mr-2">[{node.slot}]</span>
+                                        {node.text.substring(0, 40)}...
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -162,59 +167,55 @@ export function BioMappingEditor() {
                         <Plus className="w-4 h-4 mr-2" />
                         Add Mapping
                     </Button>
-                </div >
-            </div >
-
-        {/* Mappings List */ }
-        < div className = "space-y-6" >
-        {
-            Object.entries(groupedMappings).length === 0 && (
-                <div className="text-center py-8 text-muted-foreground italic">
-                    No mappings defined.
                 </div>
-            )
-        }
-
-    {
-        Object.entries(groupedMappings).map(([category, mappings]) => (
-            <div key={category} className="border rounded-md">
-                <div className="bg-muted/50 px-4 py-2 border-b font-medium text-sm flex justify-between items-center">
-                    <span>{getCategoryName(category)}</span>
-                    <Badge variant="secondary" className="text-xs">{mappings.length} items</Badge>
-                </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[200px]">Key</TableHead>
-                            <TableHead>Target Node</TableHead>
-                            <TableHead className="w-[100px] text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {mappings.map(mapping => (
-                            <TableRow key={`${mapping.key}-${mapping.nodeId}`}>
-                                <TableCell className="font-medium">{getEntityNameByKey(category, mapping.key)}</TableCell>
-                                <TableCell className="text-sm">
-                                    {getNodeLabel(mapping.nodeId)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-destructive"
-                                        onClick={() => handleDelete(category, mapping.key, mapping.nodeId)}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
             </div>
-        ))
-    }
-            </div >
-        </div >
+
+            {/* Mappings List */}
+            <div className="space-y-6">
+                {Object.entries(groupedMappings).length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground italic">
+                        No mappings defined.
+                    </div>
+                )}
+
+                {Object.entries(groupedMappings).map(([category, mappings]) => (
+                    <div key={category} className="border rounded-md">
+                        <div className="bg-muted/50 px-4 py-2 border-b font-medium text-sm flex justify-between items-center">
+                            <span>{getCategoryName(category)}</span>
+                            <Badge variant="secondary" className="text-xs">{mappings.length} items</Badge>
+                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[200px]">Key</TableHead>
+                                    <TableHead>Target Node</TableHead>
+                                    <TableHead className="w-[100px] text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {mappings.map(mapping => (
+                                    <TableRow key={`${mapping.key}-${mapping.nodeId}`}>
+                                        <TableCell className="font-medium">{getEntityNameByKey(category, mapping.key)}</TableCell>
+                                        <TableCell className="text-sm">
+                                            {getNodeLabel(mapping.nodeId)}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-destructive"
+                                                onClick={() => handleDelete(category, mapping.key, mapping.nodeId!)}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
