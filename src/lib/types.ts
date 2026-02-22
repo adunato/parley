@@ -19,6 +19,7 @@ export interface BasicInfo {
   avatar?: string;
   siblings?: string;
   originLocation?: OriginLocation;
+  mappedAttributes?: Record<string, string>; // categoryId -> attributeId
 }
 
 export interface Personality {
@@ -101,10 +102,25 @@ export interface CharacterGroup {
   description: string;
 }
 
-export interface Profession {
+export interface BaseGameEntity {
   id: string;
   name: string;
   description: string;
+  categoryId: string; // Dynamic for generic attributes, 'profession' for Professions
+}
+
+export interface Profession extends BaseGameEntity {
+  categoryId: 'profession';
   minAge: number;
   maxAge: number;
+}
+
+export interface GameAttributeCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface GameAttribute extends BaseGameEntity {
+  // Uses dynamic categoryId from GameAttributeCategory
 }

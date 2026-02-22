@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
 import { EventNode, LifeEvent, SlotType, Tag, AgePhase, PhaseConfig, AGE_PHASES, BioGroup, ConnectionOptions, SymbolicMapping } from '../generator/types';
-import { Profession } from '../types';
+import { Profession, BaseGameEntity } from '../types';
+import { useEntityStore } from '../entityStore';
 
 // Default Data Imports
 import childhoodData from '../generator/data/childhood.json';
@@ -106,6 +107,7 @@ interface BioStoreState {
         phaseConfig: Record<AgePhase, PhaseConfig>;
         symbolicMappings: SymbolicMapping[];
     };
+    getAllMappableEntities: () => BaseGameEntity[];
 
     _hasHydrated: boolean;
     setHasHydrated: (state: boolean) => void;
@@ -435,8 +437,15 @@ export const useBioStore = create<BioStoreState>()(
                 tags: get().tags,
                 groups: get().groups,
                 professions: get().professions || [],
-                phaseConfig: get().phaseConfig
+                phaseConfig: get().phaseConfig,
+                symbolicMappings: get().symbolicMappings || []
             }),
+
+            getAllMappableEntities: () => {
+                const professions = get().professions || [];
+                const attributes = useEntityStore.getState().gameAttributes || [];
+                return [...professions, ...attributes];
+            },
 
             _hasHydrated: false,
             setHasHydrated: (state) => set({ _hasHydrated: state }),
@@ -447,6 +456,24 @@ export const useBioStore = create<BioStoreState>()(
             onRehydrateStorage: () => (state: any) => { // Using any to handle migration from old props
                 if (state) {
                     // Check if empty and migrate
+
+                    // Inject missing categoryId for legacy stored professions
+                    setTimeout(() => {
+                        useBioStore.setState((prev) => {
+                            if (!prev.professions) return {};
+
+                            let needsUpdate = false;
+                            const updatedProfessions = prev.professions.map(p => {
+                                if (p.categoryId !== 'profession') {
+                                    needsUpdate = true;
+                                    return { ...p, categoryId: 'profession' } as Profession;
+                                }
+                                return p;
+                            });
+
+                            return needsUpdate ? { professions: updatedProfessions } : {};
+                        });
+                    }, 0);
 
                     // Legacy Migration: Map old props to new props if they exist in persistence
                     if (state.origins && !state.childhood) {

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from './storage-adapter';
-import { Character, Persona, Relationship, CharacterGroup, Location } from './types';
+import { Character, Persona, Relationship, CharacterGroup, Location, GameAttributeCategory, GameAttribute } from './types';
 
 type EntityStore = {
   characters: Character[];
@@ -30,6 +30,17 @@ type EntityStore = {
   cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
   clearCumulativeRelationshipDelta: () => void; // Called on new chat
+
+  gameAttributeCategories: GameAttributeCategory[];
+  addGameAttributeCategory: (category: GameAttributeCategory) => void;
+  updateGameAttributeCategory: (category: GameAttributeCategory) => void;
+  deleteGameAttributeCategory: (id: string) => void;
+
+  gameAttributes: GameAttribute[];
+  addGameAttribute: (attribute: GameAttribute) => void;
+  updateGameAttribute: (attribute: GameAttribute) => void;
+  deleteGameAttribute: (id: string) => void;
+
   clearAllData: () => void;
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
@@ -137,9 +148,30 @@ export const useEntityStore = create<EntityStore>()(
           characterGroups: [],
           locations: [],
           selectedChatLocation: undefined,
+          gameAttributeCategories: [],
+          gameAttributes: [],
         });
         useEntityStore.persist.clearStorage();
       },
+
+      gameAttributeCategories: [],
+      addGameAttributeCategory: (category) => set((state) => ({ gameAttributeCategories: [...(state.gameAttributeCategories || []), category] })),
+      updateGameAttributeCategory: (updatedCategory) => set((state) => ({
+        gameAttributeCategories: (state.gameAttributeCategories || []).map((cat) => cat.id === updatedCategory.id ? updatedCategory : cat)
+      })),
+      deleteGameAttributeCategory: (id) => set((state) => ({
+        gameAttributeCategories: (state.gameAttributeCategories || []).filter((cat) => cat.id !== id)
+      })),
+
+      gameAttributes: [],
+      addGameAttribute: (attribute) => set((state) => ({ gameAttributes: [...(state.gameAttributes || []), attribute] })),
+      updateGameAttribute: (updatedAttribute) => set((state) => ({
+        gameAttributes: (state.gameAttributes || []).map((attr) => attr.id === updatedAttribute.id ? updatedAttribute : attr)
+      })),
+      deleteGameAttribute: (id) => set((state) => ({
+        gameAttributes: (state.gameAttributes || []).filter((attr) => attr.id !== id)
+      })),
+
       _hasHydrated: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
@@ -149,37 +181,99 @@ export const useEntityStore = create<EntityStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHasHydrated(true);
-          // Ensure all characters have a relationships array
-          if (state.characters) {
-            state.characters = state.characters.map(character => ({
-              ...character,
-              relationships: (character.relationships || []).map((rel: any) => ({
-                ...rel,
-                satisfaction: rel.satisfaction ?? 50,
-                commitment: rel.commitment ?? 50,
-                intimacy: rel.intimacy ?? 50,
-                trust: rel.trust ?? 50,
-                passion: rel.passion ?? 50
-              })),
-              idealMatch: character.idealMatch || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 }
-            }));
-          }
-          if (state.playerPersonas) {
-            state.playerPersonas = state.playerPersonas.map(persona => ({
-              ...persona,
-              basicInfo: persona.basicInfo || {
-                name: persona.id, // Use ID as name if basicInfo is missing
-                age: 0,
-                gender: "",
-                role: "",
-                faction: "",
-                reputation: "",
-                background: "",
-                firstImpression: "",
-                appearance: "",
+
+          // Use setTimeout to ensure we call setState after the store is fully initialized and hydrated,
+          // otherwise React won't be notified of these migrations/default values.
+          setTimeout(() => {
+            useEntityStore.setState((prev) => {
+              const updates: Partial<EntityStore> = {};
+              let needsUpdate = false;
+
+              // Ensure all characters have a relationships array and idealMatch
+              if (prev.characters) {
+                const updatedCharacters = prev.characters.map(character => {
+                  let changed = false;
+                  const newChar = { ...character };
+
+                  if (!character.relationships) {
+                    newChar.relationships = [];
+                    changed = true;
+                  } else {
+                    newChar.relationships = character.relationships.map((rel: any) => ({
+                      ...rel,
+                      satisfaction: rel.satisfaction ?? 50,
+                      commitment: rel.commitment ?? 50,
+                      intimacy: rel.intimacy ?? 50,
+                      trust: rel.trust ?? 50,
+                      passion: rel.passion ?? 50
+                    }));
+                    // For simplicity, just assume we might have updated
+                    changed = true;
+                  }
+
+                  if (!character.idealMatch) {
+                    newChar.idealMatch = { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
+                    changed = true;
+                  }
+
+                  return changed ? newChar : character;
+                });
+
+                updates.characters = updatedCharacters;
+                needsUpdate = true;
               }
-            }));
-          }
+
+              if (prev.playerPersonas) {
+                const updatedPersonas = prev.playerPersonas.map(persona => {
+                  if (!persona.basicInfo) {
+                    return {
+                      ...persona,
+                      basicInfo: {
+                        name: persona.id,
+                        age: 0,
+                        gender: "",
+                        role: "",
+                        faction: "",
+                        reputation: "",
+                        background: "",
+                        firstImpression: "",
+                        appearance: "",
+                      }
+                    };
+                  }
+                  return persona;
+                });
+                updates.playerPersonas = updatedPersonas;
+                needsUpdate = true;
+              }
+
+              // Ensure default game attribute categories exist
+              const defaultCategories: GameAttributeCategory[] = [
+                { id: 'origins', name: 'Origins', description: 'Social Class / Starting Socioeconomic Background' },
+                { id: 'education', name: 'Education', description: 'Education Level / Path' },
+                { id: 'housing', name: 'Housing', description: 'Property / Housing Status' },
+                { id: 'siblings', name: 'Siblings', description: 'Family size / Structure' },
+                { id: 'relationships', name: 'Relationships', description: 'Relationship History / Trajectory' }
+              ];
+
+              const currentCategories = prev.gameAttributeCategories || [];
+              const missingCategories = defaultCategories.filter(
+                defCat => !currentCategories.some(cat => cat.id === defCat.id)
+              );
+
+              if (missingCategories.length > 0) {
+                updates.gameAttributeCategories = [...currentCategories, ...missingCategories];
+                needsUpdate = true;
+              }
+
+              if (!prev.gameAttributes) {
+                updates.gameAttributes = [];
+                needsUpdate = true;
+              }
+
+              return needsUpdate ? updates : {};
+            });
+          }, 0);
         }
       },
     }

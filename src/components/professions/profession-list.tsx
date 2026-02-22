@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Profession } from "@/lib/types";
+import { useBioStore } from "@/lib/store/bioStore";
 import { ProfessionModal } from "./profession-modal";
 
 interface ProfessionListProps {
@@ -21,6 +22,29 @@ interface ProfessionListProps {
 }
 
 export function ProfessionList({ data, onAdd, onUpdate, onDelete }: ProfessionListProps) {
+    const { symbolicMappings, getAllData } = useBioStore();
+    const bioData = getAllData();
+
+    // Flatten all potentially mappable nodes
+    const allNodes = [
+        ...bioData.childhood,
+        ...bioData.formative,
+        ...bioData.professional,
+        ...(bioData.senior || [])
+    ];
+
+    const getMappedNodeLabel = (categoryId: string, entityId: string) => {
+        const mapping = (symbolicMappings || []).find(
+            m => m.category === categoryId && m.key === entityId
+        );
+        if (!mapping) return <span className="text-muted-foreground/50 italic text-xs">Unmapped</span>;
+
+        const node = allNodes.find(n => n.id === mapping.nodeId);
+        if (!node) return <span className="text-red-500 text-xs">Invalid mapping (node deleted)</span>;
+
+        return <span className="text-xs font-mono">[{node.slot}] {node.text.substring(0, 30)}...</span>;
+    };
+
     const [search, setSearch] = useState("");
     const [editingItem, setEditingItem] = useState<Profession | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,13 +108,14 @@ export function ProfessionList({ data, onAdd, onUpdate, onDelete }: ProfessionLi
                             <TableHead>Description</TableHead>
                             <TableHead className="w-[100px] text-center">Min Age</TableHead>
                             <TableHead className="w-[100px] text-center">Max Age</TableHead>
+                            <TableHead>Bio Node Mapping</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                                     No professions found.
                                 </TableCell>
                             </TableRow>
@@ -104,6 +129,7 @@ export function ProfessionList({ data, onAdd, onUpdate, onDelete }: ProfessionLi
                                     </TableCell>
                                     <TableCell className="text-center">{item.minAge}</TableCell>
                                     <TableCell className="text-center">{item.maxAge}</TableCell>
+                                    <TableCell>{getMappedNodeLabel('profession', item.id)}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
                                             <Button

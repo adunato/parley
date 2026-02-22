@@ -30,6 +30,7 @@ export function Sidebar({ className }: SidebarProps) {
     { href: "/world-info", label: "World Info", icon: Globe },
     { href: "/locations", label: "Locations", icon: MapPin },
     { href: "/professions-config", label: "Professions", icon: UserCog }, // Using UserCog as placeholder
+    { href: "/attribute-config", label: "Attribute Engine", icon: Dna },
     { href: "/bio-config", label: "Bio Generator", icon: Dna },
     // Keeping Chat for dev convenience, though not strictly "configuration"
     { href: "/chat", label: "Chat", icon: MessageSquare },
