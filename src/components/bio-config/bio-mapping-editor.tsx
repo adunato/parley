@@ -148,12 +148,15 @@ export function BioMappingEditor() {
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
                                 {allNodes
-                                    .map(node => (
-                                        <SelectItem key={node.id} value={node.id}>
-                                            <span className="font-mono text-xs mr-2">[{node.slot}]</span>
-                                            {node.text.substring(0, 40)}...
-                                        </SelectItem>
-                                    ))}
+                                    .map(node => {
+                                        const isNodeMapped = (symbolicMappings || []).some(m => m.nodeId === node.id);
+                                        return (
+                                            <SelectItem key={node.id} value={node.id} disabled={isNodeMapped}>
+                                                <span className="font-mono text-xs mr-2">[{node.slot}]</span>
+                                                {node.text.substring(0, 40)}... {isNodeMapped && "(Mapped)"}
+                                            </SelectItem>
+                                        );
+                                    })}
                             </SelectContent>
                         </Select>
                     </div>
