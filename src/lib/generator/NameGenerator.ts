@@ -86,19 +86,27 @@ export class NameGenerator {
 
     public static getStates(country: SupportedCountry): string[] {
         const fakerInstance = LOCALE_MAP[country];
-        // Accessing definitions safely. 
-        // Note: The type definition for faker v8+ might not expose definitions directly on the localized instance interface 
-        // identically to how the internal JS object structure is.
-        // However, based on our test script, `fakerInstance.definitions.location.state` existed dynamically.
-        // We might need to cast to 'any' to avoid TS errors if the types don't officially support it yet on the interface.
 
-        // @ts-ignore
-        const states = fakerInstance.definitions?.location?.state;
+        if (!fakerInstance) return [];
 
-        if (Array.isArray(states)) {
-            return states.sort();
+        try {
+            // @ts-ignore - The structure is not officially typed but often exists internally
+            const states = fakerInstance.definitions?.location?.state;
+
+            // If the definitions path successfully resolves to an array:
+            if (Array.isArray(states)) {
+                return [...states].sort();
+            }
+
+            // Fallback: If `definitions` is undefined in newer/different Faker versions,
+            // we can try generating a few to see if it even supports states. Or just return empty.
+            // Since we can't reliably extract the whole set if definitions is hidden without an accessor, 
+            // returning empty or a known hardcoded list is safest.
+            return [];
+        } catch (e) {
+            console.warn("Failed to retrieve states from faker instance", e);
+            return [];
         }
-        return [];
     }
 
     public static getSupportedCountries(): SupportedCountry[] {
