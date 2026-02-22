@@ -10,6 +10,7 @@ import { AgePhase, EventNode, LifeEvent, SlotType } from '@/lib/generator/types'
 import { GenerateEventsDialog } from './generate-events-dialog';
 import { Badge } from "@/components/ui/badge";
 import { useBioStore } from "@/lib/store/bioStore";
+import { useEntityStore } from "@/lib/entityStore";
 import { SelectionToolbar } from './selection-toolbar';
 import { v4 as uuidv4 } from 'uuid';
 import { stringToColor, stringToLightColor } from "@/lib/utils/colors";
@@ -26,7 +27,10 @@ interface BioDatasetEditorProps {
 }
 
 export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete, title, description }: BioDatasetEditorProps) {
-    const { groups } = useBioStore();
+    const { groups, symbolicMappings, getAllMappableEntities } = useBioStore();
+    const { gameAttributeCategories } = useEntityStore();
+    const mappableEntities = getAllMappableEntities();
+
     const [search, setSearch] = useState('');
     const [editingItem, setEditingItem] = useState<EventNode | LifeEvent | undefined>(undefined);
     const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
@@ -57,6 +61,28 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
     });
 
     const existingIds = data.map(i => i.id);
+
+    const getMappedEntityLabel = (nodeId: string) => {
+        const mapping = (symbolicMappings || []).find(m => m.nodeId === nodeId);
+        if (!mapping) return null;
+
+        const entity = mappableEntities.find(e => e.categoryId === mapping.category && e.id === mapping.key);
+
+        let categoryName = mapping.category;
+        if (mapping.category === 'profession') categoryName = 'Profession';
+        else {
+            const foundCat = gameAttributeCategories?.find(c => c.id === mapping.category);
+            if (foundCat) categoryName = foundCat.name;
+        }
+
+        const entityName = entity ? entity.name : mapping.key;
+
+        return (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-200 bg-blue-50 text-blue-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]" title={`${categoryName}: ${entityName}`}>
+                {categoryName}: {entityName}
+            </Badge>
+        );
+    };
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -227,6 +253,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                             <TableHead className="w-[120px]">ID</TableHead>
                             <TableHead>Text</TableHead>
                             {type !== 'LIFE_EVENT' && <TableHead>Group</TableHead>}
+                            <TableHead>Mapped Entity</TableHead>
                             {type === 'LIFE_EVENT' && <TableHead>Age Phases</TableHead>}
                             <TableHead>Provides</TableHead>
                             <TableHead>Requires</TableHead>
@@ -237,7 +264,7 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                     <TableBody>
                         {filteredData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24 text-muted-foreground">
+                                <TableCell colSpan={10} className="text-center h-24 text-muted-foreground">
                                     No items found.
                                 </TableCell>
                             </TableRow>
@@ -278,6 +305,9 @@ export function BioDatasetEditor({ data, type, phase, onAdd, onUpdate, onDelete,
                                             )}
                                         </TableCell>
                                     )}
+                                    <TableCell>
+                                        {getMappedEntityLabel(item.id)}
+                                    </TableCell>
                                     {type === 'LIFE_EVENT' && (
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
