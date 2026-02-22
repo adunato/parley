@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useEntityStore } from '@/lib/entityStore';
+import { useBioStore } from '@/lib/store/bioStore';
 import { GameAttribute, GameAttributeCategory } from '@/lib/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,28 @@ export function AttributeManager() {
         updateGameAttribute,
         deleteGameAttribute
     } = useEntityStore();
+    const { symbolicMappings, getAllData } = useBioStore();
+    const data = getAllData();
+
+    // Flatten all potentially mappable nodes
+    const allNodes = [
+        ...data.childhood,
+        ...data.formative,
+        ...data.professional,
+        ...(data.senior || [])
+    ];
+
+    const getMappedNodeLabel = (categoryId: string, entityId: string) => {
+        const mapping = (symbolicMappings || []).find(
+            m => m.category === categoryId && m.key === entityId
+        );
+        if (!mapping) return <span className="text-muted-foreground/50 italic">Unmapped</span>;
+
+        const node = allNodes.find(n => n.id === mapping.nodeId);
+        if (!node) return <span className="text-red-500 text-xs">Invalid mapping (node deleted)</span>;
+
+        return <span className="text-xs font-mono">[{node.slot}] {node.text.substring(0, 30)}...</span>;
+    };
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState("");
@@ -137,15 +160,16 @@ export function AttributeManager() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="w-[30%]">Name</TableHead>
-                                            <TableHead>Description</TableHead>
+                                            <TableHead className="w-[20%]">Name</TableHead>
+                                            <TableHead className="w-[30%]">Description</TableHead>
+                                            <TableHead>Bio Node Mapping</TableHead>
                                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredAttributes.length === 0 && newItemCategory !== category.id && (
                                             <TableRow>
-                                                <TableCell colSpan={3} className="text-center text-muted-foreground h-24">
+                                                <TableCell colSpan={4} className="text-center text-muted-foreground h-24">
                                                     No attributes found for {category.name}.
                                                 </TableCell>
                                             </TableRow>
@@ -170,6 +194,9 @@ export function AttributeManager() {
                                                                 placeholder="Description"
                                                             />
                                                         </TableCell>
+                                                        <TableCell className="align-top py-4">
+                                                            {getMappedNodeLabel(category.id, attr.id)}
+                                                        </TableCell>
                                                         <TableCell className="text-right align-top py-4">
                                                             <div className="flex justify-end gap-1">
                                                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleEditSave(attr)}>
@@ -186,6 +213,9 @@ export function AttributeManager() {
                                                         <TableCell className="font-medium align-middle">{attr.name}</TableCell>
                                                         <TableCell className="text-muted-foreground text-sm align-middle max-w-[400px]">
                                                             {attr.description}
+                                                        </TableCell>
+                                                        <TableCell className="align-middle">
+                                                            {getMappedNodeLabel(category.id, attr.id)}
                                                         </TableCell>
                                                         <TableCell className="text-right align-middle">
                                                             <div className="flex justify-end gap-1">
@@ -223,6 +253,9 @@ export function AttributeManager() {
                                                             if (e.key === 'Escape') handleCreateCancel();
                                                         }}
                                                     />
+                                                </TableCell>
+                                                <TableCell className="align-top py-4 text-muted-foreground/50 italic text-xs">
+                                                    Will be unmapped initially
                                                 </TableCell>
                                                 <TableCell className="text-right align-top py-4">
                                                     <div className="flex justify-end gap-1">
