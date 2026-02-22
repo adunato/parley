@@ -32,6 +32,7 @@ export function ProfessionModal({
         id: "",
         name: "",
         description: "",
+        categoryId: 'profession',
         minAge: 16,
         maxAge: 75,
     });
@@ -46,6 +47,7 @@ export function ProfessionModal({
                     id: "",
                     name: "",
                     description: "",
+                    categoryId: 'profession',
                     minAge: 16,
                     maxAge: 75,
                 });

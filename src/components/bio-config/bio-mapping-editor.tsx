@@ -4,13 +4,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Save, X } from "lucide-react";
 import { useBioStore } from "@/lib/store/bioStore";
+import { useEntityStore } from "@/lib/entityStore";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { EventNode, SymbolicMapping } from '@/lib/generator/types';
 
 export function BioMappingEditor() {
-    const { symbolicMappings, addSymbolicMapping, updateSymbolicMapping, deleteSymbolicMapping, getAllData } = useBioStore();
+    const { symbolicMappings, addSymbolicMapping, updateSymbolicMapping, deleteSymbolicMapping, getAllData, getAllMappableEntities } = useBioStore();
+    const { gameAttributeCategories } = useEntityStore();
     const data = getAllData();
+    const mappableEntities = getAllMappableEntities();
 
     // Flatten all potentially mappable nodes
     const allNodes = [
@@ -25,6 +28,17 @@ export function BioMappingEditor() {
     const [newNodeId, setNewNodeId] = useState('');
 
     const [editingMapping, setEditingMapping] = useState<{ category: string, key: string } | null>(null);
+
+    // Compute available categories dynamically based on defined entities
+    const activeCategoryIds = Array.from(new Set(mappableEntities.map(e => e.categoryId)));
+    const categoryOptions = activeCategoryIds.map(id => {
+        if (id === 'profession') return { id: 'profession', name: 'Profession' };
+        const found = gameAttributeCategories?.find(c => c.id === id);
+        return { id, name: found ? found.name : id };
+    });
+
+    // Entities available for the selected category
+    const entitiesForCategory = mappableEntities.filter(e => e.categoryId === newCategory);
 
     // Group mappings by category
     const groupedMappings = (symbolicMappings || []).reduce((acc, mapping) => {
@@ -92,8 +106,9 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="PROFESSION">Profession</SelectItem>
-                                <SelectItem value="SIBLINGS">Siblings</SelectItem>
+                                {categoryOptions.map(cat => (
+                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -110,18 +125,11 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder={!newCategory ? "Select Category first" : "Select Key"} />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {newCategory === 'PROFESSION' && data.professions.map(p => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.name}
+                                {entitiesForCategory.map(entity => (
+                                    <SelectItem key={entity.id} value={entity.id}>
+                                        {entity.name}
                                     </SelectItem>
                                 ))}
-                                {newCategory === 'SIBLINGS' && (
-                                    <>
-                                        <SelectItem value="No Siblings">No Siblings</SelectItem>
-                                        <SelectItem value="One Sibling">One Sibling</SelectItem>
-                                        <SelectItem value="Two Siblings">Two Siblings</SelectItem>
-                                    </>
-                                )}
                             </SelectContent>
                         </Select>
                     </div>

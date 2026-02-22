@@ -102,10 +102,15 @@ export interface CharacterGroup {
   description: string;
 }
 
-export interface Profession {
+export interface BaseGameEntity {
   id: string;
   name: string;
   description: string;
+  categoryId: string; // Dynamic for generic attributes, 'profession' for Professions
+}
+
+export interface Profession extends BaseGameEntity {
+  categoryId: 'profession';
   minAge: number;
   maxAge: number;
 }
@@ -116,9 +121,6 @@ export interface GameAttributeCategory {
   description: string;
 }
 
-export interface GameAttribute {
-  id: string;
-  categoryId: string; // References GameAttributeCategory.id
-  name: string;
-  description: string;
+export interface GameAttribute extends BaseGameEntity {
+  // Uses dynamic categoryId from GameAttributeCategory
 }
