@@ -35,7 +35,7 @@ export const DEFAULT_PROMPTS: Record<PromptId, PromptConfig> = {
 
 --- CHARACTER IDENTITY ---
 {{characterBasicInfo}}
-Use the character's basicInfo (name, role, faction, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
+Use the character's basicInfo (name, role, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
 --------------------------
 
 --- CHARACTER PERSONALITY ---
@@ -50,7 +50,7 @@ Use the ideal match traits to determine romantic compatibility.
 
 --- PLAYER PERSONA DATA ---
 {{personaBasicInfo}}
-Use the player's persona (name, role, faction, reputation, background, appearance, firstImpression) to tailor your responses. For example, react differently to a "Noble" vs a "Rogue" based on your own traits.
+Use the player's persona (name, role, reputation, background, appearance, firstImpression) to tailor your responses. For example, react differently to a "Noble" vs a "Rogue" based on your own traits.
 ---------------------------
 
 --- RELATIONSHIP DATA [how {{characterName}} feels about {{personaName}}] ---

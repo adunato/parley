@@ -11,7 +11,6 @@ export interface BasicInfo {
   age: number;
   gender: string;
   role: string;
-  faction: string;
   reputation: string;
   background: string;
   firstImpression: string;

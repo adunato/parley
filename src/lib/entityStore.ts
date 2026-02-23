@@ -233,7 +233,6 @@ export const useEntityStore = create<EntityStore>()(
                         age: 0,
                         gender: "",
                         role: "",
-                        faction: "",
                         reputation: "",
                         background: "",
                         firstImpression: "",

@@ -43,8 +43,8 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, characterId }: P
                             <p className="text-sm font-medium">{info.age} years old, {info.gender}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground uppercase flex items-center gap-1"><Briefcase className="w-3 h-3" /> Role & Faction</p>
-                            <p className="text-sm font-medium">{info.role || 'Unassigned'} {info.faction ? `(${info.faction})` : ''}</p>
+                            <p className="text-xs text-muted-foreground uppercase flex items-center gap-1"><Briefcase className="w-3 h-3" /> Role</p>
+                            <p className="text-sm font-medium">{info.role || 'Unassigned'}</p>
                         </div>
                         <div className="col-span-2 space-y-1">
                             <p className="text-xs text-muted-foreground uppercase flex items-center gap-1"><MapPin className="w-3 h-3" /> Origin Location</p>

@@ -117,7 +117,7 @@ export const useParleyStore = create<ParleyStore>()(
 
 --- CHARACTER IDENTITY ---
 {{characterBasicInfo}}
-Use the character's basicInfo (name, role, faction, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
+use the character's basicInfo (name, role, reputation, background, firstImpression, appearance) to define their identity and how they present themselves.
 --------------------------
 
 --- CHARACTER PERSONALITY ---
@@ -153,7 +153,7 @@ Interpret the JSON as follows:
 
 
 2. **PLAYER PERSONA DATA**:
-   - This data describes the player's in-game persona. Understand who the player is in this world (their name, alias, reputation, background, role, faction, appearance, firstImpression).
+   - This data describes the player's in-game persona. Understand who the player is in this world (their name, alias, reputation, background, role, appearance, firstImpression).
    - Your responses should be tailored to this player persona. For example, if {{personaName}} persona has a "rogue" role, you might react with suspicion or admiration depending on your character's traits.
 
 3. **RELATIONSHIP DATA**:
