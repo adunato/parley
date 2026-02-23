@@ -8,7 +8,7 @@ import { TagListEditor } from './tag-list-editor';
 import { WeightEditor } from './weight-editor';
 import { EventNode, LifeEvent, SlotType, AgePhase, AGE_PHASES } from '@/lib/generator/types';
 import { GenerateEventsDialog } from './generate-events-dialog';
-import { Sparkles, Plus } from 'lucide-react';
+import { Sparkles, Plus, Trash2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/lib/store/bioStore";
 import { useEntityStore } from "@/lib/entityStore";
@@ -38,9 +38,9 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
     const [showGenerator, setShowGenerator] = useState(false);
 
     // Mapping State
-    const [mappingCategory, setMappingCategory] = useState<string | 'NONE'>('NONE');
-    const [mappingKey, setMappingKey] = useState<string>('');
-    const [initialMapping, setInitialMapping] = useState<{ category: string, key: string } | null>(null);
+    const [nodeMappings, setNodeMappings] = useState<{ category: string, key: string, isNew?: boolean }[]>([]);
+    const [initialMappings, setInitialMappings] = useState<{ category: string, key: string }[]>([]);
+
     const [isCreateEntityModalOpen, setIsCreateEntityModalOpen] = useState(false);
 
     const { symbolicMappings, getAllMappableEntities, addSymbolicMapping, deleteSymbolicMapping } = useBioStore();
@@ -55,11 +55,17 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
         return { id: catId, name: found ? found.name : catId };
     });
 
-    const entitiesForCategory = mappableEntities.filter(e => e.categoryId === mappingCategory);
-
     const handleEntityCreated = (categoryId: string, entityId: string) => {
-        setMappingCategory(categoryId);
-        setMappingKey(entityId);
+        setNodeMappings(prev => {
+            // Check if we have an empty "shell" mapping to replace, otherwise append
+            const lastMapping = prev[prev.length - 1];
+            if (lastMapping && lastMapping.category === 'NONE') {
+                const newMappings = [...prev];
+                newMappings[newMappings.length - 1] = { category: categoryId, key: entityId };
+                return newMappings;
+            }
+            return [...prev, { category: categoryId, key: entityId }];
+        });
     };
 
     useEffect(() => {
@@ -88,15 +94,14 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             }
 
             // Restore Mapping If Present
-            const existingMapping = symbolicMappings?.find(m => m.nodeId === initialData.id);
-            if (existingMapping) {
-                setMappingCategory(existingMapping.category);
-                setMappingKey(existingMapping.key);
-                setInitialMapping({ category: existingMapping.category, key: existingMapping.key });
+            const existingMappings = symbolicMappings?.filter(m => m.nodeId === initialData.id) || [];
+            if (existingMappings.length > 0) {
+                const mapped = existingMappings.map(m => ({ category: m.category, key: m.key }));
+                setNodeMappings([...mapped]);
+                setInitialMappings([...mapped]);
             } else {
-                setMappingCategory('NONE');
-                setMappingKey('');
-                setInitialMapping(null);
+                setNodeMappings([]);
+                setInitialMappings([]);
             }
         } else if (open) {
             // Reset for new
@@ -107,9 +112,8 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             setWeights({ "DEFAULT": 1 });
             setSelectedPhase(phase);
             setSelectedPhases(phase ? [phase] : []);
-            setMappingCategory('NONE');
-            setMappingKey('');
-            setInitialMapping(null);
+            setNodeMappings([]);
+            setInitialMappings([]);
         }
     }, [open, initialData, phase, symbolicMappings]);
 
@@ -153,22 +157,29 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
                 phase: selectedPhase
             } as EventNode);
 
-            // Handle Mapping Logic
-            // If there was an old mapping mapping and we changed it or removed it, delete old.
-            if (initialMapping && (initialMapping.category !== mappingCategory || initialMapping.key !== mappingKey)) {
-                deleteSymbolicMapping(initialMapping.category, initialMapping.key);
-            }
+            // Handle Mapping Logic (Diffing)
+            // 1. Find mappings to delete (present in initial, missing from new)
+            initialMappings.forEach(im => {
+                const stillExists = nodeMappings.some(nm => nm.category === im.category && nm.key === im.key);
+                if (!stillExists) {
+                    deleteSymbolicMapping(im.category, im.key, id);
+                }
+            });
 
-            // If we have a new mapping properly selected, save it.
-            if (mappingCategory !== 'NONE' && mappingKey) {
-                // Remove existing if it was attached to this exact target (though shouldn't happen natively if UI enforces)
-                useBioStore.getState().deleteSymbolicMapping(mappingCategory, mappingKey);
-                addSymbolicMapping({
-                    category: mappingCategory,
-                    key: mappingKey,
-                    nodeId: id
-                });
-            }
+            // 2. Find mappings to add (present in new, missing from initial)
+            nodeMappings.forEach(nm => {
+                // Ignore empty unconfigured rows
+                if (nm.category === 'NONE' || !nm.key) return;
+
+                const isNew = !initialMappings.some(im => im.category === nm.category && im.key === nm.key);
+                if (isNew) {
+                    addSymbolicMapping({
+                        category: nm.category,
+                        key: nm.key,
+                        nodeId: id
+                    });
+                }
+            });
         }
         onOpenChange(false);
     };
@@ -237,67 +248,109 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
 
                         {type !== 'LIFE_EVENT' && (
                             <div className="p-3 border rounded-md bg-muted/20 space-y-3">
-                                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Symbolic Mapping</Label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Category</Label>
-                                        <Select
-                                            value={mappingCategory}
-                                            onValueChange={(val) => {
-                                                setMappingCategory(val);
-                                                setMappingKey(''); // Reset key when category changes
-                                            }}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="NONE" className="italic text-muted-foreground">Unmapped</SelectItem>
-                                                {categoryOptions.map(cat => (
-                                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between items-center h-4">
-                                            <Label className="text-xs">Key</Label>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-5 px-1.5 text-[10px]"
-                                                onClick={() => setIsCreateEntityModalOpen(true)}
-                                                type="button"
-                                            >
-                                                <Plus className="w-3 h-3 mr-1" />
-                                                New
-                                            </Button>
-                                        </div>
-                                        <Select
-                                            value={mappingKey}
-                                            onValueChange={setMappingKey}
-                                            disabled={mappingCategory === 'NONE'}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={mappingCategory === 'NONE' ? "No category" : "Select Key"} />
-                                            </SelectTrigger>
-                                            <SelectContent className="max-h-[200px]">
-                                                {entitiesForCategory.map(entity => {
-                                                    // We must gray out entities that are *already* mapped to *another* node
-                                                    const isAlreadyMapped = (symbolicMappings || []).some(
-                                                        m => m.category === mappingCategory && m.key === entity.id && m.nodeId !== id
-                                                    );
-                                                    return (
-                                                        <SelectItem key={entity.id} value={entity.id} disabled={isAlreadyMapped}>
-                                                            {entity.name} {isAlreadyMapped && "(Mapped)"}
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Symbolic Mappings</Label>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-6 px-2 text-[10px]"
+                                        onClick={() => setNodeMappings([...nodeMappings, { category: 'NONE', key: '', isNew: true }])}
+                                        type="button"
+                                    >
+                                        <Plus className="w-3 h-3 mr-1" />
+                                        Add Mapping
+                                    </Button>
                                 </div>
+
+                                {nodeMappings.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground italic">No mappings defined for this node.</p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {nodeMappings.map((mapping, index) => {
+                                            const entitiesForCategory = mappableEntities.filter(e => e.categoryId === mapping.category);
+
+                                            // Ensure the current key is rendered even if it's inactive (in edge cases)
+                                            // The simplest is to just list all entities for the category.
+                                            return (
+                                                <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end bg-background p-2 rounded border border-border/50">
+                                                    <div className="space-y-1">
+                                                        <Label className="text-[10px]">Category</Label>
+                                                        <Select
+                                                            value={mapping.category}
+                                                            onValueChange={(val) => {
+                                                                const newM = [...nodeMappings];
+                                                                newM[index] = { ...newM[index], category: val, key: '' };
+                                                                setNodeMappings(newM);
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="h-8 text-xs">
+                                                                <SelectValue placeholder="Select Category" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="NONE" className="italic text-muted-foreground">Unmapped</SelectItem>
+                                                                {categoryOptions.map(cat => (
+                                                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between items-center h-3">
+                                                            <Label className="text-[10px]">Key</Label>
+                                                            {index === nodeMappings.length - 1 && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-4 px-1 text-[9px]"
+                                                                    onClick={() => setIsCreateEntityModalOpen(true)}
+                                                                    type="button"
+                                                                >
+                                                                    <Plus className="w-2 h-2 mr-1" />
+                                                                    New Option
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                        <Select
+                                                            value={mapping.key}
+                                                            onValueChange={(val) => {
+                                                                const newM = [...nodeMappings];
+                                                                newM[index] = { ...newM[index], key: val };
+                                                                setNodeMappings(newM);
+                                                            }}
+                                                            disabled={mapping.category === 'NONE'}
+                                                        >
+                                                            <SelectTrigger className="h-8 text-xs">
+                                                                <SelectValue placeholder={mapping.category === 'NONE' ? "No category" : "Select Key"} />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="max-h-[200px]">
+                                                                {entitiesForCategory.map(entity => (
+                                                                    <SelectItem key={entity.id} value={entity.id}>
+                                                                        {entity.name}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => {
+                                                            const newM = [...nodeMappings];
+                                                            newM.splice(index, 1);
+                                                            setNodeMappings(newM);
+                                                        }}
+                                                        type="button"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -362,7 +415,7 @@ export function BioEntityEditor({ open, onOpenChange, initialData, onSave, type,
             <CreateEntityModal
                 open={isCreateEntityModalOpen}
                 onOpenChange={setIsCreateEntityModalOpen}
-                defaultCategory={mappingCategory}
+                defaultCategory={nodeMappings.length > 0 ? nodeMappings[nodeMappings.length - 1].category : 'NONE'}
                 onCreated={handleEntityCreated}
             />
         </>

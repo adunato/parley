@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle, Info } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -40,6 +40,7 @@ import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
 import { NameGenerator, SupportedCountry } from "@/lib/generator/NameGenerator";
 import { faker } from '@faker-js/faker';
+import { ProceduralGeneratorDialog } from './character/procedural-generator-dialog';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -68,6 +69,7 @@ export default function CharacterConfiguration() {
     const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
     const [relationshipContext, setRelationshipContext] = useState("");
+    const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
 
     // Debounced save function
     const debouncedSave = useDebouncedCallback((character: Character) => {
@@ -433,11 +435,28 @@ export default function CharacterConfiguration() {
 
             // SEQUENCE STEP 1: Base Tabular Constraints
             // Resolve foundational properties if missing
+            let originLocation = info.originLocation || {};
+            let identity: Identity | null = null;
+
+            if (!originLocation.town) {
+                const country = originLocation.country as SupportedCountry || 'USA';
+                const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
+                identity = NameGenerator.generateIdentity(country, genderHelper, originLocation.stateRegion);
+                originLocation = {
+                    country: identity.country,
+                    stateRegion: identity.state,
+                    town: identity.town
+                };
+            }
+            context.originLocation = originLocation;
+
             let name = info.name;
             if (!name || name === "New Character") {
-                const country = info.originLocation?.country as SupportedCountry || 'USA';
-                const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
-                const identity = NameGenerator.generateIdentity(country, genderHelper);
+                if (!identity) {
+                    const country = originLocation.country as SupportedCountry || 'USA';
+                    const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
+                    identity = NameGenerator.generateIdentity(country, genderHelper, originLocation.stateRegion);
+                }
                 name = identity.firstName + ' ' + identity.lastName;
             }
             context.name = name;
@@ -461,6 +480,10 @@ export default function CharacterConfiguration() {
             // Gather explicit UI states
             if (info.role) context.role = info.role;
             if (info.background) context.background = info.background;
+            if (info.siblings) context.siblings = info.siblings;
+            if (info.faction) context.faction = info.faction;
+            if (info.reputation) context.reputation = info.reputation;
+
             if (info.mappedAttributes && Object.keys(info.mappedAttributes).length > 0) {
                 context.mappedAttributes = info.mappedAttributes;
             }
@@ -507,6 +530,7 @@ export default function CharacterConfiguration() {
                         agreeableness: data.character.personality.agreeableness || 0,
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
+                    generationMeta: data.generatedBioState
                 };
 
                 if (localCharacter && localCharacter.id) {
@@ -776,11 +800,30 @@ export default function CharacterConfiguration() {
                                         <span className="text-lg">×</span>
                                     </Button>
 
-                                    <Button onClick={handleGenerateCharacter} disabled={isGeneratingCharacter} className="ml-2 gap-2 shadow-sm relative overflow-hidden group">
-                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                                        <Wand2 className="w-4 h-4" />
-                                        {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
-                                    </Button>
+                                    <div className="flex gap-1 ml-2">
+                                        <Button onClick={handleGenerateCharacter} disabled={isGeneratingCharacter} className="gap-2 shadow-sm relative overflow-hidden group rounded-r-none border-r border-r-primary-foreground/20">
+                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                            <Wand2 className="w-4 h-4" />
+                                            {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
+                                        </Button>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setIsProceduralGeneratorOpen(true)}
+                                                        className="shadow-sm rounded-l-none px-3"
+                                                        disabled={!displayCharacter.generationMeta}
+                                                    >
+                                                        <Info className="w-4 h-4 text-muted-foreground" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>View Generation Report</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1256,7 +1299,7 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
                             </div>
-                        </div>
+                        </div >
                     </>
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
@@ -1266,8 +1309,17 @@ export default function CharacterConfiguration() {
                             <p className="type-body-sm text-muted-foreground">Select a character from the list or add a new one</p>
                         </div>
                     </div>
-                )}
-            </div>
+                )
+                }
+            </div >
+
+            {displayCharacter && (
+                <ProceduralGeneratorDialog
+                    open={isProceduralGeneratorOpen}
+                    onOpenChange={setIsProceduralGeneratorOpen}
+                    characterId={displayCharacter.id}
+                />
+            )}
         </div >
-    )
+    );
 }

@@ -78,8 +78,8 @@ interface BioStoreState {
     // Symbolic Mappings
     symbolicMappings: SymbolicMapping[];
     addSymbolicMapping: (mapping: SymbolicMapping) => void;
-    updateSymbolicMapping: (oldKey: { category: string, key: string }, mapping: SymbolicMapping) => void;
-    deleteSymbolicMapping: (category: string, key: string) => void;
+    updateSymbolicMapping: (oldKey: { category: string, key: string, nodeId?: string }, mapping: SymbolicMapping) => void;
+    deleteSymbolicMapping: (category: string, key: string, nodeId?: string) => void;
 
     setData: (data: {
         childhood: EventNode[];
@@ -414,15 +414,21 @@ export const useBioStore = create<BioStoreState>()(
             })),
 
             updateSymbolicMapping: (oldKey, mapping) => set((state) => ({
-                symbolicMappings: (state.symbolicMappings || []).map(m =>
-                    (m.category === oldKey.category && m.key === oldKey.key) ? mapping : m
-                )
+                symbolicMappings: (state.symbolicMappings || []).map(m => {
+                    if (oldKey.nodeId) {
+                        return (m.category === oldKey.category && m.key === oldKey.key && m.nodeId === oldKey.nodeId) ? mapping : m;
+                    }
+                    return (m.category === oldKey.category && m.key === oldKey.key) ? mapping : m;
+                })
             })),
 
-            deleteSymbolicMapping: (category, key) => set((state) => ({
-                symbolicMappings: (state.symbolicMappings || []).filter(m =>
-                    !(m.category === category && m.key === key)
-                )
+            deleteSymbolicMapping: (category, key, nodeId) => set((state) => ({
+                symbolicMappings: (state.symbolicMappings || []).filter(m => {
+                    if (nodeId) {
+                        return !(m.category === category && m.key === key && m.nodeId === nodeId);
+                    }
+                    return !(m.category === category && m.key === key);
+                })
             })),
 
             // Bulk Set (for migration)

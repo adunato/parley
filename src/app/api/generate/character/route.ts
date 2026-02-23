@@ -60,10 +60,10 @@ export async function POST(req: NextRequest) {
       bioPromptSupplement = `
 --- SIMULATED LIFE PATH ---
 The character has organically lived through the following sequence of life events:
-${generatedBioState.spine.map((node: any) => `- Stage: ${node.name}\n  Description: ${node.description}`).join('\n')}
+${generatedBioState.spine.map((node: any) => `- Stage: ${node.slot} (${node.id})\n  Description: ${node.text}`).join('\n')}
 
 Specific Events:
-${generatedBioState.flesh.map((event: any) => `- ${event.name}: ${event.description}`).join('\n')}
+${generatedBioState.flesh.map((event: any) => `- ${event.id}: ${event.text}`).join('\n')}
 
 Resulting Personality/Attribute Tags:
 ${Array.from(generatedBioState.tags).join(', ')}
@@ -94,7 +94,12 @@ ${Array.from(generatedBioState.tags).join(', ')}
       relationships: []
     }
 
-    return NextResponse.json({ character: character });
+    const serializableBioState = generatedBioState ? {
+      ...generatedBioState,
+      tags: Array.from(generatedBioState.tags)
+    } : null;
+
+    return NextResponse.json({ character: character, generatedBioState: serializableBioState });
   } catch (error) {
     console.error('Error generating character data:', error);
     return NextResponse.json({ error: 'Failed to generate character data' }, { status: 500 });

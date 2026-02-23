@@ -29,7 +29,10 @@ export const generateCharacterPrompt = (characterDescription: string, worldDescr
         contextSection = `
 --- EXISTING CONTEXT ---
 The user has already defined the following attributes. Use them as the immutable foundation for the character and generate the remaining JSON fields to match/complement them.
-${Object.entries(existingContext).map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`).join('\n')}
+${Object.entries(existingContext).map(([key, value]) => {
+            const stringValue = typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value);
+            return `${key.charAt(0).toUpperCase() + key.slice(1)}: ${stringValue}`;
+        }).join('\n')}
 ------------------------
 `;
     }

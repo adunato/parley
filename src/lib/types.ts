@@ -53,6 +53,7 @@ export interface Character {
   locationId?: string;
   idealMatch: Personality;
   relationships: Relationship[];
+  generationMeta?: any;
 }
 
 export interface Persona {

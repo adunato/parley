@@ -50,9 +50,9 @@ export function BioMappingEditor() {
     const handleAdd = () => {
         if (!newCategory || !newKey || !newNodeId) return;
 
-        // Check uniqueness
-        if (symbolicMappings?.some(m => m.category === newCategory && m.key === newKey)) {
-            alert("This mapping already exists!");
+        // Check exact duplicate linkage
+        if (symbolicMappings?.some(m => m.category === newCategory && m.key === newKey && m.nodeId === newNodeId)) {
+            alert("This specific mapping already exists!");
             return;
         }
 
@@ -66,9 +66,9 @@ export function BioMappingEditor() {
         setNewNodeId('');
     };
 
-    const handleDelete = (category: string, key: string) => {
-        if (confirm(`Delete mapping for ${category}:${key}?`)) {
-            deleteSymbolicMapping(category, key);
+    const handleDelete = (category: string, key: string, nodeId: string) => {
+        if (confirm(`Delete mapping for ${category}:${key} to node ${nodeId}?`)) {
+            deleteSymbolicMapping(category, key, nodeId);
         }
     };
 
@@ -136,16 +136,11 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder={!newCategory ? "Select Category first" : "Select Key"} />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {entitiesForCategory.map(entity => {
-                                    const isAlreadyMapped = (symbolicMappings || []).some(
-                                        m => m.category === newCategory && m.key === entity.id
-                                    );
-                                    return (
-                                        <SelectItem key={entity.id} value={entity.id} disabled={isAlreadyMapped}>
-                                            {entity.name} {isAlreadyMapped && "(Mapped)"}
-                                        </SelectItem>
-                                    );
-                                })}
+                                {entitiesForCategory.map(entity => (
+                                    <SelectItem key={entity.id} value={entity.id}>
+                                        {entity.name}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -158,16 +153,12 @@ export function BioMappingEditor() {
                                 <SelectValue placeholder="Select a bio node..." />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
-                                {allNodes
-                                    .map(node => {
-                                        const isNodeMapped = (symbolicMappings || []).some(m => m.nodeId === node.id);
-                                        return (
-                                            <SelectItem key={node.id} value={node.id} disabled={isNodeMapped}>
-                                                <span className="font-mono text-xs mr-2">[{node.slot}]</span>
-                                                {node.text.substring(0, 40)}... {isNodeMapped && "(Mapped)"}
-                                            </SelectItem>
-                                        );
-                                    })}
+                                {allNodes.map(node => (
+                                    <SelectItem key={node.id} value={node.id}>
+                                        <span className="font-mono text-xs mr-2">[{node.slot}]</span>
+                                        {node.text.substring(0, 40)}...
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -203,7 +194,7 @@ export function BioMappingEditor() {
                             </TableHeader>
                             <TableBody>
                                 {mappings.map(mapping => (
-                                    <TableRow key={mapping.key}>
+                                    <TableRow key={`${mapping.key}-${mapping.nodeId}`}>
                                         <TableCell className="font-medium">{getEntityNameByKey(category, mapping.key)}</TableCell>
                                         <TableCell className="text-sm">
                                             {getNodeLabel(mapping.nodeId)}
@@ -213,7 +204,7 @@ export function BioMappingEditor() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 text-destructive"
-                                                onClick={() => handleDelete(category, mapping.key)}
+                                                onClick={() => handleDelete(category, mapping.key, mapping.nodeId!)}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
