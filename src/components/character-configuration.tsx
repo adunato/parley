@@ -396,6 +396,9 @@ export default function CharacterConfiguration() {
         const newBasicInfo = { ...localCharacter.basicInfo };
         let updated = false;
 
+        let identityGenerated = false;
+        let identity: Identity | null = null;
+
         // Generate Gender if empty
         if (!newBasicInfo.gender) {
             newBasicInfo.gender = Math.random() > 0.5 ? 'Male' : 'Female';
@@ -415,18 +418,26 @@ export default function CharacterConfiguration() {
         if (!newBasicInfo.name || newBasicInfo.name === "New Character") {
             const country = newBasicInfo.originLocation?.country as SupportedCountry || 'USA';
             const genderHelper = newBasicInfo.gender === 'Female' ? 'female' : newBasicInfo.gender === 'Male' ? 'male' : undefined;
-            const identity = NameGenerator.generateIdentity(country, genderHelper, newBasicInfo.originLocation?.stateRegion as any);
+            identity = NameGenerator.generateIdentity(country, genderHelper, newBasicInfo.originLocation?.stateRegion as any);
             newBasicInfo.name = identity.firstName + ' ' + identity.lastName;
+            identityGenerated = true;
+            updated = true;
+        }
 
-            // Set location if it wasn't set and we generated an identity with it
-            if (!newBasicInfo.originLocation || !newBasicInfo.originLocation.country) {
+        // Generate Town and Location info if empty
+        if (!newBasicInfo.originLocation || !newBasicInfo.originLocation.town) {
+            if (!identityGenerated) {
+                const country = newBasicInfo.originLocation?.country as SupportedCountry || 'USA';
+                identity = NameGenerator.generateIdentity(country, undefined, newBasicInfo.originLocation?.stateRegion as any);
+            }
+            if (identity) {
                 newBasicInfo.originLocation = {
-                    country: identity.country,
-                    stateRegion: identity.state,
+                    country: newBasicInfo.originLocation?.country || identity.country,
+                    stateRegion: newBasicInfo.originLocation?.stateRegion || identity.state,
                     town: identity.town
                 };
+                updated = true;
             }
-            updated = true;
         }
 
         if (updated) {
@@ -851,16 +862,23 @@ export default function CharacterConfiguration() {
                                 <Card className="border-border shadow-sm">
                                     <div className="pt-6 flex justify-between items-center px-6 mb-2">
                                         <SectionHeader title="Basic Information" className="flex-1 mb-0 mt-0" />
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleGenerateBasicInfo}
-                                            className="gap-2"
-                                            title="Generate empty basic information fields"
-                                        >
-                                            <Wand2 className="h-4 w-4" />
-                                            Generate
-                                        </Button>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="w-8 h-8 rounded-full bg-background border border-primary/30 shadow-sm text-primary hover:bg-primary/10"
+                                                        onClick={handleGenerateBasicInfo}
+                                                    >
+                                                        <Sparkles className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Generate empty basic information fields</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
@@ -956,17 +974,6 @@ export default function CharacterConfiguration() {
                                                 </Select>
                                             </div>
                                         )}
-                                        <div className="space-y-2">
-                                            <Label htmlFor="origin-town" className="type-ui-label text-muted-foreground">Town</Label>
-                                            <Input
-                                                id="origin-town"
-                                                value={displayCharacter.basicInfo.originLocation?.town || ""}
-                                                onChange={(e) => {
-                                                    const currentLoc = displayCharacter.basicInfo.originLocation || {};
-                                                    handleInputChange("basicInfo", "originLocation", { ...currentLoc, town: e.target.value });
-                                                }}
-                                            />
-                                        </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="origin-town" className="type-ui-label text-muted-foreground">Town</Label>
                                             <Input
