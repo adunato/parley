@@ -435,11 +435,28 @@ export default function CharacterConfiguration() {
 
             // SEQUENCE STEP 1: Base Tabular Constraints
             // Resolve foundational properties if missing
+            let originLocation = info.originLocation || {};
+            let identity: Identity | null = null;
+
+            if (!originLocation.town) {
+                const country = originLocation.country as SupportedCountry || 'USA';
+                const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
+                identity = NameGenerator.generateIdentity(country, genderHelper, originLocation.stateRegion);
+                originLocation = {
+                    country: identity.country,
+                    stateRegion: identity.state,
+                    town: identity.town
+                };
+            }
+            context.originLocation = originLocation;
+
             let name = info.name;
             if (!name || name === "New Character") {
-                const country = info.originLocation?.country as SupportedCountry || 'USA';
-                const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
-                const identity = NameGenerator.generateIdentity(country, genderHelper);
+                if (!identity) {
+                    const country = originLocation.country as SupportedCountry || 'USA';
+                    const genderHelper = info.gender === 'Female' ? 'female' : info.gender === 'Male' ? 'male' : undefined;
+                    identity = NameGenerator.generateIdentity(country, genderHelper, originLocation.stateRegion);
+                }
                 name = identity.firstName + ' ' + identity.lastName;
             }
             context.name = name;
@@ -463,7 +480,6 @@ export default function CharacterConfiguration() {
             // Gather explicit UI states
             if (info.role) context.role = info.role;
             if (info.background) context.background = info.background;
-            if (info.originLocation) context.originLocation = info.originLocation;
             if (info.siblings) context.siblings = info.siblings;
             if (info.faction) context.faction = info.faction;
             if (info.reputation) context.reputation = info.reputation;
