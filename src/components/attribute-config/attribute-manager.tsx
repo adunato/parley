@@ -45,11 +45,15 @@ export function AttributeManager() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState("");
     const [editDesc, setEditDesc] = useState("");
+    const [editRelatedCount, setEditRelatedCount] = useState<number>(0);
+    const [editShareLastName, setEditShareLastName] = useState<boolean>(false);
 
     // State for creating new attributes
     const [newItemCategory, setNewItemCategory] = useState<string | null>(null);
     const [newName, setNewName] = useState("");
     const [newDesc, setNewDesc] = useState("");
+    const [newRelatedCount, setNewRelatedCount] = useState<number>(0);
+    const [newShareLastName, setNewShareLastName] = useState<boolean>(false);
 
     const [activeTab, setActiveTab] = useState<string>(gameAttributeCategories?.[0]?.id || "");
     const [search, setSearch] = useState("");
@@ -65,6 +69,8 @@ export function AttributeManager() {
         setEditingId(attr.id);
         setEditName(attr.name);
         setEditDesc(attr.description || "");
+        setEditRelatedCount(attr.relatedCharacterCount || 0);
+        setEditShareLastName(attr.shareLastName || false);
         setNewItemCategory(null);
     };
 
@@ -72,6 +78,8 @@ export function AttributeManager() {
         setEditingId(null);
         setEditName("");
         setEditDesc("");
+        setEditRelatedCount(0);
+        setEditShareLastName(false);
     };
 
     const handleEditSave = (attr: GameAttribute) => {
@@ -80,6 +88,8 @@ export function AttributeManager() {
             ...attr,
             name: editName,
             description: editDesc,
+            relatedCharacterCount: editRelatedCount,
+            shareLastName: editShareLastName,
         });
         handleEditCancel();
     };
@@ -88,6 +98,8 @@ export function AttributeManager() {
         setNewItemCategory(categoryId);
         setNewName("");
         setNewDesc("");
+        setNewRelatedCount(0);
+        setNewShareLastName(false);
         setEditingId(null);
     };
 
@@ -95,6 +107,8 @@ export function AttributeManager() {
         setNewItemCategory(null);
         setNewName("");
         setNewDesc("");
+        setNewRelatedCount(0);
+        setNewShareLastName(false);
     };
 
     const handleCreateSave = (categoryId: string) => {
@@ -105,6 +119,8 @@ export function AttributeManager() {
             categoryId,
             name: newName,
             description: newDesc,
+            relatedCharacterCount: newRelatedCount,
+            shareLastName: newShareLastName,
         };
 
         addGameAttribute(newAttr);
@@ -162,6 +178,7 @@ export function AttributeManager() {
                                         <TableRow>
                                             <TableHead className="w-[20%]">Name</TableHead>
                                             <TableHead className="w-[30%]">Description</TableHead>
+                                            <TableHead className="w-[15%]">Placeholders</TableHead>
                                             <TableHead>Bio Node Mapping</TableHead>
                                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                                         </TableRow>
@@ -195,6 +212,26 @@ export function AttributeManager() {
                                                             />
                                                         </TableCell>
                                                         <TableCell className="align-top py-4">
+                                                            <div className="flex flex-col gap-2">
+                                                                <Input
+                                                                    type="number"
+                                                                    value={editRelatedCount}
+                                                                    onChange={(e) => setEditRelatedCount(parseInt(e.target.value) || 0)}
+                                                                    placeholder="Count"
+                                                                    className="h-8 text-xs w-20"
+                                                                    min={0}
+                                                                />
+                                                                <label className="flex items-center gap-2 text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={editShareLastName}
+                                                                        onChange={(e) => setEditShareLastName(e.target.checked)}
+                                                                    />
+                                                                    Share Last Name
+                                                                </label>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="align-top py-4">
                                                             {getMappedNodeLabel(category.id, attr.id)}
                                                         </TableCell>
                                                         <TableCell className="text-right align-top py-4">
@@ -213,6 +250,9 @@ export function AttributeManager() {
                                                         <TableCell className="font-medium align-middle">{attr.name}</TableCell>
                                                         <TableCell className="text-muted-foreground text-sm align-middle max-w-[400px]">
                                                             {attr.description}
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground text-xs align-middle whitespace-pre-wrap">
+                                                            {attr.relatedCharacterCount ? `Count: ${attr.relatedCharacterCount}\nShare LN: ${attr.shareLastName ? 'Yes' : 'No'}` : '-'}
                                                         </TableCell>
                                                         <TableCell className="align-middle">
                                                             {getMappedNodeLabel(category.id, attr.id)}
@@ -253,6 +293,26 @@ export function AttributeManager() {
                                                             if (e.key === 'Escape') handleCreateCancel();
                                                         }}
                                                     />
+                                                </TableCell>
+                                                <TableCell className="align-top py-4">
+                                                    <div className="flex flex-col gap-2">
+                                                        <Input
+                                                            type="number"
+                                                            value={newRelatedCount}
+                                                            onChange={(e) => setNewRelatedCount(parseInt(e.target.value) || 0)}
+                                                            placeholder="Count"
+                                                            className="h-8 text-xs w-20"
+                                                            min={0}
+                                                        />
+                                                        <label className="flex items-center gap-2 text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={newShareLastName}
+                                                                onChange={(e) => setNewShareLastName(e.target.checked)}
+                                                            />
+                                                            Share Last Name
+                                                        </label>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="align-top py-4 text-muted-foreground/50 italic text-xs">
                                                     Will be unmapped initially

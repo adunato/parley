@@ -62,7 +62,8 @@ export interface Persona {
 
 export interface Relationship {
   characterId: string;
-  personaId: string;
+  targetId: string;
+  type: string;
   satisfaction: number;
   commitment: number;
   intimacy: number;
@@ -123,4 +124,6 @@ export interface GameAttributeCategory {
 
 export interface GameAttribute extends BaseGameEntity {
   // Uses dynamic categoryId from GameAttributeCategory
+  relatedCharacterCount?: number;
+  shareLastName?: boolean;
 }

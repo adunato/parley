@@ -271,12 +271,12 @@ export default function CharacterConfiguration() {
         }
     }
 
-    const handleDeleteRelationship = (characterId: string, personaId: string) => {
+    const handleDeleteRelationship = (characterId: string, targetId: string) => {
         if (localCharacter) {
             setLocalCharacter(prev => {
                 if (!prev) return null;
                 const updatedRelationships = prev.relationships.filter(
-                    (rel) => !(rel.characterId === characterId && rel.personaId === personaId)
+                    (rel) => !(rel.characterId === characterId && rel.targetId === targetId && rel.type === 'persona')
                 );
                 const updated = { ...prev, relationships: updatedRelationships };
                 isDirtyRef.current = true;
@@ -312,7 +312,8 @@ export default function CharacterConfiguration() {
                 const newRelationship = {
                     ...data.relationship,
                     characterId: localCharacter.id,
-                    personaId: persona.id,
+                    targetId: persona.id,
+                    type: 'persona',
                     chat_summaries: []
                 };
 
@@ -557,10 +558,92 @@ export default function CharacterConfiguration() {
                 };
 
                 if (localCharacter && localCharacter.id) {
+                    const mappedAttrs = generatedCharacterData.basicInfo.mappedAttributes;
+                    const newRelationships: Relationship[] = [];
+
+                    if (mappedAttrs) {
+                        let currentMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
+
+                        Object.values(mappedAttrs).forEach(attrId => {
+                            const attr = gameAttributes.find((a: any) => a.id === attrId);
+                            if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+                                for (let i = 0; i < attr.relatedCharacterCount; i++) {
+                                    currentMaxId++;
+                                    const nextId = currentMaxId.toString();
+
+                                    const category = gameAttributeCategories.find((c: any) => c.id === attr.categoryId);
+                                    const categoryName = category ? category.name.toLowerCase() : '';
+                                    const isSiblingCat = categoryName.includes('sibling');
+
+                                    const shareLastName = attr.shareLastName || isSiblingCat;
+
+                                    let ageDelta = isSiblingCat ? faker.number.int({ min: -10, max: 10 }) : faker.number.int({ min: -5, max: 5 });
+                                    let newAge = Math.max(0, (generatedCharacterData.basicInfo.age || 30) + ageDelta);
+
+                                    const country = generatedCharacterData.basicInfo.originLocation?.country as SupportedCountry || 'USA';
+                                    const identity = NameGenerator.generateIdentity(country, undefined, generatedCharacterData.basicInfo.originLocation?.stateRegion as any);
+
+                                    let lastName = identity.lastName;
+                                    if (shareLastName && generatedCharacterData.basicInfo.name) {
+                                        const parts = generatedCharacterData.basicInfo.name.split(' ');
+                                        if (parts.length > 1) {
+                                            lastName = parts[parts.length - 1];
+                                        }
+                                    }
+
+                                    const placeholderName = identity.firstName + ' ' + lastName;
+
+                                    const role = professions.length > 0 ? professions[Math.floor(Math.random() * professions.length)].id : '';
+
+                                    const newPlaceholder: Character = {
+                                        id: nextId,
+                                        basicInfo: {
+                                            name: placeholderName,
+                                            age: newAge,
+                                            gender: identity.gender === 'female' ? 'Female' : 'Male',
+                                            role: role,
+                                            reputation: '',
+                                            background: `Automatically generated placeholder for ${generatedCharacterData.basicInfo.name}'s ${attr.name}.`,
+                                            firstImpression: '',
+                                            appearance: '',
+                                            originLocation: generatedCharacterData.basicInfo.originLocation,
+                                            mappedAttributes: {}
+                                        },
+                                        personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
+                                        idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
+                                        relationships: [],
+                                    };
+
+                                    addCharacter(newPlaceholder);
+
+                                    const typeName = isSiblingCat ? 'sibling' : attr.name;
+
+                                    newRelationships.push({
+                                        characterId: localCharacter.id,
+                                        targetId: newPlaceholder.id,
+                                        type: typeName,
+                                        satisfaction: 50,
+                                        commitment: 50,
+                                        intimacy: 50,
+                                        trust: 50,
+                                        passion: 50,
+                                        description: `Auto-generated ${typeName} relationship.`,
+                                        chat_summaries: []
+                                    });
+                                }
+                            }
+                        });
+                    }
+
                     // Update existing
                     setLocalCharacter(prev => {
                         if (!prev) return null;
-                        const updated = { ...prev, ...generatedCharacterData, id: prev.id };
+                        const updated = {
+                            ...prev,
+                            ...generatedCharacterData,
+                            id: prev.id,
+                            relationships: [...prev.relationships, ...newRelationships]
+                        };
                         updateCharacter(updated);
                         return updated;
                     });
@@ -1204,7 +1287,7 @@ export default function CharacterConfiguration() {
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 {playerPersonas
-                                                                    .filter(p => !displayCharacter.relationships.some(r => r.personaId === p.id))
+                                                                    .filter(p => !displayCharacter.relationships.some(r => r.targetId === p.id && r.type === 'persona'))
                                                                     .map(p => (
                                                                         <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
                                                                     ))}
@@ -1232,9 +1315,9 @@ export default function CharacterConfiguration() {
                                         {displayCharacter.relationships.length > 0 ? (
                                             <Accordion type="single" collapsible className="w-full">
                                                 {displayCharacter.relationships.map((relationship) => {
-                                                    const persona = playerPersonas.find(p => p.id === relationship.personaId);
+                                                    const persona = playerPersonas.find(p => p.id === relationship.targetId);
                                                     return (
-                                                        <AccordionItem key={relationship.personaId} value={relationship.personaId}>
+                                                        <AccordionItem key={relationship.targetId} value={relationship.targetId}>
                                                             <AccordionTrigger>
                                                                 <div className="flex items-center justify-between w-full pr-4">
                                                                     <span>{persona?.basicInfo.name || "Unknown Persona"}</span>
@@ -1243,7 +1326,7 @@ export default function CharacterConfiguration() {
                                                                         size="sm"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation(); // Prevent the accordion from toggling
-                                                                            handleDeleteRelationship(displayCharacter.id, relationship.personaId);
+                                                                            handleDeleteRelationship(displayCharacter.id, relationship.targetId);
                                                                         }}
                                                                     >
                                                                         Delete
