@@ -150,7 +150,6 @@ export default function PersonaConfiguration() {
                 age: 0,
                 gender: "",
                 role: "",
-                faction: "",
                 reputation: "",
                 background: "",
                 firstImpression: "",
@@ -341,7 +340,6 @@ export default function PersonaConfiguration() {
                                     <p className="type-body-xs text-muted-foreground truncate">{persona.id}</p>
                                     <p className="type-body-xs text-muted-foreground truncate">{persona.basicInfo.role}</p>
                                 </div>
-                                <Badge className="text-xs bg-gray-100 text-gray-800">{persona.basicInfo.faction}</Badge>
                             </div>
                         </div>
                     ))}
@@ -575,14 +573,6 @@ export default function PersonaConfiguration() {
                                                 id="role"
                                                 value={displayPersona.basicInfo.role || ""}
                                                 onChange={(e) => handleInputChange("basicInfo", "role", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
-                                            <Input
-                                                id="faction"
-                                                value={displayPersona.basicInfo.faction || ""}
-                                                onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">

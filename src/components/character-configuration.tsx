@@ -237,7 +237,6 @@ export default function CharacterConfiguration() {
                 age: 0,
                 gender: "",
                 role: "",
-                faction: "",
                 reputation: "",
                 background: "",
                 firstImpression: "",
@@ -376,7 +375,6 @@ export default function CharacterConfiguration() {
                     age: localCharacter.basicInfo.age,
                     gender: localCharacter.basicInfo.gender,
                     role: localCharacter.basicInfo.role,
-                    faction: localCharacter.basicInfo.faction,
                     reputation: localCharacter.basicInfo.reputation,
                     background: localCharacter.basicInfo.background,
                     firstImpression: localCharacter.basicInfo.firstImpression,
@@ -507,8 +505,6 @@ export default function CharacterConfiguration() {
             // Gather explicit UI states
             if (info.role) context.role = info.role;
             if (info.background) context.background = info.background;
-            if (info.siblings) context.siblings = info.siblings;
-            if (info.faction) context.faction = info.faction;
             if (info.reputation) context.reputation = info.reputation;
 
             if (info.mappedAttributes && Object.keys(info.mappedAttributes).length > 0) {
@@ -791,7 +787,7 @@ export default function CharacterConfiguration() {
                                             </div>
                                         </div>
                                         <p className="type-ui-label text-muted-foreground">
-                                            {displayCharacter.basicInfo.role || "NO ROLE"} {displayCharacter.basicInfo.faction && `• ${displayCharacter.basicInfo.faction}`}
+                                            {displayCharacter.basicInfo.role || "NO ROLE"}
                                         </p>
                                     </div>
                                 </div>
@@ -1013,14 +1009,6 @@ export default function CharacterConfiguration() {
                                                     )}
                                                 </SelectContent>
                                             </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="faction" className="type-ui-label text-muted-foreground">Faction</Label>
-                                            <Input
-                                                id="faction"
-                                                value={displayCharacter.basicInfo.faction || ""}
-                                                onChange={(e) => handleInputChange("basicInfo", "faction", e.target.value)}
-                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="type-ui-label text-muted-foreground">Location</Label>

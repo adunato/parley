@@ -9,7 +9,6 @@ async function runTest() {
       age: 30,
       gender: "Male",
       role: "Knight",
-      faction: "Knights of the Round Table",
       reputation: "Renowned for bravery",
       background: "Trained since childhood in the art of chivalry.",
       firstImpression: "Stoic and honorable.",

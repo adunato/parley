@@ -13,7 +13,7 @@ const mockStats: PRQC = {
 
 const mockCharacter: Character = {
     id: 'char1',
-    basicInfo: { name: 'Alice', age: 25, gender: 'F', role: 'test', faction: 'test', reputation: 'test', background: 'test', firstImpression: 'test', appearance: 'test' },
+    basicInfo: { name: 'Alice', age: 25, gender: 'F', role: 'test', reputation: 'test', background: 'test', firstImpression: 'test', appearance: 'test' },
     personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
 
     idealMatch: {

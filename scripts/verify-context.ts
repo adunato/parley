@@ -5,7 +5,7 @@ import { DEFAULT_PROMPTS } from '../src/lib/store/promptStore';
 // Mock Data
 const mockCharacter: Character = {
     id: 'char1',
-    basicInfo: { name: 'Eldrin', age: 100, gender: 'Male', role: 'Wizard', faction: 'Mages Guild', reputation: 'Respected', background: 'Scholar', firstImpression: 'Wise', appearance: 'Robes' },
+    basicInfo: { name: 'Eldrin', age: 100, gender: 'Male', role: 'Wizard', reputation: 'Respected', background: 'Scholar', firstImpression: 'Wise', appearance: 'Robes' },
     personality: { openness: 85, conscientiousness: 70, extraversion: 30, agreeableness: 60, neuroticism: 40 },
     idealMatch: { openness: 90, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 10 },
     relationships: []
@@ -13,7 +13,7 @@ const mockCharacter: Character = {
 
 const mockPersona: Persona = {
     id: 'persona1',
-    basicInfo: { name: 'Kael', age: 25, gender: 'Male', role: 'Rogue', faction: 'Thieves Guild', reputation: 'Notorious', background: 'Street Urchin', appearance: 'Leather Armor', firstImpression: 'Sneaky' }
+    basicInfo: { name: 'Kael', age: 25, gender: 'Male', role: 'Rogue', reputation: 'Notorious', background: 'Street Urchin', appearance: 'Leather Armor', firstImpression: 'Sneaky' }
 };
 
 const mockRelationship: Relationship = {
