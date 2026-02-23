@@ -94,7 +94,12 @@ ${Array.from(generatedBioState.tags).join(', ')}
       relationships: []
     }
 
-    return NextResponse.json({ character: character, generatedBioState: generatedBioState });
+    const serializableBioState = generatedBioState ? {
+      ...generatedBioState,
+      tags: Array.from(generatedBioState.tags)
+    } : null;
+
+    return NextResponse.json({ character: character, generatedBioState: serializableBioState });
   } catch (error) {
     console.error('Error generating character data:', error);
     return NextResponse.json({ error: 'Failed to generate character data' }, { status: 500 });

@@ -119,10 +119,10 @@ export function ProceduralGeneratorDialog({ open, onOpenChange, characterId }: P
                                         <div className="pt-2 pb-6">
                                             <h4 className="font-semibold mb-3 text-primary">Generated Tags</h4>
                                             <div className="flex flex-wrap gap-1.5 pl-4">
-                                                {Array.from(bioState.tags).map(t => (
-                                                    <Badge key={t} variant="secondary" className="font-normal">{t}</Badge>
+                                                {Array.from(bioState.tags || []).map(t => (
+                                                    <Badge key={t as string} variant="secondary" className="font-normal">{t as string}</Badge>
                                                 ))}
-                                                {bioState.tags.size === 0 && <span className="text-sm text-muted-foreground italic">No tags generated.</span>}
+                                                {(!bioState.tags || Array.from(bioState.tags).length === 0) && <span className="text-sm text-muted-foreground italic">No tags generated.</span>}
                                             </div>
                                         </div>
                                     </div>
