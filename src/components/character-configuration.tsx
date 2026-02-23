@@ -38,7 +38,7 @@ import { Menu } from "lucide-react";
 import RelationshipDisplay from "@/components/relationship-display";
 import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
-import { NameGenerator, SupportedCountry } from "@/lib/generator/NameGenerator";
+import { NameGenerator, SupportedCountry, Identity } from "@/lib/generator/NameGenerator";
 import { faker } from '@faker-js/faker';
 import { ProceduralGeneratorDialog } from './character/procedural-generator-dialog';
 
@@ -389,40 +389,56 @@ export default function CharacterConfiguration() {
         }
     };
 
-    // Granular Generators
-    const handleGenerateName = () => {
+    // Basic Info Generator
+    const handleGenerateBasicInfo = () => {
         if (!localCharacter) return;
-        const country = localCharacter.basicInfo.originLocation?.country as SupportedCountry || 'USA';
-        const gender = localCharacter.basicInfo.gender === 'Female' ? 'female' : localCharacter.basicInfo.gender === 'Male' ? 'male' : undefined;
-        const identity = NameGenerator.generateIdentity(country, gender);
-        const newName = identity.firstName + ' ' + identity.lastName;
-        handleInputChange("basicInfo", "name", newName);
-    };
 
-    const handleGenerateAge = () => {
-        if (!localCharacter) return;
-        const role = professions.find(p => p.id === localCharacter.basicInfo.role);
-        const minAge = role ? role.minAge : 18;
-        const maxAge = role ? role.maxAge : 65;
-        const newAge = faker.number.int({ min: minAge, max: maxAge });
-        handleInputChange("basicInfo", "age", newAge);
-    };
+        const newBasicInfo = { ...localCharacter.basicInfo };
+        let updated = false;
 
-    const handleGenerateGender = () => {
-        if (!localCharacter) return;
-        const genders = ['Male', 'Female', 'Non-Binary'];
-        const weights = [0.48, 0.48, 0.04];
-        const rand = Math.random();
-        let cumulative = 0;
-        let newGender = 'Male';
-        for (let i = 0; i < genders.length; i++) {
-            cumulative += weights[i];
-            if (rand <= cumulative) {
-                newGender = genders[i];
-                break;
-            }
+        // Generate Gender if empty
+        if (!newBasicInfo.gender) {
+            newBasicInfo.gender = Math.random() > 0.5 ? 'Male' : 'Female';
+            updated = true;
         }
-        handleInputChange("basicInfo", "gender", newGender);
+
+        // Generate Age if empty or 0
+        if (!newBasicInfo.age || newBasicInfo.age <= 0) {
+            const role = professions.find(p => p.id === newBasicInfo.role);
+            const minAge = role ? role.minAge : 18;
+            const maxAge = role ? role.maxAge : 65;
+            newBasicInfo.age = faker.number.int({ min: minAge, max: maxAge });
+            updated = true;
+        }
+
+        // Generate Name if empty or "New Character"
+        if (!newBasicInfo.name || newBasicInfo.name === "New Character") {
+            const country = newBasicInfo.originLocation?.country as SupportedCountry || 'USA';
+            const genderHelper = newBasicInfo.gender === 'Female' ? 'female' : newBasicInfo.gender === 'Male' ? 'male' : undefined;
+            const identity = NameGenerator.generateIdentity(country, genderHelper, newBasicInfo.originLocation?.stateRegion as any);
+            newBasicInfo.name = identity.firstName + ' ' + identity.lastName;
+
+            // Set location if it wasn't set and we generated an identity with it
+            if (!newBasicInfo.originLocation || !newBasicInfo.originLocation.country) {
+                newBasicInfo.originLocation = {
+                    country: identity.country,
+                    stateRegion: identity.state,
+                    town: identity.town
+                };
+            }
+            updated = true;
+        }
+
+        if (updated) {
+            setLocalCharacter((prev) => {
+                if (!prev) return null;
+                const newCharacter = { ...prev, basicInfo: newBasicInfo };
+                isDirtyRef.current = true;
+                setSaveStatus('saving');
+                debouncedSave(newCharacter);
+                return newCharacter;
+            });
+        }
     };
 
     // Generation Handlers (Character & Avatar)
@@ -833,72 +849,44 @@ export default function CharacterConfiguration() {
                             <div className="max-w-2xl space-y-6">
                                 {/* Basic Information */}
                                 <Card className="border-border shadow-sm">
-                                    <div className="pt-6 relative">
-                                        <SectionHeader title="Basic Information" />
+                                    <div className="pt-6 flex justify-between items-center px-6 mb-2">
+                                        <SectionHeader title="Basic Information" className="flex-1 mb-0 mt-0" />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleGenerateBasicInfo}
+                                            className="gap-2"
+                                            title="Generate empty basic information fields"
+                                        >
+                                            <Wand2 className="h-4 w-4" />
+                                            Generate
+                                        </Button>
                                     </div>
                                     <CardContent className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="name" className="type-ui-label text-muted-foreground">Name</Label>
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    id="name"
-                                                    value={displayCharacter.basicInfo.name}
-                                                    onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
-                                                    className="flex-1"
-                                                />
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={handleGenerateName}
-                                                                className="shrink-0 h-9 w-9"
-                                                            >
-                                                                <Wand2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Name</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
+                                            <Input
+                                                id="name"
+                                                value={displayCharacter.basicInfo.name}
+                                                onChange={(e) => handleInputChange("basicInfo", "name", e.target.value)}
+                                                className="w-full"
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="age" className="type-ui-label text-muted-foreground">Age</Label>
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    id="age"
-                                                    type="number"
-                                                    value={displayCharacter.basicInfo.age || 0}
-                                                    onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
-                                                    className="flex-1"
-                                                    error={(() => {
-                                                        const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
-                                                        if (!role) return false;
-                                                        const age = displayCharacter.basicInfo.age || 0;
-                                                        return age < role.minAge || age > role.maxAge;
-                                                    })()}
-                                                />
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={handleGenerateAge}
-                                                                className="shrink-0 h-9 w-9"
-                                                            >
-                                                                <Wand2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Age</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
+                                            <Input
+                                                id="age"
+                                                type="number"
+                                                value={displayCharacter.basicInfo.age || 0}
+                                                onChange={(e) => handleInputChange("basicInfo", "age", parseInt(e.target.value))}
+                                                className="w-full"
+                                                error={(() => {
+                                                    const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
+                                                    if (!role) return false;
+                                                    const age = displayCharacter.basicInfo.age || 0;
+                                                    return age < role.minAge || age > role.maxAge;
+                                                })()}
+                                            />
                                             {(() => {
                                                 const age = displayCharacter.basicInfo.age || 0;
                                                 const role = professions.find(p => p.id === displayCharacter.basicInfo.role);
@@ -914,31 +902,18 @@ export default function CharacterConfiguration() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    id="gender"
-                                                    value={displayCharacter.basicInfo.gender || ""}
-                                                    onChange={(e) => handleInputChange("basicInfo", "gender", e.target.value)}
-                                                    className="flex-1"
-                                                />
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={handleGenerateGender}
-                                                                className="shrink-0 h-9 w-9"
-                                                            >
-                                                                <Wand2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Generate Gender</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
+                                            <Select
+                                                value={displayCharacter.basicInfo.gender?.toLowerCase() === 'female' ? 'Female' : (displayCharacter.basicInfo.gender?.toLowerCase() === 'male' ? 'Male' : displayCharacter.basicInfo.gender || "")}
+                                                onValueChange={(val) => handleInputChange("basicInfo", "gender", val)}
+                                            >
+                                                <SelectTrigger id="gender">
+                                                    <SelectValue placeholder="Select Gender" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Male">Male</SelectItem>
+                                                    <SelectItem value="Female">Female</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="origin-country" className="type-ui-label text-muted-foreground">Country of Origin</Label>
@@ -992,6 +967,26 @@ export default function CharacterConfiguration() {
                                                 }}
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="origin-town" className="type-ui-label text-muted-foreground">Town</Label>
+                                            <Input
+                                                id="origin-town"
+                                                value={displayCharacter.basicInfo.originLocation?.town || ""}
+                                                onChange={(e) => {
+                                                    const currentLoc = displayCharacter.basicInfo.originLocation || {};
+                                                    handleInputChange("basicInfo", "originLocation", { ...currentLoc, town: e.target.value });
+                                                }}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Background Information */}
+                                <Card className="border-border shadow-sm">
+                                    <div className="pt-6 px-6 mb-2">
+                                        <SectionHeader title="Background Information" className="mb-0 mt-0" />
+                                    </div>
+                                    <CardContent className="space-y-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="role" className="type-ui-label text-muted-foreground">Profession</Label>
                                             <Select
