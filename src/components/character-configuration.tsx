@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle, Info } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -514,6 +514,7 @@ export default function CharacterConfiguration() {
                         agreeableness: data.character.personality.agreeableness || 0,
                         neuroticism: data.character.personality.neuroticism || 0,
                     },
+                    generationMeta: data.generatedBioState
                 };
 
                 if (localCharacter && localCharacter.id) {
@@ -783,15 +784,30 @@ export default function CharacterConfiguration() {
                                         <span className="text-lg">×</span>
                                     </Button>
 
-                                    <Button onClick={handleGenerateCharacter} disabled={isGeneratingCharacter} className="ml-2 gap-2 shadow-sm relative overflow-hidden group">
-                                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                                        <Wand2 className="w-4 h-4" />
-                                        {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
-                                    </Button>
-                                    <Button variant="outline" onClick={() => setIsProceduralGeneratorOpen(true)} className="ml-2 gap-2 shadow-sm">
-                                        <Wand2 className="w-4 h-4" />
-                                        Advanced Generator
-                                    </Button>
+                                    <div className="flex gap-1 ml-2">
+                                        <Button onClick={handleGenerateCharacter} disabled={isGeneratingCharacter} className="gap-2 shadow-sm relative overflow-hidden group rounded-r-none border-r border-r-primary-foreground/20">
+                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                            <Wand2 className="w-4 h-4" />
+                                            {isGeneratingCharacter ? 'Generating...' : 'Generate Character'}
+                                        </Button>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setIsProceduralGeneratorOpen(true)}
+                                                        className="shadow-sm rounded-l-none px-3"
+                                                        disabled={!displayCharacter.generationMeta}
+                                                    >
+                                                        <Info className="w-4 h-4 text-muted-foreground" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>View Generation Report</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1286,16 +1302,6 @@ export default function CharacterConfiguration() {
                     open={isProceduralGeneratorOpen}
                     onOpenChange={setIsProceduralGeneratorOpen}
                     characterId={displayCharacter.id}
-                    onApply={(data) => {
-                        if (data.name) handleInputChange("basicInfo", "name", data.name);
-                        if (data.age) handleInputChange("basicInfo", "age", data.age);
-                        if (data.gender) handleInputChange("basicInfo", "gender", data.gender);
-                        if (data.background) handleInputChange("basicInfo", "background", data.background);
-                        if (data.role) handleInputChange("basicInfo", "role", data.role);
-                        if (data.originLocation) handleInputChange("basicInfo", "originLocation", data.originLocation);
-                        isDirtyRef.current = true;
-                        setSaveStatus('saving');
-                    }}
                 />
             )}
         </div >
