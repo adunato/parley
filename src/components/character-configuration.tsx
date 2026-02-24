@@ -627,7 +627,15 @@ export default function CharacterConfiguration() {
 
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
-                                    const genRelIndex = placeholderRelationships.findIndex((r: any) => !r._used && r.type === attr.name);
+                                    const genRelIndex = placeholderRelationships.findIndex((r: any) => {
+                                        if (r._used) return false;
+                                        const rType = (r.type || '').toLowerCase();
+                                        const expectedObj = attr.name.toLowerCase();
+                                        const expectedTypeName = typeName.toLowerCase();
+                                        return rType === expectedObj ||
+                                            rType === expectedTypeName ||
+                                            (isSiblingCat && rType.includes('sibling'));
+                                    });
                                     let relStats = {
                                         satisfaction: 50,
                                         commitment: 50,
