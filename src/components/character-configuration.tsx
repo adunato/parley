@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle, Info } from "lucide-react"
+import { Users, User, Plus, Book, Brain, Heart, Settings, Sparkles, Type, ChevronDown, Upload, Wand2, Loader2, CheckCircle, AlertCircle, Info, X } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
     Accordion,
@@ -1315,21 +1315,27 @@ export default function CharacterConfiguration() {
                                         {displayCharacter.relationships.length > 0 ? (
                                             <Accordion type="single" collapsible className="w-full">
                                                 {displayCharacter.relationships.map((relationship) => {
-                                                    const persona = playerPersonas.find(p => p.id === relationship.targetId);
+                                                    const targetEntity = relationship.type === 'persona'
+                                                        ? playerPersonas.find(p => p.id === relationship.targetId)
+                                                        : characters.find(c => c.id === relationship.targetId);
+                                                    const targetName = targetEntity?.basicInfo.name || "Unknown Entity";
+
                                                     return (
                                                         <AccordionItem key={relationship.targetId} value={relationship.targetId}>
-                                                            <AccordionTrigger>
+                                                            <AccordionTrigger className="hover:no-underline py-3">
                                                                 <div className="flex items-center justify-between w-full pr-4">
-                                                                    <span>{persona?.basicInfo.name || "Unknown Persona"}</span>
+                                                                    <span className="font-medium text-foreground">{targetName}</span>
                                                                     <Button
                                                                         variant="destructive"
-                                                                        size="sm"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-md hover:bg-destructive/90 transition-colors"
                                                                         onClick={(e) => {
+                                                                            e.preventDefault();
                                                                             e.stopPropagation(); // Prevent the accordion from toggling
                                                                             handleDeleteRelationship(displayCharacter.id, relationship.targetId);
                                                                         }}
                                                                     >
-                                                                        Delete
+                                                                        <X className="h-4 w-4" />
                                                                     </Button>
                                                                 </div>
                                                             </AccordionTrigger>
