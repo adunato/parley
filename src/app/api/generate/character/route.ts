@@ -8,7 +8,7 @@ import { BioData, SymbolicMapping, BioGenerationRequest, BioState } from '@/lib/
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings } = body;
+    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes } = body;
 
     // --- SEQUENCE STEP 1 & 2: Deterministic Simulation via BioMachine ---
     let generatedBioState: BioState | null = null;
@@ -78,6 +78,40 @@ ${Array.from(generatedBioState.tags).join(', ')}
       combinedContext._simulatedLifePath = bioPromptSupplement;
     }
 
+    const placeholderRequirements: { type: string, count: number }[] = [];
+    if (gameAttributes && combinedContext.mappedAttributes) {
+      Object.values(combinedContext.mappedAttributes).forEach((attributeId) => {
+        const attr = gameAttributes.find((a: any) => a.id === attributeId);
+        if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+          // If it's a sibling category we could map it to 'sibling' but using attr.name works too as a type hint for the LLM
+          placeholderRequirements.push({ type: attr.name, count: attr.relatedCharacterCount });
+        }
+      });
+    }
+
+    if (placeholderRequirements.length > 0) {
+      const requirementsList = placeholderRequirements.map(req => `- ${req.count}x "${req.type}"`).join('\n');
+      combinedContext._placeholderRequests = `
+--- REQUIRED PLACEHOLDER RELATIONSHIPS ---
+You will be generating relationship statistics for the following placeholder characters which will be instantiated alongside this character:
+${requirementsList}
+
+CRITICAL INSTRUCTION: You MUST generate a new top-level JSON array field called \`placeholderRelationships\` alongside \`basicInfo\` and \`personality\`.
+This array MUST contain exactly one object for every single placeholder requested above (e.g., if "2x Sibling" is requested, output 2 sibling objects).
+Each object MUST have the following structure:
+{
+  "type": string, // The type of relation (e.g. "${placeholderRequirements[0]?.type}")
+  "satisfaction": number, // 0 (active animosity) to 100 (complete satisfaction)
+  "commitment": number, // 0 to 100
+  "intimacy": number, // 0 to 100
+  "trust": number, // 0 to 100
+  "passion": number, // 0 to 100
+  "description": string // A detailed 2-3 sentence narrative explaining the nuanced history and dynamics of this specific relationship. Avoid generic values like exactly 50.
+}
+------------------------------------------
+`;
+    }
+
     const prompt = generateCharacterPrompt(characterDescription, worldDescription, aiStyle, combinedContext);
     const parsedResult = await generateJSON(prompt, generationModel);
 
@@ -99,7 +133,11 @@ ${Array.from(generatedBioState.tags).join(', ')}
       tags: Array.from(generatedBioState.tags)
     } : null;
 
-    return NextResponse.json({ character: character, generatedBioState: serializableBioState });
+    return NextResponse.json({
+      character: character,
+      generatedBioState: serializableBioState,
+      placeholderRelationships: parsedResult.placeholderRelationships || []
+    });
   } catch (error) {
     console.error('Error generating character data:', error);
     return NextResponse.json({ error: 'Failed to generate character data' }, { status: 500 });

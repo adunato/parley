@@ -455,7 +455,7 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; } = {};
             const context: any = {};
             const info = localCharacter ? localCharacter.basicInfo : {} as any;
 
@@ -526,6 +526,7 @@ export default function CharacterConfiguration() {
                 phaseConfig: bioStoreData.phaseConfig
             };
             body.symbolicMappings = bioStoreData.symbolicMappings;
+            body.gameAttributes = gameAttributes;
 
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
@@ -556,6 +557,8 @@ export default function CharacterConfiguration() {
                     },
                     generationMeta: data.generatedBioState
                 };
+
+                const placeholderRelationships = data.placeholderRelationships || [];
 
                 if (localCharacter && localCharacter.id) {
                     const mappedAttrs = generatedCharacterData.basicInfo.mappedAttributes;
@@ -618,16 +621,34 @@ export default function CharacterConfiguration() {
 
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
-                                    newRelationships.push({
-                                        characterId: localCharacter.id,
-                                        targetId: newPlaceholder.id,
-                                        type: typeName,
+                                    const genRelIndex = placeholderRelationships.findIndex((r: any) => !r._used && r.type === attr.name);
+                                    let relStats = {
                                         satisfaction: 50,
                                         commitment: 50,
                                         intimacy: 50,
                                         trust: 50,
                                         passion: 50,
-                                        description: `Auto-generated ${typeName} relationship.`,
+                                        description: `Auto-generated ${typeName} relationship.`
+                                    };
+
+                                    if (genRelIndex !== -1) {
+                                        const genRel = placeholderRelationships[genRelIndex];
+                                        genRel._used = true;
+                                        relStats = {
+                                            satisfaction: genRel.satisfaction ?? 50,
+                                            commitment: genRel.commitment ?? 50,
+                                            intimacy: genRel.intimacy ?? 50,
+                                            trust: genRel.trust ?? 50,
+                                            passion: genRel.passion ?? 50,
+                                            description: genRel.description || relStats.description
+                                        };
+                                    }
+
+                                    newRelationships.push({
+                                        characterId: localCharacter.id,
+                                        targetId: newPlaceholder.id,
+                                        type: typeName,
+                                        ...relStats,
                                         chat_summaries: []
                                     });
                                 }
