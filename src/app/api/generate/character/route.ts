@@ -117,7 +117,7 @@ ${Array.from(generatedBioState.tags).join(', ')}
       const requirementsListLines: string[] = [];
       placeholderRequirements.forEach(req => {
         for (let i = 0; i < req.count; i++) {
-          requirementsListLines.push(`- 1x "${req.name}" (ID: ${req.attributeId}_${i})`);
+          requirementsListLines.push(`- 1x "${req.name}" (ID: ${req.attributeId})`);
         }
       });
       const requirementsList = requirementsListLines.join('\n');

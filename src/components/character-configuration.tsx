@@ -625,10 +625,9 @@ export default function CharacterConfiguration() {
                                     };
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
-                                    const expectedAttributeId = `${attr.id}_${i}`;
                                     const genRelIndex = placeholderRelationships.findIndex((r: any) => {
                                         if (r._used) return false;
-                                        return r.attributeId === expectedAttributeId;
+                                        return r.attributeId === attr.id;
                                     });
                                     let relStats = {
                                         satisfaction: 50,
