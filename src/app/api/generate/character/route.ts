@@ -78,7 +78,7 @@ ${Array.from(generatedBioState.tags).join(', ')}
       combinedContext._simulatedLifePath = bioPromptSupplement;
     }
 
-    const placeholderRequirements: { type: string, count: number }[] = [];
+    const placeholderRequirements: { attributeId: string, count: number, name: string }[] = [];
     if (gameAttributes && combinedContext.mappedAttributes) {
       // Create a human-readable version of mappedAttributes for the LLM
       const readableMappedAttributes: Record<string, string> = {};
@@ -89,8 +89,11 @@ ${Array.from(generatedBioState.tags).join(', ')}
           readableMappedAttributes[category] = attr.name;
 
           if (attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
-            // If it's a sibling category we could map it to 'sibling' but using attr.name works too as a type hint for the LLM
-            placeholderRequirements.push({ type: attr.name, count: attr.relatedCharacterCount });
+            placeholderRequirements.push({
+              attributeId: attr.id,
+              count: attr.relatedCharacterCount,
+              name: attr.name
+            });
           }
         } else {
           // Fallback if gameAttribute is missing but we have the ID somehow
@@ -103,7 +106,7 @@ ${Array.from(generatedBioState.tags).join(', ')}
     }
 
     if (placeholderRequirements.length > 0) {
-      const requirementsList = placeholderRequirements.map(req => `- ${req.count}x "${req.type}"`).join('\n');
+      const requirementsList = placeholderRequirements.map(req => `- ${req.count}x "${req.name}" (ID: ${req.attributeId})`).join('\n');
       combinedContext._placeholderRequests = `
 --- REQUIRED PLACEHOLDER RELATIONSHIPS ---
 You will be generating relationship statistics for the following placeholder characters which will be instantiated alongside this character:
@@ -113,7 +116,7 @@ CRITICAL INSTRUCTION: You MUST generate a new top-level JSON array field called 
 This array MUST contain exactly one object for every single placeholder requested above (e.g., if "2x Sibling" is requested, output 2 sibling objects).
 Each object MUST have the following structure:
 {
-  "type": string, // The type of relation (e.g. "${placeholderRequirements[0]?.type}")
+  "attributeId": string, // MUST exactly match the ID provided above (e.g. "${placeholderRequirements[0]?.attributeId}")
   "satisfaction": number, // 0 (active animosity) to 100 (complete satisfaction)
   "commitment": number, // 0 to 100
   "intimacy": number, // 0 to 100

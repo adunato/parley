@@ -629,12 +629,7 @@ export default function CharacterConfiguration() {
 
                                     const genRelIndex = placeholderRelationships.findIndex((r: any) => {
                                         if (r._used) return false;
-                                        const rType = (r.type || '').toLowerCase();
-                                        const expectedObj = attr.name.toLowerCase();
-                                        const expectedTypeName = typeName.toLowerCase();
-                                        return rType === expectedObj ||
-                                            rType === expectedTypeName ||
-                                            (isSiblingCat && rType.includes('sibling'));
+                                        return r.attributeId === attr.id;
                                     });
                                     let relStats = {
                                         satisfaction: 50,
