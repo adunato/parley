@@ -583,12 +583,14 @@ export default function CharacterConfiguration() {
                 const placeholderRelationships = data.placeholderRelationships || [];
 
                 if (localCharacter && localCharacter.id) {
-                    const mappedAttrs = generatedCharacterData.basicInfo.mappedAttributes;
+                    // Use localCharacter's mappedAttributes, not the LLM response, to preserve UUID values.
+                    const mappedAttrs = localCharacter.basicInfo.mappedAttributes;
                     const newRelationships: Relationship[] = [];
 
-                    if (mappedAttrs) {
-                        let currentMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
+                    // Re-derive IDs using same seed so nextId matches what pendingPlaceholders sent to the LLM.
+                    let currentMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
 
+                    if (mappedAttrs) {
                         Object.values(mappedAttrs).forEach(attrId => {
                             const attr = gameAttributes.find((a: any) => a.id === attrId);
                             if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
