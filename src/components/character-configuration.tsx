@@ -455,7 +455,7 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; gameAttributeCategories?: any; } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; gameAttributeCategories?: any; pendingPlaceholders?: any; } = {};
             const context: any = {};
             const info = localCharacter ? localCharacter.basicInfo : {} as any;
 
@@ -528,6 +528,27 @@ export default function CharacterConfiguration() {
             body.symbolicMappings = bioStoreData.symbolicMappings;
             body.gameAttributes = gameAttributes;
             body.gameAttributeCategories = gameAttributeCategories;
+
+            const pendingPlaceholders: { id: string, name: string, categoryId: string, attributeId: string }[] = [];
+            let tempMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
+
+            if (info.mappedAttributes) {
+                Object.entries(info.mappedAttributes).forEach(([categoryId, attrId]) => {
+                    const attr = gameAttributes.find((a: any) => a.id === attrId);
+                    if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+                        for (let i = 0; i < attr.relatedCharacterCount; i++) {
+                            tempMaxId++;
+                            pendingPlaceholders.push({
+                                id: tempMaxId.toString(),
+                                name: attr.name,
+                                categoryId: categoryId,
+                                attributeId: attr.id
+                            });
+                        }
+                    }
+                });
+            }
+            body.pendingPlaceholders = pendingPlaceholders;
 
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
@@ -625,10 +646,7 @@ export default function CharacterConfiguration() {
                                     };
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
-                                    const genRelIndex = placeholderRelationships.findIndex((r: any) => {
-                                        if (r._used) return false;
-                                        return r.attributeId === attr.id;
-                                    });
+                                    const genRelIndex = placeholderRelationships.findIndex((r: any) => r.characterId === nextId);
                                     let relStats = {
                                         satisfaction: 50,
                                         commitment: 50,
@@ -640,7 +658,6 @@ export default function CharacterConfiguration() {
 
                                     if (genRelIndex !== -1) {
                                         const genRel = placeholderRelationships[genRelIndex];
-                                        genRel._used = true;
                                         relStats = {
                                             satisfaction: genRel.satisfaction ?? 50,
                                             commitment: genRel.commitment ?? 50,

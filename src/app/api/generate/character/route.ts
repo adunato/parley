@@ -8,7 +8,7 @@ import { BioData, SymbolicMapping, BioGenerationRequest, BioState } from '@/lib/
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes, gameAttributeCategories } = body;
+    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes, gameAttributeCategories, pendingPlaceholders } = body;
 
     // --- SEQUENCE STEP 1 & 2: Deterministic Simulation via BioMachine ---
     let generatedBioState: BioState | null = null;
@@ -113,13 +113,18 @@ ${Array.from(generatedBioState.tags).join(', ')}
       combinedContext.mappedAttributes = readableMappedAttributes;
     }
 
-    if (placeholderRequirements.length > 0) {
-      const requirementsListLines: string[] = [];
-      placeholderRequirements.forEach(req => {
-        for (let i = 0; i < req.count; i++) {
-          requirementsListLines.push(`- 1x "${req.name}" (ID: ${req.attributeId})`);
+    if (pendingPlaceholders && pendingPlaceholders.length > 0) {
+      const requirementsListLines = pendingPlaceholders.map((p: any) => {
+        let reqName = p.name;
+        if (gameAttributeCategories) {
+          const categoryDef = gameAttributeCategories.find((c: any) => c.id === p.categoryId);
+          if (categoryDef && categoryDef.name.toLowerCase().includes('sibling')) {
+            reqName = "Sibling";
+          }
         }
+        return `- 1x "${reqName}" (Character ID: ${p.id})`;
       });
+
       const requirementsList = requirementsListLines.join('\n');
       combinedContext._placeholderRequests = `
 --- REQUIRED PLACEHOLDER RELATIONSHIPS ---
@@ -130,7 +135,7 @@ CRITICAL INSTRUCTION: You MUST generate a new top-level JSON array field called 
 This array MUST contain exactly one object for every single placeholder requested above (e.g., if "2x Sibling" is requested, output 2 sibling objects).
 Each object MUST have the following structure:
 {
-  "attributeId": string, // MUST exactly match the ID provided above (e.g. "${placeholderRequirements[0]?.attributeId}")
+  "characterId": string, // MUST exactly match the Character ID provided above (e.g. "${pendingPlaceholders[0]?.id}")
   "satisfaction": number, // 0 (active animosity) to 100 (complete satisfaction)
   "commitment": number, // 0 to 100
   "intimacy": number, // 0 to 100
