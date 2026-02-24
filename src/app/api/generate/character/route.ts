@@ -8,7 +8,7 @@ import { BioData, SymbolicMapping, BioGenerationRequest, BioState } from '@/lib/
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes } = body;
+    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes, gameAttributeCategories } = body;
 
     // --- SEQUENCE STEP 1 & 2: Deterministic Simulation via BioMachine ---
     let generatedBioState: BioState | null = null;
@@ -83,21 +83,29 @@ ${Array.from(generatedBioState.tags).join(', ')}
       // Create a human-readable version of mappedAttributes for the LLM
       const readableMappedAttributes: Record<string, string> = {};
 
-      Object.entries(combinedContext.mappedAttributes).forEach(([category, attributeId]) => {
+      Object.entries(combinedContext.mappedAttributes).forEach(([categoryId, attributeId]) => {
         const attr = gameAttributes.find((a: any) => a.id === attributeId);
         if (attr) {
-          readableMappedAttributes[category] = attr.name;
+          readableMappedAttributes[categoryId] = attr.name;
 
           if (attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+            let reqName = attr.name;
+            if (gameAttributeCategories) {
+              const categoryDef = gameAttributeCategories.find((c: any) => c.id === categoryId);
+              if (categoryDef && categoryDef.name.toLowerCase().includes('sibling')) {
+                reqName = "Sibling";
+              }
+            }
+
             placeholderRequirements.push({
               attributeId: attr.id,
               count: attr.relatedCharacterCount,
-              name: attr.name
+              name: reqName
             });
           }
         } else {
           // Fallback if gameAttribute is missing but we have the ID somehow
-          readableMappedAttributes[category] = String(attributeId);
+          readableMappedAttributes[categoryId] = String(attributeId);
         }
       });
 

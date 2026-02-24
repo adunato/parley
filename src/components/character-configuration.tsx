@@ -455,7 +455,7 @@ export default function CharacterConfiguration() {
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
         try {
-            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; } = {};
+            const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; gameAttributeCategories?: any; } = {};
             const context: any = {};
             const info = localCharacter ? localCharacter.basicInfo : {} as any;
 
@@ -527,6 +527,7 @@ export default function CharacterConfiguration() {
             };
             body.symbolicMappings = bioStoreData.symbolicMappings;
             body.gameAttributes = gameAttributes;
+            body.gameAttributeCategories = gameAttributeCategories;
 
             if (prompt !== undefined && prompt !== '') {
                 body.characterDescription = prompt;
