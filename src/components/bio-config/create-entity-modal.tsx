@@ -32,6 +32,8 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
     const [description, setDescription] = useState("");
     const [minAge, setMinAge] = useState(16);
     const [maxAge, setMaxAge] = useState(75);
+    const [relatedCount, setRelatedCount] = useState<number>(0);
+    const [shareLastName, setShareLastName] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     // Populate category options
@@ -47,6 +49,8 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
             setDescription("");
             setMinAge(16);
             setMaxAge(75);
+            setRelatedCount(0);
+            setShareLastName(false);
             setError(null);
         }
     }, [open, defaultCategory]);
@@ -102,7 +106,9 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
                 id: uuidv4(),
                 categoryId,
                 name: name.trim(),
-                description: description.trim()
+                description: description.trim(),
+                relatedCharacterCount: relatedCount,
+                shareLastName: shareLastName,
             };
             addGameAttribute(newAttr);
             onCreated(categoryId, newAttr.id);
@@ -172,6 +178,32 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
                                     onChange={(e) => setMaxAge(parseInt(e.target.value) || 0)}
                                     min={0}
                                 />
+                            </div>
+                        </div>
+                    )}
+
+                    {categoryId !== 'profession' && categoryId !== '' && (
+                        <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                            <div className="space-y-2">
+                                <Label>Placeholder Characters</Label>
+                                <Input
+                                    type="number"
+                                    value={relatedCount}
+                                    onChange={(e) => setRelatedCount(parseInt(e.target.value) || 0)}
+                                    min={0}
+                                />
+                                <div className="text-xs text-muted-foreground">Number of characters to auto-generate for this relation.</div>
+                            </div>
+                            <div className="space-y-2 pt-6">
+                                <label className="flex items-center gap-2 text-sm font-medium leading-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={shareLastName}
+                                        onChange={(e) => setShareLastName(e.target.checked)}
+                                        className="h-4 w-4 bg-transparent border-primary/50"
+                                    />
+                                    Share Last Name
+                                </label>
                             </div>
                         </div>
                     )}

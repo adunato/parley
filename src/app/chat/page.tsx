@@ -153,7 +153,7 @@ export default function ChatPage() {
                 return;
             }
 
-            const existingRelationship = characterFromStore.relationships.find(rel => rel.personaId === selectedChatPersona.id);
+            const existingRelationship = characterFromStore.relationships.find(rel => rel.targetId === selectedChatPersona.id && rel.type === 'persona');
 
             if (!existingRelationship) {
                 try {
@@ -173,7 +173,7 @@ export default function ChatPage() {
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        const newRelationship = { ...data.relationship, characterId: characterFromStore.id, personaId: selectedChatPersona.id };
+                        const newRelationship = { ...data.relationship, characterId: characterFromStore.id, targetId: selectedChatPersona.id, type: 'persona' };
                         const updatedCharacter = { ...characterFromStore, relationships: [...characterFromStore.relationships, newRelationship] };
                         updateCharacter(updatedCharacter);
                         setCurrentRelationship(newRelationship);
@@ -262,7 +262,7 @@ export default function ChatPage() {
             const newSummary = { summary: sceneSummaryText, timestamp: new Date() };
 
             const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                if (rel.personaId === selectedChatPersona.id) {
+                if (rel.targetId === selectedChatPersona.id && rel.type === 'persona') {
                     // Add Summary
                     const existingSummaries = rel.chat_summaries || [];
                     const updatedSummaries = [...existingSummaries, newSummary];
@@ -296,7 +296,7 @@ export default function ChatPage() {
             updateCharacter(updatedCharacter);
 
             // Update local state to reflect changes immediately if needed, though clearChat usually resets UI
-            const newRel = updatedRelationships.find(r => r.personaId === selectedChatPersona.id);
+            const newRel = updatedRelationships.find(r => r.targetId === selectedChatPersona.id && r.type === 'persona');
             if (newRel) setCurrentRelationship(newRel);
         }
 

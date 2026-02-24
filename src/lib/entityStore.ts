@@ -51,10 +51,7 @@ export const useEntityStore = create<EntityStore>()(
     (set, get) => ({
       characters: [],
       addCharacter: (character) => set((state) => ({
-        characters: [...state.characters, {
-          ...character,
-          relationships: []
-        }]
+        characters: [...state.characters, character]
       })),
       updateCharacter: (updatedCharacter) => {
         set((state) => ({

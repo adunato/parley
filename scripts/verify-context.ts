@@ -18,7 +18,8 @@ const mockPersona: Persona = {
 
 const mockRelationship: Relationship = {
     characterId: 'char1',
-    personaId: 'persona1',
+    targetId: 'persona1',
+    type: 'persona',
     // High satisfaction to trigger "High" description
     satisfaction: 90,
     commitment: 50,

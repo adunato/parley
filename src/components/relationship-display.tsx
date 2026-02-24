@@ -59,6 +59,11 @@ export default function RelationshipDisplay({ characterName, relationship, cumul
         <Card className="w-[550px] h-fit max-h-[80vh] overflow-y-auto border-border shadow-sm">
             <CardHeader className="pb-2">
                 <CardTitle className="type-h4">Relationship with {characterName}</CardTitle>
+                {relationship.type && (
+                    <CardDescription className="capitalize font-medium text-primary mt-1">
+                        Type: {relationship.type.replace("_", " ")}
+                    </CardDescription>
+                )}
             </CardHeader>
             <CardContent className="space-y-6">
                 <p className="type-body-sm text-muted-foreground mb-4">Emotional and interpersonal dynamics overview</p>

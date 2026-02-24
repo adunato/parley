@@ -8,7 +8,7 @@ import { BioData, SymbolicMapping, BioGenerationRequest, BioState } from '@/lib/
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings } = body;
+    const { characterDescription, worldDescription, aiStyle, generationModel, existingContext, bioData, symbolicMappings, gameAttributes, gameAttributeCategories, pendingPlaceholders } = body;
 
     // --- SEQUENCE STEP 1 & 2: Deterministic Simulation via BioMachine ---
     let generatedBioState: BioState | null = null;
@@ -78,6 +78,75 @@ ${Array.from(generatedBioState.tags).join(', ')}
       combinedContext._simulatedLifePath = bioPromptSupplement;
     }
 
+    const placeholderRequirements: { attributeId: string, count: number, name: string }[] = [];
+    if (gameAttributes && combinedContext.mappedAttributes) {
+      // Create a human-readable version of mappedAttributes for the LLM
+      const readableMappedAttributes: Record<string, string> = {};
+
+      Object.entries(combinedContext.mappedAttributes).forEach(([categoryId, attributeId]) => {
+        const attr = gameAttributes.find((a: any) => a.id === attributeId);
+        if (attr) {
+          readableMappedAttributes[categoryId] = attr.name;
+
+          if (attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+            let reqName = attr.name;
+            if (gameAttributeCategories) {
+              const categoryDef = gameAttributeCategories.find((c: any) => c.id === categoryId);
+              if (categoryDef && categoryDef.name.toLowerCase().includes('sibling')) {
+                reqName = "Sibling";
+              }
+            }
+
+            placeholderRequirements.push({
+              attributeId: attr.id,
+              count: attr.relatedCharacterCount,
+              name: reqName
+            });
+          }
+        } else {
+          // Fallback if gameAttribute is missing but we have the ID somehow
+          readableMappedAttributes[categoryId] = String(attributeId);
+        }
+      });
+
+      // Override the mappedAttributes in the combinedContext so the LLM sees names, not UUIDs
+      combinedContext.mappedAttributes = readableMappedAttributes;
+    }
+
+    if (pendingPlaceholders && pendingPlaceholders.length > 0) {
+      const requirementsListLines = pendingPlaceholders.map((p: any) => {
+        let reqName = p.name;
+        if (gameAttributeCategories) {
+          const categoryDef = gameAttributeCategories.find((c: any) => c.id === p.categoryId);
+          if (categoryDef && categoryDef.name.toLowerCase().includes('sibling')) {
+            reqName = "Sibling";
+          }
+        }
+        return `- 1x "${reqName}" (Character ID: ${p.id})`;
+      });
+
+      const requirementsList = requirementsListLines.join('\n');
+      combinedContext._placeholderRequests = `
+--- REQUIRED PLACEHOLDER RELATIONSHIPS ---
+You will be generating relationship statistics for the following placeholder characters which will be instantiated alongside this character:
+${requirementsList}
+
+CRITICAL INSTRUCTION: You MUST generate a new top-level JSON array field called \`placeholderRelationships\` alongside \`basicInfo\` and \`personality\`.
+This array MUST contain exactly one object for every single placeholder requested above (e.g., if "2x Sibling" is requested, output 2 sibling objects).
+Each object MUST have the following structure:
+{
+  "characterId": string, // MUST exactly match the Character ID provided above (e.g. "${pendingPlaceholders[0]?.id}")
+  "satisfaction": number, // 0 (active animosity) to 100 (complete satisfaction)
+  "commitment": number, // 0 to 100
+  "intimacy": number, // 0 to 100
+  "trust": number, // 0 to 100
+  "passion": number, // 0 to 100
+  "description": string // A detailed 2-3 sentence narrative explaining the nuanced history and dynamics of this specific relationship. Avoid generic values like exactly 50.
+}
+------------------------------------------
+`;
+    }
+
     const prompt = generateCharacterPrompt(characterDescription, worldDescription, aiStyle, combinedContext);
     const parsedResult = await generateJSON(prompt, generationModel);
 
@@ -87,7 +156,8 @@ ${Array.from(generatedBioState.tags).join(', ')}
       basicInfo: {
         ...parsedResult.basicInfo,
         // Guarantee the mapped attributes determined in Step 3 are preserved
-        mappedAttributes: existingContext.mappedAttributes
+        mappedAttributes: existingContext.mappedAttributes,
+        role: existingContext.role || (existingContext.mappedAttributes && existingContext.mappedAttributes['profession']) || parsedResult.basicInfo.role
       },
       personality: parsedResult.personality,
       idealMatch: parsedResult.idealMatch,
@@ -99,7 +169,11 @@ ${Array.from(generatedBioState.tags).join(', ')}
       tags: Array.from(generatedBioState.tags)
     } : null;
 
-    return NextResponse.json({ character: character, generatedBioState: serializableBioState });
+    return NextResponse.json({
+      character: character,
+      generatedBioState: serializableBioState,
+      placeholderRelationships: parsedResult.placeholderRelationships || []
+    });
   } catch (error) {
     console.error('Error generating character data:', error);
     return NextResponse.json({ error: 'Failed to generate character data' }, { status: 500 });

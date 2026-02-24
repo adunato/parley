@@ -58,7 +58,7 @@ export function CharacterCard({ character, locationId }: CharacterCardProps) {
     const currentPersonaId = state.currentPersonaId || (playerPersonas.length > 0 ? playerPersonas[0].id : null);
 
     const relationship = currentPersonaId
-        ? character.relationships.find(r => r.personaId === currentPersonaId)
+        ? character.relationships.find(r => r.targetId === currentPersonaId && r.type === 'persona')
         : undefined;
 
     return (

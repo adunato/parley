@@ -45,7 +45,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
     } else if (selectedChatCharacter && selectedChatPersona) {
       // Check if relationship exists in the character object (it might have been updated elsewhere)
       const existingRel = selectedChatCharacter.relationships.find(
-        r => r.characterId === selectedChatCharacter.id && r.personaId === selectedChatPersona.id
+        r => r.characterId === selectedChatCharacter.id && r.targetId === selectedChatPersona.id && r.type === 'persona'
       );
 
       if (existingRel) {
@@ -55,7 +55,8 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         console.log("Relationship missing - creating default 'Unknown' relationship");
         const defaultRelationship: Relationship = {
           characterId: selectedChatCharacter.id,
-          personaId: selectedChatPersona.id,
+          targetId: selectedChatPersona.id,
+          type: 'persona',
           satisfaction: 50,
           commitment: 50,
           intimacy: 50,
