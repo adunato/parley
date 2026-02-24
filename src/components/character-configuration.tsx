@@ -596,7 +596,13 @@ export default function CharacterConfiguration() {
 
                                     const placeholderName = identity.firstName + ' ' + lastName;
 
-                                    const role = professions.length > 0 ? professions[Math.floor(Math.random() * professions.length)].id : '';
+                                    const validProfessions = professions.filter((p: any) => {
+                                        const minAge = p.minAge || 0;
+                                        const maxAge = p.maxAge || 1000;
+                                        return newAge >= minAge && newAge <= maxAge;
+                                    });
+
+                                    const role = validProfessions.length > 0 ? validProfessions[Math.floor(Math.random() * validProfessions.length)].id : '';
 
                                     const newPlaceholder: Character = {
                                         id: nextId,
