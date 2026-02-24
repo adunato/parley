@@ -114,7 +114,13 @@ ${Array.from(generatedBioState.tags).join(', ')}
     }
 
     if (placeholderRequirements.length > 0) {
-      const requirementsList = placeholderRequirements.map(req => `- ${req.count}x "${req.name}" (ID: ${req.attributeId})`).join('\n');
+      const requirementsListLines: string[] = [];
+      placeholderRequirements.forEach(req => {
+        for (let i = 0; i < req.count; i++) {
+          requirementsListLines.push(`- 1x "${req.name}" (ID: ${req.attributeId}_${i})`);
+        }
+      });
+      const requirementsList = requirementsListLines.join('\n');
       combinedContext._placeholderRequests = `
 --- REQUIRED PLACEHOLDER RELATIONSHIPS ---
 You will be generating relationship statistics for the following placeholder characters which will be instantiated alongside this character:

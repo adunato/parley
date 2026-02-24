@@ -623,14 +623,12 @@ export default function CharacterConfiguration() {
                                         idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         relationships: [],
                                     };
-
-                                    addCharacter(newPlaceholder);
-
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
+                                    const expectedAttributeId = `${attr.id}_${i}`;
                                     const genRelIndex = placeholderRelationships.findIndex((r: any) => {
                                         if (r._used) return false;
-                                        return r.attributeId === attr.id;
+                                        return r.attributeId === expectedAttributeId;
                                     });
                                     let relStats = {
                                         satisfaction: 50,
@@ -653,6 +651,16 @@ export default function CharacterConfiguration() {
                                             description: genRel.description || relStats.description
                                         };
                                     }
+
+                                    newPlaceholder.relationships.push({
+                                        characterId: newPlaceholder.id,
+                                        targetId: localCharacter.id,
+                                        type: typeName,
+                                        ...relStats,
+                                        chat_summaries: []
+                                    });
+
+                                    addCharacter(newPlaceholder);
 
                                     newRelationships.push({
                                         characterId: localCharacter.id,
