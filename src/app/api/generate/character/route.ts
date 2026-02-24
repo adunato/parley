@@ -80,13 +80,26 @@ ${Array.from(generatedBioState.tags).join(', ')}
 
     const placeholderRequirements: { type: string, count: number }[] = [];
     if (gameAttributes && combinedContext.mappedAttributes) {
-      Object.values(combinedContext.mappedAttributes).forEach((attributeId) => {
+      // Create a human-readable version of mappedAttributes for the LLM
+      const readableMappedAttributes: Record<string, string> = {};
+
+      Object.entries(combinedContext.mappedAttributes).forEach(([category, attributeId]) => {
         const attr = gameAttributes.find((a: any) => a.id === attributeId);
-        if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
-          // If it's a sibling category we could map it to 'sibling' but using attr.name works too as a type hint for the LLM
-          placeholderRequirements.push({ type: attr.name, count: attr.relatedCharacterCount });
+        if (attr) {
+          readableMappedAttributes[category] = attr.name;
+
+          if (attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+            // If it's a sibling category we could map it to 'sibling' but using attr.name works too as a type hint for the LLM
+            placeholderRequirements.push({ type: attr.name, count: attr.relatedCharacterCount });
+          }
+        } else {
+          // Fallback if gameAttribute is missing but we have the ID somehow
+          readableMappedAttributes[category] = String(attributeId);
         }
       });
+
+      // Override the mappedAttributes in the combinedContext so the LLM sees names, not UUIDs
+      combinedContext.mappedAttributes = readableMappedAttributes;
     }
 
     if (placeholderRequirements.length > 0) {
@@ -121,7 +134,8 @@ Each object MUST have the following structure:
       basicInfo: {
         ...parsedResult.basicInfo,
         // Guarantee the mapped attributes determined in Step 3 are preserved
-        mappedAttributes: existingContext.mappedAttributes
+        mappedAttributes: existingContext.mappedAttributes,
+        role: existingContext.role || (existingContext.mappedAttributes && existingContext.mappedAttributes['profession']) || parsedResult.basicInfo.role
       },
       personality: parsedResult.personality,
       idealMatch: parsedResult.idealMatch,
