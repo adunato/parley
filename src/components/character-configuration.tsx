@@ -824,14 +824,23 @@ export default function CharacterConfiguration() {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0 pointer-events-none">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <Avatar className="w-8 h-8 border border-border shadow-sm">
+                                    <div className="flex items-center gap-3 mb-1 w-full relative">
+                                        <Avatar className="w-8 h-8 border border-border shadow-sm shrink-0">
                                             <AvatarImage src={character.basicInfo.avatar} alt={character.basicInfo.name} />
                                             <AvatarFallback className="bg-muted text-muted-foreground">{character.basicInfo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
+                                        <div className="min-w-0 flex-1 flex flex-col justify-center">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
+                                                {character.isPlaceholder && (
+                                                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-sm bg-muted/50 border border-border/50 text-muted-foreground uppercase font-medium tracking-wide">
+                                                        Placeholder
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
+                                        </div>
                                     </div>
-                                    <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
                                 </div>
                             </div>
                         </div>
