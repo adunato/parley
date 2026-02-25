@@ -39,7 +39,7 @@ export function CharacterSelectionDialog({ open, onOpenChange, characters, onSel
                 <div className="py-6">
                     <div className="w-full overflow-x-auto whitespace-nowrap rounded-md border bg-secondary/20 p-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                         <div className="flex w-max space-x-4 p-4 min-w-full">
-                            {characters.map((character) => (
+                            {characters.filter(c => !c.isPlaceholder).map((character) => (
                                 <div
                                     key={character.id}
                                     onClick={() => setSelectedCharacterId(character.id)}
