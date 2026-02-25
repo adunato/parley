@@ -1,5 +1,5 @@
 import { generateSystemPrompt } from '../src/lib/prompts/chatPrompts';
-import { Character, Persona, Relationship, PRQC } from '../src/lib/types';
+import { Character, Relationship, PRQC } from '../src/lib/types';
 import { DEFAULT_PROMPTS } from '../src/lib/store/promptStore';
 
 // Mock Data
@@ -11,15 +11,18 @@ const mockCharacter: Character = {
     relationships: []
 };
 
-const mockPersona: Persona = {
+const mockPersona: Character = {
     id: 'persona1',
-    basicInfo: { name: 'Kael', age: 25, gender: 'Male', role: 'Rogue', reputation: 'Notorious', background: 'Street Urchin', appearance: 'Leather Armor', firstImpression: 'Sneaky' }
+    basicInfo: { name: 'Kael', age: 25, gender: 'Male', role: 'Rogue', reputation: 'Notorious', background: 'Street Urchin', appearance: 'Leather Armor', firstImpression: 'Sneaky' },
+    personality: { openness: 85, conscientiousness: 70, extraversion: 30, agreeableness: 60, neuroticism: 40 },
+    idealMatch: { openness: 90, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 10 },
+    relationships: []
 };
 
 const mockRelationship: Relationship = {
     characterId: 'char1',
     targetId: 'persona1',
-    type: 'persona',
+    type: 'character',
     // High satisfaction to trigger "High" description
     satisfaction: 90,
     commitment: 50,

@@ -44,10 +44,10 @@ export default function WorldMapPage() {
     };
 
     // Derived current persona from store if available
-    const currentPersona = useMemo(() => {
-        if (!gameStore.currentPersonaId || !gameStore.playerPersonas) return undefined;
-        return gameStore.playerPersonas.find(p => p.id === gameStore.currentPersonaId);
-    }, [gameStore.currentPersonaId, gameStore.playerPersonas]);
+    const currentPlayerCharacter = useMemo(() => {
+        if (!gameStore.currentPlayerCharacterId || !gameStore.characters) return undefined;
+        return gameStore.characters.find(p => p.id === gameStore.currentPlayerCharacterId);
+    }, [gameStore.currentPlayerCharacterId, gameStore.characters]);
 
     return (
         <div className="relative w-screen h-screen bg-black overflow-hidden flex flex-col items-center justify-center">
@@ -56,8 +56,8 @@ export default function WorldMapPage() {
                 <GameplayToolbar
                     currentDay={1} // Placeholder, need GameState day
                     timeOfDay={"Morning"} // Placeholder, need GameState time
-                    personaName={currentPersona?.basicInfo?.name}
-                    personaImageSrc={currentPersona?.basicInfo?.avatar}
+                    personaName={currentPlayerCharacter?.basicInfo?.name}
+                    personaImageSrc={currentPlayerCharacter?.basicInfo?.avatar}
                     onExitGame={handleExitGame}
                     onOpenSettings={handleOpenSettings}
                     className="border-b-white/10 bg-black/60 shadow-lg"

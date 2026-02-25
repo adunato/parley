@@ -55,11 +55,6 @@ export interface Character {
   generationMeta?: any;
 }
 
-export interface Persona {
-  id: string;
-  basicInfo: BasicInfo;
-}
-
 export interface Relationship {
   characterId: string;
   targetId: string;

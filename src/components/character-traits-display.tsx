@@ -6,21 +6,25 @@ import { Personality } from "@/lib/types";
 
 interface CharacterTraitsDisplayProps {
   personality: Personality;
-  idealMatch: Personality;
+  idealMatch?: Personality;
+  showIdealMatch?: boolean;
+  showHeading?: boolean;
 }
 
-export function CharacterTraitsDisplay({ personality, idealMatch }: CharacterTraitsDisplayProps) {
+export function CharacterTraitsDisplay({ personality, idealMatch, showIdealMatch = true, showHeading = true }: CharacterTraitsDisplayProps) {
   return (
-    <Card className="w-[500px] border-border shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="type-h4">Character Traits</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-6">
+    <Card className="w-full border-border shadow-sm">
+      {showHeading && (
+        <CardHeader className="pb-2">
+          <CardTitle className="type-h4">Character Traits</CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className={`grid gap-6 ${showHeading ? '' : 'pt-6'}`}>
         <div className="grid gap-4">
-          <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2">Personality</h3>
+          <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2 text-center sm:text-left">PERSONALITY</h3>
           {Object.entries(personality).map(([trait, value]) => (
             <div key={trait} className="flex items-center gap-2">
-              <span className="w-32 type-ui-label text-foreground">{trait}:</span>
+              <span className="w-24 sm:w-32 type-ui-label text-foreground text-[10px] sm:text-xs truncate">{trait.toUpperCase()}:</span>
               <div className="relative flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border/50">
                 <div
                   className={`absolute h-full ${value >= 0 ? 'bg-green-600' : 'bg-destructive'}`}
@@ -39,26 +43,28 @@ export function CharacterTraitsDisplay({ personality, idealMatch }: CharacterTra
             </div>
           ))}
         </div>
-        <div className="grid gap-4">
-          <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2">Ideal Match</h3>
-          {idealMatch && Object.entries(idealMatch).map(([trait, value]) => (
-            <div key={trait} className="flex items-center gap-2">
-              <span className="w-32 type-ui-label text-foreground">{trait}:</span>
-              <div className="relative flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border/50">
-                <div
-                  className="absolute h-full bg-primary"
-                  style={{
-                    width: `${Math.abs(value)}%`,
-                    left: '0',
-                  }}
-                ></div>
-                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-foreground/80">
-                  {Math.round(value / 10)}
+        {showIdealMatch && idealMatch && (
+          <div className="grid gap-4">
+            <h3 className="type-ui-subhead text-muted-foreground border-b border-border pb-2 text-center sm:text-left">IDEAL MATCH</h3>
+            {Object.entries(idealMatch).map(([trait, value]) => (
+              <div key={trait} className="flex items-center gap-2">
+                <span className="w-24 sm:w-32 type-ui-label text-foreground text-[10px] sm:text-xs truncate">{trait.toUpperCase()}:</span>
+                <div className="relative flex-1 h-3 bg-muted rounded-full overflow-hidden border border-border/50">
+                  <div
+                    className="absolute h-full bg-primary"
+                    style={{
+                      width: `${Math.abs(value)}%`,
+                      left: '0',
+                    }}
+                  ></div>
+                  <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-foreground/80">
+                    {Math.round(value / 10)}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

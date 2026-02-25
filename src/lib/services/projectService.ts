@@ -1,7 +1,7 @@
 import { useParleyStore } from '../store';
 import { useEntityStore } from '../entityStore';
 import { useProjectLibraryStore, ProjectMetadata } from '../store/projectStore';
-import { Character, CharacterGroup, Persona, Relationship } from '../types';
+import { Character, CharacterGroup, Relationship } from '../types';
 import { Message } from 'ai';
 import { db } from '../db';
 
@@ -20,7 +20,7 @@ export interface ParleyProjectExport {
     entities: {
         characters: Character[];
         characterGroups: CharacterGroup[];
-        playerPersonas: Persona[];
+        playerPersonas?: Character[];
         relationshipDeltas: Relationship | undefined;
     };
     session: {
@@ -105,14 +105,14 @@ export const ProjectService = {
             entities: {
                 characters: entityState.characters,
                 characterGroups: entityState.characterGroups,
-                playerPersonas: entityState.playerPersonas,
+                playerPersonas: undefined, // Obsolete field, kept for backwards compatibility in type if needed, but we don't save it anymore
                 relationshipDeltas: entityState.cumulativeRelationshipDelta,
             },
             session: {
                 chatMessages: parleyState.chatMessages,
                 chatSessionId: parleyState.chatSessionId,
                 selectedCharacterId: entityState.selectedChatCharacter?.id,
-                selectedPersonaId: entityState.selectedChatPersona?.id,
+                selectedPersonaId: undefined, // Obsolete
             }
         };
 
@@ -153,10 +153,9 @@ export const ProjectService = {
             useEntityStore.setState({
                 characters: data.entities.characters,
                 characterGroups: data.entities.characterGroups,
-                playerPersonas: data.entities.playerPersonas,
+                // playerPersonas: data.entities.playerPersonas, // No longer restoring player personas
                 cumulativeRelationshipDelta: data.entities.relationshipDeltas,
-                selectedChatCharacter: data.entities.characters.find(c => c.id === data.session.selectedCharacterId),
-                selectedChatPersona: data.entities.playerPersonas.find(p => p.id === data.session.selectedPersonaId)
+                selectedChatCharacter: data.entities.characters.find(c => c.id === data.session.selectedCharacterId)
             });
 
             // Set Current ID

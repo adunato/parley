@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { PersonaSelectionDialog } from '@/components/persona-selection-dialog';
+import { CharacterSelectionDialog } from '@/components/character-selection-dialog';
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -15,30 +15,28 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 
 export default function MainMenu() {
   const router = useRouter();
-  const { characters, playerPersonas, locations, characterGroups, _hasHydrated: isEntityHydrated } = useEntityStore();
+  const { characters, locations, characterGroups, _hasHydrated: isEntityHydrated } = useEntityStore();
   const { startGame, isGameActive, _hasHydrated: isGameHydrated } = useGameStore();
   const { setAppState } = useParleyStore();
 
-  /* State for Persona Selection */
-  const [isPersonaSelectionOpen, setIsPersonaSelectionOpen] = useState(false);
+  /* State for Character Selection */
+  const [isCharacterSelectionOpen, setIsCharacterSelectionOpen] = useState(false);
 
   if (!isEntityHydrated || !isGameHydrated) {
     return <LoadingScreen />;
   }
 
   const handleNewGame = () => {
-    // Open the Persona Selection Dialog instead of starting immediately
-    setIsPersonaSelectionOpen(true);
+    setIsCharacterSelectionOpen(true);
   };
 
-  const handlePersonaSelected = (persona: any) => {
-    // Start the game with the specific persona
+  const handleCharacterSelected = (character: any) => {
+    // Start the game with the specific character
     startGame({
       characters,
-      playerPersonas,
       locations,
       characterGroups
-    }, persona.id);
+    }, character.id);
 
     setAppState('game');
     router.push('/world_map');
@@ -103,11 +101,11 @@ export default function MainMenu() {
         </div>
       </div>
 
-      <PersonaSelectionDialog
-        open={isPersonaSelectionOpen}
-        onOpenChange={setIsPersonaSelectionOpen}
-        personas={playerPersonas}
-        onSelect={handlePersonaSelected}
+      <CharacterSelectionDialog
+        open={isCharacterSelectionOpen}
+        onOpenChange={setIsCharacterSelectionOpen}
+        characters={characters}
+        onSelect={handleCharacterSelected}
       />
     </div>
   );

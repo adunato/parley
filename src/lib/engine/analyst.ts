@@ -1,4 +1,4 @@
-import { Character, Persona } from '../types';
+import { Character } from '../types';
 import { Message } from '@ai-sdk/react';
 import { generateJSON } from '../llm';
 import { PromptStore } from '../store/promptStore';
@@ -12,7 +12,7 @@ export interface SceneReport {
 export async function AnalyzeScene(
     chatHistory: Message[],
     character: Character,
-    persona: Persona,
+    playerCharacter: Character,
     modelName?: string
 ): Promise<SceneReport> {
     // We analyze a significant window of context, e.g., last 20 messages or entire scene.
@@ -24,7 +24,7 @@ export async function AnalyzeScene(
     let prompt = PromptStore.getPrompt('analyst_system');
 
     prompt = prompt.split('{{character}}').join(character.basicInfo.name);
-    prompt = prompt.split('{{persona}}').join(persona.basicInfo.name);
+    prompt = prompt.split('{{persona}}').join(playerCharacter.basicInfo.name); // keep the placeholder named persona until we update prompts
     prompt = prompt.split('{{chatHistory}}').join(historyText);
 
     try {

@@ -24,12 +24,12 @@ interface ChatComponentProps {
 export default function ChatComponent({ className = "", title = "Chat Assistant", chatSessionId, relationship }: ChatComponentProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { chatMessages, setChatMessages,  // From GameStore
-    currentCharacterId, currentPersonaId, currentLocationId, characters, playerPersonas, locations } = useGameStore();
+    currentCharacterId, currentPlayerCharacterId, currentLocationId, characters, locations } = useGameStore();
   const { chatInput, setChatInput, worldDescription, aiStyle, chatModel, systemPromptTemplate } = useParleyStore(); // Settings stay in ParleyStore
 
   // Derived state
   const selectedChatCharacter = characters.find(c => c.id === currentCharacterId);
-  const selectedChatPersona = playerPersonas.find(p => p.id === currentPersonaId);
+  const selectedPlayerCharacter = characters.find(p => p.id === currentPlayerCharacterId);
   const selectedChatLocation = locations.find(l => l.id === currentLocationId);
 
   const messagesRef = useRef<Message[]>([]);
@@ -42,10 +42,10 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
   useEffect(() => {
     if (relationship) {
       setInternalRelationship(relationship);
-    } else if (selectedChatCharacter && selectedChatPersona) {
+    } else if (selectedChatCharacter && selectedPlayerCharacter) {
       // Check if relationship exists in the character object (it might have been updated elsewhere)
       const existingRel = selectedChatCharacter.relationships.find(
-        r => r.characterId === selectedChatCharacter.id && r.targetId === selectedChatPersona.id && r.type === 'persona'
+        r => r.characterId === selectedChatCharacter.id && r.targetId === selectedPlayerCharacter.id && r.type === 'character'
       );
 
       if (existingRel) {
@@ -55,14 +55,14 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         console.log("Relationship missing - creating default 'Unknown' relationship");
         const defaultRelationship: Relationship = {
           characterId: selectedChatCharacter.id,
-          targetId: selectedChatPersona.id,
-          type: 'persona',
+          targetId: selectedPlayerCharacter.id,
+          type: 'character',
           satisfaction: 50,
           commitment: 50,
           intimacy: 50,
           trust: 50,
           passion: 50,
-          description: `The Character does not know the Persona.`,
+          description: `The characters do not know each other well.`,
           chat_summaries: []
         };
 
@@ -79,7 +79,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         useGameStore.getState().updateCharacter(updatedCharacter);
       }
     }
-  }, [relationship, selectedChatCharacter, selectedChatPersona]);
+  }, [relationship, selectedChatCharacter, selectedPlayerCharacter]);
 
   const debounceMessages = useDebouncedCallback(
     (messages: Message[]) => setChatMessages(messages),
@@ -99,10 +99,10 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
   }, [debounceMessages, debounceInput]);
 
   const { messages, input, handleInputChange, handleSubmit, status, setMessages, setInput, stop } = useChat({
-    id: (selectedChatCharacter && selectedChatPersona) ? `main-chat-${chatSessionId}` : undefined,
+    id: (selectedChatCharacter && selectedPlayerCharacter) ? `main-chat-${chatSessionId}` : undefined,
     body: {
       character: selectedChatCharacter,
-      persona: selectedChatPersona,
+      persona: selectedPlayerCharacter, // keeping the variable name as 'persona' to avoid touching backend immediately, but it's now a Character
       relationship: internalRelationship,
       worldDescription: worldDescription,
       aiStyle: aiStyle,
@@ -141,7 +141,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
 
   const handleEmergencyAssessment = async () => {
     // Double check to prevent multiple calls
-    if (isAssessing || !selectedChatCharacter || !selectedChatPersona || !internalRelationship) return;
+    if (isAssessing || !selectedChatCharacter || !selectedPlayerCharacter || !internalRelationship) return;
 
     setIsAssessing(true);
 
@@ -152,7 +152,7 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
         body: JSON.stringify({
           chatHistory: messages,
           character: selectedChatCharacter,
-          persona: selectedChatPersona,
+          persona: selectedPlayerCharacter,
           currentRelationship: internalRelationship,
           modelName: chatModel
         }),
@@ -273,10 +273,10 @@ export default function ChatComponent({ className = "", title = "Chat Assistant"
                     </div>
                   </div>
 
-                  {m.role === "user" && selectedChatPersona ? (
+                  {m.role === "user" && selectedPlayerCharacter ? (
                     <Avatar className="flex-shrink-0 h-8 w-8 border border-border shadow-sm">
-                      <AvatarImage src={selectedChatPersona.basicInfo.avatar} alt={selectedChatPersona.basicInfo.name} />
-                      <AvatarFallback className="bg-muted text-muted-foreground">{selectedChatPersona.basicInfo.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={selectedPlayerCharacter.basicInfo.avatar} alt={selectedPlayerCharacter.basicInfo.name} />
+                      <AvatarFallback className="bg-muted text-muted-foreground">{selectedPlayerCharacter.basicInfo.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                   ) : m.role === "user" ? (
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
