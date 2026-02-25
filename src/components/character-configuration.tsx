@@ -70,6 +70,7 @@ export default function CharacterConfiguration() {
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
     const [relationshipContext, setRelationshipContext] = useState("");
     const [isProceduralGeneratorOpen, setIsProceduralGeneratorOpen] = useState(false);
+    const [showPlaceholders, setShowPlaceholders] = useState(false);
 
     // Debounced save function
     const debouncedSave = useDebouncedCallback((character: Character) => {
@@ -122,7 +123,7 @@ export default function CharacterConfiguration() {
     const handleInputChange = (
         section: keyof Character | "basicInfo" | "personality" | "idealMatch",
         field: string,
-        value: string | number | string[] | Record<string, any> | undefined
+        value: string | number | boolean | string[] | Record<string, any> | undefined
     ) => {
         setLocalCharacter((prev) => {
             if (!prev) return null
@@ -629,6 +630,7 @@ export default function CharacterConfiguration() {
                                         personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         relationships: [],
+                                        isPlaceholder: true,
                                     };
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
@@ -798,10 +800,20 @@ export default function CharacterConfiguration() {
                             <Plus className="w-4 h-4" />
                         </Button>
                     </div>
+                    <div className="flex items-center space-x-2 mt-4 mb-1 pl-1">
+                        <input
+                            type="checkbox"
+                            id="showPlaceholdersSidebar"
+                            checked={showPlaceholders}
+                            onChange={(e) => setShowPlaceholders(e.target.checked)}
+                            className="h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        />
+                        <Label htmlFor="showPlaceholdersSidebar" className="text-xs text-muted-foreground m-0 leading-none cursor-pointer">Show placeholders</Label>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                    {characters.map((character) => (
+                    {characters.filter(c => showPlaceholders || !c.isPlaceholder).map((character) => (
                         <div
                             key={character.id}
                             onClick={() => handleSelect(character)}
@@ -812,14 +824,23 @@ export default function CharacterConfiguration() {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0 pointer-events-none">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <Avatar className="w-8 h-8 border border-border shadow-sm">
+                                    <div className="flex items-center gap-3 mb-1 w-full relative">
+                                        <Avatar className="w-8 h-8 border border-border shadow-sm shrink-0">
                                             <AvatarImage src={character.basicInfo.avatar} alt={character.basicInfo.name} />
                                             <AvatarFallback className="bg-muted text-muted-foreground">{character.basicInfo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
+                                        <div className="min-w-0 flex-1 flex flex-col justify-center">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <h3 className={`font-medium truncate ${selectedId === character.id ? "text-primary" : "text-foreground"}`}>{character.basicInfo.name}</h3>
+                                                {character.isPlaceholder && (
+                                                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-sm bg-muted/50 border border-border/50 text-muted-foreground uppercase font-medium tracking-wide">
+                                                        Placeholder
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
+                                        </div>
                                     </div>
-                                    <p className="type-body-xs text-muted-foreground truncate uppercase tracking-wide">{character.basicInfo.role || "Unknown Role"}</p>
                                 </div>
                             </div>
                         </div>
@@ -1037,6 +1058,18 @@ export default function CharacterConfiguration() {
                                                 }
                                                 return null;
                                             })()}
+                                        </div>
+                                        <div className="space-y-2 flex flex-col justify-center">
+                                            <div className="flex items-center space-x-2 mt-6">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isPlaceholder"
+                                                    checked={!!displayCharacter.isPlaceholder}
+                                                    onChange={(e) => handleInputChange("isPlaceholder" as keyof Character, "isPlaceholder", e.target.checked)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <Label htmlFor="isPlaceholder" className="type-ui-label text-muted-foreground m-0 leading-none">Placeholder Character</Label>
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="gender" className="type-ui-label text-muted-foreground">Gender</Label>
