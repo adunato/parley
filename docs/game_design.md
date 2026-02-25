@@ -10,8 +10,13 @@ Parley is a web-based text adventure game designed to provide an immersive and i
 Conversation in Parley goes beyond simple request-response. The "Hybrid Relationship Engine" analyzes every scene (a batch of informational exchange) to determine the underlying subtext and behavioral traits displayed by the player.
 1.  **Chat Interaction**: The player chats freely with the character.
 2.  **Scene Ending**: When the player elects to "End Chat", the system freezes the conversation.
-3.  **Analysis**: The "Analyst" engine reads the recent history to identify the player's behavioral traits (e.g., Flirtatious, Aggressive, Honest) and major events.
-4.  **Judgment**: The "Judge" engine compares these traits against the character's preferences (`Ideal Match`) to calculate a precise numeric impact on the relationship.
+3.  **Analysis (The Analyst)**: The "Analyst" engine reads the recent history to identify:
+    -   **Aggregate Traits**: How the player is behaving (e.g., "Flirtatious", "Aggressive", "Honest").
+    -   **Major Events**: Key plot points or revelations.
+4.  **Judgment (The Judge)**: The "Judge" engine compares these traits against the character's preferences (`Ideal Match`) to calculate a precise numeric impact on the relationship.
+    -   **Sensitivity Matrix**: Compares the player's behavior against the character's `Ideal Match` profile. Behavior aligning with preferences yields positive multipliers; opposing behavior yields negative ones.
+    -   **Routing Table**: Maps behavioral traits (like "Openness") to specific Relationship metrics (like "Intimacy").
+    -   **Delta Calculation**: Updates the PRQC values based on the calculated impact.
 5.  **Feedback**: The user receives a summary of the scene, including what traits were picked up and how the relationship changed (e.g., "+5 Intimacy due to vulnerability").
 
 **Relevant Code Objects (Code implementation):**
@@ -49,16 +54,25 @@ Players can generate complex, life-like characters with deep backstories in seco
 
 > **Detailed Design**: See [High-Level Design: Procedural Character Bio Generator](./High-Level%20Design_%20Procedural%20Character%20Bio%20Generator.md) for full architecture.
 
-### 3. Relationship Engine (PRQC & OCEAN)
+### 3. Relationship & Personality Engine
 **User Experience (How it works):**
-Relationships are modeled using the **PRQC** model (Patient-Reported Outcomes Measurement Information System - Relationship Quality), evolving along 5 dimensions:
--   **Satisfaction**: Is the character happy with the dynamic?
--   **Commitment**: Are they loyal?
--   **Intimacy**: Do they feel close/vulnerable?
--   **Trust**: Do they believe the player?
--   **Passion**: Is there romantic/physical attraction?
+Relationships in Parley are deep and evolving, modeled using two primary psychological frameworks: **OCEAN** for personality and **PRQC** for relationship quality.
 
-Character compatibility is determined by their **OCEAN** (Big 5) personality profile and their **Ideal Match** profile. A character with high "Openness" might appreciate a player's "Creative" conversational gambits, while a "Conscientious" character might prefer "Orderly" planning.
+#### Personality System (OCEAN)
+Characters are defined by the Big Five personality traits, influencing their behavior and AI instructions:
+-   **Openness:** Preference for novelty vs. routine. High scorers are abstract and curious; low scorers are concrete and traditional.
+-   **Conscientiousness:** Discipline vs. spontaneity. High scorers are precise and organized; low scorers are relaxed and messy.
+-   **Extraversion:** Social stimulation needs. High scorers initiate and drive conversation; low scorers are reactive and reserved.
+-   **Agreeableness:** Cooperation vs. conflict. High scorers prioritize harmony; low scorers prioritize truth or self-interest.
+-   **Neuroticism:** Emotional stability. High scorers are anxious and reactive to stress; low scorers are calm and unflappable.
+
+#### Relationship System (PRQC)
+Relationships evolve along 5 dimensions (Patient-Reported Outcomes Measurement Information System - Relationship Quality):
+-   **Satisfaction:** Is the character happy with the dynamic? (High: "The Warm Glow" vs Low: "The Cold Shoulder")
+-   **Commitment:** Are they loyal? (High: "We" language vs Low: "I" language)
+-   **Intimacy:** Do they feel close/vulnerable? (High: "The Open Book" vs Low: "The Wall")
+-   **Trust:** Do they believe the player? (High: "The Believer" vs Low: "The Skeptic")
+-   **Passion:** Is there romantic/physical attraction? (High: "The Magnet" vs Low: "The Platonic Zone")
 
 **Relevant Code Objects (Code implementation):**
 -   **Types**: `Relationship` (PRQC values) and `Character` (OCEAN `personality`, `idealMatch` values) in `src/lib/types.ts`.
@@ -121,6 +135,57 @@ Parley distinguishes between "World Configuration" (editing characters/locations
 -   **Stores**: Split between `EntityStore` (Configuration) and `GameStore` (Runtime).
 -   **Logic**: `GameStore` initializes by deep-cloning `EntityStore` data to ensure the base configuration remains pristine while the game state evolves.
 
+### 9. Character Grouping
+**User Experience (How it works):**
+Characters can be organized into custom groups (e.g., "Merchants", "Enemies"). This allows players to manage large casts of characters more effectively. A character can belong to multiple groups, offering flexible organization.
+
+**Relevant Code Objects (Code implementation):**
+-   **Data Structure:** Defined as `CharacterGroup` in `src/lib/types.ts`, containing an `id`, `name`, and a list of `characterIds`.
+-   **State Management:** `useEntityStore` includes actions like `addCharacterGroup` and `updateCharacterGroup` to manage these associations.
+
+## Game Entities
+
+### 1. Character
+The primary NPC entity in the game. Characters are fully realized individuals with unique personalities and backgrounds.
+- **Basic Info:** Name, age, gender, role, reputation, background, first impression, appearance, and origin location.
+- **Personality (OCEAN):** A set of 5 traits defining their behavior (see *Personality System*).
+- **Ideal Match:** A personality profile representing who they are most compatible with or attracted to.
+- **Relationships:** A list of relationships with other entities (see *Relationship System*).
+- **Location:** The current location ID where the character resides.
+- **Generation Metadata:** Information about how the character was procedurally generated.
+
+### 2. Player Persona
+The representation of the user in the game world. This allows the player to roleplay different identities in different sessions.
+- **Basic Info:** Name, age, gender, role, reputation, background, first impression, and appearance.
+- **Function:** Acts as the "Player" context in LLM prompts, ensuring NPCs react appropriately to the player's assumed identity (e.g., treating a Noble with respect vs. a Rogue with suspicion).
+
+### 3. Relationship
+Defines the connection between a Character and a Player Persona (or potentially other Characters).
+- **Metrics (PRQC):** A set of 5 dynamic values (0-100) tracking the state of the bond.
+- **Description:** A text summary of the relationship dynamic.
+- **Chat Summaries:** History of key interactions.
+
+### 4. Location
+A physical space in the game world where interactions occur.
+- **Attributes:** Name, description, image, and 2D map coordinates.
+- **Profession Slots:** Designated spots for characters with specific professions to populate the location (e.g., a "Bartender" slot in a "Tavern").
+
+### 5. Character Group
+A user-defined collection of characters for organizational purposes (e.g., "Guild Members", "Family").
+- **Structure:** ID, name, description, and a list of character IDs.
+
+### 6. Game Attributes & Professions
+Generic and specific traits that can be assigned to entities to define their socio-economic or functional background.
+- **GameAttributeCategory:** Groups attributes (e.g., "Education", "Origins", "Housing").
+- **GameAttribute:** A specific trait within a category.
+- **Profession:** A specialized attribute that may have age constraints (`minAge`, `maxAge`) and defines a character's job or role.
+
+### 7. Bio Generator Entities
+Entities used by the procedural background generation system ("Bio Machine").
+- **Spine Node:** Represents a major life milestone or phase (e.g., "University", "Apprenticeship").
+- **Life Event:** A specific event that occurs within a spine node or as a consequence of another event.
+- **Tags:** Keywords used to link events logically (e.g., an event might *provide* the "wealthy" tag, which is *required* by a subsequent event).
+
 ## Technical Architecture
 
 ### Tech Stack
@@ -140,6 +205,33 @@ We use a dual-store architecture to separate Configuration from Gameplay:
 1.  **EntityStore**: Manages the "World Bible" (Characters, Locations, Prompts). Changes here affect *future* games.
 2.  **GameStore**: Manages the "Active Session". It includes a snapshot of characters/locations plus runtime state (Chat History, Relationships).
 3.  **ParleyStore**: Global app settings (API Keys, Theme, UI State).
+
+### Data Flow Examples
+
+#### 1. Chat Interaction
+1.  **User Input:** User types a message in `ChatComponent`.
+2.  **State Update:** `useParleyStore`/`GameStore` updates `chatInput`.
+3.  **Submission:** `useChat.handleSubmit` is triggered.
+4.  **API Call:** A POST request is sent to `/api/chat` with history, current input, and context.
+5.  **Processing:** The server constructs the prompt with world/character context and queries the LLM.
+6.  **Streaming:** The LLM response is streamed back to the frontend.
+7.  **Update:** `ChatComponent` updates the message list in real-time.
+8.  **Persistence:** The new message history is saved to the store (and thus `IndexedDB`).
+
+#### 2. Character Generation
+1.  **User Request:** User opens "Generate Character" dialog and enters a prompt.
+2.  **API Call:** Frontend calls `/api/generate/character` with the prompt.
+3.  **LLM Generation:** Server asks LLM to return a JSON object representing the character.
+4.  **Integration:** The JSON response is received by the frontend.
+5.  **Store Action:** `useEntityStore.addCharacter` is called.
+6.  **Persistence:** The updated character list is serialized to `IndexedDB`.
+
+#### 3. Asset Generation (Avatar)
+1.  **Trigger:** User clicks "Generate Avatar" for a character.
+2.  **Description Gen:** API call to `/api/generate/avatar-description` to get a visual prompt.
+3.  **Image Gen:** API call to `/api/generate/avatar-image` with the visual prompt.
+4.  **Upload:** Use internal upload API or cloud storage to save the image (if applicable) or use the returned URL/Base64.
+5.  **Update:** The character's `avatar` field is updated in `useEntityStore` and serialized to `IndexedDB`.
 
 ### Project Structure
 -   `src/app`: Page routes and API endpoints.
