@@ -51,8 +51,11 @@ export function CharacterSelectionDialog({ open, onOpenChange, characters, onSel
                                         <AvatarFallback className="text-2xl">{character.basicInfo.name[0]}</AvatarFallback>
                                     </Avatar>
                                     <h3 className="font-semibold text-lg text-center mb-2">{character.basicInfo.name}</h3>
+                                    <div className="w-full text-sm text-center mb-4 text-muted-foreground whitespace-normal line-clamp-3">
+                                        {character.basicInfo.background}
+                                    </div>
                                     <div className="w-full">
-                                        <CharacterTraitsDisplay personality={character.personality} idealMatch={character.idealMatch} />
+                                        <CharacterTraitsDisplay personality={character.personality} showIdealMatch={false} showHeading={false} />
                                     </div>
                                 </div>
                             ))}
