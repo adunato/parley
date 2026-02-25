@@ -5,14 +5,14 @@ import { JudgeResult } from '@/lib/engine/judge';
 
 export async function POST(req: Request) {
     try {
-        const { chatHistory, character, persona, currentRelationship, modelName } = await req.json();
+        const { chatHistory, character, persona: playerCharacter, currentRelationship, modelName } = await req.json();
 
-        if (!chatHistory || !character || !persona || !currentRelationship) {
+        if (!chatHistory || !character || !playerCharacter || !currentRelationship) {
             return new Response(JSON.stringify({ error: "Missing required data" }), { status: 400 });
         }
 
         // 1. Analyst: Extract Scene Report (Aggregate Traits & Events)
-        const sceneReport = await AnalyzeScene(chatHistory, character, persona, modelName);
+        const sceneReport = await AnalyzeScene(chatHistory, character, playerCharacter as any, modelName);
 
         console.log("--- ANALYST SCENE REPORT ---");
         console.log(JSON.stringify(sceneReport, null, 2));

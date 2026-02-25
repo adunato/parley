@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from './storage-adapter';
-import { Character, Persona, Relationship, CharacterGroup, Location, GameAttributeCategory, GameAttribute } from './types';
+import { Character, Relationship, CharacterGroup, Location, GameAttributeCategory, GameAttribute } from './types';
 
 type EntityStore = {
   characters: Character[];
@@ -9,10 +9,6 @@ type EntityStore = {
   addCharacter: (character: Character) => void;
   updateCharacter: (character: Character) => void;
   deleteCharacter: (id: string) => void;
-  playerPersonas: Persona[];
-  addPlayerPersona: (persona: Persona) => void;
-  updatePlayerPersona: (persona: Persona) => void;
-  deletePlayerPersona: (id: string) => void;
   addCharacterGroup: (characterGroup: CharacterGroup) => void;
   updateCharacterGroup: (characterGroup: CharacterGroup) => void;
   deleteCharacterGroup: (id: string) => void;
@@ -24,8 +20,6 @@ type EntityStore = {
   setSelectedChatLocation: (location: Location | undefined) => void;
   selectedChatCharacter?: Character;
   setSelectedChatCharacter: (character: Character | undefined) => void;
-  selectedChatPersona?: Persona;
-  setSelectedChatPersona: (persona: Persona | undefined) => void;
   clearCharacters: () => void;
   cumulativeRelationshipDelta?: Relationship; // Optional: Stores cumulative deltas for the current chat session
   updateCumulativeRelationshipDelta: (delta: Relationship) => void;
@@ -67,18 +61,6 @@ export const useEntityStore = create<EntityStore>()(
         set((state) => ({
           characters: state.characters.filter((char) => char.id !== id),
         })),
-      playerPersonas: [],
-      addPlayerPersona: (persona) => set((state) => ({ playerPersonas: [...state.playerPersonas, persona] })),
-      updatePlayerPersona: (updatedPersona) =>
-        set((state) => ({
-          playerPersonas: state.playerPersonas.map((p) =>
-            p.id === updatedPersona.id ? updatedPersona : p
-          ),
-        })),
-      deletePlayerPersona: (id) =>
-        set((state) => ({
-          playerPersonas: state.playerPersonas.filter((p) => p.id !== id),
-        })),
       characterGroups: [],
       addCharacterGroup: (characterGroup) => set((state) => ({
         characterGroups: [...state.characterGroups, characterGroup]
@@ -111,8 +93,6 @@ export const useEntityStore = create<EntityStore>()(
       setSelectedChatLocation: (location) => set({ selectedChatLocation: location }),
       selectedChatCharacter: undefined,
       setSelectedChatCharacter: (character) => set({ selectedChatCharacter: character }),
-      selectedChatPersona: undefined,
-      setSelectedChatPersona: (persona) => set({ selectedChatPersona: persona }),
       clearCharacters: () => set({ characters: [] }),
       cumulativeRelationshipDelta: undefined,
       updateCumulativeRelationshipDelta: (delta: Relationship) =>
@@ -138,9 +118,7 @@ export const useEntityStore = create<EntityStore>()(
       clearAllData: () => {
         set({
           characters: [],
-          playerPersonas: [],
           selectedChatCharacter: undefined,
-          selectedChatPersona: undefined,
           cumulativeRelationshipDelta: undefined,
           characterGroups: [],
           locations: [],
@@ -217,29 +195,6 @@ export const useEntityStore = create<EntityStore>()(
                 });
 
                 updates.characters = updatedCharacters;
-                needsUpdate = true;
-              }
-
-              if (prev.playerPersonas) {
-                const updatedPersonas = prev.playerPersonas.map(persona => {
-                  if (!persona.basicInfo) {
-                    return {
-                      ...persona,
-                      basicInfo: {
-                        name: persona.id,
-                        age: 0,
-                        gender: "",
-                        role: "",
-                        reputation: "",
-                        background: "",
-                        firstImpression: "",
-                        appearance: "",
-                      }
-                    };
-                  }
-                  return persona;
-                });
-                updates.playerPersonas = updatedPersonas;
                 needsUpdate = true;
               }
 

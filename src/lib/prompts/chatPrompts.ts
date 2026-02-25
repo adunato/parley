@@ -1,4 +1,4 @@
-import { Character, ChatSummary, Persona as PlayerPersona, Relationship } from "../types";
+import { Character, ChatSummary, Relationship } from "../types";
 import { RELATIONSHIP_JSON_STRUCTURE } from "./generatorPrompts";
 import { PromptStore } from "../store/promptStore";
 import { getOceanDescription } from "../../../config/ocean-traits";
@@ -6,7 +6,7 @@ import { getPrqcDescription } from "../../../config/prqc-traits";
 
 export const generateSystemPrompt = (
     character: Character,
-    playerPersona: PlayerPersona,
+    playerCharacter: Character,
     relationship: Relationship,
     template: string,
     worldDescription?: string,
@@ -17,11 +17,11 @@ export const generateSystemPrompt = (
 ) => {
     const characterJson = JSON.stringify(character, null, 2);
 
-    // Use persona.basicInfo to match character.basicInfo structure
-    const personaBasicInfoJson = JSON.stringify(playerPersona.basicInfo, null, 2);
+    // Use playerCharacter.basicInfo to match character.basicInfo structure
+    const personaBasicInfoJson = JSON.stringify(playerCharacter.basicInfo, null, 2);
 
     // Keep full persona for legacy/compatibility if needed, but we will prefer basicInfo
-    const playerPersonaJson = JSON.stringify(playerPersona, null, 2);
+    const playerPersonaJson = JSON.stringify(playerCharacter, null, 2);
 
     // Create a new relationship object with descriptive values instead of raw numbers for PRQC
     const relationshipDescriptive = {
@@ -69,7 +69,7 @@ export const generateSystemPrompt = (
     let summariesSection = '';
     if (chatSummaries && chatSummaries.length > 0) {
         const summariesText = chatSummaries.map((summary, index) => `- ${summary.summary}`).join('\n');
-        summariesSection = `--- PREVIOUS CONVERSATION SUMMARIES ---\nThis is a summary of your past conversations with ${playerPersona.basicInfo.name}. Use it to recall past events and maintain conversational continuity.\n${summariesText}\n-----------------------------------------`;
+        summariesSection = `--- PREVIOUS CONVERSATION SUMMARIES ---\nThis is a summary of your past conversations with ${playerCharacter.basicInfo.name}. Use it to recall past events and maintain conversational continuity.\n${summariesText}\n-----------------------------------------`;
     }
 
     // Default template fallback: Use provided template first, then the stored default
@@ -81,7 +81,7 @@ export const generateSystemPrompt = (
         '{{characterBasicInfo}}': characterBasicInfoJson,
         '{{characterPersonality}}': characterPersonalityDescriptive,
         '{{characterIdealMatch}}': characterIdealMatchDescriptive,
-        '{{personaName}}': playerPersona.basicInfo.name,
+        '{{personaName}}': playerCharacter.basicInfo.name,
         '{{persona}}': playerPersonaJson,
         '{{personaBasicInfo}}': personaBasicInfoJson,
         '{{relationship}}': relationshipJson,

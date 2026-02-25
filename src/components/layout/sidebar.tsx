@@ -26,7 +26,6 @@ export function Sidebar({ className }: SidebarProps) {
     { href: "/settings", label: "Settings", icon: Settings },
     { href: "/character-config", label: "Characters", icon: Users },
     { href: "/character-group-config", label: "Character Groups", icon: UsersRound },
-    { href: "/persona-config", label: "Personas", icon: UserCog },
     { href: "/world-info", label: "World Info", icon: Globe },
     { href: "/locations", label: "Locations", icon: MapPin },
     { href: "/professions-config", label: "Professions", icon: UserCog }, // Using UserCog as placeholder

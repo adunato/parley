@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import { generateRelationshipDeltaPrompt } from '@/lib/prompts/generatorPrompts';
-import { Character, Persona, Relationship } from '@/lib/types';
+import { Character, Relationship } from '@/lib/types';
 import { Message } from '@ai-sdk/react';
 import { generateJSON, getLlm } from '@/lib/llm';
 
 export async function POST(req: Request) {
     try {
-        const { character, persona, chatHistory, latestExchange, worldDescription, aiStyle, generationModel } = await req.json();
-        const currentRelationship = character.relationships.find((rel: any) => rel.personaId === persona.id);
+        const { character, persona: playerCharacter, chatHistory, latestExchange, worldDescription, aiStyle, generationModel } = await req.json();
+        const currentRelationship = character.relationships.find((rel: any) => rel.targetId === playerCharacter.id && rel.type === 'character');
 
         const prompt = generateRelationshipDeltaPrompt(
             character as Character,
-            persona as Persona,
+            playerCharacter as Character,
             chatHistory as Message[],
             latestExchange as { userMessage: string; characterResponse: string },
             currentRelationship as Relationship,

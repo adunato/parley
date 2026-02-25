@@ -1,6 +1,6 @@
 import { useParleyStore } from "@/lib/store"
 import { useBioStore } from "@/lib/store/bioStore";
-import { Character, Persona as PlayerPersona, Relationship } from "@/lib/types"
+import { Character, Relationship } from "@/lib/types"
 import { useEffect, useState, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -46,7 +46,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, addPlayerPersona, playerPersonas, characterGroups, updateCharacterGroup, locations, updateLocation, gameAttributeCategories, gameAttributes } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, characterGroups, updateCharacterGroup, locations, updateLocation, gameAttributeCategories, gameAttributes } = useEntityStore()
     const { professions } = useBioStore();
 
     // Selection state
@@ -276,7 +276,7 @@ export default function CharacterConfiguration() {
             setLocalCharacter(prev => {
                 if (!prev) return null;
                 const updatedRelationships = prev.relationships.filter(
-                    (rel) => !(rel.characterId === characterId && rel.targetId === targetId && rel.type === 'persona')
+                    (rel) => !(rel.characterId === characterId && rel.targetId === targetId && rel.type === 'character')
                 );
                 const updated = { ...prev, relationships: updatedRelationships };
                 isDirtyRef.current = true;
@@ -292,7 +292,7 @@ export default function CharacterConfiguration() {
 
         setIsGeneratingRelationship(true);
         try {
-            const persona = playerPersonas.find(p => p.id === relationshipPersonaId);
+            const persona = characters.find(p => p.id === relationshipPersonaId);
             if (!persona) return;
 
             const response = await fetch('/api/generate/relationship', {
@@ -313,7 +313,7 @@ export default function CharacterConfiguration() {
                     ...data.relationship,
                     characterId: localCharacter.id,
                     targetId: persona.id,
-                    type: 'persona',
+                    type: 'character',
                     chat_summaries: []
                 };
 
@@ -368,24 +368,8 @@ export default function CharacterConfiguration() {
     };
 
     const handleConvertToPersona = () => {
-        if (localCharacter) {
-            const newPersona: PlayerPersona = {
-                id: localCharacter.id,
-                basicInfo: {
-                    name: localCharacter.basicInfo.name,
-                    age: localCharacter.basicInfo.age,
-                    gender: localCharacter.basicInfo.gender,
-                    role: localCharacter.basicInfo.role,
-                    reputation: localCharacter.basicInfo.reputation,
-                    background: localCharacter.basicInfo.background,
-                    firstImpression: localCharacter.basicInfo.firstImpression,
-                    appearance: localCharacter.basicInfo.appearance,
-                    avatar: localCharacter.basicInfo.avatar,
-                },
-            };
-            addPlayerPersona(newPersona);
-            alert(`Converted ${newPersona.basicInfo.name} to a new persona: ${newPersona.id}`);
-        }
+        // Feature removed as part of replacing Personas with Character Impersonation
+        alert(`This feature is currently disabled.`);
     };
 
     // Basic Info Generator
@@ -1343,8 +1327,8 @@ export default function CharacterConfiguration() {
                                                                 <SelectValue placeholder="Select a persona" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {playerPersonas
-                                                                    .filter(p => !displayCharacter.relationships.some(r => r.targetId === p.id && r.type === 'persona'))
+                                                                {characters
+                                                                    .filter(p => !displayCharacter.relationships.some(r => r.targetId === p.id && r.type === 'character') && p.id !== displayCharacter.id)
                                                                     .map(p => (
                                                                         <SelectItem key={p.id} value={p.id}>{p.basicInfo.name}</SelectItem>
                                                                     ))}
@@ -1372,9 +1356,7 @@ export default function CharacterConfiguration() {
                                         {displayCharacter.relationships.length > 0 ? (
                                             <Accordion type="single" collapsible className="w-full">
                                                 {displayCharacter.relationships.map((relationship) => {
-                                                    const targetEntity = relationship.type === 'persona'
-                                                        ? playerPersonas.find(p => p.id === relationship.targetId)
-                                                        : characters.find(c => c.id === relationship.targetId);
+                                                    const targetEntity = characters.find(c => c.id === relationship.targetId);
                                                     const targetName = targetEntity?.basicInfo.name || "Unknown Entity";
 
                                                     return (

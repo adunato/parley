@@ -17,8 +17,7 @@ export function CharacterCard({ character, locationId }: CharacterCardProps) {
     const {
         setCurrentCharacterId,
         setCurrentLocationId,
-        setCurrentPersonaId,
-        playerPersonas,
+        setCurrentPlayerCharacterId,
         characters
     } = useGameStore();
 
@@ -38,10 +37,10 @@ export function CharacterCard({ character, locationId }: CharacterCardProps) {
         // 3. Ensure a Persona is select (default to first if none or invalid)
         // This is a simple heuristic; ideally user selects persona, but for quick chat we might need to assume or prompt.
         // Current logic in ChatPage requires selection.
-        // Check if we have a current persona set, if not set it to the first one
+        // Check if we have a current player character set, if not set it to the first one
         const state = useGameStore.getState();
-        if (!state.currentPersonaId && playerPersonas.length > 0) {
-            setCurrentPersonaId(playerPersonas[0].id);
+        if (!state.currentPlayerCharacterId && characters.length > 0) {
+            setCurrentPlayerCharacterId(characters[0].id);
         }
 
         // 4. Navigate
@@ -55,10 +54,10 @@ export function CharacterCard({ character, locationId }: CharacterCardProps) {
     // Relationships are per-persona. 
     // Let's grab the relationship for the CURRENTLY SELECTED persona in the store, if any.
     const state = useGameStore.getState();
-    const currentPersonaId = state.currentPersonaId || (playerPersonas.length > 0 ? playerPersonas[0].id : null);
+    const currentPlayerCharacterId = state.currentPlayerCharacterId || (characters.length > 0 ? characters[0].id : null);
 
-    const relationship = currentPersonaId
-        ? character.relationships.find(r => r.targetId === currentPersonaId && r.type === 'persona')
+    const relationship = currentPlayerCharacterId
+        ? character.relationships.find(r => r.targetId === currentPlayerCharacterId && r.type === 'character')
         : undefined;
 
     return (

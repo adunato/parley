@@ -35,14 +35,13 @@ export default function ChatPage() {
 
     const {
         characters,
-        playerPersonas,
         locations,
 
         currentCharacterId,
         setCurrentCharacterId,
 
-        currentPersonaId,
-        setCurrentPersonaId,
+        currentPlayerCharacterId,
+        setCurrentPlayerCharacterId,
 
         currentLocationId,
         setCurrentLocationId,
@@ -61,14 +60,14 @@ export default function ChatPage() {
     // Derived selection objects
     // Note: If IDs are null, finds will return undefined, which matches previous behavior
     const selectedChatCharacter = characters.find(c => c.id === currentCharacterId);
-    const selectedChatPersona = playerPersonas.find(p => p.id === currentPersonaId);
+    const selectedPlayerCharacter = characters.find(p => p.id === currentPlayerCharacterId);
     const selectedChatLocation = locations.find(l => l.id === currentLocationId);
 
     // Wrapper setters to match previous API logic if strictly needed, or update usage below.
     // Ideally update usage.
     const setSelectedChatLocation = (loc: any) => setCurrentLocationId(loc?.id || null);
     const setSelectedChatCharacter = (char: any) => setCurrentCharacterId(char?.id || null);
-    const setSelectedChatPersona = (p: any) => setCurrentPersonaId(p?.id || null);
+    const setSelectedPlayerCharacter = (p: any) => setCurrentPlayerCharacterId(p?.id || null);
 
     const [isChatActive, setIsChatActive] = useState(false);
     const [currentRelationship, setCurrentRelationship] = useState<Relationship | undefined>(undefined);
@@ -84,7 +83,7 @@ export default function ChatPage() {
     // Auto-start chat if all parameters are present (e.g. from Location Screen or Character Card)
     useEffect(() => {
         if (!isChatActive && _hasHydrated) {
-            if (currentCharacterId && currentPersonaId && currentLocationId) {
+            if (currentCharacterId && currentPlayerCharacterId && currentLocationId) {
                 // We have all context, attempt to start chat automatically
                 // We reuse the logic from handleStartChat but need to avoid calling it if it's not stable.
                 // Best to extract the logic or call it here.
@@ -95,7 +94,7 @@ export default function ChatPage() {
                 handleStartChat();
             }
         }
-    }, [_hasHydrated, currentCharacterId, currentPersonaId, currentLocationId, isChatActive]); // Add dependencies carefully
+    }, [_hasHydrated, currentCharacterId, currentPlayerCharacterId, currentLocationId, isChatActive]); // Add dependencies carefully
 
     const handleLocationSelect = (locationId: string) => {
         if (locationId === "unassigned") {
@@ -133,18 +132,18 @@ export default function ChatPage() {
         }
     };
 
-    const handlePersonaSelect = (personaId: string) => {
-        const persona = playerPersonas.find(p => p.id === personaId);
-        if (persona) {
-            setSelectedChatPersona(persona);
+    const handlePlayerCharacterSelect = (characterId: string) => {
+        const character = characters.find(p => p.id === characterId);
+        if (character) {
+            setSelectedPlayerCharacter(character);
         } else {
-            console.error('No persona found with ID:', personaId);
+            console.error('No character found with ID:', characterId);
         }
     };
 
     // Wrapped in useCallback for dependency array stability
     const handleStartChat = useCallback(async () => {
-        if (selectedChatCharacter && selectedChatPersona) {
+        if (selectedChatCharacter && selectedPlayerCharacter) {
             // Always get the latest character data from the store
             const characterFromStore = characters.find(c => c.id === selectedChatCharacter.id);
             if (!characterFromStore) {
@@ -153,7 +152,7 @@ export default function ChatPage() {
                 return;
             }
 
-            const existingRelationship = characterFromStore.relationships.find(rel => rel.targetId === selectedChatPersona.id && rel.type === 'persona');
+            const existingRelationship = characterFromStore.relationships.find(rel => rel.targetId === selectedPlayerCharacter.id && rel.type === 'character');
 
             if (!existingRelationship) {
                 try {
@@ -164,7 +163,7 @@ export default function ChatPage() {
                         },
                         body: JSON.stringify({
                             character: characterFromStore, // Use the latest character data
-                            persona: selectedChatPersona,
+                            persona: selectedPlayerCharacter,
                             worldDescription,
                             aiStyle,
                             generationModel,
@@ -173,7 +172,7 @@ export default function ChatPage() {
                     });
                     const data = await response.json();
                     if (response.ok) {
-                        const newRelationship = { ...data.relationship, characterId: characterFromStore.id, targetId: selectedChatPersona.id, type: 'persona' };
+                        const newRelationship = { ...data.relationship, characterId: characterFromStore.id, targetId: selectedPlayerCharacter.id, type: 'character' };
                         const updatedCharacter = { ...characterFromStore, relationships: [...characterFromStore.relationships, newRelationship] };
                         updateCharacter(updatedCharacter);
                         setCurrentRelationship(newRelationship);
@@ -194,12 +193,12 @@ export default function ChatPage() {
         } else {
             // If we are auto-starting, this alert might be annoying if transient state causes it. 
             // But if we have IDs, we should have objects.
-            // alert("Please select both a character and a persona to start the chat.");
+            // alert("Please select both characters to start the chat.");
         }
-    }, [selectedChatCharacter, selectedChatPersona, characters, worldDescription, aiStyle, generationModel, selectedChatLocation, updateCharacter]);
+    }, [selectedChatCharacter, selectedPlayerCharacter, characters, worldDescription, aiStyle, generationModel, selectedChatLocation, updateCharacter]);
 
     const handleEndChat = async () => {
-        if (selectedChatCharacter && selectedChatPersona && currentRelationship) {
+        if (selectedChatCharacter && selectedPlayerCharacter && currentRelationship) {
 
             // 1. Open Modal and Start Loading
             setIsSummaryModalOpen(true);
@@ -214,7 +213,7 @@ export default function ChatPage() {
                     body: JSON.stringify({
                         chatHistory: chatMessages,
                         character: selectedChatCharacter,
-                        persona: selectedChatPersona,
+                        persona: selectedPlayerCharacter,
                         currentRelationship: currentRelationship,
                         modelName: generationModel
                     }),
@@ -240,7 +239,7 @@ export default function ChatPage() {
                         worldInfo: worldDescription,
                         aiStyle: aiStyle,
                         characterName: selectedChatCharacter?.basicInfo?.name || "Unknown Character",
-                        playerPersonaName: selectedChatPersona?.basicInfo?.name || "Unknown Persona",
+                        playerPersonaName: selectedPlayerCharacter?.basicInfo?.name || "Unknown Persona",
                         summarizationModel: summarizationModel,
                     }),
                 });
@@ -258,11 +257,11 @@ export default function ChatPage() {
     };
 
     const handleCloseSummary = () => {
-        if (selectedChatCharacter && selectedChatPersona && sceneSummaryText) {
+        if (selectedChatCharacter && selectedPlayerCharacter && sceneSummaryText) {
             const newSummary = { summary: sceneSummaryText, timestamp: new Date() };
 
             const updatedRelationships = selectedChatCharacter.relationships.map(rel => {
-                if (rel.targetId === selectedChatPersona.id && rel.type === 'persona') {
+                if (rel.targetId === selectedPlayerCharacter.id && rel.type === 'character') {
                     // Add Summary
                     const existingSummaries = rel.chat_summaries || [];
                     const updatedSummaries = [...existingSummaries, newSummary];
@@ -296,7 +295,7 @@ export default function ChatPage() {
             updateCharacter(updatedCharacter);
 
             // Update local state to reflect changes immediately if needed, though clearChat usually resets UI
-            const newRel = updatedRelationships.find(r => r.targetId === selectedChatPersona.id && r.type === 'persona');
+            const newRel = updatedRelationships.find(r => r.targetId === selectedPlayerCharacter.id && r.type === 'character');
             if (newRel) setCurrentRelationship(newRel);
         }
 
@@ -332,7 +331,7 @@ export default function ChatPage() {
         <div className="flex flex-col h-screen bg-background text-foreground">
             {!isChatActive ? (
                 <div className="flex-1 flex items-center justify-center p-4">
-                    {(currentCharacterId && currentPersonaId && currentLocationId) ? (
+                    {(currentCharacterId && currentPlayerCharacterId && currentLocationId) ? (
                         <div className="flex flex-col items-center justify-center space-y-4">
                             <Loader2 className="h-12 w-12 animate-spin text-primary" />
                             <h2 className="type-h3 animate-pulse">Entering Chat...</h2>
@@ -384,16 +383,16 @@ export default function ChatPage() {
                                 </div>
                                 <div>
                                     <label htmlFor="persona-select" className="type-ui-label text-muted-foreground mb-2 block">
-                                        Select Persona
+                                        Select Player Character
                                     </label>
-                                    <Select onValueChange={handlePersonaSelect} value={selectedChatPersona?.id || ""}>
+                                    <Select onValueChange={handlePlayerCharacterSelect} value={selectedPlayerCharacter?.id || ""}>
                                         <SelectTrigger id="persona-select">
-                                            <SelectValue placeholder="Choose a persona" />
+                                            <SelectValue placeholder="Choose a character to play as" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {playerPersonas.map((persona) => (
-                                                <SelectItem key={persona.id} value={persona.id}>
-                                                    {persona.basicInfo.name} ({persona.id})
+                                            {characters.map((character) => (
+                                                <SelectItem key={character.id} value={character.id}>
+                                                    {character.basicInfo.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -402,7 +401,7 @@ export default function ChatPage() {
                                 <Button
                                     onClick={handleStartChat}
                                     className="w-full py-2 px-4 shadow-md type-ui-label"
-                                    disabled={!selectedChatCharacter || !selectedChatPersona}
+                                    disabled={!selectedChatCharacter || !selectedPlayerCharacter}
                                 >
                                     <Sparkles className="w-5 h-5 mr-2" />
                                     Start Chat

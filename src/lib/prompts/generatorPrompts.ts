@@ -55,12 +55,12 @@ export const RELATIONSHIP_JSON_STRUCTURE = `{
   "description": string        // Description of the relationship (e.g. "Strangers," "A powerful enemy," "Romantic partners")
 }`;
 
-import { Character, Persona as PlayerPersona, Relationship } from "../types";
+import { Character, Relationship } from "../types";
 import { generateCharacterJsonStructure, generatePersonaJsonStructure, generateCharacterJsonStructureWithoutRelationships } from '../schemaGenerator';
 
-export const generateRelationshipPrompt = (character: Character, persona: PlayerPersona, worldDescription?: string, aiStyle?: string, relationshipContext?: string) => {
+export const generateRelationshipPrompt = (character: Character, playerCharacter: Character, worldDescription?: string, aiStyle?: string, relationshipContext?: string) => {
     const characterJson = JSON.stringify(character, null, 2);
-    const personaJson = JSON.stringify(persona, null, 2);
+    const personaJson = JSON.stringify(playerCharacter, null, 2);
 
     let prompt = PromptStore.getPrompt('relationship_gen');
 
@@ -116,7 +116,7 @@ import { Message } from "@ai-sdk/react";
 
 export const generateRelationshipDeltaPrompt = (
     character: Character,
-    persona: PlayerPersona,
+    playerCharacter: Character,
     chatHistory: Message[],
     latestExchange: { userMessage: string; characterResponse: string },
     currentRelationship: Relationship,
@@ -124,7 +124,7 @@ export const generateRelationshipDeltaPrompt = (
     aiStyle?: string
 ) => {
     const characterJson = JSON.stringify(character, null, 2);
-    const personaJson = JSON.stringify(persona, null, 2);
+    const personaJson = JSON.stringify(playerCharacter, null, 2);
     const chatHistoryJson = JSON.stringify(chatHistory, null, 2);
     const latestExchangeJson = JSON.stringify(latestExchange, null, 2);
     const currentRelationshipJson = JSON.stringify(currentRelationship, null, 2);
