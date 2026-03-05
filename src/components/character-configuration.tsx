@@ -685,16 +685,23 @@ export default function CharacterConfiguration() {
                     console.log('[generateCharacter] Placeholder creation complete. New relationships to attach:', newRelationships.length);
 
                     // Build updated character outside the updater to avoid setState-during-render.
-                    // Preserve mappedAttributes from current character — the LLM response never includes them,
-                    // so a naive spread of generatedCharacterData.basicInfo would silently wipe them.
+                    // mappedAttributes merge strategy:
+                    //   - Start with server-resolved attributes (includes BioMachine reverse-mapped values
+                    //     for "Let Generator Decide" categories — route.ts line 159).
+                    //   - Overlay user-explicitly-set attributes on top so user choices always win,
+                    //     but categories left as "-- Let Generator Decide --" still get server values.
                     const currentChar = localCharacter;
+                    const mergedMappedAttributes = {
+                        ...(generatedCharacterData.basicInfo?.mappedAttributes || {}),
+                        ...(currentChar.basicInfo.mappedAttributes || {})
+                    };
                     const updated = {
                         ...currentChar,
                         ...generatedCharacterData,
                         id: currentChar.id,
                         basicInfo: {
                             ...generatedCharacterData.basicInfo,
-                            mappedAttributes: currentChar.basicInfo.mappedAttributes || {}
+                            mappedAttributes: mergedMappedAttributes
                         },
                         relationships: [...currentChar.relationships, ...newRelationships]
                     };
