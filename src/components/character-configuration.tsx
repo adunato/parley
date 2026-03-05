@@ -682,6 +682,102 @@ export default function CharacterConfiguration() {
                         });
                     }
 
+                    // --- PASS 2: Server-resolved mapped attributes (BioMachine reverse mapping) ---
+                    // When "Let Generator Decide" is used, the server resolves attributes via BioMachine
+                    // and returns them in generatedCharacterData.basicInfo.mappedAttributes.
+                    // The user's mappedAttrs was {} at call time so pendingPlaceholders was empty,
+                    // meaning the LLM wasn't asked for relationship stats for these.
+                    // We still create the placeholder characters; they just get default relationship stats.
+                    const serverMappedAttrs = generatedCharacterData.basicInfo?.mappedAttributes || {};
+                    const userAttrIds = new Set(Object.values(mappedAttrs || {}));
+
+                    Object.values(serverMappedAttrs).forEach((attrId: any) => {
+                        if (userAttrIds.has(attrId)) return; // already handled in pass 1
+
+                        const attr = gameAttributes.find((a: any) => a.id === attrId);
+                        if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
+                            for (let i = 0; i < attr.relatedCharacterCount; i++) {
+                                currentMaxId++;
+                                const nextId = currentMaxId.toString();
+
+                                const category = gameAttributeCategories.find((c: any) => c.id === attr.categoryId);
+                                const categoryName = category ? category.name.toLowerCase() : '';
+                                const isSiblingCat = categoryName.includes('sibling');
+                                const shareLastName = attr.shareLastName || isSiblingCat;
+
+                                const ageDelta = isSiblingCat ? faker.number.int({ min: -10, max: 10 }) : faker.number.int({ min: -5, max: 5 });
+                                const newAge = Math.max(0, (generatedCharacterData.basicInfo.age || 30) + ageDelta);
+
+                                const country = generatedCharacterData.basicInfo.originLocation?.country as SupportedCountry || 'USA';
+                                const identity = NameGenerator.generateIdentity(country, undefined, generatedCharacterData.basicInfo.originLocation?.stateRegion as any);
+
+                                let lastName = identity.lastName;
+                                if (shareLastName && generatedCharacterData.basicInfo.name) {
+                                    const parts = generatedCharacterData.basicInfo.name.split(' ');
+                                    if (parts.length > 1) lastName = parts[parts.length - 1];
+                                }
+
+                                const placeholderName = identity.firstName + ' ' + lastName;
+                                const validProfessions = professions.filter((p: any) => {
+                                    const minAge = p.minAge || 0;
+                                    const maxAge = p.maxAge || 1000;
+                                    return newAge >= minAge && newAge <= maxAge;
+                                });
+                                const role = validProfessions.length > 0 ? validProfessions[Math.floor(Math.random() * validProfessions.length)].id : '';
+                                const typeName = isSiblingCat ? 'sibling' : attr.name;
+
+                                const newPlaceholder: Character = {
+                                    id: nextId,
+                                    basicInfo: {
+                                        name: placeholderName,
+                                        age: newAge,
+                                        gender: identity.gender === 'female' ? 'Female' : 'Male',
+                                        role: role,
+                                        reputation: '',
+                                        background: `Automatically generated placeholder for ${generatedCharacterData.basicInfo.name}'s ${attr.name}.`,
+                                        firstImpression: '',
+                                        appearance: '',
+                                        originLocation: generatedCharacterData.basicInfo.originLocation,
+                                        mappedAttributes: {}
+                                    },
+                                    personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
+                                    idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
+                                    relationships: [],
+                                    isPlaceholder: true,
+                                };
+
+                                // No LLM-generated stats available for server-resolved attributes (pendingPlaceholders was empty)
+                                const relStats = {
+                                    satisfaction: 50,
+                                    commitment: 50,
+                                    intimacy: 50,
+                                    trust: 50,
+                                    passion: 50,
+                                    description: `Auto-generated ${typeName} relationship.`
+                                };
+
+                                newPlaceholder.relationships.push({
+                                    characterId: newPlaceholder.id,
+                                    targetId: localCharacter.id,
+                                    type: typeName,
+                                    ...relStats,
+                                    chat_summaries: []
+                                });
+
+                                console.log('[generateCharacter] Adding server-resolved placeholder:', nextId, placeholderName, '| type:', typeName);
+                                addCharacter(newPlaceholder);
+
+                                newRelationships.push({
+                                    characterId: localCharacter.id,
+                                    targetId: newPlaceholder.id,
+                                    type: typeName,
+                                    ...relStats,
+                                    chat_summaries: []
+                                });
+                            }
+                        }
+                    });
+
                     console.log('[generateCharacter] Placeholder creation complete. New relationships to attach:', newRelationships.length);
 
                     // Build updated character outside the updater to avoid setState-during-render.
