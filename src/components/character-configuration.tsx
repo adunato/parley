@@ -437,6 +437,7 @@ export default function CharacterConfiguration() {
     // Generation Handlers (Character & Avatar)
     const generateCharacter = async (prompt: string) => {
         setIsGeneratingCharacter(true);
+        console.log('[generateCharacter] Called. localCharacter id:', localCharacter?.id, 'mappedAttributes:', JSON.stringify(localCharacter?.basicInfo?.mappedAttributes));
         try {
             const body: { characterDescription?: string; worldDescription?: string; aiStyle?: string; existingContext?: any; bioData?: any; symbolicMappings?: any; gameAttributes?: any; gameAttributeCategories?: any; pendingPlaceholders?: any; } = {};
             const context: any = {};
@@ -683,12 +684,18 @@ export default function CharacterConfiguration() {
 
                     console.log('[generateCharacter] Placeholder creation complete. New relationships to attach:', newRelationships.length);
 
-                    // Build updated character outside the updater to avoid setState-during-render
+                    // Build updated character outside the updater to avoid setState-during-render.
+                    // Preserve mappedAttributes from current character — the LLM response never includes them,
+                    // so a naive spread of generatedCharacterData.basicInfo would silently wipe them.
                     const currentChar = localCharacter;
                     const updated = {
                         ...currentChar,
                         ...generatedCharacterData,
                         id: currentChar.id,
+                        basicInfo: {
+                            ...generatedCharacterData.basicInfo,
+                            mappedAttributes: currentChar.basicInfo.mappedAttributes || {}
+                        },
                         relationships: [...currentChar.relationships, ...newRelationships]
                     };
                     updateCharacter(updated);
