@@ -318,14 +318,11 @@ export default function CharacterConfiguration() {
                     chat_summaries: []
                 };
 
-                // Add to character relationships
-                setLocalCharacter(prev => {
-                    if (!prev) return null;
-                    const updated = { ...prev, relationships: [...prev.relationships, newRelationship] };
-                    // Force immediate save for critical structural changes
-                    updateCharacter(updated);
-                    return updated;
-                });
+                // Build updated character outside the updater to avoid setState-during-render
+                const current = localCharacter;
+                const updated = { ...current, relationships: [...current.relationships, newRelationship] };
+                updateCharacter(updated);
+                setLocalCharacter(updated);
 
                 setIsRelationshipDialogOpen(false);
                 setRelationshipPersonaId("");
@@ -333,8 +330,9 @@ export default function CharacterConfiguration() {
                 setSaveStatus('saved');
                 setTimeout(() => setSaveStatus('idle'), 2000);
             } else {
-                console.error('Failed to generate relationship');
-                alert('Failed to generate relationship');
+                const errorBody = await response.json().catch(() => ({}));
+                console.error('[handleCreateRelationship] Failed. Status:', response.status, 'Body:', errorBody);
+                alert(`Failed to generate relationship (${response.status}): ${errorBody.error || 'Unknown error'}`);
             }
         } catch (error) {
             console.error('Error generating relationship:', error);
@@ -575,6 +573,8 @@ export default function CharacterConfiguration() {
                     // Re-derive IDs using same seed so nextId matches what pendingPlaceholders sent to the LLM.
                     let currentMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
 
+                    console.log('[generateCharacter] Starting placeholder creation. Mapped attributes:', mappedAttrs ? Object.keys(mappedAttrs).length : 0);
+
                     if (mappedAttrs) {
                         Object.values(mappedAttrs).forEach(attrId => {
                             const attr = gameAttributes.find((a: any) => a.id === attrId);
@@ -654,6 +654,8 @@ export default function CharacterConfiguration() {
                                             passion: genRel.passion ?? 50,
                                             description: genRel.description || relStats.description
                                         };
+                                    } else {
+                                        console.warn('[generateCharacter] No LLM-generated relationship found for placeholder id:', nextId, '— using defaults.');
                                     }
 
                                     newPlaceholder.relationships.push({
@@ -664,6 +666,7 @@ export default function CharacterConfiguration() {
                                         chat_summaries: []
                                     });
 
+                                    console.log('[generateCharacter] Adding placeholder:', nextId, placeholderName, '| type:', typeName);
                                     addCharacter(newPlaceholder);
 
                                     newRelationships.push({
@@ -678,18 +681,18 @@ export default function CharacterConfiguration() {
                         });
                     }
 
-                    // Update existing
-                    setLocalCharacter(prev => {
-                        if (!prev) return null;
-                        const updated = {
-                            ...prev,
-                            ...generatedCharacterData,
-                            id: prev.id,
-                            relationships: [...prev.relationships, ...newRelationships]
-                        };
-                        updateCharacter(updated);
-                        return updated;
-                    });
+                    console.log('[generateCharacter] Placeholder creation complete. New relationships to attach:', newRelationships.length);
+
+                    // Build updated character outside the updater to avoid setState-during-render
+                    const currentChar = localCharacter;
+                    const updated = {
+                        ...currentChar,
+                        ...generatedCharacterData,
+                        id: currentChar.id,
+                        relationships: [...currentChar.relationships, ...newRelationships]
+                    };
+                    updateCharacter(updated);
+                    setLocalCharacter(updated);
                 } else {
                     // This branch shouldn't really be hit if we always create a blank char first
                     console.warn("Generated character but no local character selected");
@@ -1394,23 +1397,23 @@ export default function CharacterConfiguration() {
 
                                                     return (
                                                         <AccordionItem key={relationship.targetId} value={relationship.targetId}>
-                                                            <AccordionTrigger className="hover:no-underline py-3">
-                                                                <div className="flex items-center justify-between w-full pr-4">
+                                                            {/* Flex row: AccordionTrigger and delete Button are siblings to avoid button-inside-button */}
+                                                            <div className="flex items-center w-full">
+                                                                <AccordionTrigger className="hover:no-underline py-3 flex-1">
                                                                     <span className="font-medium text-foreground">{targetName}</span>
-                                                                    <Button
-                                                                        variant="destructive"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 rounded-md hover:bg-destructive/90 transition-colors"
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation(); // Prevent the accordion from toggling
-                                                                            handleDeleteRelationship(displayCharacter.id, relationship.targetId);
-                                                                        }}
-                                                                    >
-                                                                        <X className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </AccordionTrigger>
+                                                                </AccordionTrigger>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 rounded-md ml-2 shrink-0 hover:bg-destructive/90 transition-colors"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteRelationship(displayCharacter.id, relationship.targetId);
+                                                                    }}
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                             <AccordionContent>
                                                                 <RelationshipDisplay characterName={displayCharacter.basicInfo.name} relationship={relationship} />
                                                             </AccordionContent>

@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ relationship: parsedResult });
   } catch (error) {
-    console.error('Error generating relationship data:', error);
-    return NextResponse.json({ error: 'Failed to generate relationship data' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Error generating relationship data:', msg);
+    return NextResponse.json({ error: 'Failed to generate relationship data', detail: msg }, { status: 500 });
   }
 }
