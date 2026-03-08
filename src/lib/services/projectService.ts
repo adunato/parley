@@ -1,7 +1,7 @@
 import { useParleyStore } from '../store';
 import { useEntityStore } from '../entityStore';
 import { useProjectLibraryStore, ProjectMetadata } from '../store/projectStore';
-import { Character, CharacterGroup, Relationship } from '../types';
+import { Character, CharacterGroup, Relationship, Location } from '../types';
 import { Message } from 'ai';
 import { db } from '../db';
 
@@ -22,6 +22,7 @@ export interface ParleyProjectExport {
         characterGroups: CharacterGroup[];
         playerPersonas?: Character[];
         relationshipDeltas: Relationship | undefined;
+        locations?: Location[];
     };
     session: {
         chatMessages: Message[];
@@ -107,6 +108,7 @@ export const ProjectService = {
                 characterGroups: entityState.characterGroups,
                 playerPersonas: undefined, // Obsolete field, kept for backwards compatibility in type if needed, but we don't save it anymore
                 relationshipDeltas: entityState.cumulativeRelationshipDelta,
+                locations: entityState.locations,
             },
             session: {
                 chatMessages: parleyState.chatMessages,
@@ -155,6 +157,7 @@ export const ProjectService = {
                 characterGroups: data.entities.characterGroups,
                 // playerPersonas: data.entities.playerPersonas, // No longer restoring player personas
                 cumulativeRelationshipDelta: data.entities.relationshipDeltas,
+                locations: data.entities.locations || [],
                 selectedChatCharacter: data.entities.characters.find(c => c.id === data.session.selectedCharacterId)
             });
 
