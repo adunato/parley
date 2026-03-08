@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useEntityStore } from '@/lib/entityStore';
 import { useBioStore } from '@/lib/store/bioStore';
 import { GameAttribute, GameAttributeCategory } from '@/lib/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Pencil, Check, X, Search } from 'lucide-react';
+import { Plus, Trash2, Pencil, Check, X, Search, Download, Upload } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -40,6 +40,81 @@ export function AttributeManager() {
         if (!node) return <span className="text-red-500 text-xs">Invalid mapping (node deleted)</span>;
 
         return <span className="text-xs font-mono">[{node.slot}] {node.text.substring(0, 30)}...</span>;
+    };
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleExport = () => {
+        const exportData = {
+            gameAttributeCategories,
+            gameAttributes
+        };
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileDefaultName = 'parley-attributes.json';
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    };
+
+    const handleImportClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target?.result as string);
+                if (importedData.gameAttributeCategories && importedData.gameAttributes) {
+                    const importedCategories = importedData.gameAttributeCategories as GameAttributeCategory[];
+                    const importedAttributes = importedData.gameAttributes as GameAttribute[];
+
+                    useEntityStore.setState((prev) => {
+                        const newCategories = [...(prev.gameAttributeCategories || [])];
+                        importedCategories.forEach(ic => {
+                            const existingIndex = newCategories.findIndex(c => c.id === ic.id);
+                            if (existingIndex >= 0) {
+                                newCategories[existingIndex] = ic;
+                            } else {
+                                newCategories.push(ic);
+                            }
+                        });
+
+                        const newAttributes = [...(prev.gameAttributes || [])];
+                        importedAttributes.forEach(ia => {
+                            const existingIndex = newAttributes.findIndex(a => a.id === ia.id);
+                            if (existingIndex >= 0) {
+                                newAttributes[existingIndex] = ia;
+                            } else {
+                                newAttributes.push(ia);
+                            }
+                        });
+
+                        return {
+                            gameAttributeCategories: newCategories,
+                            gameAttributes: newAttributes
+                        };
+                    });
+                } else {
+                    alert("Invalid file format. Ensure the file contains both categories and attributes.");
+                }
+            } catch (err) {
+                console.error("Failed to parse imported attributes", err);
+                alert("Failed to import attributes. Invalid JSON file format.");
+            }
+        };
+        reader.readAsText(file);
+
+        // Reset input
+        event.target.value = '';
     };
 
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -166,10 +241,27 @@ export function AttributeManager() {
                                         />
                                     </div>
                                 </div>
-                                <Button onClick={() => handleCreateStart(category.id)}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    New {category.name}
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="file"
+                                        accept=".json"
+                                        ref={fileInputRef}
+                                        style={{ display: 'none' }}
+                                        onChange={handleImportFile}
+                                    />
+                                    <Button variant="outline" onClick={handleImportClick}>
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        Import
+                                    </Button>
+                                    <Button variant="outline" onClick={handleExport}>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Export
+                                    </Button>
+                                    <Button onClick={() => handleCreateStart(category.id)}>
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        New {category.name}
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="border rounded-md">
