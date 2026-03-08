@@ -123,8 +123,6 @@ export const useEntityStore = create<EntityStore>()(
           characterGroups: [],
           locations: [],
           selectedChatLocation: undefined,
-          gameAttributeCategories: [],
-          gameAttributes: [],
         });
         useEntityStore.persist.clearStorage();
       },
