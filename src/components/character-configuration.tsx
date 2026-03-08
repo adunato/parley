@@ -580,29 +580,38 @@ export default function CharacterConfiguration() {
                         Object.values(mappedAttrs).forEach(attrId => {
                             const attr = gameAttributes.find((a: any) => a.id === attrId);
                             if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
-                                for (let i = 0; i < attr.relatedCharacterCount; i++) {
-                                    currentMaxId++;
-                                    const nextId = currentMaxId.toString();
-
                                     const category = gameAttributeCategories.find((c: any) => c.id === attr.categoryId);
                                     const categoryName = category ? category.name.toLowerCase() : '';
                                     const isSiblingCat = categoryName.includes('sibling');
+                                    const typeName = isSiblingCat ? 'sibling' : attr.name;
 
-                                    const shareLastName = attr.shareLastName || isSiblingCat;
+                                    // Fix: Account for existing relationships of this exact type
+                                    const existingRelCount = localCharacter.relationships.filter(r => r.type === typeName).length;
+                                    const placeholdersToCreate = Math.max(0, attr.relatedCharacterCount - existingRelCount);
 
-                                    let ageDelta = isSiblingCat ? faker.number.int({ min: -10, max: 10 }) : faker.number.int({ min: -5, max: 5 });
-                                    let newAge = Math.max(0, (generatedCharacterData.basicInfo.age || 30) + ageDelta);
-
-                                    const country = generatedCharacterData.basicInfo.originLocation?.country as SupportedCountry || 'USA';
-                                    const identity = NameGenerator.generateIdentity(country, undefined, generatedCharacterData.basicInfo.originLocation?.stateRegion as any);
-
-                                    let lastName = identity.lastName;
-                                    if (shareLastName && generatedCharacterData.basicInfo.name) {
-                                        const parts = generatedCharacterData.basicInfo.name.split(' ');
-                                        if (parts.length > 1) {
-                                            lastName = parts[parts.length - 1];
-                                        }
+                                    if (placeholdersToCreate > 0) {
+                                        console.log(`[generateCharacter] Creating ${placeholdersToCreate} placeholder(s) for ${typeName}. (${existingRelCount} existing)`);
                                     }
+
+                                    for (let i = 0; i < placeholdersToCreate; i++) {
+                                        currentMaxId++;
+                                        const nextId = currentMaxId.toString();
+
+                                        const shareLastName = attr.shareLastName || isSiblingCat;
+
+                                        let ageDelta = isSiblingCat ? faker.number.int({ min: -10, max: 10 }) : faker.number.int({ min: -5, max: 5 });
+                                        let newAge = Math.max(0, (generatedCharacterData.basicInfo.age || 30) + ageDelta);
+
+                                        const country = generatedCharacterData.basicInfo.originLocation?.country as SupportedCountry || 'USA';
+                                        const identity = NameGenerator.generateIdentity(country, undefined, generatedCharacterData.basicInfo.originLocation?.stateRegion as any);
+
+                                        let lastName = identity.lastName;
+                                        if (shareLastName && generatedCharacterData.basicInfo.name) {
+                                            const parts = generatedCharacterData.basicInfo.name.split(' ');
+                                            if (parts.length > 1) {
+                                                lastName = parts[parts.length - 1];
+                                            }
+                                        }
 
                                     const placeholderName = identity.firstName + ' ' + lastName;
 
@@ -626,7 +635,9 @@ export default function CharacterConfiguration() {
                                             firstImpression: '',
                                             appearance: '',
                                             originLocation: generatedCharacterData.basicInfo.originLocation,
-                                            mappedAttributes: {}
+                                            mappedAttributes: {
+                                                [attr.categoryId]: attr.id
+                                            }
                                         },
                                         personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
@@ -696,13 +707,23 @@ export default function CharacterConfiguration() {
 
                         const attr = gameAttributes.find((a: any) => a.id === attrId);
                         if (attr && attr.relatedCharacterCount && attr.relatedCharacterCount > 0) {
-                            for (let i = 0; i < attr.relatedCharacterCount; i++) {
+                            const category = gameAttributeCategories.find((c: any) => c.id === attr.categoryId);
+                            const categoryName = category ? category.name.toLowerCase() : '';
+                            const isSiblingCat = categoryName.includes('sibling');
+                            const typeName = isSiblingCat ? 'sibling' : attr.name;
+
+                            // Fix: Account for existing relationships of this exact type
+                            const existingRelCount = localCharacter.relationships.filter(r => r.type === typeName).length;
+                            const placeholdersToCreate = Math.max(0, attr.relatedCharacterCount - existingRelCount);
+
+                            if (placeholdersToCreate > 0) {
+                                console.log(`[generateCharacter/Server] Creating ${placeholdersToCreate} placeholder(s) for ${typeName}. (${existingRelCount} existing)`);
+                            }
+
+                            for (let i = 0; i < placeholdersToCreate; i++) {
                                 currentMaxId++;
                                 const nextId = currentMaxId.toString();
 
-                                const category = gameAttributeCategories.find((c: any) => c.id === attr.categoryId);
-                                const categoryName = category ? category.name.toLowerCase() : '';
-                                const isSiblingCat = categoryName.includes('sibling');
                                 const shareLastName = attr.shareLastName || isSiblingCat;
 
                                 const ageDelta = isSiblingCat ? faker.number.int({ min: -10, max: 10 }) : faker.number.int({ min: -5, max: 5 });
@@ -724,7 +745,6 @@ export default function CharacterConfiguration() {
                                     return newAge >= minAge && newAge <= maxAge;
                                 });
                                 const role = validProfessions.length > 0 ? validProfessions[Math.floor(Math.random() * validProfessions.length)].id : '';
-                                const typeName = isSiblingCat ? 'sibling' : attr.name;
 
                                 const newPlaceholder: Character = {
                                     id: nextId,
@@ -738,7 +758,9 @@ export default function CharacterConfiguration() {
                                         firstImpression: '',
                                         appearance: '',
                                         originLocation: generatedCharacterData.basicInfo.originLocation,
-                                        mappedAttributes: {}
+                                        mappedAttributes: {
+                                            [attr.categoryId]: attr.id
+                                        }
                                     },
                                     personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                     idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
