@@ -817,6 +817,7 @@ export default function CharacterConfiguration() {
                         ...currentChar,
                         ...generatedCharacterData,
                         id: currentChar.id,
+                        isPlaceholder: false,
                         basicInfo: {
                             ...generatedCharacterData.basicInfo,
                             mappedAttributes: mergedMappedAttributes
