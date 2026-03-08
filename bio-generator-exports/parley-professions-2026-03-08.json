@@ -1,0 +1,42 @@
+[
+  {
+    "id": "SECONDARY_SCHOOL_TEACHER",
+    "name": "Secondary School Teacher",
+    "description": "",
+    "categoryId": "profession",
+    "minAge": 16,
+    "maxAge": 75
+  },
+  {
+    "id": "TECH_CAREER",
+    "name": "Tech Career",
+    "description": "",
+    "categoryId": "profession",
+    "minAge": 16,
+    "maxAge": 75
+  },
+  {
+    "id": "ELECTRICIAN",
+    "name": "Electrician",
+    "description": "",
+    "categoryId": "profession",
+    "minAge": 16,
+    "maxAge": 75
+  },
+  {
+    "id": "RETAIL_MANAGER",
+    "name": "Retail Manager",
+    "description": "",
+    "categoryId": "profession",
+    "minAge": 16,
+    "maxAge": 75
+  },
+  {
+    "id": "HEAD_TEACHER",
+    "name": "Head Teacher",
+    "description": "",
+    "categoryId": "profession",
+    "minAge": 16,
+    "maxAge": 75
+  }
+]

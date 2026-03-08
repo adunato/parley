@@ -1,0 +1,167 @@
+{
+  "gameAttributeCategories": [
+    {
+      "id": "origins",
+      "name": "Origins",
+      "description": "Social Class / Starting Socioeconomic Background"
+    },
+    {
+      "id": "education",
+      "name": "Education",
+      "description": "Education Level / Path"
+    },
+    {
+      "id": "housing",
+      "name": "Housing",
+      "description": "Property / Housing Status"
+    },
+    {
+      "id": "siblings",
+      "name": "Siblings",
+      "description": "Family size / Structure"
+    },
+    {
+      "id": "relationships",
+      "name": "Relationships",
+      "description": "Relationship History / Trajectory"
+    }
+  ],
+  "gameAttributes": [
+    {
+      "id": "2dd1fd4e-5bc9-4212-ad04-0b59017ec26a",
+      "categoryId": "origins",
+      "name": "Poor",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "0d8e063e-fb46-40d4-81ed-df2a50fd6352",
+      "categoryId": "origins",
+      "name": "Working Class",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "edeb1d93-f1a6-4d3f-a86b-a9054396e385",
+      "categoryId": "origins",
+      "name": "Middle Class",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "15542210-3136-44c5-9730-3697e21aac9b",
+      "categoryId": "origins",
+      "name": "Well Off",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "f5eec478-ab9a-481d-8a95-d831c6755f4e",
+      "categoryId": "origins",
+      "name": "Wealthy",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "6d9c43be-b6ac-4136-a84a-0889b2a37e00",
+      "categoryId": "siblings",
+      "name": "No Siblings",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "73e49914-fb03-4c4a-b4f7-219f1e76a8c6",
+      "categoryId": "siblings",
+      "name": "One Sibling",
+      "description": "",
+      "relatedCharacterCount": 1,
+      "shareLastName": true
+    },
+    {
+      "id": "24a233a1-f873-4519-bed1-b9ec60fe2f2d",
+      "categoryId": "siblings",
+      "name": "Two Siblings",
+      "description": "",
+      "relatedCharacterCount": 2,
+      "shareLastName": true
+    },
+    {
+      "id": "69f625fe-af87-40d2-b76c-0fbb1cfde899",
+      "categoryId": "education",
+      "name": "Advanced Degree",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "827d9e2d-c2ba-49f7-8e78-19f2f18f6148",
+      "categoryId": "education",
+      "name": "Trades Skills",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "8274b315-dbbb-4d43-87a2-7c932b50b519",
+      "categoryId": "education",
+      "name": "Degree",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "e511d88b-d3c7-467d-ad7e-c8ffc42131ab",
+      "categoryId": "education",
+      "name": "Shop Skills",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "3d54e30f-a264-4b53-8b95-19f16c9e7ac2",
+      "categoryId": "education",
+      "name": "Tech Skills",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "5d5ad66d-8f3a-4996-8e47-03d1f174d589",
+      "categoryId": "relationships",
+      "name": "Married",
+      "description": "",
+      "relatedCharacterCount": 1,
+      "shareLastName": true
+    },
+    {
+      "id": "57b1f221-19cc-4ded-8d44-3d47f080abd2",
+      "categoryId": "relationships",
+      "name": "Single",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "e5d7587b-92c5-47a2-a3fb-41ffa84c0929",
+      "categoryId": "housing",
+      "name": "Home Howner",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    },
+    {
+      "id": "aa70dbdc-92a5-462b-9462-9fb0a71cf29e",
+      "categoryId": "housing",
+      "name": "Renter",
+      "description": "",
+      "relatedCharacterCount": 0,
+      "shareLastName": false
+    }
+  ]
+}
