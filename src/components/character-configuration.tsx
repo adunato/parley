@@ -204,12 +204,16 @@ export default function CharacterConfiguration() {
         setLocalCharacter((prev) => {
             if (!prev) return null;
             const newCharacter = { ...prev };
+            const newMappedAttributes = { ...(newCharacter.basicInfo.mappedAttributes || {}) };
+            if (attributeId === "none") {
+                delete newMappedAttributes[categoryId];
+            } else {
+                newMappedAttributes[categoryId] = attributeId;
+            }
+
             newCharacter.basicInfo = {
                 ...newCharacter.basicInfo,
-                mappedAttributes: {
-                    ...(newCharacter.basicInfo.mappedAttributes || {}),
-                    [categoryId]: attributeId === "none" ? undefined : attributeId
-                }
+                mappedAttributes: newMappedAttributes
             };
             isDirtyRef.current = true;
             setSaveStatus('saving');
@@ -548,10 +552,21 @@ export default function CharacterConfiguration() {
 
                     if (!finalHouseholdId) {
                         finalHouseholdId = uuidv4();
+                        
+                        const fullName = generatedCharacterData.basicInfo.name;
+                        const nameParts = fullName.split(' ');
+                        const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : fullName;
+                        
+                        let assignedName = `${lastName}'s Household`;
+                        const existingHouseholds = useEntityStore.getState().households;
+                        if (existingHouseholds.some(h => h.name.toLowerCase() === assignedName.toLowerCase())) {
+                            assignedName = `${fullName}'s Household`;
+                        }
+
                         const newHousehold = {
                             id: finalHouseholdId,
-                            name: `${generatedCharacterData.basicInfo.name}'s Household`,
-                            description: `The household of ${generatedCharacterData.basicInfo.name}.`,
+                            name: assignedName,
+                            description: `The household of ${fullName}.`,
                             characters: [localCharacter.id] 
                         };
                         addHousehold(newHousehold);
@@ -622,11 +637,15 @@ export default function CharacterConfiguration() {
                                                 [attr.categoryId]: attr.id
                                             }
                                         },
+                                        householdId: attr.liveTogether ? finalHouseholdId : undefined,
                                         personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                         relationships: [],
                                         isPlaceholder: true,
                                     };
+                                    if (attr.liveTogether) {
+                                        householdCharactersToAdd.push(nextId);
+                                    }
                                     const typeName = isSiblingCat ? 'sibling' : attr.name;
 
                                     const genRelIndex = placeholderRelationships.findIndex((r: any) => r.characterId === nextId);
@@ -796,9 +815,12 @@ export default function CharacterConfiguration() {
                     //   - Overlay user-explicitly-set attributes on top so user choices always win,
                     //     but categories left as "-- Let Generator Decide --" still get server values.
                     const currentChar = localCharacter;
+                    const cleanLocalAttributes = Object.fromEntries(
+                        Object.entries(currentChar.basicInfo.mappedAttributes || {}).filter(([_, v]) => v !== undefined)
+                    );
                     const mergedMappedAttributes = {
                         ...(generatedCharacterData.basicInfo?.mappedAttributes || {}),
-                        ...(currentChar.basicInfo.mappedAttributes || {})
+                        ...cleanLocalAttributes
                     };
                     const updated = {
                         ...currentChar,
