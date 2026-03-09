@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from '../storage-adapter';
-import { Character, Location, Relationship, CharacterGroup } from '../types';
+import { Character, Location, Relationship, Household } from '../types';
 import { Message } from '@ai-sdk/react';
 
 // This store manages the ACTIVE game session.
@@ -17,7 +17,7 @@ interface GameState {
     // Runtime World State
     characters: Character[];
     locations: Location[];
-    characterGroups: CharacterGroup[];
+    households: Household[];
 
     // Active Play State
     chatMessages: Message[];
@@ -49,7 +49,7 @@ interface GameState {
 export interface WorldConfigSnapshot {
     characters: Character[];
     locations: Location[];
-    characterGroups: CharacterGroup[];
+    households: Household[];
     id?: string; // Optional ID for the config source
 }
 
@@ -63,7 +63,7 @@ export const useGameStore = create<GameState>()(
 
             characters: [],
             locations: [],
-            characterGroups: [],
+            households: [],
 
             chatMessages: [],
             currentLocationId: null,
@@ -84,7 +84,7 @@ export const useGameStore = create<GameState>()(
 
                     characters: clonedConfig.characters || [],
                     locations: clonedConfig.locations || [],
-                    characterGroups: clonedConfig.characterGroups || [],
+                    households: clonedConfig.households || [],
 
                     chatMessages: [],
                     // Keep previous selection if valid, or reset? Resetting is safer for a "New Game".

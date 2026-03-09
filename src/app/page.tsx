@@ -15,7 +15,7 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 
 export default function MainMenu() {
   const router = useRouter();
-  const { characters, locations, characterGroups, _hasHydrated: isEntityHydrated } = useEntityStore();
+  const { characters, locations, households, _hasHydrated: isEntityHydrated } = useEntityStore();
   const { startGame, isGameActive, _hasHydrated: isGameHydrated } = useGameStore();
   const { setAppState } = useParleyStore();
 
@@ -35,7 +35,7 @@ export default function MainMenu() {
     startGame({
       characters,
       locations,
-      characterGroups
+      households
     }, character.id);
 
     setAppState('game');
@@ -105,6 +105,7 @@ export default function MainMenu() {
         open={isCharacterSelectionOpen}
         onOpenChange={setIsCharacterSelectionOpen}
         characters={characters}
+        households={households}
         onSelect={handleCharacterSelected}
       />
     </div>

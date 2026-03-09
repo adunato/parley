@@ -1,7 +1,7 @@
 import { useParleyStore } from '../store';
 import { useEntityStore } from '../entityStore';
 import { useProjectLibraryStore, ProjectMetadata } from '../store/projectStore';
-import { Character, CharacterGroup, Relationship, Location } from '../types';
+import { Character, Household, Relationship, Location } from '../types';
 import { Message } from 'ai';
 import { db } from '../db';
 
@@ -19,7 +19,7 @@ export interface ParleyProjectExport {
     };
     entities: {
         characters: Character[];
-        characterGroups: CharacterGroup[];
+        households: Household[];
         playerPersonas?: Character[];
         relationshipDeltas: Relationship | undefined;
         locations?: Location[];
@@ -105,7 +105,7 @@ export const ProjectService = {
             },
             entities: {
                 characters: entityState.characters,
-                characterGroups: entityState.characterGroups,
+                households: entityState.households,
                 playerPersonas: undefined, // Obsolete field, kept for backwards compatibility in type if needed, but we don't save it anymore
                 relationshipDeltas: entityState.cumulativeRelationshipDelta,
                 locations: entityState.locations,
@@ -154,7 +154,7 @@ export const ProjectService = {
             entityStore.clearAllData();
             useEntityStore.setState({
                 characters: data.entities.characters,
-                characterGroups: data.entities.characterGroups,
+                households: data.entities.households || (data.entities as any).characterGroups || [],
                 // playerPersonas: data.entities.playerPersonas, // No longer restoring player personas
                 cumulativeRelationshipDelta: data.entities.relationshipDeltas,
                 locations: data.entities.locations || [],
