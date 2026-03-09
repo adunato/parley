@@ -50,6 +50,7 @@ export interface Character {
   personality: Personality;
 
   locationId?: string;
+  householdId?: string;
   idealMatch: Personality;
   relationships: Relationship[];
   generationMeta?: any;
@@ -67,6 +68,7 @@ export interface Relationship {
   passion: number;
   description: string;
   chat_summaries?: ChatSummary[]; // Made optional with ?
+  liveTogether?: boolean;
 }
 
 export interface ChatSummary {
@@ -92,10 +94,11 @@ export interface Location {
   professionSlots?: ProfessionSlot[];
 }
 
-export interface CharacterGroup {
+export interface Household {
   id: string;
   name: string;
   characters: string[];
+  locationId?: string;
   description: string;
 }
 
@@ -122,4 +125,5 @@ export interface GameAttribute extends BaseGameEntity {
   // Uses dynamic categoryId from GameAttributeCategory
   relatedCharacterCount?: number;
   shareLastName?: boolean;
+  liveTogether?: boolean;
 }

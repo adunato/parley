@@ -1,17 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { DexieStorageAdapter } from './storage-adapter';
-import { Character, Relationship, CharacterGroup, Location, GameAttributeCategory, GameAttribute } from './types';
+import { Character, Relationship, Household, Location, GameAttributeCategory, GameAttribute } from './types';
 
 type EntityStore = {
   characters: Character[];
-  characterGroups: CharacterGroup[];
+  households: Household[];
   addCharacter: (character: Character) => void;
   updateCharacter: (character: Character) => void;
   deleteCharacter: (id: string) => void;
-  addCharacterGroup: (characterGroup: CharacterGroup) => void;
-  updateCharacterGroup: (characterGroup: CharacterGroup) => void;
-  deleteCharacterGroup: (id: string) => void;
+  addHousehold: (household: Household) => void;
+  updateHousehold: (household: Household) => void;
+  deleteHousehold: (id: string) => void;
   locations: Location[];
   addLocation: (location: Location) => void;
   updateLocation: (location: Location) => void;
@@ -61,19 +61,19 @@ export const useEntityStore = create<EntityStore>()(
         set((state) => ({
           characters: state.characters.filter((char) => char.id !== id),
         })),
-      characterGroups: [],
-      addCharacterGroup: (characterGroup) => set((state) => ({
-        characterGroups: [...state.characterGroups, characterGroup]
+      households: [],
+      addHousehold: (household) => set((state) => ({
+        households: [...state.households, household]
       })),
-      updateCharacterGroup: (updatedCharacterGroup) =>
+      updateHousehold: (updatedHousehold) =>
         set((state) => ({
-          characterGroups: state.characterGroups.map((group) =>
-            group.id === updatedCharacterGroup.id ? updatedCharacterGroup : group
+          households: state.households.map((group) =>
+            group.id === updatedHousehold.id ? updatedHousehold : group
           ),
         })),
-      deleteCharacterGroup: (id) =>
+      deleteHousehold: (id) =>
         set((state) => ({
-          characterGroups: state.characterGroups.filter((group) => group.id !== id),
+          households: state.households.filter((group) => group.id !== id),
         })),
       locations: [],
       addLocation: (location) => set((state) => ({
@@ -120,7 +120,7 @@ export const useEntityStore = create<EntityStore>()(
           characters: [],
           selectedChatCharacter: undefined,
           cumulativeRelationshipDelta: undefined,
-          characterGroups: [],
+          households: [],
           locations: [],
           selectedChatLocation: undefined,
         });

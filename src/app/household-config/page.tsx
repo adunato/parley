@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useEntityStore } from "@/lib/entityStore";
-import { CharacterGroup } from "@/lib/types";
+import { Household } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,22 +17,22 @@ import { ConfigPage } from '@/components/layout/config-page';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-export default function CharacterGroupConfigPage() {
-  const { characterGroups, addCharacterGroup, updateCharacterGroup, deleteCharacterGroup, characters } = useEntityStore();
+export default function HouseholdConfigPage() {
+  const { households, addHousehold, updateHousehold, deleteHousehold, characters } = useEntityStore();
 
   // Selection
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   // Local state
-  const [localGroup, setLocalGroup] = useState<CharacterGroup | null>(null);
+  const [localGroup, setLocalGroup] = useState<Household | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const isDirtyRef = useRef(false);
 
   // Debounced save
-  const debouncedSave = useDebouncedCallback((group: CharacterGroup) => {
+  const debouncedSave = useDebouncedCallback((group: Household) => {
     setSaveStatus('saving');
     try {
-      updateCharacterGroup(group);
+      updateHousehold(group);
       setSaveStatus('saved');
       isDirtyRef.current = false;
       setTimeout(() => setSaveStatus(prev => prev === 'saved' ? 'idle' : prev), 2000);
@@ -43,7 +43,7 @@ export default function CharacterGroupConfigPage() {
   }, 1000);
 
   // Sync selection
-  const selectedGroupStore = characterGroups.find(g => g.id === selectedGroupId);
+  const selectedGroupStore = households.find(g => g.id === selectedGroupId);
 
   useEffect(() => {
     if (selectedGroupStore) {
@@ -54,12 +54,12 @@ export default function CharacterGroupConfigPage() {
       if (!selectedGroupId) {
         setLocalGroup(null);
         // Select first if available and none selected
-        if (characterGroups.length > 0) {
-          setSelectedGroupId(characterGroups[0].id);
+        if (households.length > 0) {
+          setSelectedGroupId(households[0].id);
         }
       }
     }
-  }, [selectedGroupId, selectedGroupStore, characterGroups]);
+  }, [selectedGroupId, selectedGroupStore, households]);
 
   const handleSelect = (id: string) => {
     if (localGroup && isDirtyRef.current) {
@@ -72,27 +72,27 @@ export default function CharacterGroupConfigPage() {
     if (localGroup && isDirtyRef.current) {
       debouncedSave.flush();
     }
-    const newGroup: CharacterGroup = {
+    const newGroup: Household = {
       id: uuidv4(),
-      name: "New Group",
+      name: "New Household",
       description: "",
       characters: [],
     };
-    addCharacterGroup(newGroup);
+    addHousehold(newGroup);
     setSelectedGroupId(newGroup.id);
     setLocalGroup(newGroup);
     isDirtyRef.current = false;
   };
 
   const handleDeleteGroup = (id: string) => {
-    deleteCharacterGroup(id);
+    deleteHousehold(id);
     if (selectedGroupId === id) {
       setSelectedGroupId(null);
       setLocalGroup(null);
     }
   };
 
-  const handleInputChange = (field: keyof CharacterGroup, value: any) => {
+  const handleInputChange = (field: keyof Household, value: any) => {
     setLocalGroup(prev => {
       if (!prev) return null;
       const updated = { ...prev, [field]: value };
@@ -128,13 +128,13 @@ export default function CharacterGroupConfigPage() {
         {/* Sidebar */}
         <div className="w-80 bg-background border-r border-border flex flex-col">
           <div className="p-4 border-b border-border flex justify-between items-center">
-            <h2 className="type-ui-label text-muted-foreground">Groups</h2>
+            <h2 className="type-ui-label text-muted-foreground">Households</h2>
             <Button size="sm" variant="ghost" onClick={handleAddGroup} className="h-8 w-8 p-0">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {characterGroups.map(group => (
+            {households.map(group => (
               <div
                 key={group.id}
                 onClick={() => handleSelect(group.id)}
@@ -190,7 +190,7 @@ export default function CharacterGroupConfigPage() {
                 <div className="max-w-2xl space-y-6">
                   <Card>
                     <div className="pt-6">
-                      <SectionHeader title="Group Details" />
+                      <SectionHeader title="Household Details" />
                     </div>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
@@ -253,7 +253,7 @@ export default function CharacterGroupConfigPage() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Select a group or create a new one</p>
+                <p>Select a household or create a new one</p>
               </div>
             </div>
           )}

@@ -122,6 +122,7 @@ export function AttributeManager() {
     const [editDesc, setEditDesc] = useState("");
     const [editRelatedCount, setEditRelatedCount] = useState<number>(0);
     const [editShareLastName, setEditShareLastName] = useState<boolean>(false);
+    const [editLiveTogether, setEditLiveTogether] = useState<boolean>(false);
 
     // State for creating new attributes
     const [newItemCategory, setNewItemCategory] = useState<string | null>(null);
@@ -129,6 +130,7 @@ export function AttributeManager() {
     const [newDesc, setNewDesc] = useState("");
     const [newRelatedCount, setNewRelatedCount] = useState<number>(0);
     const [newShareLastName, setNewShareLastName] = useState<boolean>(false);
+    const [newLiveTogether, setNewLiveTogether] = useState<boolean>(false);
 
     const [activeTab, setActiveTab] = useState<string>(gameAttributeCategories?.[0]?.id || "");
     const [search, setSearch] = useState("");
@@ -146,6 +148,7 @@ export function AttributeManager() {
         setEditDesc(attr.description || "");
         setEditRelatedCount(attr.relatedCharacterCount || 0);
         setEditShareLastName(attr.shareLastName || false);
+        setEditLiveTogether(attr.liveTogether || false);
         setNewItemCategory(null);
     };
 
@@ -155,6 +158,7 @@ export function AttributeManager() {
         setEditDesc("");
         setEditRelatedCount(0);
         setEditShareLastName(false);
+        setEditLiveTogether(false);
     };
 
     const handleEditSave = (attr: GameAttribute) => {
@@ -165,6 +169,7 @@ export function AttributeManager() {
             description: editDesc,
             relatedCharacterCount: editRelatedCount,
             shareLastName: editShareLastName,
+            liveTogether: editLiveTogether,
         });
         handleEditCancel();
     };
@@ -175,6 +180,7 @@ export function AttributeManager() {
         setNewDesc("");
         setNewRelatedCount(0);
         setNewShareLastName(false);
+        setNewLiveTogether(false);
         setEditingId(null);
     };
 
@@ -184,6 +190,7 @@ export function AttributeManager() {
         setNewDesc("");
         setNewRelatedCount(0);
         setNewShareLastName(false);
+        setNewLiveTogether(false);
     };
 
     const handleCreateSave = (categoryId: string) => {
@@ -196,6 +203,7 @@ export function AttributeManager() {
             description: newDesc,
             relatedCharacterCount: newRelatedCount,
             shareLastName: newShareLastName,
+            liveTogether: newLiveTogether,
         };
 
         addGameAttribute(newAttr);
@@ -321,6 +329,14 @@ export function AttributeManager() {
                                                                     />
                                                                     Share Last Name
                                                                 </label>
+                                                                <label className="flex items-center gap-2 text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={editLiveTogether}
+                                                                        onChange={(e) => setEditLiveTogether(e.target.checked)}
+                                                                    />
+                                                                    Live Together
+                                                                </label>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell className="align-top py-4">
@@ -344,7 +360,7 @@ export function AttributeManager() {
                                                             {attr.description}
                                                         </TableCell>
                                                         <TableCell className="text-muted-foreground text-xs align-middle whitespace-pre-wrap">
-                                                            {attr.relatedCharacterCount ? `Count: ${attr.relatedCharacterCount}\nShare LN: ${attr.shareLastName ? 'Yes' : 'No'}` : '-'}
+                                                            {attr.relatedCharacterCount ? `Count: ${attr.relatedCharacterCount}\nShare LN: ${attr.shareLastName ? 'Yes' : 'No'}\nLive Together: ${attr.liveTogether ? 'Yes' : 'No'}` : '-'}
                                                         </TableCell>
                                                         <TableCell className="align-middle">
                                                             {getMappedNodeLabel(category.id, attr.id)}
@@ -403,6 +419,14 @@ export function AttributeManager() {
                                                                 onChange={(e) => setNewShareLastName(e.target.checked)}
                                                             />
                                                             Share Last Name
+                                                        </label>
+                                                        <label className="flex items-center gap-2 text-[10px] text-muted-foreground whitespace-nowrap overflow-hidden">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={newLiveTogether}
+                                                                onChange={(e) => setNewLiveTogether(e.target.checked)}
+                                                            />
+                                                            Live Together
                                                         </label>
                                                     </div>
                                                 </TableCell>

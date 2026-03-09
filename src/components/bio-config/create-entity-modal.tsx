@@ -34,6 +34,7 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
     const [maxAge, setMaxAge] = useState(75);
     const [relatedCount, setRelatedCount] = useState<number>(0);
     const [shareLastName, setShareLastName] = useState<boolean>(false);
+    const [liveTogether, setLiveTogether] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     // Populate category options
@@ -51,6 +52,7 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
             setMaxAge(75);
             setRelatedCount(0);
             setShareLastName(false);
+            setLiveTogether(false);
             setError(null);
         }
     }, [open, defaultCategory]);
@@ -109,6 +111,7 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
                 description: description.trim(),
                 relatedCharacterCount: relatedCount,
                 shareLastName: shareLastName,
+                liveTogether: liveTogether,
             };
             addGameAttribute(newAttr);
             onCreated(categoryId, newAttr.id);
@@ -203,6 +206,15 @@ export function CreateEntityModal({ open, onOpenChange, defaultCategory, onCreat
                                         className="h-4 w-4 bg-transparent border-primary/50"
                                     />
                                     Share Last Name
+                                </label>
+                                <label className="flex items-center gap-2 text-sm font-medium leading-none mt-4">
+                                    <input
+                                        type="checkbox"
+                                        checked={liveTogether}
+                                        onChange={(e) => setLiveTogether(e.target.checked)}
+                                        className="h-4 w-4 bg-transparent border-primary/50"
+                                    />
+                                    Live Together
                                 </label>
                             </div>
                         </div>

@@ -40,13 +40,14 @@ import { useEntityStore } from "@/lib/entityStore";
 import { useDebouncedCallback } from "use-debounce";
 import { NameGenerator, SupportedCountry, Identity } from "@/lib/generator/NameGenerator";
 import { faker } from '@faker-js/faker';
+import { v4 as uuidv4 } from "uuid";
 import { ProceduralGeneratorDialog } from './character/procedural-generator-dialog';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function CharacterConfiguration() {
     const { worldDescription, aiStyle, _hasHydrated, avatarGenerationSettings } = useParleyStore()
-    const { characters, addCharacter, updateCharacter, deleteCharacter, characterGroups, updateCharacterGroup, locations, updateLocation, gameAttributeCategories, gameAttributes } = useEntityStore()
+    const { characters, addCharacter, updateCharacter, deleteCharacter, households, addHousehold, updateHousehold, locations, updateLocation, gameAttributeCategories, gameAttributes } = useEntityStore()
     const { professions } = useBioStore();
 
     // Selection state
@@ -64,7 +65,6 @@ export default function CharacterConfiguration() {
     const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
     const [isAvatarPromptDialogOpen, setIsAvatarPromptDialogOpen] = useState(false);
     const [dialogAvatarPrompt, setDialogAvatarPrompt] = useState('');
-    const [characterGroupMemberships, setCharacterGroupMemberships] = useState<string[]>([]);
     const [isGeneratingRelationship, setIsGeneratingRelationship] = useState(false); // Relationship Generator State
     const [isRelationshipDialogOpen, setIsRelationshipDialogOpen] = useState(false);
     const [relationshipPersonaId, setRelationshipPersonaId] = useState<string>("");
@@ -97,21 +97,14 @@ export default function CharacterConfiguration() {
             // If ID matches and Not dirty, we sync (in case of background updates?)
             if (!isDirtyRef.current || (localCharacter?.id !== selectedCharacter.id)) {
                 setLocalCharacter({ ...selectedCharacter });
-
-                // Initialize characterGroupMemberships based on which groups this character belongs to
-                const currentGroupIds = characterGroups
-                    .filter(group => group.characters.includes(selectedCharacter.id))
-                    .map(group => group.id);
-                setCharacterGroupMemberships(currentGroupIds);
             }
         } else {
             // Only clear if we really don't have a selected character (e.g. deleted or empty list)
             if (!selectedId) {
                 setLocalCharacter(null);
-                setCharacterGroupMemberships([]);
             }
         }
-    }, [selectedId, selectedCharacter, characterGroups]);
+    }, [selectedId, selectedCharacter]);
 
     const handleSelect = (character: Character) => {
         if (localCharacter && isDirtyRef.current) {
@@ -342,30 +335,6 @@ export default function CharacterConfiguration() {
         }
     };
 
-    // Group Memberships Handling
-    const handleGroupToggle = (groupId: string) => {
-        if (!localCharacter) return;
-
-        const isMember = characterGroupMemberships.includes(groupId);
-        const newMemberships = isMember
-            ? characterGroupMemberships.filter(id => id !== groupId)
-            : [...characterGroupMemberships, groupId];
-
-        setCharacterGroupMemberships(newMemberships);
-
-        // Immediate Store Update for Groups (since they are separate entities)
-        const group = characterGroups.find(g => g.id === groupId);
-        if (group) {
-            const updatedGroup = {
-                ...group,
-                characters: isMember
-                    ? group.characters.filter(cid => cid !== localCharacter.id)
-                    : [...group.characters, localCharacter.id]
-            };
-            updateCharacterGroup(updatedGroup);
-        }
-    };
-
     const handleConvertToPersona = () => {
         // Feature removed as part of replacing Personas with Character Impersonation
         alert(`This feature is currently disabled.`);
@@ -569,10 +538,24 @@ export default function CharacterConfiguration() {
                 if (localCharacter && localCharacter.id) {
                     // Use localCharacter's mappedAttributes, not the LLM response, to preserve UUID values.
                     const mappedAttrs = localCharacter.basicInfo.mappedAttributes;
-                    const newRelationships: Relationship[] = [];
-
                     // Re-derive IDs using same seed so nextId matches what pendingPlaceholders sent to the LLM.
                     let currentMaxId = characters.length > 0 ? Math.max(...characters.map(c => parseInt(c.id) || 0)) : 0;
+                    const newRelationships: Relationship[] = [];
+
+                    // Initialize household context for this generation pass
+                    let finalHouseholdId = localCharacter.householdId;
+                    const householdCharactersToAdd: string[] = [];
+
+                    if (!finalHouseholdId) {
+                        finalHouseholdId = uuidv4();
+                        const newHousehold = {
+                            id: finalHouseholdId,
+                            name: `${generatedCharacterData.basicInfo.name}'s Household`,
+                            description: `The household of ${generatedCharacterData.basicInfo.name}.`,
+                            characters: [localCharacter.id] 
+                        };
+                        addHousehold(newHousehold);
+                    }
 
                     console.log('[generateCharacter] Starting placeholder creation. Mapped attributes:', mappedAttrs ? Object.keys(mappedAttrs).length : 0);
 
@@ -762,11 +745,15 @@ export default function CharacterConfiguration() {
                                             [attr.categoryId]: attr.id
                                         }
                                     },
+                                    householdId: attr.liveTogether ? finalHouseholdId : undefined,
                                     personality: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                     idealMatch: { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 },
                                     relationships: [],
                                     isPlaceholder: true,
                                 };
+                                if (attr.liveTogether) {
+                                    householdCharactersToAdd.push(nextId);
+                                }
 
                                 // No LLM-generated stats available for server-resolved attributes (pendingPlaceholders was empty)
                                 const relStats = {
@@ -818,12 +805,25 @@ export default function CharacterConfiguration() {
                         ...generatedCharacterData,
                         id: currentChar.id,
                         isPlaceholder: false,
+                        householdId: finalHouseholdId,
                         basicInfo: {
                             ...generatedCharacterData.basicInfo,
                             mappedAttributes: mergedMappedAttributes
                         },
                         relationships: [...currentChar.relationships, ...newRelationships]
                     };
+
+                    // Note: In case we added placeholders to the existing household, update it
+                    if (householdCharactersToAdd.length > 0) {
+                        const targetHousehold = useEntityStore.getState().households.find(h => h.id === finalHouseholdId);
+                        if (targetHousehold) {
+                            updateHousehold({
+                                ...targetHousehold,
+                                characters: [...targetHousehold.characters, ...householdCharactersToAdd ]
+                            });
+                        }
+                    }
+
                     updateCharacter(updated);
                     setLocalCharacter(updated);
                 } else {
@@ -1560,29 +1560,48 @@ export default function CharacterConfiguration() {
                                     </CardContent>
                                 </Card>
 
-                                {/* Character Groups */}
+                                {/* Household */}
                                 <Card className="border-border shadow-sm">
                                     <div className="pt-6">
-                                        <SectionHeader title="Character Groups" />
+                                        <SectionHeader title="Household" />
                                     </div>
                                     <CardContent className="space-y-4">
-                                        {characterGroups.length > 0 ? (
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {characterGroups.map((group) => (
-                                                    <div key={group.id} className="flex items-center space-x-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            id={`group-${group.id}`}
-                                                            checked={characterGroupMemberships.includes(group.id)}
-                                                            onChange={() => handleGroupToggle(group.id)}
-                                                        />
-                                                        <Label htmlFor={`group-${group.id}`}>{group.name}</Label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="type-body-sm text-muted-foreground">No character groups defined. Create them in the Character Group Configuration page.</p>
-                                        )}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="household" className="type-ui-label text-muted-foreground">Assigned Household</Label>
+                                            <Select
+                                                value={displayCharacter.householdId || "none"}
+                                                onValueChange={(val) => {
+                                                    const newId = val === "none" ? undefined : val;
+                                                    handleInputChange("householdId" as any, "householdId", newId);
+                                                    
+                                                    // Also update the household entity itself
+                                                    // Remove from old
+                                                    if (displayCharacter.householdId) {
+                                                        const oldGrp = households.find(h => h.id === displayCharacter.householdId);
+                                                        if (oldGrp) {
+                                                            updateHousehold({ ...oldGrp, characters: oldGrp.characters.filter(c => c !== displayCharacter.id) });
+                                                        }
+                                                    }
+                                                    // Add to new
+                                                    if (newId) {
+                                                        const newGrp = households.find(h => h.id === newId);
+                                                        if (newGrp && !newGrp.characters.includes(displayCharacter.id)) {
+                                                            updateHousehold({ ...newGrp, characters: [...newGrp.characters, displayCharacter.id] });
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                <SelectTrigger id="household">
+                                                    <SelectValue placeholder="Select a household" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none">None</SelectItem>
+                                                    {households.map((h) => (
+                                                        <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
